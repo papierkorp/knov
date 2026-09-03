@@ -225,11 +225,16 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 // @Description Returns recent job runs as HTML table (for HTMX) or JSON
 // @Tags system
 // @Produce json,html
+// @Param sort query string false "sort column: job, started, finished, duration, status"
+// @Param dir query string false "sort direction: asc (default) or desc"
 // @Success 200 {array} job.JobRun
 // @Router /api/system/jobs [get]
 func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
+	sortKey := r.URL.Query().Get("sort")
+	sortDir := r.URL.Query().Get("dir")
 	runs := job.GetRecentRuns()
-	writeResponse(w, r, runs, render.RenderJobsTable(runs))
+	job.SortRuns(runs, sortKey, sortDir)
+	writeResponse(w, r, runs, render.RenderJobsTable(runs, sortKey, sortDir))
 }
 
 // @Summary Get version/build info

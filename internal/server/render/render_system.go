@@ -410,16 +410,32 @@ function loadMoreLogLines() {
 	}
 }
 
-// RenderJobsTable returns an HTML table of recent job runs.
-func RenderJobsTable(runs []job.JobRun) string {
+// RenderJobsTable returns an HTML table of recent job runs. sortKey/sortDir mark
+// the active column so its header shows an arrow and clicking it toggles direction.
+func RenderJobsTable(runs []job.JobRun, sortKey, sortDir string) string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
 		return translation.SprintfForRequest(lang, key, args...)
 	}
 
 	var sb strings.Builder
-	fmt.Fprintf(&sb, `<table class="jobs-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
-		t("Job"), t("Started"), t("Finished"), t("Duration"), t("Status"), t("Error"))
+	sb.WriteString(`<table class="jobs-table"><thead><tr>`)
+	for _, c := range []struct{ key, label string }{
+		{"job", t("Job")}, {"started", t("Started")}, {"finished", t("Finished")},
+		{"duration", t("Duration")}, {"status", t("Status")},
+	} {
+		nextDir, arrow := "asc", ""
+		if c.key == sortKey {
+			if sortDir == "asc" {
+				nextDir, arrow = "desc", " ▲"
+			} else {
+				arrow = " ▼"
+			}
+		}
+		fmt.Fprintf(&sb, `<th><a href="#" hx-get="/api/system/jobs?sort=%s&dir=%s" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>%s%s</a></th>`,
+			c.key, nextDir, template.HTMLEscapeString(c.label), arrow)
+	}
+	fmt.Fprintf(&sb, `<th>%s</th></tr></thead><tbody>`, t("Error"))
 	if len(runs) == 0 {
 		fmt.Fprintf(&sb, `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">%s</td></tr>`, t("No jobs recorded yet"))
 	}
@@ -428,7 +444,7 @@ func RenderJobsTable(runs []job.JobRun) string {
 		finished := ""
 		if r.FinishedAt != nil {
 			finished = configmanager.FormatTime(*r.FinishedAt)
-			duration = r.FinishedAt.Sub(r.StartedAt).Round(1e6).String()
+			duration = job.RunDuration(r).Round(1e6).String()
 		}
 		statusClass := "job-status-" + string(r.Status)
 		sb.WriteString(fmt.Sprintf(
@@ -443,6 +459,9 @@ func RenderJobsTable(runs []job.JobRun) string {
 		))
 	}
 	sb.WriteString(`</tbody></table>`)
+	// carried by the auto-refresh poll's hx-include so the chosen sort survives it
+	fmt.Fprintf(&sb, `<input type="hidden" name="sort" value="%s"><input type="hidden" name="dir" value="%s">`,
+		template.HTMLEscapeString(sortKey), template.HTMLEscapeString(sortDir))
 	return sb.String()
 }
 
@@ -455,6 +474,8 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 	content := `<style>
 .jobs-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .jobs-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.jobs-table th a { color: inherit; text-decoration: none; cursor: pointer; }
+.jobs-table th a:hover { color: var(--primary); }
 .jobs-table td { padding: .28rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; white-space: nowrap; }
 .jobs-table td:last-child { white-space: normal; word-break: break-word; color: var(--danger); font-size: .8rem; }
 .job-status-running td:nth-child(5) { color: var(--primary); font-weight: 600; }
@@ -465,8 +486,8 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 .job-status-canceled { background: color-mix(in srgb, var(--warning) 15%, transparent); }
 .job-status-running { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 </style>` +
-		fmt.Sprintf(`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>%s</button></div>`, t("Refresh")) +
-		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
+		fmt.Sprintf(`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-include="#jobs-entries input[type=hidden]" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>%s</button></div>`, t("Refresh")) +
+		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-include="#jobs-entries input[type=hidden]" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
 
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Jobs", template.HTML(content)); err != nil {

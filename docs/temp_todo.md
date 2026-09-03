@@ -14,14 +14,11 @@
   - todo editor add a date at the end for each click
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
-  - in the /system/jobs add a sort by button the the header (especially for duration)
 - fixes
   - releasenotes does not work
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
-  - we have two autocomplete-wiring mechanisms which coexist: `GenerateDatalistInput` was modernized to `data-path-autocomplete` + global auto-init, but `GenerateDatalistInputWithSave` still emits the old inline script. Worth a follow-up to converge.
   - make books more handwritten save
-  - how much do we still use goldmarkdown?
 
 # Async follow up jobs
 

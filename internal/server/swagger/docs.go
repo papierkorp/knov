@@ -5859,6 +5859,20 @@ const docTemplate = `{
                     "system"
                 ],
                 "summary": "Get job history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "sort column: job, started, finished, duration, status",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort direction: asc (default) or desc",
+                        "name": "dir",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

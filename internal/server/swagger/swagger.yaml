@@ -4474,6 +4474,15 @@ paths:
   /api/system/jobs:
     get:
       description: Returns recent job runs as HTML table (for HTMX) or JSON
+      parameters:
+      - description: 'sort column: job, started, finished, duration, status'
+        in: query
+        name: sort
+        type: string
+      - description: 'sort direction: asc (default) or desc'
+        in: query
+        name: dir
+        type: string
       produces:
       - application/json
       - text/html

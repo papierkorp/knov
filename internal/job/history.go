@@ -1,6 +1,8 @@
 package job
 
 import (
+	"cmp"
+	"slices"
 	"sync"
 	"time"
 )
@@ -27,6 +29,42 @@ func GetRecentRuns() []JobRun {
 		out[i] = history[slot]
 	}
 	return out
+}
+
+// RunDuration returns a finished run's elapsed time, or 0 if it is still running.
+func RunDuration(r JobRun) time.Duration {
+	if r.FinishedAt != nil {
+		return r.FinishedAt.Sub(r.StartedAt)
+	}
+	return 0
+}
+
+// SortRuns orders runs in place by key ("job", "started", "finished", "duration",
+// "status"); dir "desc" reverses. An unknown key leaves the default newest-first order.
+func SortRuns(runs []JobRun, key, dir string) {
+	end := func(r JobRun) time.Time {
+		if r.FinishedAt != nil {
+			return *r.FinishedAt
+		}
+		return time.Time{}
+	}
+	byKey := map[string]func(a, b JobRun) int{
+		"job":      func(a, b JobRun) int { return cmp.Compare(a.Name, b.Name) },
+		"started":  func(a, b JobRun) int { return a.StartedAt.Compare(b.StartedAt) },
+		"finished": func(a, b JobRun) int { return end(a).Compare(end(b)) },
+		"duration": func(a, b JobRun) int { return cmp.Compare(RunDuration(a), RunDuration(b)) },
+		"status":   func(a, b JobRun) int { return cmp.Compare(a.Status, b.Status) },
+	}
+	cmpFn := byKey[key]
+	if cmpFn == nil {
+		return
+	}
+	slices.SortStableFunc(runs, func(a, b JobRun) int {
+		if dir == "desc" {
+			return cmpFn(b, a)
+		}
+		return cmpFn(a, b)
+	})
 }
 
 // IsRunning returns true if the named job is currently executing.
