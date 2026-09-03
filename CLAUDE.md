@@ -15,6 +15,7 @@
 - always search the project since you already have all the files
 - no need for backwards compability since the app is not released yet - you can remove functions/routes
 - i create the uploaded files using the Makefiles - so the filenames are not completly the same in the repo, there is a FILE_LIST.txt with the tree command for you to have a overview over all files in the repo
+- no need to update the changelogs since they are auto generated per git commits
 
 ## Architecture
 
@@ -23,6 +24,7 @@
 - i dont want any html generation in the handler - use the render subpackage for any html strings
 - if anything related to paths prop up - use the pathutils package!
 - if working with paths - we have to take care of both linux and windows os paths
+- we updated to htmx 4.0 so the syntax is different to htmx 2.0 be careful of this
 
 ## API
 
