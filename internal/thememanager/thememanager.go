@@ -348,9 +348,12 @@ func injectDefaultJS(html string) string {
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 
-// injectMOTD injects the KNOV_MOTD banner as the first element inside <body>, if set - a
-// theme needs no template changes to get it, and can only hide it (via CSS on #site-motd),
-// not opt out of receiving it or reposition it into its own layout.
+// injectMOTD injects the KNOV_MOTD banner as the first element inside <body>, if set, and
+// marks the <body> tag with a data-motd attribute - a theme needs no template changes to get
+// it, and can only hide it (via CSS on #site-motd), not opt out of receiving it or reposition
+// it into its own layout. The data-motd marker lets motd.css reserve layout space with a plain
+// attribute selector instead of body:has(#site-motd), which some browsers fail to evaluate on
+// first paint (the banner then overlaps the layout until a manual style recalc).
 func injectMOTD(content string) string {
 	motd := configmanager.GetMOTD()
 	if motd == "" {
@@ -368,7 +371,8 @@ func injectMOTD(content string) string {
 	insertAt := bodyOpenIndex + bodyTagEnd + 1
 
 	banner := fmt.Sprintf(`<div id="site-motd">%s</div>`, html.EscapeString(motd))
-	return content[:insertAt] + banner + content[insertAt:]
+	attrAt := bodyOpenIndex + len("<body")
+	return content[:attrAt] + " data-motd" + content[attrAt:insertAt] + banner + content[insertAt:]
 }
 
 // -----------------------------------------------

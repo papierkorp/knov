@@ -7,11 +7,15 @@
    --motd-height carries the banner's height as a var so a theme MAY reserve space for
    it (e.g. a full-viewport-height layout doing `height: calc(100vh - var(--motd-height,
    0px))`) instead of just living with the overlap; it's 0px whenever no banner is
-   rendered, so that opt-in is a no-op for every other page. */
+   rendered, so that opt-in is a no-op for every other page.
+
+   Keyed off the data-motd attribute that injectMOTD adds to <body> - a plain attribute
+   selector the browser always resolves on first paint, unlike body:has(#site-motd) which
+   Chrome intermittently leaves unevaluated until a manual style recalc. */
 :root {
   --motd-height: 0px;
 }
-body:has(#site-motd) {
+body[data-motd] {
   --motd-height: 28px;
 }
 
