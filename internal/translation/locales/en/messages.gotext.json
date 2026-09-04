@@ -1987,6 +1987,11 @@
       "translation": ""
     },
     {
+      "id": "datalist",
+      "message": "datalist",
+      "translation": ""
+    },
+    {
       "id": "debug",
       "message": "debug",
       "translation": ""
@@ -4699,6 +4704,11 @@
     {
       "id": "type or select title",
       "message": "type or select title",
+      "translation": ""
+    },
+    {
+      "id": "type to search files...",
+      "message": "type to search files...",
       "translation": ""
     },
     {

@@ -132,6 +132,35 @@ func RenderFileDropdown(files []files.File, limit int) string {
 	return html.String()
 }
 
+// RenderFileDatalist renders files as a searchable text input backed by a native datalist
+func RenderFileDatalist(files []files.File, limit int) string {
+	listID := "filter-results-datalist"
+	var html strings.Builder
+	html.WriteString(`<div id="filter-results">`)
+	html.WriteString(fmt.Sprintf(`<input type="text" class="form-input" list="%s" autocomplete="off" placeholder="%s"
+		onchange="var opts=this.list.options; for (var i=0; i<opts.length; i++) { if (opts[i].value===this.value) { window.location.href=opts[i].dataset.url; break; } }"/>`,
+		listID, translation.SprintfForRequest(configmanager.GetLanguage(), "type to search files...")))
+	html.WriteString(fmt.Sprintf(`<datalist id="%s">`, listID))
+
+	displayLimit := limit
+	if limit <= 0 {
+		displayLimit = len(files)
+	}
+
+	for i, file := range files {
+		if i >= displayLimit {
+			break
+		}
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
+		html.WriteString(fmt.Sprintf(`<option value="%s" data-url="%s"></option>`,
+			htmlpkg.EscapeString(displayText), htmlpkg.EscapeString(file.ViewURL())))
+	}
+
+	html.WriteString(`</datalist>`)
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
 // DONT RENAME filez to files since files.GetFileContent is not working than!!
 // RenderFileContent renders files with their actual content displayed
 func RenderFileContent(filez []files.File) string {

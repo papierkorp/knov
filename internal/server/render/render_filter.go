@@ -205,6 +205,7 @@ func renderDisplaySelect(opts FilterFormOpts) string {
 		{"list4", translation.SprintfForRequest(configmanager.GetLanguage(), "list (4 col)")},
 		{"cards", translation.SprintfForRequest(configmanager.GetLanguage(), "cards")},
 		{"dropdown", translation.SprintfForRequest(configmanager.GetLanguage(), "dropdown")},
+		{"datalist", translation.SprintfForRequest(configmanager.GetLanguage(), "datalist")},
 		{"content", translation.SprintfForRequest(configmanager.GetLanguage(), "content")},
 	}
 	var b strings.Builder
@@ -241,6 +242,8 @@ func RenderFilterResult(result *filter.Result, display string) string {
 		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileCards(result.Files))
 	case "dropdown":
 		return RenderFileDropdown(result.Files, result.Total)
+	case "datalist":
+		return RenderFileDatalist(result.Files, result.Total)
 	case "content":
 		return RenderFileContent(result.Files)
 	case "list2":

@@ -10,7 +10,6 @@
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - cache for books?
   - todo editor add a date at the end for each click
-  - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
 - fixes
   -

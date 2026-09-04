@@ -1987,6 +1987,11 @@
       "translation": "Datenpfad"
     },
     {
+      "id": "datalist",
+      "message": "datalist",
+      "translation": "Datalist"
+    },
+    {
       "id": "debug",
       "message": "debug",
       "translation": "debug"
@@ -4700,6 +4705,11 @@
       "id": "type or select title",
       "message": "type or select title",
       "translation": "Titel eingeben oder auswählen"
+    },
+    {
+      "id": "type to search files...",
+      "message": "type to search files...",
+      "translation": "Zum Suchen tippen..."
     },
     {
       "id": "undo",
