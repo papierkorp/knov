@@ -6636,6 +6636,9 @@ const docTemplate = `{
                 "finishedAt": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6654,13 +6657,15 @@ const docTemplate = `{
                 "running",
                 "ok",
                 "error",
-                "canceled"
+                "canceled",
+                "interrupted"
             ],
             "x-enum-varnames": [
                 "JobStatusRunning",
                 "JobStatusOK",
                 "JobStatusError",
-                "JobStatusCanceled"
+                "JobStatusCanceled",
+                "JobStatusInterrupted"
             ]
         },
         "jobStorage.JobRecord": {

@@ -23,6 +23,14 @@ Alternative to running the binary directly:
 - use `docker compose up` to locally build and run a production image (at the moment there is no prebuild image)
 - Data, themes, storage, logs and backups are mounted as volumes so they persist outside the container
 
+## Mobile (Termux)
+
+- Android only - iOS isn't feasible for a self-hosted Go binary
+- Install [Termux](https://termux.dev) from F-Droid or GitHub releases, not the Play Store version (outdated)
+- `make mobile` builds a Linux arm64 binary (`bin/knov-arm64`) - Termux runs it as a regular Linux binary, no Android-specific build needed
+- Copy the binary and your `.env` to the phone, run it like any other Linux binary, then open `http://localhost:1324` in the phone's browser
+- Keep it running: `termux-wake-lock` stops Android from suspending the CPU while knov runs in the background; run knov inside `tmux` so it survives closing the Termux app; install the Termux:Boot add-on to auto-start it on device boot
+
 ## First Run
 
 1. Copy `.env.example` to `.env` and adjust the values

@@ -326,6 +326,8 @@ definitions:
         type: string
       finishedAt:
         type: string
+      id:
+        type: string
       name:
         type: string
       output: {}
@@ -340,12 +342,14 @@ definitions:
     - ok
     - error
     - canceled
+    - interrupted
     type: string
     x-enum-varnames:
     - JobStatusRunning
     - JobStatusOK
     - JobStatusError
     - JobStatusCanceled
+    - JobStatusInterrupted
   jobStorage.JobRecord:
     properties:
       args:

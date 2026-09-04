@@ -30,8 +30,9 @@ context / decisions already made:
 - [x] `internal/search/grep.go:35` shelled out to system `grep -r` - turned out to be dead code, never instantiated anywhere; the actual `KNOV_SEARCH_ENGINE=grep` mode (`searchFilesGrep` in search.go) was already pure-go (os.ReadFile + strings.Contains). deleted grep.go, no fallback needed
 - [x] `internal/server/server.go` `http.ListenAndServe(":"+port, r)` binds all interfaces - added `KNOV_SERVER_HOST` env (default empty = all interfaces, set to 127.0.0.1 to restrict to local access)
 - [ ] `internal/version/version.go` shells out to `git` for build metadata - only a fallback, ldflags cover prod builds, no action needed
-- [ ] verify data / storage / .git paths resolve under a Termux $HOME (they route through pathutils, likely fine) - needs a real run on a phone
-- [ ] real Termux test on an android device: run binary, open http://localhost:1324, check browse/edit/git/search work; document termux-wake-lock + tmux + Termux:Boot for keep-alive
+- [x] verify data / storage / .git paths resolve under a Termux $HOME - checked: DataPath defaults to `data` relative to cwd (configmanager/envdefs.go), pathutils only uses filepath.Join/Clean/ToSlash/IsAbs (no OS-specific assumptions), git.go's os.UserHomeDir() usage is just SSH key discovery. nothing reads a "traditional" home dir path, so Termux's $HOME needs no special handling - not yet confirmed on real hardware though
+- [ ] real Termux test on an android device: run binary, open http://localhost:1324, check browse/edit/git/search work - needs an actual phone, can't be done from this machine
+- [x] document termux-wake-lock + tmux + Termux:Boot for keep-alive - added `## Mobile (Termux)` section to docs/quickstart.md
 
 ## responsive UI
 - breakpoint: single `@media (max-width: 700px)`. put rules in a NEW `themes/builtin/css/mobile.css`, @import last from `themes/builtin/css/style.css`. mirror every change into `themes/example/` and `tools/docker_deployment/themes/builtin/`.
