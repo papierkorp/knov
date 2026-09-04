@@ -224,10 +224,12 @@
   transition: all 0.2s;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   [popover] .modal-content {
     min-width: auto;
-    width: 90vw;
+    width: calc(100vw - 24px);
+    max-height: 90dvh;
+    overflow: auto;
     margin: 10vh auto;
     padding: 20px;
   }

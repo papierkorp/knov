@@ -34,6 +34,9 @@
 <div id="wrapper">
 <div id="layout-rail">
 
+    <!-- mobile-only: hamburger toggles the full-screen flyout overlay; icon flips to an X while open -->
+    <button id="mobile-menu-btn" type="button" aria-label="{{T "menu"}}" aria-controls="flyout" aria-expanded="false" :aria-expanded="$store.rail.active ? 'true' : 'false'" @click="$store.rail.active ? $store.rail.close() : $store.rail.open('fp-file')"><i class="fa" :class="$store.rail.active ? 'fa-xmark' : 'fa-bars'"></i></button>
+
     <!-- ================================================================
          RAIL
          ================================================================ -->
@@ -83,7 +86,7 @@
     <!-- ================================================================
          SHARED FLYOUT
          ================================================================ -->
-    <div id="flyout" x-init="initFlyoutResize($el)" :data-active="$store.rail.active">
+    <div id="flyout" x-init="initFlyoutResize($el)" :data-active="$store.rail.active" @keydown.escape.window="$store.rail.active && ($store.rail.close(), document.getElementById('mobile-menu-btn')?.focus())">
         <div class="flyout-resizer" id="flyout-resizer"></div>
 
         <!-- user-composed rail panels — one alpine component (panelGroup, see

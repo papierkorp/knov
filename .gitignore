@@ -205,6 +205,9 @@ temp*/
 temp*/*
 knov_temp_test/
 bin/
+# stray `go build ./` output in the repo root (real builds go to bin/)
+/knov
+/knov-arm64
 config/
 .storage
 storage/

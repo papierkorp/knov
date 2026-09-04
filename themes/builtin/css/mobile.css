@@ -1,0 +1,152 @@
+/* theme: builtin — responsive shell for on-device (Termux) use.
+   single breakpoint; rail -> bottom bar, flyout -> full-screen overlay. */
+
+/* hamburger: hidden on desktop, toggles the full-screen flyout overlay on mobile */
+#mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --mobile-rail-h: 48px;
+  }
+
+  /* rail -> fixed bottom bar */
+  #rail-site {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: var(--mobile-rail-h);
+    flex-direction: row;
+    justify-content: flex-start;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding: 0 6px;
+    overflow-x: auto;
+    scrollbar-width: none; /* keep the bar from losing height to a scrollbar */
+    /* fade both edges so a bar with more icons than fit hints that it
+       scrolls, instead of just cutting the last ones off with no clue */
+    mask-image: linear-gradient(to right, transparent, black 14px, black calc(100% - 14px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 14px, black calc(100% - 14px), transparent);
+  }
+
+  #rail-site::-webkit-scrollbar {
+    display: none; /* same, for webkit/blink */
+  }
+
+  /* stay laid out along the row — desktop stacks these vertically,
+     which would blow out the fixed bar's height */
+  .rail-group-section {
+    flex-direction: row;
+  }
+
+  /* separators are vertical dividers in the horizontal bar */
+  .rail-sep {
+    width: 1px;
+    height: 24px;
+    margin: 0 4px;
+  }
+
+  /* active accent moves from the desktop left edge to the top edge */
+  .rail-btn.active::before {
+    inset: 0 6px auto 6px;
+    width: auto;
+    height: 3px;
+    border-radius: 0 0 2px 2px;
+  }
+
+  #layout-rail > main {
+    /* top clears the fixed hamburger, bottom clears the fixed rail bar.
+       overflow-x: hidden is a backstop against any nowrap row (e.g.
+       .admin-links) overflowing main and shifting the whole page
+       sideways — htmx swaps page content into main without a reload,
+       so a shift caused by one page would otherwise carry into the next */
+    padding: 56px 12px calc(var(--mobile-rail-h) + 8px);
+    overflow-x: hidden;
+  }
+
+  /* admin/help link rows: wrap instead of forcing a nowrap row that
+     doesn't fit a mobile main and overflows it */
+  .admin-links {
+    flex-wrap: wrap;
+  }
+
+  /* system pages (jobs/logs/backups/version/environment): these tables
+     use nowrap cells and are wider than a mobile viewport with no
+     scroll wrapper of their own - let the table scroll itself instead
+     of getting clipped by main's overflow-x: hidden backstop */
+  .jobs-table,
+  .backup-table,
+  .backup-summary-table,
+  .log-table,
+  .log-summary-table,
+  .version-table,
+  .env-table {
+    overflow-x: auto;
+  }
+
+  /* desktop pins these to exactly main's height for the 2-column grid;
+     on mobile the single stacked column is routinely taller than the
+     viewport, and the fixed height clipped the last card behind the
+     bottom bar instead of letting main scroll to it */
+  .page-settings,
+  .page-admin {
+    height: auto;
+  }
+
+  /* flyout -> full-screen overlay instead of shrinking main.
+     [data-init-panel] gets the same treatment so a persisted-open panel
+     paints full-screen on load instead of flashing at the desktop width
+     until alpine sets data-active.
+     both selectors carry an extra `html` so they outrank the width rules
+     in layout.css on specificity, not on @import order. */
+  html #flyout[data-active],
+  html[data-init-panel] #flyout {
+    position: fixed;
+    inset: 0;
+    width: 100%; /* overrides layout.css var(--fw); 100% avoids the 100vw scrollbar gutter */
+    z-index: 100;
+    border-right: none;
+  }
+
+  .flyout-panel {
+    width: 100%;
+  }
+
+  /* resizer is meaningless full-screen */
+  .flyout-resizer {
+    display: none;
+  }
+
+  /* hamburger sits above the overlay (z 100) so it stays tappable to close it */
+  #mobile-menu-btn {
+    display: flex;
+    position: fixed;
+    top: calc(var(--motd-height, 0px) + 8px);
+    left: 8px;
+    z-index: 101;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  /* bump tap targets */
+  .rail-btn,
+  .fp-file-mode-btn,
+  .fp-browse-mode-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .fp-menu-item {
+    min-height: 40px;
+  }
+}

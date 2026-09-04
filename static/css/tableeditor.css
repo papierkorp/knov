@@ -138,3 +138,11 @@
     text-align: center;
   }
 }
+
+/* mobile: let a table wider than the viewport scroll horizontally */
+@media (max-width: 700px) {
+  .page-file-dittable #table-editor-container,
+  .page-file-dittable #handsontable-container {
+    overflow-x: auto;
+  }
+}

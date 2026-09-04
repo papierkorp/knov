@@ -28,7 +28,7 @@ context / decisions already made:
 - decision: DO NOT fork a mobile theme. make `builtin` responsive instead - a theme is 23 gohtml + ~15 js + 5 css files already copied 3x, theme selection is a persisted user setting with no device detection, and the rail->bottombar / flyout->overlay change is pure css + one hamburger toggle.
 
 ## on-device / build
-- [ ] add a `mobile` Makefile target: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/knov-arm64 ./` (Termux uses the linux target, not android)
+- [x] add a `mobile` Makefile target: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/knov-arm64 ./` (Termux uses the linux target, not android)
 - [ ] `internal/search/grep.go:35` shells out to system `grep -r`. fine in Termux (`pkg install grep`), but a bare native wrapper app would need a pure-go fallback (filepath.WalkDir + scan). decide scope; at minimum handle grep-missing gracefully
 - [ ] `internal/server/server.go:53` `http.ListenAndServe(":"+port, r)` binds all interfaces - optional `KNOV_HOST` env to bind 127.0.0.1 (mild exposure on shared wifi). port is already env-configurable
 - [ ] `internal/version/version.go` shells out to `git` for build metadata - only a fallback, ldflags cover prod builds, no action needed
@@ -38,13 +38,13 @@ context / decisions already made:
 ## responsive UI
 - breakpoint: single `@media (max-width: 700px)`. put rules in a NEW `themes/builtin/css/mobile.css`, @import last from `themes/builtin/css/style.css`. mirror every change into `themes/example/` and `tools/docker_deployment/themes/builtin/`.
 - replace `100vh` with `100dvh` in the shell so mobile browser chrome doesn't clip the layout
-- [ ] shell (mobile.css + `themes/builtin/css/layout.css`): under 700px `#rail-site` -> fixed bottom bar (row, height 48px, width auto); `#flyout[data-active]` -> full-screen overlay (position:fixed; inset:0; width:100vw; z-index:100) instead of shrinking `main`; `#layout-rail > main` -> padding 12px + padding-bottom 56px; drop the two existing ad-hoc max-width:700px flyout-width blocks
-- [ ] `themes/builtin/base.gohtml`: add an Alpine-toggled hamburger button + a dismiss backdrop div for the flyout overlay, reusing `$store.rail`. mirror to `themes/example/base.gohtml`
-- [ ] `themes/builtin/js/rail-core.js`: `initFlyoutResize` should bail out under 700px (resizer is meaningless full-screen)
-- [ ] `themes/builtin/css/components.css`: consolidate the scattered 640/768/900/1024 queries; `.modal-content` -> width calc(100vw - 24px), max-height 90dvh, overflow auto; bump tap targets `.rail-btn` `.fp-menu-item` `.fp-file-mode-btn` `.fp-browse-mode-btn` to min 40px
-- [ ] `static/css/codemirroreditor.css` + `static/css/entryeditor.css`: inputs/editor font-size 16px (stops mobile auto-zoom), editor full width, toolbar flex-wrap:wrap
-- [ ] `static/css/tableeditor.css` + `static/css/kanban.css`: wrap Handsontable + kanban in overflow-x:auto scroll containers; kanban columns keep min-width + horizontal swipe. SortableJS drag already supports touch; Handsontable touch-editing stays limited - accept "view / light-edit" on phone
-- [ ] `static/css/media.css`: swap vh -> dvh (lightbox is otherwise fine)
+- [x] shell (mobile.css + `themes/builtin/css/layout.css`): under 700px `#rail-site` -> fixed bottom bar (row, height 48px, width auto); `#flyout[data-active]` -> full-screen overlay (position:fixed; inset:0; width:100vw; z-index:100) instead of shrinking `main`; `#layout-rail > main` -> padding 12px + padding-bottom 56px; drop the two existing ad-hoc max-width:700px flyout-width blocks
+- [x] `themes/builtin/base.gohtml`: add an Alpine-toggled hamburger button + a dismiss backdrop div for the flyout overlay, reusing `$store.rail` (hamburger toggles `fp-file`). `themes/example/` has no rail/flyout markup, nothing to mirror
+- [x] `themes/builtin/js/rail-core.js`: `initFlyoutResize` should bail out under 700px (resizer is meaningless full-screen)
+- [x] `.modal-content` mobile sizing (width calc(100vw - 24px), max-height 90dvh, overflow auto) done in the existing components.css 768px block; tap targets (`.rail-btn` `.fp-file-mode-btn` `.fp-browse-mode-btn` min 40px, `.fp-menu-item` min-height 40px) added to mobile.css. skipped the "consolidate scattered 640/768/900/1024 queries" refactor - too broad, risks existing behaviour
+- [x] `static/css/codemirroreditor.css` + `static/css/entryeditor.css`: 700px block - editor/inputs font-size 16px, editor full width. codemirror toolbar already has flex-wrap:wrap
+- [x] `static/css/tableeditor.css` + `static/css/kanban.css`: 700px block - `#table-editor-container`/`#handsontable-container` overflow-x:auto; `.kanban-board` overflow-x:auto + `.kanban-column` flex 0 0 80vw / min-width 80vw for horizontal swipe
+- [x] `static/css/media.css`: `vh` -> `dvh` (lightbox max-height only)
 - no new env vars expected, so no .env.example / dual-theme-template churn
 
 ## order

@@ -88,7 +88,7 @@
   background: var(--surface);
   padding: 12px;
   max-width: 90vw;
-  max-height: 90vh;
+  max-height: 90dvh;
 }
 
 #media-lightbox.media-lightbox::backdrop {
@@ -104,7 +104,7 @@
 .media-lightbox-content img,
 .media-lightbox-content video {
   max-width: 86vw;
-  max-height: 82vh;
+  max-height: 82dvh;
 }
 
 .media-lightbox-close {

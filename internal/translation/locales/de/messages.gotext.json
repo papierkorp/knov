@@ -192,6 +192,11 @@
       "translation": "Nach Metadaten durchsuchen"
     },
     {
+      "id": "Build",
+      "message": "Build",
+      "translation": ""
+    },
+    {
       "id": "Build time",
       "message": "Build time",
       "translation": "Build-Zeit"
@@ -2822,6 +2827,11 @@
       "translation": "Datei erfolgreich verschoben"
     },
     {
+      "id": "file not found",
+      "message": "file not found",
+      "translation": ""
+    },
+    {
       "id": "file path",
       "message": "file path",
       "translation": "Dateipfad"
@@ -3515,6 +3525,11 @@
       "id": "media files",
       "message": "media files",
       "translation": "Mediendateien"
+    },
+    {
+      "id": "menu",
+      "message": "menu",
+      "translation": ""
     },
     {
       "id": "message cannot be empty",

@@ -192,6 +192,11 @@
       "translation": ""
     },
     {
+      "id": "Build",
+      "message": "Build",
+      "translation": ""
+    },
+    {
       "id": "Build time",
       "message": "Build time",
       "translation": ""
@@ -2822,6 +2827,11 @@
       "translation": ""
     },
     {
+      "id": "file not found",
+      "message": "file not found",
+      "translation": ""
+    },
+    {
       "id": "file path",
       "message": "file path",
       "translation": ""
@@ -3514,6 +3524,11 @@
     {
       "id": "media files",
       "message": "media files",
+      "translation": ""
+    },
+    {
+      "id": "menu",
+      "message": "menu",
       "translation": ""
     },
     {

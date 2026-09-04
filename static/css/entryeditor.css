@@ -145,3 +145,11 @@
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
+
+/* mobile: 16px stops iOS/Android tap-to-zoom on focus */
+@media (max-width: 700px) {
+  .entry-file input,
+  .entry-title input {
+    font-size: 16px;
+  }
+}

@@ -4,16 +4,18 @@
    full-height layout
    ============================================= */
 
+/* dvh over vh so the mobile browser chrome doesn't clip the layout;
+   no vh fallback — the on-device (Termux) target is a current browser */
 body {
   overflow: hidden;
-  height: 100vh;
+  height: 100dvh;
 }
 
 #wrapper {
   display: flex;
   flex-direction: column;
   margin-top: var(--motd-height, 0px);
-  height: calc(100vh - var(--motd-height, 0px));
+  height: calc(100dvh - var(--motd-height, 0px));
   overflow: hidden;
 }
 
@@ -169,30 +171,18 @@ body[data-has-file="true"] .rail-sep-file {
 }
 
 /* =============================================
-   responsive
+   flyout state helpers
+   (responsive rules live in mobile.css)
    ============================================= */
-
-@media (max-width: 700px) {
-  #flyout[data-active] {
-    width: 200px;
-  }
-  .flyout-panel {
-    width: 100%;
-  }
-}
 
 /* suppress flyout transition during initial state restore */
 html.no-transition #flyout {
   transition: none !important;
 }
 
-/* pre-open flyout before JS runs if a panel was saved */
-html[data-init-panel] #flyout {
+/* pre-open flyout before JS runs if a panel was saved.
+   selector kept at low specificity on purpose so mobile.css's
+   `html[data-init-panel] #flyout` overrides it regardless of @import order */
+[data-init-panel] #flyout {
   width: var(--fw);
-}
-
-@media (max-width: 700px) {
-  html[data-init-panel] #flyout {
-    width: 200px;
-  }
 }

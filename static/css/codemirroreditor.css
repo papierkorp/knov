@@ -297,3 +297,13 @@
 #codemirror-editor .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionMatchedText {
   color: var(--bg);
 }
+
+/* mobile: 16px stops iOS/Android tap-to-zoom, editor spans full width */
+@media (max-width: 700px) {
+  #codemirror-editor {
+    width: 100%;
+  }
+  #codemirror-editor .cm-editor {
+    font-size: 16px;
+  }
+}

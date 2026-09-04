@@ -207,6 +207,7 @@ function initFlyoutResize(flyout) {
   if (saved) flyout.style.setProperty("--fw", saved + "px");
 
   resizer.addEventListener("mousedown", (e) => {
+    // under 700px the resizer is display:none (mobile.css), so this never fires there
     const startX = e.clientX;
     const startWidth = flyout.offsetWidth;
     resizer.classList.add("dragging");

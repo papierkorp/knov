@@ -481,3 +481,17 @@
 .kanban-menu-item--active:focus-visible {
   background: color-mix(in srgb, var(--primary) 22%, transparent);
 }
+
+/* ---- mobile: columns keep width, board swipes horizontally ---- */
+
+@media (max-width: 700px) {
+  .kanban-board {
+    overflow-x: auto;
+    gap: 0.5rem;
+  }
+
+  .kanban-column {
+    flex: 0 0 80vw;
+    min-width: 80vw;
+  }
+}

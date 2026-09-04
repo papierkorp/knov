@@ -18,6 +18,10 @@ prod: swaggo-api-init translation changelog docs-templatedata env-example
 	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME).exe ./
 
+# on-device android build, run via Termux (linux target, not android)
+mobile: swaggo-api-init translation
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/$(APP_NAME)-arm64 ./
+
 
 # ------------- docker -------------
 
@@ -122,4 +126,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev devd swaggo-api-init translation prod docker-build-dev docker-build-deployment docker-run-dev tree changelog release docs-templatedata env-example tempai killdev
+.PHONY: dev devd swaggo-api-init translation prod mobile docker-build-dev docker-build-deployment docker-run-dev tree changelog release docs-templatedata env-example tempai killdev
