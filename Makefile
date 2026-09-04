@@ -1,9 +1,9 @@
 # Variables
 APP_NAME  := knov
-VERSION   := $(shell date -u '+%Y')-$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
+BUILD     := $(shell date -u '+%Y')-$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
 LAST_COMMIT_MSG := $(shell git log -1 --pretty=%s)
-LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
+LDFLAGS   := -ldflags "-X 'knov/internal/version.Build=$(BUILD)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
 
 # ------------- actual usage -------------
 # make dev ARGS="--start-tests --remove"
@@ -52,15 +52,15 @@ changelog:
 	go run ./tools/genchangelog
 	@git add docs/changelogs/ docs/releases/
 
-# bump version.yaml first, then: make release  (writes the release notes, commits, tags)
+# bump internal/version/version.yaml first, then: make release  (writes the release notes, commits, tags)
 release:
 	@set -e; \
-	VERSION=$$(sed -n 's/^version:[[:space:]]*//p' version.yaml | tr -d '"'); \
-	test -n "$$VERSION" || { echo "no version in version.yaml"; exit 1; }; \
+	VERSION=$$(sed -n 's/^version:[[:space:]]*//p' internal/version/version.yaml | tr -d '"'); \
+	test -n "$$VERSION" || { echo "no version in internal/version/version.yaml"; exit 1; }; \
 	TAG="v$$VERSION"; \
 	git rev-parse -q --verify "refs/tags/$$TAG" >/dev/null && { echo "tag $$TAG already exists"; exit 1; } || true; \
 	go run ./tools/genchangelog -version "$$TAG"; \
-	git add version.yaml docs/changelogs/ docs/releases/; \
+	git add internal/version/version.yaml docs/changelogs/ docs/releases/; \
 	git commit -m "chore: release $$TAG"; \
 	git tag -a "$$TAG" -m "release $$TAG"; \
 	echo "created release commit + tag $$TAG - push with: git push --follow-tags"
@@ -117,7 +117,7 @@ tempai:
 	@echo "See tempai/FILE_LIST.txt for project structure (from 'make tree')"
 
 # windows prod
-# APP_NAME=knov && VERSION=$(date -u '+%Y')-$(git rev-list --count HEAD)-$(git rev-parse --short HEAD) && BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M') && LAST_COMMIT_MSG=$(git log -1 --pretty=%s) && swag init -g main.go -d . --exclude tempai -o internal/server/swagger && GOOS=windows GOARCH=amd64 go build -ldflags "-X 'knov/internal/version.Version=$VERSION' -X 'knov/internal/version.BuildTime=$BUILD_TIME UTC' -X 'knov/internal/version.LastCommitMessage=$LAST_COMMIT_MSG'" -o bin/knov.exe ./
+# APP_NAME=knov && BUILD=$(date -u '+%Y')-$(git rev-list --count HEAD)-$(git rev-parse --short HEAD) && BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M') && LAST_COMMIT_MSG=$(git log -1 --pretty=%s) && swag init -g main.go -d . --exclude tempai -o internal/server/swagger && GOOS=windows GOARCH=amd64 go build -ldflags "-X 'knov/internal/version.Build=$BUILD' -X 'knov/internal/version.BuildTime=$BUILD_TIME UTC' -X 'knov/internal/version.LastCommitMessage=$LAST_COMMIT_MSG'" -o bin/knov.exe ./
 
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./

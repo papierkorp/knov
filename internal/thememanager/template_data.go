@@ -111,7 +111,7 @@ type BaseTemplateData struct {
 	FileType          string                      // parser handler name for the current file (e.g. "markdown"), empty outside file pages
 	CodeBlockWrap     bool                        // whether code blocks should soft-wrap
 	T                 func(string, ...any) string // translation helper; prefer the "T" template func in templates
-	Version           string                      // app build version
+	Version           string                      // app release version
 	BuildTime         string                      // app build timestamp
 	SystemPage        bool                        // true on /system/* pages, for theme-specific styling
 	HeaderNavLinks    []NavLink                   // user-configured links shown in the header

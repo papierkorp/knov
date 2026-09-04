@@ -1,28 +1,49 @@
-// Package version holds build-time version information injected via -ldflags.
+// Package version holds version information: the release version from the
+// embedded version.yaml, plus build details injected via -ldflags.
 package version
 
 import (
+	_ "embed"
 	"os/exec"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
+//go:embed version.yaml
+var versionYAML []byte
+
 var (
-	Version           = ""
+	// Version is the human-facing release version (from version.yaml).
+	Version = ""
+	// Build identifies the exact commit a binary was built from
+	// (year-commitcount-shorthash), injected via -ldflags.
+	Build             = ""
 	BuildTime         = ""
 	BuildTimeParsed   time.Time
 	LastCommitMessage = ""
 )
 
 func init() {
+	var cfg struct {
+		Version string `yaml:"version"`
+	}
+	if err := yaml.Unmarshal(versionYAML, &cfg); err == nil {
+		Version = strings.TrimSpace(cfg.Version)
+	}
 	if Version == "" {
+		Version = "dev"
+	}
+
+	if Build == "" {
 		year := time.Now().UTC().Format("2006")
 		count, err1 := exec.Command("git", "rev-list", "--count", "HEAD").Output()
 		hash, err2 := exec.Command("git", "rev-parse", "--short", "HEAD").Output()
 		if err1 != nil || err2 != nil {
-			Version = "dev"
+			Build = "dev"
 		} else {
-			Version = year + "-" + strings.TrimSpace(string(count)) + "-" + strings.TrimSpace(string(hash)) + "-dev"
+			Build = year + "-" + strings.TrimSpace(string(count)) + "-" + strings.TrimSpace(string(hash)) + "-dev"
 		}
 	}
 	if LastCommitMessage == "" {

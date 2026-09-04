@@ -57,7 +57,7 @@ func Parse() Flags {
 	}
 
 	if showVersion {
-		fmt.Printf("knov %s (built %s)\n%s\n", version.Version, version.BuildTime, version.LastCommitMessage)
+		fmt.Printf("knov %s (build %s, built %s)\n%s\n", version.Version, version.Build, version.BuildTime, version.LastCommitMessage)
 		os.Exit(0)
 	}
 

@@ -589,6 +589,7 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 // VersionInfo is the JSON representation of the version/build-info table.
 type VersionInfo struct {
 	Version           string    `json:"version"`
+	Build             string    `json:"build"`
 	BuildTime         time.Time `json:"buildTime"`
 	GoVersion         string    `json:"goVersion"`
 	OS                string    `json:"os"`
@@ -601,6 +602,7 @@ type VersionInfo struct {
 func GetVersionInfo() VersionInfo {
 	return VersionInfo{
 		Version:           version.Version,
+		Build:             version.Build,
 		BuildTime:         version.BuildTimeParsed,
 		GoVersion:         runtime.Version(),
 		OS:                runtime.GOOS,
@@ -632,6 +634,7 @@ func RenderVersionInfo() string {
 </style>` +
 		`<table class="version-table"><tbody>` +
 		row(t("Version"), version.Version) +
+		row(t("Build"), version.Build) +
 		row(t("Build time"), configmanager.FormatDateTime(version.BuildTimeParsed)) +
 		row(t("Go version"), runtime.Version()) +
 		row(t("OS / Arch"), runtime.GOOS+"/"+runtime.GOARCH) +

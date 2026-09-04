@@ -13,11 +13,13 @@
   - todo editor add a date at the end for each click
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
+  - indent/outdent all headers by one codemirror editor
 - fixes
-  - releasenotes does not work
+  - if a filename has spaces - there are problems with the metadata
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
   - make books more handwritten save
+
 
 # Async follow up jobs
 
