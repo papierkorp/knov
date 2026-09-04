@@ -167,6 +167,34 @@ func (s *sqliteStorage) ListRunning() ([]JobRecord, error) {
 	return out, nil
 }
 
+func (s *sqliteStorage) List(limit int) ([]JobRecord, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	rows, err := s.db.Query(
+		`SELECT id, type, args, status, started_at, finished_at, error FROM jobs ORDER BY started_at DESC LIMIT ?`,
+		limit,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query jobs: %w", err)
+	}
+	defer rows.Close()
+
+	var out []JobRecord
+	for rows.Next() {
+		var r JobRecord
+		if err := rows.Scan(&r.ID, &r.Type, &r.Args, &r.Status, &r.StartedAt, &r.FinishedAt, &r.Error); err != nil {
+			return nil, fmt.Errorf("failed to scan job: %w", err)
+		}
+		out = append(out, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 // Purge only ever deletes rows whose status is not "running". The finished_at / datetime('now')
 // comparison assumes timestamps are stored in a lexicographically ordered, consistent format -
 // same assumption as notificationStorage.Purge's created_at comparison. maxCount / maxAgeDays

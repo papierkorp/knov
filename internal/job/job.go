@@ -16,14 +16,18 @@ var ErrNotRunning = errors.New("job not running")
 type JobStatus string
 
 const (
-	JobStatusRunning  JobStatus = "running"
-	JobStatusOK       JobStatus = "ok"
-	JobStatusError    JobStatus = "error"
-	JobStatusCanceled JobStatus = "canceled"
+	JobStatusRunning     JobStatus = "running"
+	JobStatusOK          JobStatus = "ok"
+	JobStatusError       JobStatus = "error"
+	JobStatusCanceled    JobStatus = "canceled"
+	JobStatusInterrupted JobStatus = "interrupted"
 )
 
-// JobRun records a single execution of a named job.
+// JobRun records a single execution of a named job. ID is only set for StartAsync jobs
+// (matching their jobStorage id) - it lets GetHistory tell a ring-buffer entry and its
+// durable jobStorage counterpart apart when merging the two.
 type JobRun struct {
+	ID         string
 	Name       string
 	StartedAt  time.Time
 	FinishedAt *time.Time

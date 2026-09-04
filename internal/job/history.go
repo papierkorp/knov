@@ -5,6 +5,9 @@ import (
 	"slices"
 	"sync"
 	"time"
+
+	"knov/internal/jobStorage"
+	"knov/internal/logging"
 )
 
 const historySize = 50
@@ -29,6 +32,57 @@ func GetRecentRuns() []JobRun {
 		out[i] = history[slot]
 	}
 	return out
+}
+
+// GetHistory returns recent job runs, newest first, merging the in-memory ring buffer (which
+// every run, sync or async, is recorded into while the process is up) with jobStorage's durable
+// rows for StartAsync jobs - so a StartAsync job's history survives a restart and outlives the
+// ring buffer's historySize window, instead of vanishing once evicted or on process restart.
+// Storage rows already present in the ring buffer are skipped by matching JobRun.ID.
+func GetHistory(limit int) []JobRun {
+	runs := GetRecentRuns()
+
+	seen := make(map[string]bool, len(runs))
+	for _, r := range runs {
+		if r.ID != "" {
+			seen[r.ID] = true
+		}
+	}
+
+	stored, err := jobStorage.List(limit)
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to load stored job history: %v", err)
+	}
+	for _, rec := range stored {
+		if seen[rec.ID] {
+			continue
+		}
+		runs = append(runs, jobRunFromRecord(rec))
+	}
+
+	slices.SortFunc(runs, func(a, b JobRun) int { return b.StartedAt.Compare(a.StartedAt) })
+	if len(runs) > limit {
+		runs = runs[:limit]
+	}
+	return runs
+}
+
+func jobRunFromRecord(rec jobStorage.JobRecord) JobRun {
+	status := JobStatusError
+	switch rec.Status {
+	case jobStorage.StatusRunning:
+		status = JobStatusRunning
+	case jobStorage.StatusDone:
+		status = JobStatusOK
+	case jobStorage.StatusCanceled:
+		status = JobStatusCanceled
+	case jobStorage.StatusInterrupted:
+		status = JobStatusInterrupted
+	}
+	return JobRun{
+		ID: rec.ID, Name: rec.Type, StartedAt: rec.StartedAt,
+		FinishedAt: rec.FinishedAt, Status: status, Error: rec.Error,
+	}
 }
 
 // RunDuration returns a finished run's elapsed time, or 0 if it is still running.
@@ -79,11 +133,11 @@ func IsRunning(name string) bool {
 	return false
 }
 
-func recordStart(name string) int {
+func recordStart(name, id string) int {
 	historyMu.Lock()
 	defer historyMu.Unlock()
 	slot := historyN % historySize
-	history[slot] = JobRun{Name: name, StartedAt: time.Now(), Status: JobStatusRunning}
+	history[slot] = JobRun{ID: id, Name: name, StartedAt: time.Now(), Status: JobStatusRunning}
 	historyN++
 	return slot
 }

@@ -69,14 +69,15 @@ func execute(mu *sync.Mutex, job Job) error {
 		return fmt.Errorf("%s: %w", job.Name(), ErrAlreadyRunning)
 	}
 	defer mu.Unlock()
-	return runLocked(context.Background(), job)
+	return runLocked(context.Background(), job, "")
 }
 
 // runLocked runs job and records start/finish in job history, assuming the caller already
-// holds job's dedup mutex (and will unlock it). Shared by execute (synchronous callers) and
-// StartAsync (background callers, which additionally persist to jobStorage around this).
-func runLocked(ctx context.Context, job Job) error {
-	slot := recordStart(job.Name())
+// holds job's dedup mutex (and will unlock it). Shared by execute (synchronous callers, id "")
+// and StartAsync (background callers, which additionally persist to jobStorage around this and
+// pass their jobStorage id so the ring-buffer entry can be matched back to it - see GetHistory).
+func runLocked(ctx context.Context, job Job, id string) error {
+	slot := recordStart(job.Name(), id)
 	defer func() {
 		if r := recover(); r != nil {
 			recordFinish(slot, JobStatusError, fmt.Sprintf("panic: %v", r), nil)
@@ -164,7 +165,7 @@ func runAsync(mu *sync.Mutex, job Job, id string) {
 					status, errMsg = jobStorage.StatusError, fmt.Sprintf("panic: %v", r)
 				}
 			}()
-			switch err := runLocked(ctx, job); {
+			switch err := runLocked(ctx, job, id); {
 			case errors.Is(err, context.Canceled):
 				status, errMsg = jobStorage.StatusCanceled, ""
 			case err != nil:

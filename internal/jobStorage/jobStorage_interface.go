@@ -35,6 +35,7 @@ type JobStorage interface {
 	UpdateStatus(id, status, errMsg string) error
 	Get(id string) (*JobRecord, error)
 	ListRunning() ([]JobRecord, error)
+	List(limit int) ([]JobRecord, error)
 	Purge(maxCount int, maxAgeDays int) error
 	GetBackendType() string
 }
@@ -74,6 +75,11 @@ func Get(id string) (*JobRecord, error) {
 // resume or mark interrupted on startup after a crash.
 func ListRunning() ([]JobRecord, error) {
 	return storage.ListRunning()
+}
+
+// List returns the most recent job records of any status, newest first, capped at limit.
+func List(limit int) ([]JobRecord, error) {
+	return storage.List(limit)
 }
 
 // Purge removes finished job records exceeding maxCount or older than maxAgeDays.

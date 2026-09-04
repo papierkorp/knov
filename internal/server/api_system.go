@@ -232,7 +232,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 	sortKey := r.URL.Query().Get("sort")
 	sortDir := r.URL.Query().Get("dir")
-	runs := job.GetRecentRuns()
+	runs := job.GetHistory(100)
 	job.SortRuns(runs, sortKey, sortDir)
 	writeResponse(w, r, runs, render.RenderJobsTable(runs, sortKey, sortDir))
 }
