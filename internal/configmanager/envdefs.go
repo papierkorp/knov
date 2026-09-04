@@ -129,6 +129,7 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── server ──
 	stringDef("KNOV_SERVER_PORT", "server", "port the app listens on", "1324", func(c *AppConfig) *string { return &c.ServerPort }),
+	stringDef("KNOV_SERVER_HOST", "server", "interface the app listens on; empty = all interfaces, use 127.0.0.1 to only\nallow local access", "", func(c *AppConfig) *string { return &c.ServerHost }),
 	stringDef("KNOV_MOTD", "server", "message shown in a banner at the top of every page (e.g. to label a test/copy\nenvironment); empty = hidden", "", func(c *AppConfig) *string { return &c.MOTD }),
 
 	// ── logging ── KNOV_LOG_LEVEL and KNOV_LOG_FILE_LEVEL have no AppConfig field: they're read

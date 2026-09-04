@@ -27,8 +27,8 @@ context / decisions already made:
 
 ## on-device / build
 - [x] add a `mobile` Makefile target: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/knov-arm64 ./` (Termux uses the linux target, not android)
-- [ ] `internal/search/grep.go:35` shells out to system `grep -r`. fine in Termux (`pkg install grep`), but a bare native wrapper app would need a pure-go fallback (filepath.WalkDir + scan). decide scope; at minimum handle grep-missing gracefully
-- [ ] `internal/server/server.go:53` `http.ListenAndServe(":"+port, r)` binds all interfaces - optional `KNOV_HOST` env to bind 127.0.0.1 (mild exposure on shared wifi). port is already env-configurable
+- [x] `internal/search/grep.go:35` shelled out to system `grep -r` - turned out to be dead code, never instantiated anywhere; the actual `KNOV_SEARCH_ENGINE=grep` mode (`searchFilesGrep` in search.go) was already pure-go (os.ReadFile + strings.Contains). deleted grep.go, no fallback needed
+- [x] `internal/server/server.go` `http.ListenAndServe(":"+port, r)` binds all interfaces - added `KNOV_SERVER_HOST` env (default empty = all interfaces, set to 127.0.0.1 to restrict to local access)
 - [ ] `internal/version/version.go` shells out to `git` for build metadata - only a fallback, ldflags cover prod builds, no action needed
 - [ ] verify data / storage / .git paths resolve under a Termux $HOME (they route through pathutils, likely fine) - needs a real run on a phone
 - [ ] real Termux test on an android device: run binary, open http://localhost:1324, check browse/edit/git/search work; document termux-wake-lock + tmux + Termux:Boot for keep-alive

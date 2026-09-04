@@ -37,9 +37,9 @@ func StartServerChi() {
 	// ----------------------------------- define chi server -----------------------------------
 	// ----------------------------------------------------------------------------------------
 	appConfig := configmanager.GetAppConfig()
-	port := appConfig.ServerPort
+	addr := appConfig.ServerHost + ":" + appConfig.ServerPort
 
-	fmt.Printf("starting chi http server on http://localhost:%s\n", port)
+	fmt.Printf("starting chi http server on http://localhost:%s\n", appConfig.ServerPort)
 	r := NewRouter()
 
 	// ----------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ func StartServerChi() {
 	// starts - retry the bind for a few seconds before giving up
 	var err error
 	for range 20 {
-		err = http.ListenAndServe(":"+port, r)
+		err = http.ListenAndServe(addr, r)
 		if !errors.Is(err, syscall.EADDRINUSE) {
 			break
 		}

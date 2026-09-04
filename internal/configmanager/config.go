@@ -36,6 +36,7 @@ type AppConfig struct {
 	LogsPath                    string
 	BackupsPath                 string
 	ServerPort                  string
+	ServerHost                  string
 	GitRemote                   string
 	GitRemoteBranch             string
 	GitAutoPush                 bool
