@@ -25,6 +25,10 @@ func codeMirrorToolbarGroups() [][]codeMirrorToolbarBtn {
 			{"heading", "3", "H3", "heading 3"},
 		},
 		{
+			{"headingIndent", "", `<i class="fa fa-indent"></i>`, "indent all headers"},
+			{"headingOutdent", "", `<i class="fa fa-outdent"></i>`, "outdent all headers"},
+		},
+		{
 			{"bold", "", "<strong>B</strong>", "bold"},
 			{"italic", "", "<em>I</em>", "italic"},
 			{"strikethrough", "", "<s>S</s>", "strikethrough"},
@@ -96,9 +100,25 @@ func jsCodeMirrorToolbar() string {
 			view.cmInsertWikiLink();
 			return;
 		}
+		if (btn.dataset.cmd === 'headingIndent' || btn.dataset.cmd === 'headingOutdent') {
+			shiftHeadings(view, btn.dataset.cmd === 'headingIndent' ? 1 : -1);
+			return;
+		}
 		var arg = btn.dataset.arg ? Number(btn.dataset.arg) : undefined;
 		window.mdCommands[btn.dataset.cmd](view, arg);
-	});`
+	});
+	function shiftHeadings(view, delta) {
+		var doc = view.state.doc, changes = [];
+		for (var ln = 1; ln <= doc.lines; ln++) {
+			var line = doc.line(ln);
+			var m = line.text.match(/^#{1,6}(?=\s)/);
+			if (!m) continue;
+			var level = Math.min(6, Math.max(1, m[0].length + delta));
+			changes.push({from: line.from, to: line.from + m[0].length, insert: '#'.repeat(level)});
+		}
+		if (changes.length) view.dispatch({changes: changes});
+		view.focus();
+	}`
 }
 
 // codeMirrorSettingsMenuHTML renders the gear-menu button, placed last in the toolbar, that

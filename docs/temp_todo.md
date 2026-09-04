@@ -12,7 +12,6 @@
   - todo editor add a date at the end for each click
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
-  - indent/outdent all headers by one codemirror editor
 - fixes
   -
 - chore
