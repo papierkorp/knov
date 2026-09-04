@@ -14,12 +14,45 @@
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
   - indent/outdent all headers by one codemirror editor
-  - can we make it work on mobile phones?
 - fixes
   -
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
   - make books more handwritten save
+
+# mobile adaption
+
+context / decisions already made:
+- goal is running the knov binary directly on the phone (no external hosting) AND a usable touch UI
+- knov is fully CGO-free (modernc.org/sqlite, go-git, fpdf, chroma all pure go). verified: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./` produces a ~56MB static aarch64 binary, no errors. `android/arm64` builds too.
+- android: works via Termux (install from F-Droid/GitHub, NOT Play Store). iOS: not feasible, skip.
+- decision: DO NOT fork a mobile theme. make `builtin` responsive instead - a theme is 23 gohtml + ~15 js + 5 css files already copied 3x, theme selection is a persisted user setting with no device detection, and the rail->bottombar / flyout->overlay change is pure css + one hamburger toggle.
+
+## on-device / build
+- [ ] add a `mobile` Makefile target: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/knov-arm64 ./` (Termux uses the linux target, not android)
+- [ ] `internal/search/grep.go:35` shells out to system `grep -r`. fine in Termux (`pkg install grep`), but a bare native wrapper app would need a pure-go fallback (filepath.WalkDir + scan). decide scope; at minimum handle grep-missing gracefully
+- [ ] `internal/server/server.go:53` `http.ListenAndServe(":"+port, r)` binds all interfaces - optional `KNOV_HOST` env to bind 127.0.0.1 (mild exposure on shared wifi). port is already env-configurable
+- [ ] `internal/version/version.go` shells out to `git` for build metadata - only a fallback, ldflags cover prod builds, no action needed
+- [ ] verify data / storage / .git paths resolve under a Termux $HOME (they route through pathutils, likely fine) - needs a real run on a phone
+- [ ] real Termux test on an android device: run binary, open http://localhost:1324, check browse/edit/git/search work; document termux-wake-lock + tmux + Termux:Boot for keep-alive
+
+## responsive UI
+- breakpoint: single `@media (max-width: 700px)`. put rules in a NEW `themes/builtin/css/mobile.css`, @import last from `themes/builtin/css/style.css`. mirror every change into `themes/example/` and `tools/docker_deployment/themes/builtin/`.
+- replace `100vh` with `100dvh` in the shell so mobile browser chrome doesn't clip the layout
+- [ ] shell (mobile.css + `themes/builtin/css/layout.css`): under 700px `#rail-site` -> fixed bottom bar (row, height 48px, width auto); `#flyout[data-active]` -> full-screen overlay (position:fixed; inset:0; width:100vw; z-index:100) instead of shrinking `main`; `#layout-rail > main` -> padding 12px + padding-bottom 56px; drop the two existing ad-hoc max-width:700px flyout-width blocks
+- [ ] `themes/builtin/base.gohtml`: add an Alpine-toggled hamburger button + a dismiss backdrop div for the flyout overlay, reusing `$store.rail`. mirror to `themes/example/base.gohtml`
+- [ ] `themes/builtin/js/rail-core.js`: `initFlyoutResize` should bail out under 700px (resizer is meaningless full-screen)
+- [ ] `themes/builtin/css/components.css`: consolidate the scattered 640/768/900/1024 queries; `.modal-content` -> width calc(100vw - 24px), max-height 90dvh, overflow auto; bump tap targets `.rail-btn` `.fp-menu-item` `.fp-file-mode-btn` `.fp-browse-mode-btn` to min 40px
+- [ ] `static/css/codemirroreditor.css` + `static/css/entryeditor.css`: inputs/editor font-size 16px (stops mobile auto-zoom), editor full width, toolbar flex-wrap:wrap
+- [ ] `static/css/tableeditor.css` + `static/css/kanban.css`: wrap Handsontable + kanban in overflow-x:auto scroll containers; kanban columns keep min-width + horizontal swipe. SortableJS drag already supports touch; Handsontable touch-editing stays limited - accept "view / light-edit" on phone
+- [ ] `static/css/media.css`: swap vh -> dvh (lightbox is otherwise fine)
+- no new env vars expected, so no .env.example / dual-theme-template churn
+
+## order
+1. Makefile target + real Termux test (proves the premise)
+2. shell responsive pass (layout/mobile.css + base.gohtml + rail-core.js) - gets browsing/reading working
+3. modal + tap-target + editor polish
+4. table/kanban triage (scroll containers, reduced touch editing)
 
 
 # Async follow up jobs

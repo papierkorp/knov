@@ -8,6 +8,8 @@
 //     (vX.Y.Z), containing only breaking changes, changes, features and fixes.
 //     Commits with "[skip changelog]" in the message are left out. A
 //     "BREAKING CHANGE:" trailer in the commit body is used as the note text.
+//     The oldest release has no previous tag to diff against, so its notes are
+//     taken from README.md instead of the full commit history.
 package main
 
 import (
@@ -203,17 +205,38 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 		os.Remove(p)
 	}
 
+	// the oldest release spans back to the repo root and has no previous tag to
+	// diff against, so its huge commit list is useless - use README.md instead.
+	initial := ""
+	for i := len(order) - 1; i >= 0; i-- {
+		if order[i] != "unreleased" {
+			initial = order[i]
+			break
+		}
+	}
+
 	for _, v := range order {
 		rd := releases[v]
-		if rd.empty() || (v == "unreleased" && !hasTags) {
+		if v == "unreleased" && !hasTags {
+			continue
+		}
+		if v != initial && rd.empty() {
 			continue
 		}
 		var buf strings.Builder
 		fmt.Fprintf(&buf, "# %s\n\n", v)
-		writeSection(&buf, "##", "breaking changes", rd.breaking)
-		writeSection(&buf, "##", "changes", rd.changes)
-		writeSection(&buf, "##", "features", rd.features)
-		writeSection(&buf, "##", "fixes", rd.fixes)
+		if v == initial {
+			readme, err := os.ReadFile("README.md")
+			if err != nil {
+				fatal(err)
+			}
+			buf.Write(readme)
+		} else {
+			writeSection(&buf, "##", "breaking changes", rd.breaking)
+			writeSection(&buf, "##", "changes", rd.changes)
+			writeSection(&buf, "##", "features", rd.features)
+			writeSection(&buf, "##", "fixes", rd.fixes)
+		}
 
 		path := "docs/releases/" + v + ".md"
 		if err := os.WriteFile(path, []byte(buf.String()), 0644); err != nil {
