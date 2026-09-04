@@ -138,7 +138,10 @@ function setupFilePage() {
   // edit pages — show file panel with metadata
   const editMatch = path.match(/^\/files\/edit\/(.+)/);
   if (editMatch) {
-    const filepath = editMatch[1].split("?")[0];
+    // location.pathname percent-encodes non-ASCII, so decode once here before
+    // re-encoding for query use - otherwise "ö" etc. gets double-encoded (%25C3…)
+    // and every ?filepath= lookup misses.
+    const filepath = decodeURIComponent(editMatch[1].split("?")[0]);
     const fp = encodeURIComponent(filepath);
     document.body.setAttribute("data-has-file", "true");
     Alpine.store("filePanel").hasFile = true;
@@ -175,11 +178,11 @@ function setupFilePage() {
   );
   if (!fileMatch) return false;
 
-  const filepath = fileMatch[1];
-  // filepath is a path segment from window.location.pathname: safe to concatenate
-  // into another path segment as-is, but "&"/"+" pass through unescaped there and
-  // would corrupt a query string (delimiter / space substitution), so query uses
-  // need their own encoding.
+  // location.pathname percent-encodes non-ASCII, so decode once here: path-segment
+  // concatenations below get re-encoded by the browser on send, and query uses go
+  // through encodeURIComponent. Without the decode "ö" etc. double-encodes (%25C3…)
+  // and every ?filepath= lookup misses.
+  const filepath = decodeURIComponent(fileMatch[1]);
   const fp = encodeURIComponent(filepath);
 
   // reveal file rail button

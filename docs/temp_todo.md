@@ -14,11 +14,13 @@
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
   - indent/outdent all headers by one codemirror editor
+  - can we make it work on mobile phones?
 - fixes
-  - if a filename has spaces - there are problems with the metadata
+  -
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
   - make books more handwritten save
+  - update readme to include the quickstart and make it smaller and move the feature description in another docs file
 
 
 # Async follow up jobs

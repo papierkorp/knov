@@ -6745,6 +6745,9 @@ const docTemplate = `{
                 "arch": {
                     "type": "string"
                 },
+                "build": {
+                    "type": "string"
+                },
                 "buildTime": {
                     "type": "string"
                 },

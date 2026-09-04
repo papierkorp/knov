@@ -37,6 +37,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseAllEditorTypes,
 		caseSanitizeKanbanTags,
 		caseAggregatesRespectHiddenPaths,
+		caseGetMetadataSpecialCharFilepath,
 	}
 
 	result := &test.SuiteResult{Suite: "metadata"}
