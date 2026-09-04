@@ -8,7 +8,6 @@
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - add s3 to backup storage
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
-  - add a image to the testfiles so setup/clean testdata also includes it
   - cache for books?
   - todo editor add a date at the end for each click
   - filter display: datalist

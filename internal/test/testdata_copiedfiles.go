@@ -6,7 +6,9 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
@@ -59,6 +61,11 @@ func copyEmbeddedDir(srcDir, destBase string) error {
 		}
 
 		destPath := filepath.Join(destBase, relPath)
+
+		// image assets belong in the media tree, not the notes tree
+		if configmanager.IsImageExtension(strings.ToLower(filepath.Ext(path))) {
+			destPath = filepath.Join(contentStorage.GetMediaPath(), "test", relPath)
+		}
 
 		if d.IsDir() {
 			return os.MkdirAll(destPath, 0755)
@@ -118,6 +125,10 @@ func getCopiedFilesMetadata() []*files.Metadata {
 			Path:   "docs/test/example_book.md",
 			Tags:   []string{"test-book", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeBook,
+		},
+		{
+			Path: "media/test/example_image.jpg",
+			Tags: []string{"test-image", "test-files", "kb-status-inbox"},
 		},
 	}
 }

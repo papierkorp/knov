@@ -38,6 +38,10 @@ are of great help. Sometimes ![A picture][sample image] is worth a thousand word
 
 ---
 
+Sample image: ![example image](media/test/example_image.jpg)
+
+---
+
 This [[SamplePage]] is a wiki link.
 
 ## Lists
