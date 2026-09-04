@@ -1,7 +1,7 @@
 # Configuration
 
-A deeper look at each system. For the initial setup and key env variables see `quickstart.md`.  
-All env variables go in your `.env` file, starting from `.env.example` - changes require a restart. See `/system/environment` for every recognized `KNOV_*` variable with its description, default and current value.
+A deeper look at each system. For the initial setup see `quickstart.md`.  
+All env variables go in your `.env` file, starting from `.env.example` - changes require a restart (exceptions noted below). See `/system/environment` for every recognized `KNOV_*` variable with its description, default and current value.
 
 ---
 
@@ -23,7 +23,7 @@ Knov uses git to version every file change automatically. You do not interact wi
   - You manually copy your changes back and save - no work is ever lost
   - Only one conflict copy is kept per file at a time
 
-**Auth options:** SSH key (`KNOV_GIT_SSH_KEY`) or HTTPS with a personal access token (`KNOV_GIT_TOKEN`). Token takes priority over password if both are set.
+**Auth options:** SSH key (`KNOV_GIT_SSH_KEY`) or HTTPS with a username + `KNOV_GIT_TOKEN` or `KNOV_GIT_PASSWORD` (token wins if both are set). If `KNOV_GIT_REMOTE` is set and no local repo exists yet, knov clones it on first start instead of init'ing an empty one.
 
 ---
 
@@ -40,19 +40,24 @@ The kanban board organises files into columns based on status tags.
 **Placing files on a board:**
 - Add one status tag to a file inside a configured board's folder to place it in a column - e.g. `kb-status-inbox`
 - Only one status tag per file is valid; if you add two the last one wins
+- The tag is `<prefix>-status-<status>`; the prefix defaults to `kb` (`KNOV_KANBAN_PREFIX`), the `-status-` middle is fixed
 
-**Configuring columns:**
-- Default columns: `inbox`, `inprogress`, `blocked`, `archive`
-- Change them with `KNOV_KANBAN_COLUMNS` (comma-separated) - these apply to every board
-- The tag prefix defaults to `kb-status` - change it with `KNOV_KANBAN_PREFIX`
-- Tags that start with the prefix but are not in the allowed column list are rejected
-- add a "archive" status which is not displayed as a column but activated as a separate drop zone with `KNOV_KANBAN_ARCHIVE_STATUS` - leave it empty to disable this feature
+**Statuses and columns:**
+- `KNOV_KANBAN_STATUS` (default `inbox, inprogress, blocked, archive`) defines every valid status - a status tag outside this list is rejected
+- `KNOV_KANBAN_COLUMNS` (default `inbox, inprogress, blocked`) is the subset shown as columns on the board; applies to every board
+- `KNOV_KANBAN_ARCHIVE_STATUS` (default `archive`) is shown as a separate drop zone while dragging rather than a column - leave empty to disable it
+- `KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS` (default empty = no restriction) - only show an ancestor in the ancestor filter when a descendant card has one of these statuses
+
+**Folder-sync (opt-in):**
+- `KNOV_KANBAN_FOLDERSYNC` - comma-separated board folder paths (subset of `KNOV_KANBAN_BOARDS`) where card position and on-disk location are kept in sync
+- Moving a card moves the file into `folder/path/<status>/`; moving a file on disk into such a folder sets its status tag (picked up by the file-sync cronjob)
+- If you move files by hand outside the app, run a manual file-sync before dragging those cards in the UI - the board doesn't know about an external move until the cronjob has run
 
 **Card colours:**
 - Non-status tags appear as chips on each card
 - Give specific tags a colour with `KNOV_KANBAN_TAG_COLORS` - e.g. `urgent:red,user1:green`
-- Give specific column cards a different style with `KNOV_KANBAN_CARD_STYLES` - e.g `archive:deleted, inprogress:highlighted, waiting:italic`
-- Any valid CSS colour name or hex value works
+- Style cards per status with `KNOV_KANBAN_CARD_STYLES` (`status:style`, comma-separated) - styles: `normal`, `italic`, `highlighted`, `deleted`; e.g. `archive:deleted, inprogress:highlighted, waiting:italic`
+- Any valid CSS colour name or hex value works for tag colours
 
 **Event log:**
 - Every time a card moves between columns an event is recorded (file, board folder, from/to status, timestamp)
@@ -114,7 +119,7 @@ Filters are saved queries that produce a live list of matching files.
 - The index file updates automatically whenever metadata changes - you do not need to re-save the filter
 - Filters are available as dashboard widgets and as browse targets
 
-**Supported fields:** title, collection, tags, folders, editor type, created/edited date, PARA fields, ancestry, references and more - the field list in the filter editor is the authoritative list.
+**Supported fields:** title, collection, tags, folders, editor type, created/edited date, kanban added/moved date, parent/child/ancestor relationships, references - the field list in the filter editor is the authoritative list.
 
 ---
 
@@ -136,7 +141,7 @@ Knov's own internal data (not your files - `docs/`/`media/` are plain files on d
 | Variable | Options | Default | Backs |
 |---|---|---|---|
 | `KNOV_CONFIG_STORAGE_PROVIDER` | `json` | `json` | app settings and filter configs |
-| `KNOV_METADATA_STORAGE_PROVIDER` | `json`, `yaml`, `sqlite` | `sqlite` | tags, dates, relationships, PARA fields per file |
+| `KNOV_METADATA_STORAGE_PROVIDER` | `json`, `yaml`, `sqlite` | `sqlite` | tags, dates, relationships per file |
 | `KNOV_CACHE_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | rendered-content cache |
 | `KNOV_SEARCH_STORAGE_PROVIDER` | `sqlite` | `sqlite` | full-text search index |
 | `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | kanban card move history |
@@ -148,7 +153,7 @@ Knov's own internal data (not your files - `docs/`/`media/` are plain files on d
 
 ## Metadata & Search
 
-Knov tracks metadata (tags, collection, dates, relationships, PARA fields) for every file automatically. You do not configure this - it runs in the background.
+Knov tracks metadata (tags, collection, dates, relationships) for every file automatically. You do not configure this - it runs in the background.
 
 **What you can influence:**
 - tags, parent relationships and references set manually per file in the sidebar
@@ -240,12 +245,12 @@ Available at **Admin => Backups** (`/system/backup`).
 
 ## Logging
 
-- `KNOV_LOG_LEVEL` - controls verbosity (`debug`, `info`, `warning`, `error`)
-- Logs rotate automatically; old log files are kept in `logs/`
+- `KNOV_LOG_LEVEL` (stdout) and `KNOV_LOG_FILE_LEVEL` (file) take effect immediately - no restart needed, unlike every other env var. The remaining `KNOV_LOG_*` vars are read once at startup.
+- File logging writes to `logs/app.log` and rotates automatically
 - For production use `info` or `warning` - `debug` is verbose
 
 ## favicon
 
 To upload/use a favicon:
-- use the settings of either the builtin or the rail theme
+- use the theme settings (supported by the builtin theme)
 - in the storage folder create a favicon folder and in there copy your favicon.ico, favicon.png or favicon.svg

@@ -26,13 +26,15 @@ Alternative to running the binary directly:
 ## First Run
 
 1. Copy `.env.example` to `.env` and adjust the values
-2. Run the binary or .exe - it creates all neccessary folders and a git repository automatically (if no one is configured)
+2. Run the binary or .exe
 3. Open your browser at `http://localhost:1324` (or your configured port)
 4. Check `/system/environment` any time to see every recognized `KNOV_*` variable with its description, default and current value
 
+Nothing else needs to be set up by hand. On the first start knov creates every folder it needs (see below), initialises a git repository if none is configured, and unpacks the builtin theme.
+
 ## Data Folder
 
-Everything knov stores lives in a folder and is created automatically:
+Everything knov stores lives in folders next to the binary, **all created automatically on first start**:
 
 - `data/docs/` - your files
 - `data/media/` - uploaded images and attachments
@@ -73,47 +75,11 @@ Back the data and storage folders up to keep everything safe.
 
 # Configuration
 
-All settings go in your `.env` file. Copy `.env.example` to get started — every option is listed there with a description. See `/system/environment` for the full live list.
-
-## Key Settings
-
-| Variable | Default | What it does |
-|---|---|---|
-| `KNOV_DATA_PATH` | `data` | Where your files, themes and config are stored |
-| `KNOV_SERVER_PORT` | `1324` | Port the app listens on |
-| `KNOV_MOTD` | empty | Banner shown at the top of every page - e.g. to label a test/copy setup |
-
-Language, theme and home dashboard are UI settings, not env vars - see **Settings**.
-
-## Git Sync
-
-| Variable | Notes |
-|---|---|
-| `KNOV_GIT_REMOTE` | Leave empty for local-only mode |
-| `KNOV_GIT_REMOTE_BRANCH` | Branch to push/pull (default: `main`) |
-| `KNOV_GIT_SSH_KEY` | Path to your SSH private key |
-| `KNOV_GIT_TOKEN` | Personal access token (HTTPS auth) |
-| `KNOV_GIT_AUTO_PUSH` | `true` to push on every save |
-
-## Kanban
-
-| Variable | Notes |
-|---|---|
-| `KNOV_KANBAN_BOARDS` | Boards to show — `folder/path:Display Name`, comma-separated |
-| `KNOV_KANBAN_PREFIX` | Tag prefix for status tags (default: `kb`) |
-| `KNOV_KANBAN_COLUMNS` | Comma-separated list of status columns |
-| `KNOV_KANBAN_TAG_COLORS` | Color chips per tag — e.g. `urgent:red,markus:green` |
-
-## File Behaviour
-
-| Variable | Notes |
-|---|---|
-| `KNOV_AUTOCREATE_TAGS` | Tags added to new files — `folder/path:tag` scopes to a folder (recursive), a bare tag applies everywhere |
-
-Whether index, filter and book files use a dedicated extension (`.index`, `.book`) instead of `.md` is a UI setting, not an env var.
+All settings go in your `.env` file. Copy `.env.example` to get started — every option is listed there with a description, and `/system/environment` shows the full live list. For a per-system breakdown of every `KNOV_*` variable see [configuration.md](configuration.md).
 
 ## Notes
 
 - Changes to `.env` require a restart
+- Language, theme and home dashboard are UI settings, not env vars - see **Settings**
 - Theme settings (dark mode, color scheme, custom CSS) are saved per user in the UI — no `.env` needed
 - The conflict copy filename is `filename.conflict.YYYYMMDD-HHMMSS.md` — always check for these if you share a remote with others

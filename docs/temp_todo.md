@@ -20,7 +20,6 @@
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
   - make books more handwritten save
-  - update readme to include the quickstart and make it smaller and move the feature description in another docs file
 
 
 # Async follow up jobs
