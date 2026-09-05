@@ -27,74 +27,117 @@ const (
 	EntryFile      = "file"
 	EntryTitle     = "title"
 	EntrySeparator = "separator"
-	// EntryUnknown is a non-blank line Parse did not recognize (a hand edit, or a syntax
-	// this parser predates). It is kept verbatim in Value so an editor round-trip
-	// (Parse -> edit -> ToMarkdown) never silently drops it; Compose ignores it.
+	// EntryUnknown is a run of consecutive lines Parse did not model (a hand edit, a pasted
+	// table, a fenced block, or a syntax this parser predates), coalesced into one block and
+	// kept verbatim in Value - interior blank lines and indentation intact. The round-trip
+	// (Parse -> edit -> ToMarkdown) never drops it; Compose emits it verbatim into the document.
 	EntryUnknown = "unknown"
 )
 
 // Entry is one line of a `.book`/`.index` file, in composition order: a file/section
-// reference (EntryFile, Value "path" or "path#anchor"), a "# text" heading (EntryTitle) or a
-// "---" rule (EntrySeparator). IncludeSubheaders round-trips as a trailing
-// "<!-- subheaders -->" comment and only affects a section reference.
+// reference (EntryFile, Value "path" or "path#anchor"), a "# text" heading (EntryTitle,
+// Level 1-6 for the "#" depth) or a "---" rule (EntrySeparator). IncludeSubheaders
+// round-trips as a trailing "<!-- subheaders -->" comment and only affects a section
+// reference.
 type Entry struct {
-	Type              string `json:"type"`
-	Value             string `json:"value"`
-	IncludeSubheaders bool   `json:"subheaders,omitempty"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
+	// Level is the "#" depth of a title (1-6); 0 on a non-title entry. Kept in range by
+	// ClampLevel - see there for where each guard runs.
+	Level             int  `json:"level,omitempty"`
+	IncludeSubheaders bool `json:"subheaders,omitempty"`
 }
 
-// Parse reads `.book`/`.index` markdown into entries: a bullet line with a "[[path]]"
-// wikilink is a file entry ("[[path#anchor]]" a section entry, a trailing
-// "<!-- subheaders -->" sets IncludeSubheaders), a "#"-prefixed line a title, "---" a
-// separator. Any other non-blank line becomes an EntryUnknown that round-trips verbatim.
+// Parse reads `.book`/`.index` markdown into entries: a list item whose body is a "[[path]]"
+// wikilink is a file entry ("[[path#anchor]]" makes it a section entry, a trailing
+// "<!-- subheaders -->" sets IncludeSubheaders), an ATX heading ("## text", 1-6 "#" then a
+// space) a title with its "#" count kept as Level, "---" a separator - each recognized only
+// flush-left. Any run of other lines (prose, an indented line, a "#" run that is not a
+// heading, 7+ "#") is coalesced into one EntryUnknown that round-trips verbatim.
 // The [[ ]] body is taken verbatim (alias syntax not split out here). Parse assumes the
-// shape ToMarkdown writes, not arbitrary markdown; lines inside ``` / ~~~ fences are
-// skipped (an unterminated fence runs to end of file - see markdown.FenceMask).
+// shape ToMarkdown writes, not arbitrary markdown; lines inside ``` / ~~~ fences are kept
+// verbatim inside the surrounding unknown block, never parsed as entries (an unterminated
+// fence runs to end of file - see markdown.FenceMask).
 func Parse(content string) []Entry {
 	var entries []Entry
+	content = strings.ReplaceAll(content, "\r\n", "\n") // a Windows hand edit / textarea POST must not leave stray \r in a verbatim block
 	lines := strings.Split(content, "\n")
 	inFence := markdown.FenceMask(lines)
 
+	// consecutive lines Parse doesn't model (prose, a pasted table, a fenced block) build up
+	// one raw block, flushed as a single EntryUnknown when a modeled entry or end of file
+	// ends the run; interior blank lines are kept, surrounding ones trimmed off
+	var block []string
+	flush := func() {
+		if raw := strings.Trim(strings.Join(block, "\n"), "\n"); raw != "" {
+			entries = append(entries, Entry{Type: EntryUnknown, Value: raw})
+		}
+		block = block[:0]
+	}
+
 	for i, line := range lines {
 		if inFence[i] {
+			block = append(block, line) // verbatim, never parsed as a modeled entry
 			continue
 		}
-		line = strings.TrimSpace(line)
+		trimmed := strings.TrimSpace(line)
+		// a hand-written line with leading indentation is nested structure (a sub-list, an
+		// indented code block); keep it verbatim instead of promoting + flattening it to a
+		// flush-left title/reference/separator
+		flushLeft := line == strings.TrimLeft(line, " \t")
 
 		switch {
-		case line == "---":
+		case flushLeft && trimmed == "---":
+			flush()
 			entries = append(entries, Entry{Type: EntrySeparator})
 
-		case strings.HasPrefix(line, "#"):
-			if text := strings.TrimSpace(strings.TrimLeft(line, "#")); text != "" {
-				entries = append(entries, Entry{Type: EntryTitle, Value: text})
-			}
+		case trimmed == "":
+			block = append(block, "")
 
 		default:
-			if line == "" {
-				continue
-			}
-			if rest := strings.TrimLeft(line, "-*+ \t"); strings.HasPrefix(rest, "[[") {
-				if end := strings.Index(rest[2:], "]]"); end >= 0 {
-					entries = append(entries, Entry{
-						Type:              EntryFile,
-						Value:             rest[2 : 2+end],
-						IncludeSubheaders: strings.Contains(rest[2+end+2:], "<!-- subheaders -->"),
-					})
+			// a real ATX heading ("## text") keeps its "#" depth as Level; a bare "#" run
+			// with no text, or 7+ "#", is not a heading and stays verbatim in the block
+			if flushLeft {
+				if level, text, ok := markdown.ATXHeading(trimmed); ok && text != "" {
+					flush()
+					entries = append(entries, Entry{Type: EntryTitle, Value: text, Level: level})
+					continue
+				}
+				// a "[[...]]" wikilink (with or without a bullet) may be a file/section reference
+				if ref, sub, ok := parseFileRef(strings.TrimLeft(trimmed, "-*+ \t")); ok {
+					flush()
+					entries = append(entries, Entry{Type: EntryFile, Value: ref, IncludeSubheaders: sub})
 					continue
 				}
 			}
-			// keep any other non-blank line verbatim rather than dropping it on save
-			entries = append(entries, Entry{Type: EntryUnknown, Value: line})
+			// keep any other line verbatim (indentation and all) rather than dropping it on save
+			block = append(block, line)
 		}
 	}
+	flush()
 
 	return entries
 }
 
+// parseFileRef reads a "[[path]]" / "[[path#anchor]]" wikilink from one list-item body (the
+// bullet already stripped); a trailing "<!-- subheaders -->" sets sub. Anything else is not
+// a reference, so ok is false and the caller keeps the line verbatim as an EntryUnknown.
+func parseFileRef(body string) (ref string, sub bool, ok bool) {
+	if !strings.HasPrefix(body, "[[") {
+		return "", false, false
+	}
+	end := strings.Index(body, "]]")
+	if end < 0 {
+		return "", false, false
+	}
+	return body[2:end], strings.Contains(body[end+2:], "<!-- subheaders -->"), true
+}
+
 // ToMarkdown serializes entries back to `.book`/`.index` markdown (inverse of Parse). File
 // entries are written as plain "- [[path]]" wikilinks so link detection picks them up;
-// alias syntax is never produced.
+// alias syntax is never produced. A title is written with its Level worth of "#". An
+// EntryUnknown block is written verbatim; an empty one (only reachable via a hand-crafted
+// POST) is dropped so a round-trip stays stable.
 func ToMarkdown(entries []Entry) string {
 	var sb strings.Builder
 	for _, e := range entries {
@@ -103,17 +146,16 @@ func ToMarkdown(entries []Entry) string {
 			sb.WriteString("\n---\n\n")
 		case EntryTitle:
 			if e.Value != "" {
-				fmt.Fprintf(&sb, "\n# %s\n\n", e.Value)
+				fmt.Fprintf(&sb, "\n%s %s\n\n", titleHashes(e.Level), e.Value)
 			}
 		case EntryFile:
-			if e.Value == "" {
-				continue
-			}
-			// round-trip IncludeSubheaders so the editor checkbox survives a reload
-			if e.IncludeSubheaders {
-				fmt.Fprintf(&sb, "- [[%s]] <!-- subheaders -->\n", e.Value)
-			} else {
-				fmt.Fprintf(&sb, "- [[%s]]\n", e.Value)
+			if e.Value != "" {
+				// round-trip IncludeSubheaders so the editor checkbox survives a reload
+				if e.IncludeSubheaders {
+					fmt.Fprintf(&sb, "- [[%s]] <!-- subheaders -->\n", e.Value)
+				} else {
+					fmt.Fprintf(&sb, "- [[%s]]\n", e.Value)
+				}
 			}
 		case EntryUnknown:
 			if e.Value != "" {
@@ -122,6 +164,22 @@ func ToMarkdown(entries []Entry) string {
 		}
 	}
 	return sb.String()
+}
+
+// ClampLevel maps a title "#" depth to the valid [1,6] range, treating a missing (0),
+// negative or out-of-range value as broken input and falling back to 1. The save handler
+// runs the form value through this; titleHashes applies it again as a last guard. (Parse
+// needs no clamp - markdown.ATXHeading only reports a level for a real 1-6 "#" heading.)
+func ClampLevel(level int) int {
+	if level < 1 || level > 6 {
+		return 1
+	}
+	return level
+}
+
+// titleHashes returns the "#"..."######" prefix for a title of the given level.
+func titleHashes(level int) string {
+	return strings.Repeat("#", ClampLevel(level))
 }
 
 // Read loads and parses the `.book` file at bookPath (a docs-relative path).
@@ -145,11 +203,12 @@ func Compose(bookPath string) (string, error) {
 }
 
 // ComposeEntries concatenates entries in order into one markdown document: title -> "# "
-// heading, separator -> "---", whole-file entry -> the file's content, section entry ->
-// that heading's section (optionally with subheaders); EntryUnknown is skipped. Entry
-// values resolve like wikilinks (parser.ResolveWikiTarget). A binary target, an unreadable
-// entry or one outside the docs root becomes a visible "> ⚠️ could not include ..." marker
-// rather than an error, so the view and exports never 500. bookPath is only for log context.
+// heading (Level "#"s), separator -> "---", whole-file entry -> the file's content, section
+// entry -> that heading's section (optionally with subheaders); an EntryUnknown block is
+// emitted verbatim (hand-written prose/markdown, e.g. a table or list). Entry values resolve
+// like wikilinks (parser.ResolveWikiTarget). A binary target, an unreadable entry or one
+// outside the docs root becomes a visible "> ⚠️ could not include ..." marker rather than
+// an error, so the view and exports never 500. bookPath is only for log context.
 func ComposeEntries(bookPath string, entries []Entry) string {
 	handler := contentHandler.GetHandler("markdown")
 	// no read cache: many sections from one file re-read it per entry. books are small
@@ -162,16 +221,20 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 
 	for _, e := range entries {
 		switch e.Type {
+		case EntryUnknown:
+			// one verbatim block (hand-written prose/markdown: a table, a list, a note)
+			if e.Value != "" {
+				parts = append(parts, e.Value)
+			}
+			continue
 		case EntryTitle:
 			if e.Value != "" {
-				parts = append(parts, "# "+e.Value)
+				parts = append(parts, titleHashes(e.Level)+" "+e.Value)
 			}
 			continue
 		case EntrySeparator:
 			parts = append(parts, "---")
 			continue
-		case EntryUnknown:
-			continue // kept in the `.book` file, omitted from the composed document
 		}
 
 		path, anchor := parser.ResolveWikiTarget(e.Value)

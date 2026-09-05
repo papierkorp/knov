@@ -182,11 +182,17 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		if entryType == "" {
 			break
 		}
-		entries = append(entries, book.Entry{
-			Type:              entryType,
-			Value:             r.FormValue(fmt.Sprintf("entries[%d][value]", i)),
+		entry := book.Entry{
+			Type: entryType,
+			// a multiline unknown block comes from a <textarea>, so the browser sends \r\n
+			Value:             strings.ReplaceAll(r.FormValue(fmt.Sprintf("entries[%d][value]", i)), "\r\n", "\n"),
 			IncludeSubheaders: kind.includeSubheaders && r.FormValue(fmt.Sprintf("entries[%d][subheaders]", i)) == "true",
-		})
+		}
+		if entryType == book.EntryTitle {
+			lvl, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("entries[%d][level]", i)))
+			entry.Level = book.ClampLevel(lvl)
+		}
+		entries = append(entries, entry)
 	}
 
 	// serialize back to markdown - a file entry is stored as a [[wikilink]] so link detection works

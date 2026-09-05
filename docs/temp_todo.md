@@ -11,47 +11,11 @@
   - cache for books?
   - todo editor add a date at the end for each click
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
+  - fulltext search is not really full text
 - fixes
   -
 - chore
-  - change index/book editor to use markdownlinks instead of wiki links
-  - make books more handwritten save
-
-# mobile adaption
-
-context / decisions already made:
-- goal is running the knov binary directly on the phone (no external hosting) AND a usable touch UI
-- knov is fully CGO-free (modernc.org/sqlite, go-git, fpdf, chroma all pure go). verified: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./` produces a ~56MB static aarch64 binary, no errors. `android/arm64` builds too.
-- android: works via Termux (install from F-Droid/GitHub, NOT Play Store). iOS: not feasible, skip.
-- decision: DO NOT fork a mobile theme. make `builtin` responsive instead - a theme is 23 gohtml + ~15 js + 5 css files already copied 3x, theme selection is a persisted user setting with no device detection, and the rail->bottombar / flyout->overlay change is pure css + one hamburger toggle.
-
-## on-device / build
-- [x] add a `mobile` Makefile target: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o bin/knov-arm64 ./` (Termux uses the linux target, not android)
-- [x] `internal/search/grep.go:35` shelled out to system `grep -r` - turned out to be dead code, never instantiated anywhere; the actual `KNOV_SEARCH_ENGINE=grep` mode (`searchFilesGrep` in search.go) was already pure-go (os.ReadFile + strings.Contains). deleted grep.go, no fallback needed
-- [x] `internal/server/server.go` `http.ListenAndServe(":"+port, r)` binds all interfaces - added `KNOV_SERVER_HOST` env (default empty = all interfaces, set to 127.0.0.1 to restrict to local access)
-- [ ] `internal/version/version.go` shells out to `git` for build metadata - only a fallback, ldflags cover prod builds, no action needed
-- [x] verify data / storage / .git paths resolve under a Termux $HOME - checked: DataPath defaults to `data` relative to cwd (configmanager/envdefs.go), pathutils only uses filepath.Join/Clean/ToSlash/IsAbs (no OS-specific assumptions), git.go's os.UserHomeDir() usage is just SSH key discovery. nothing reads a "traditional" home dir path, so Termux's $HOME needs no special handling - not yet confirmed on real hardware though
-- [ ] real Termux test on an android device: run binary, open http://localhost:1324, check browse/edit/git/search work - needs an actual phone, can't be done from this machine
-- [x] document termux-wake-lock + tmux + Termux:Boot for keep-alive - added `## Mobile (Termux)` section to docs/quickstart.md
-
-## responsive UI
-- breakpoint: single `@media (max-width: 700px)`. put rules in a NEW `themes/builtin/css/mobile.css`, @import last from `themes/builtin/css/style.css`. mirror every change into `themes/example/` and `tools/docker_deployment/themes/builtin/`.
-- replace `100vh` with `100dvh` in the shell so mobile browser chrome doesn't clip the layout
-- [x] shell (mobile.css + `themes/builtin/css/layout.css`): under 700px `#rail-site` -> fixed bottom bar (row, height 48px, width auto); `#flyout[data-active]` -> full-screen overlay (position:fixed; inset:0; width:100vw; z-index:100) instead of shrinking `main`; `#layout-rail > main` -> padding 12px + padding-bottom 56px; drop the two existing ad-hoc max-width:700px flyout-width blocks
-- [x] `themes/builtin/base.gohtml`: add an Alpine-toggled hamburger button + a dismiss backdrop div for the flyout overlay, reusing `$store.rail` (hamburger toggles `fp-file`). `themes/example/` has no rail/flyout markup, nothing to mirror
-- [x] `themes/builtin/js/rail-core.js`: `initFlyoutResize` should bail out under 700px (resizer is meaningless full-screen)
-- [x] `.modal-content` mobile sizing (width calc(100vw - 24px), max-height 90dvh, overflow auto) done in the existing components.css 768px block; tap targets (`.rail-btn` `.fp-file-mode-btn` `.fp-browse-mode-btn` min 40px, `.fp-menu-item` min-height 40px) added to mobile.css. skipped the "consolidate scattered 640/768/900/1024 queries" refactor - too broad, risks existing behaviour
-- [x] `static/css/codemirroreditor.css` + `static/css/entryeditor.css`: 700px block - editor/inputs font-size 16px, editor full width. codemirror toolbar already has flex-wrap:wrap
-- [x] `static/css/tableeditor.css` + `static/css/kanban.css`: 700px block - `#table-editor-container`/`#handsontable-container` overflow-x:auto; `.kanban-board` overflow-x:auto + `.kanban-column` flex 0 0 80vw / min-width 80vw for horizontal swipe
-- [x] `static/css/media.css`: `vh` -> `dvh` (lightbox max-height only)
-- no new env vars expected, so no .env.example / dual-theme-template churn
-
-## order
-1. Makefile target + real Termux test (proves the premise)
-2. shell responsive pass (layout/mobile.css + base.gohtml + rail-core.js) - gets browsing/reading working
-3. modal + tap-target + editor polish
-4. table/kanban triage (scroll containers, reduced touch editing)
-
+  - 
 
 # Async follow up jobs
 

@@ -207,6 +207,9 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 	case book.EntryTitle:
 		html.WriteString(`<div class="entry-title">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, t("title"))
+		// preserve-only: no UI control for the depth, but a hand-written "## title" keeps
+		// its "#" count across a save instead of collapsing to one "#" (new titles are H1)
+		fmt.Fprintf(&html, `<input type="hidden" name="entries[%d][level]" value="%d"/>`, index, entry.Level)
 		fmt.Fprintf(&html, `<input type="text" name="entries[%d][value]" value="%s" class="form-input" placeholder="%s"/>`, index, htmlpkg.EscapeString(entry.Value), t("enter title"))
 		html.WriteString(`</div>`)
 
@@ -236,11 +239,13 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		html.WriteString(`</div>`)
 
 	case book.EntryUnknown:
-		// a line book.Parse didn't recognize; show it read-only (still submits) so a hand
-		// edit round-trips through a save instead of being silently dropped
+		// a block book.Parse didn't model (prose, a pasted table, a fenced snippet); shown
+		// read-only but still submitted so a hand edit round-trips through a save instead of
+		// being silently dropped
+		rows := min(strings.Count(entry.Value, "\n")+1, 12)
 		html.WriteString(`<div class="entry-unknown">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, t("unrecognized entry (kept as-is)"))
-		fmt.Fprintf(&html, `<input type="text" name="entries[%d][value]" value="%s" class="form-input" readonly/>`, index, htmlpkg.EscapeString(entry.Value))
+		fmt.Fprintf(&html, `<textarea name="entries[%d][value]" class="form-input" rows="%d" readonly>%s</textarea>`, index, rows, htmlpkg.EscapeString(entry.Value))
 		html.WriteString(`</div>`)
 
 	default:

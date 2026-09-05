@@ -318,10 +318,13 @@ func caseBookCreateEditSave() test.CaseResult {
 	return cr
 }
 
-// caseBookUnknownEntryRoundTrip verifies book.Parse keeps a line it doesn't model as an
-// EntryUnknown that ToMarkdown writes back verbatim - so a hand edit in a `.book` file
-// survives an editor save instead of being silently dropped - and that ComposeEntries
-// leaves it out of the composed document.
+// caseBookUnknownEntryRoundTrip verifies book.Parse coalesces a run of lines it doesn't
+// model into one EntryUnknown that ToMarkdown writes back verbatim - so a hand edit in a
+// `.book` file survives an editor save instead of being silently dropped - that
+// ComposeEntries emits it verbatim into the composed document, that an interior blank line
+// (a paragraph break) is preserved, that leading indentation (a nested list) is kept, that
+// an indented line is never promoted to a flush-left entry, that a CRLF hand edit is
+// normalized to LF, and that a fenced block is kept rather than dropped.
 func caseBookUnknownEntryRoundTrip() test.CaseResult {
 	name := "book-unknown-entry"
 	const stray = "plain prose the editor does not model"
@@ -331,19 +334,101 @@ func caseBookUnknownEntryRoundTrip() test.CaseResult {
 	reparsed := book.Parse(roundTrip)
 	composed := book.ComposeEntries(name, entries)
 
+	// a hand-written block with an interior blank line: the blank must survive so the two
+	// paragraphs are not merged into one on round-trip or compose
+	const block = "| a | b |\n| - | - |\n\nafter the table"
+	blockEntries := book.Parse("- [[x.md]]\n\n" + block + "\n")
+
+	// a fenced block inside a hand edit is kept verbatim (fences and all), not dropped
+	const fenced = "```\nplain fenced\n```"
+	fencedEntries := book.Parse("- [[x.md]]\n\n" + fenced + "\n")
+
+	// a hand-written nested list: leading indentation must survive verbatim, not be flattened
+	const nested = "- outer\n  - inner\n    - deep"
+	nestedEntries := book.Parse("- [[x.md]]\n\n" + nested + "\n")
+
+	// an indented "- [[ref]]" / "## heading" is hand-written nesting: it stays verbatim,
+	// never promoted to a flush-left reference/title (which would flatten the indentation)
+	const indented = "  - [[child.md]]\n  ## indented heading\n  more"
+	indentedEntries := book.Parse("- [[top.md]]\n\n" + indented + "\n")
+
+	// a CRLF hand edit (Windows editor / textarea POST) is normalized to LF - no stray \r
+	// survives into the verbatim block
+	crlf := book.Parse("- [[x.md]]\r\n\r\nline one\r\nline two\r\n")
+
+	// an empty-Value unknown (only reachable via a hand-crafted POST) is dropped by
+	// ToMarkdown and ComposeEntries, never emitted as a stray blank line
+	strayBlank := []book.Entry{{Type: book.EntryUnknown}, {Type: book.EntryUnknown, Value: "x"}}
+
 	success := len(entries) == 3 &&
 		entries[1].Type == book.EntryUnknown && entries[1].Value == stray &&
 		strings.Contains(roundTrip, stray) && len(reparsed) == len(entries) &&
-		!strings.Contains(composed, stray)
+		strings.Contains(composed, stray) &&
+		strings.Contains(book.ToMarkdown(blockEntries), block) &&
+		strings.Contains(book.ComposeEntries(name, blockEntries), block) &&
+		len(fencedEntries) == 2 && fencedEntries[1].Value == fenced &&
+		strings.Contains(book.ToMarkdown(fencedEntries), fenced) &&
+		len(nestedEntries) == 2 && nestedEntries[1].Value == nested &&
+		strings.Contains(book.ComposeEntries(name, nestedEntries), nested) &&
+		len(indentedEntries) == 2 && indentedEntries[1].Type == book.EntryUnknown &&
+		indentedEntries[1].Value == indented &&
+		len(crlf) == 2 && crlf[1].Value == "line one\nline two" &&
+		book.ToMarkdown(strayBlank) == "x\n" &&
+		book.ComposeEntries(name, strayBlank) == "x"
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "unrecognized .book line round-trips through Parse->ToMarkdown->Parse verbatim and is omitted from the composed document",
+		Expected: "unrecognized .book line round-trips through Parse->ToMarkdown->Parse verbatim and is emitted verbatim into the composed document",
 		Actual:   fmt.Sprintf("entries=%+v roundTrip=%q composed=%q", entries, roundTrip, composed),
 		Success:  success,
 	}
 	if !success {
 		cr.Error = "unknown book entry was not preserved on round-trip"
+	}
+	return cr
+}
+
+// caseBookTitleLevelRoundTrip verifies book.Parse keeps the "#" depth of a hand-written
+// "## Sub Heading" as Entry.Level and that ToMarkdown / ComposeEntries write it back with
+// the same number of "#" rather than collapsing every title to a single "#" - that a line
+// that is not a real ATX heading (7+ "#", or "#" with no space) is kept verbatim rather
+// than promoted to a title - and that an out-of-range or missing Level is clamped to [1,6]
+// so a bogus form value can't be emitted.
+func caseBookTitleLevelRoundTrip() test.CaseResult {
+	name := "book-title-level"
+
+	entries := book.Parse("## Sub Heading\n\n- [[note.md]]\n")
+	roundTrip := book.ToMarkdown(entries)
+	composed := book.ComposeEntries(name, entries)
+
+	// not headings: 7+ "#" and "#tag" (no space) stay verbatim as an unknown block
+	deep := book.Parse("####### Too Deep\n\n#tag\n")
+
+	// clamp: a missing (0), negative or huge Level falls back to a single "#"
+	clamp := book.ToMarkdown([]book.Entry{
+		{Type: book.EntryTitle, Value: "Zero", Level: 0},
+		{Type: book.EntryTitle, Value: "Neg", Level: -3},
+		{Type: book.EntryTitle, Value: "Huge", Level: 999},
+	})
+
+	success := len(entries) == 2 &&
+		entries[0].Type == book.EntryTitle && entries[0].Level == 2 &&
+		strings.Contains(roundTrip, "\n## Sub Heading\n") &&
+		strings.HasPrefix(composed, "## Sub Heading\n\n") &&
+		len(deep) == 1 && deep[0].Type == book.EntryUnknown &&
+		deep[0].Value == "####### Too Deep\n\n#tag" &&
+		strings.Contains(clamp, "\n# Zero\n") &&
+		strings.Contains(clamp, "\n# Neg\n") &&
+		strings.Contains(clamp, "\n# Huge\n")
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "hand-written '## Sub Heading' round-trips through Parse->ToMarkdown with its heading depth kept as Level 2",
+		Actual:   fmt.Sprintf("entries=%+v roundTrip=%q composed=%q", entries, roundTrip, composed),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "book title heading level was not preserved on round-trip"
 	}
 	return cr
 }

@@ -37,7 +37,7 @@ type RawHeading struct {
 // ScanHeadings extracts every ATX heading from raw markdown (pre-split into
 // lines): 1-6 leading '#' followed by a space (or end of line), outside fenced
 // code blocks and outside a leading "---" front matter block. This approximates
-// the CommonMark ATX rule - see atxHeading for the corners it does not cover.
+// the CommonMark ATX rule - see ATXHeading for the corners it does not cover.
 func ScanHeadings(lines []string) []RawHeading {
 	mask := FenceMask(lines)
 	bodyStart := frontMatterBodyLine(lines)
@@ -47,7 +47,7 @@ func ScanHeadings(lines []string) []RawHeading {
 		if i < bodyStart || mask[i] {
 			continue
 		}
-		level, text, ok := atxHeading(line)
+		level, text, ok := ATXHeading(line)
 		if !ok {
 			continue
 		}
@@ -56,11 +56,12 @@ func ScanHeadings(lines []string) []RawHeading {
 	return headings
 }
 
-// atxHeading approximates CommonMark's ATX heading rule: 1-6 leading '#', then a
-// space/tab or end of line. Returns ok=false otherwise. Known simplifications: it
-// trims any amount of leading indentation (CommonMark stops at 3 spaces) and it
-// keeps a trailing "##" closing sequence in the text (CommonMark strips it).
-func atxHeading(line string) (level int, text string, ok bool) {
+// ATXHeading approximates CommonMark's ATX heading rule for one line: 1-6 leading '#',
+// then a space/tab or end of line, returning the level (1-6) and trimmed text. Returns
+// ok=false otherwise. Known simplifications: it trims any amount of leading indentation
+// (CommonMark stops at 3 spaces) and it keeps a trailing "##" closing sequence in the
+// text (CommonMark strips it).
+func ATXHeading(line string) (level int, text string, ok bool) {
 	t := strings.TrimSpace(line)
 	level = len(t) - len(strings.TrimLeft(t, "#"))
 	if level < 1 || level > 6 {

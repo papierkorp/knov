@@ -28,6 +28,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseIndexCreateEditSave,
 		caseBookCreateEditSave,
 		caseBookUnknownEntryRoundTrip,
+		caseBookTitleLevelRoundTrip,
 		caseBookPathContainment,
 		caseTableCreateEditSave,
 		caseSectionSave,
