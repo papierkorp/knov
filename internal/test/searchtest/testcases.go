@@ -67,6 +67,60 @@ func caseSearchFullContent() test.CaseResult {
 	return cr
 }
 
+// caseSearchLoneCharNoFlood guards that a query which sanitizes down to lone
+// ascii chars ("C++" -> "c", "+++" -> nothing) returns no results instead of a
+// common-token flood - a flood counts as a hit and suppresses the trigram
+// fallback the caller would otherwise reach.
+func caseSearchLoneCharNoFlood() test.CaseResult {
+	name := "search-lone-char-no-flood"
+
+	results, err := searchStorage.SearchContent("C++", 50)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "0 results (query collapses to a lone char)",
+		Actual:   fmt.Sprintf("%d results", len(results)),
+		Success:  len(results) == 0,
+	}
+	if len(results) != 0 {
+		cr.Error = "lone-char query flooded FTS instead of returning nothing"
+	}
+	return cr
+}
+
+// caseSearchMultiWordPartial guards the FTS5 MATCH query builder: a multi-word
+// query where one word doesn't match and the last is only a prefix of an
+// indexed token used to fail the old implicit-AND and return nothing.
+func caseSearchMultiWordPartial() test.CaseResult {
+	name := "search-multiword-partial"
+
+	results, err := searchStorage.SearchContent("zzznomatch "+betaContentMarkerPrefix, 10)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	found := false
+	for _, r := range results {
+		if strings.HasSuffix(r.Path, betaFile) {
+			found = true
+		}
+	}
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("results contain %s despite a non-matching word and a truncated last word", betaFile),
+		Actual:   fmt.Sprintf("%d results", len(results)),
+		Success:  found,
+	}
+	if !found {
+		cr.Error = fmt.Sprintf("%s not found - FTS5 MATCH query builder regressed to implicit AND", betaFile)
+	}
+	return cr
+}
+
 // caseSearchCommitReindexNoDuplicate guards that on-save indexing (which passes
 // an absolute path, as search.CommitFileAndIndex does) and the periodic reindex
 // (search.IndexAllFiles, docs-relative path) land on the same search_index row -
