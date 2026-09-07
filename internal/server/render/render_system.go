@@ -308,7 +308,10 @@ var _logCurrentOffset = 0;
 var _logLimit = 1000;
 
 document.addEventListener('htmx:before:request', function(e) {
-	if (e.target.id === 'log-entries' && (_logPaused || _logFileView)) e.preventDefault();
+	if (e.target.id !== 'log-entries' || !(_logPaused || _logFileView)) return;
+	// only suppress the automatic 5s poll, never an explicit htmx.ajax load
+	var url = (e.detail && e.detail.ctx && e.detail.ctx.request && e.detail.ctx.request.action) || '';
+	if (url.indexOf('/api/logs/file') === -1) e.preventDefault();
 });
 
 document.addEventListener('htmx:after:settle', function(e) {
