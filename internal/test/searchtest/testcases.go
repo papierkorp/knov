@@ -2,10 +2,14 @@ package searchtest
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/pathutils"
 	"knov/internal/search"
+	"knov/internal/searchStorage"
 	"knov/internal/test"
 )
 
@@ -59,6 +63,60 @@ func caseSearchFullContent() test.CaseResult {
 	}
 	if !found {
 		cr.Error = fmt.Sprintf("%s not found in full-content search results", betaFile)
+	}
+	return cr
+}
+
+// caseSearchCommitReindexNoDuplicate guards that on-save indexing (which passes
+// an absolute path, as search.CommitFileAndIndex does) and the periodic reindex
+// (search.IndexAllFiles, docs-relative path) land on the same search_index row -
+// searchStorage normalizes the key. A key mismatch (or a non-idempotent
+// IndexFile) leaves two rows for one file, and SearchContent returns one result
+// per row, so a duplicate shows up as two hits for the marker.
+func caseSearchCommitReindexNoDuplicate() test.CaseResult {
+	name := "search-commit-reindex-no-duplicate"
+
+	const marker = "CommitHookIndexMarker"
+	rel := testPath("commit-hook-indexed.md")
+	full := pathutils.ToDocsPath(rel)
+	content := fmt.Sprintf("# hook\n%s\n", marker)
+	if err := writeFile(rel, content); err != nil {
+		return errCase(name, err)
+	}
+	if err := saveMetadata(rel); err != nil {
+		return errCase(name, err)
+	}
+
+	// on-save index with the absolute path, mirroring search.CommitFileAndIndex
+	// without its git.CommitFile side effects.
+	if err := searchStorage.IndexFile(full, []byte(content)); err != nil {
+		return errCase(name, err)
+	}
+
+	// the reindex skips files whose mtime predates indexed_at, so push the mtime
+	// forward to force IndexAllFiles to re-write this file's row (with the
+	// docs-relative path) too.
+	future := time.Now().Add(time.Hour)
+	if err := os.Chtimes(full, future, future); err != nil {
+		return errCase(name, err)
+	}
+	if err := search.IndexAllFiles(); err != nil {
+		return errCase(name, err)
+	}
+
+	results, err := searchStorage.SearchContent(marker, 10)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "exactly 1 index row after absolute-path index + relative-path reindex",
+		Actual:   fmt.Sprintf("%d results", len(results)),
+		Success:  len(results) == 1,
+	}
+	if len(results) != 1 {
+		cr.Error = "on-save and reindex disagree on the index key, or IndexFile is not idempotent"
 	}
 	return cr
 }

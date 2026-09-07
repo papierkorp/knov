@@ -2421,6 +2421,8 @@ func searchDeletedFilesIndexByTitle(query string, limit int) ([]GitHistoryFile, 
 func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, error) {
 	results, err := searchDeletedFilesIndexByContent(query, limit)
 	if err == nil {
+		// an FTS query that matched nothing is a valid "no deleted file has this"
+		// - trust it and skip the commit-log walk.
 		return results, nil
 	}
 	logging.LogWarning(logging.KeyApp, "git: deleted-file content index search failed, falling back to commit-log walk: %v", err)
@@ -2441,14 +2443,16 @@ func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile
 	if err != nil {
 		return nil, err
 	}
+	// searchStorage keys the deleted FTS index on the clean relative path, while
+	// the persisted index keeps the docs/ prefix - normalize both sides to join.
 	byPath := make(map[string]GitHistoryFile, len(entries))
 	for _, e := range entries {
-		byPath[e.Path] = e
+		byPath[pathutils.ToRelative(e.Path)] = e
 	}
 
 	results := make([]GitHistoryFile, 0, len(ftsResults))
 	for _, r := range ftsResults {
-		if meta, ok := byPath[r.Path]; ok {
+		if meta, ok := byPath[pathutils.ToRelative(r.Path)]; ok {
 			results = append(results, meta)
 		} else {
 			results = append(results, GitHistoryFile{Name: filepath.Base(r.Path), Path: r.Path})
