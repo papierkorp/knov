@@ -3540,7 +3540,7 @@
         },
         "/api/logs": {
             "get": {
-                "description": "Returns the most recent in-memory log entries across every key as an HTML table, newest first. Powers the \"Live\" view on the admin logs page.",
+                "description": "Returns the most recent in-memory log entries across every key, newest first, as an HTML table (default) or - with raw=true - verbatim-style monospace lines. Powers the \"Live\" view on the admin logs page.",
                 "produces": [
                     "text/html"
                 ],
@@ -3548,9 +3548,17 @@
                     "system"
                 ],
                 "summary": "Get recent log entries",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "render as verbatim monospace lines instead of a table",
+                        "name": "raw",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "log table HTML",
+                        "description": "log HTML",
                         "schema": {
                             "type": "string"
                         }
@@ -3594,7 +3602,7 @@
         },
         "/api/logs/file": {
             "get": {
-                "description": "Returns lines from a log file for the file-view tab. name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log into one chronologically sorted table, or name is omitted for the active app.log. chunk/limit/offset page through a single file (not supported for name=all).",
+                "description": "Returns a log file as a structured, time-sorted table (default). name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log, or name is omitted for the active app.log. from/to (unix seconds) filter server-side. raw=true switches to reconstructed monospace lines; a single file with no from/to also keeps its session grouping and chunk/limit/offset paging.",
                 "produces": [
                     "text/html"
                 ],
@@ -3610,33 +3618,51 @@
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "description": "only entries at/after this unix-seconds time",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "only entries at/before this unix-seconds time",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "reconstructed monospace line view instead of the table",
+                        "name": "raw",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "description": "'summary' for a compact time+level+message view with a lower default limit (name=all only)",
+                        "description": "'summary' for a compact time+level+message view with a lower default limit",
                         "name": "view",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "max lines/entries to return (default 1000, or 20 for view=summary)",
+                        "description": "max lines/entries to return (raw single file default 1000; table default 5000, or 50000 with from/to, or 20 for view=summary)",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "lines to skip from the end, for paging a single file",
+                        "description": "raw single file: lines to skip from the end, for paging",
                         "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "return only the appended fragment, without the surrounding container",
+                        "description": "raw single file: return only the appended fragment, without the surrounding container",
                         "name": "chunk",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "log lines HTML",
+                        "description": "log HTML",
                         "schema": {
                             "type": "string"
                         }

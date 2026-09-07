@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/job"
@@ -41,57 +43,134 @@ func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Get recent log entries
-// @Description Returns the most recent in-memory log entries across every key as an HTML table, newest first. Powers the "Live" view on the admin logs page.
+// @Description Returns the most recent in-memory log entries across every key, newest first, as an HTML table (default) or - with raw=true - verbatim-style monospace lines. Powers the "Live" view on the admin logs page.
 // @Tags system
 // @Produce html
-// @Success 200 {string} string "log table HTML"
+// @Param raw query bool false "render as verbatim monospace lines instead of a table"
+// @Success 200 {string} string "log HTML"
 // @Router /api/logs [get]
 func handleAPIGetLogs(w http.ResponseWriter, r *http.Request) {
 	entries := logging.GetRecentEntries(200)
 
+	if r.URL.Query().Get("raw") == "true" {
+		writeResponse(w, r, entries, render.RawLogLines(entries))
+		return
+	}
 	writeResponse(w, r, entries, render.RenderLogTable(entries))
 }
 
-// handleAPIGetLogsFileAll merges every current (non-rotated) per-key log file
-// into one chronologically sorted table - the "All (merged)" file-view option.
-// Unlike a single file, this reads and re-sorts on every request rather than
-// supporting the "load earlier lines" chunking handleAPIGetLogsFile does.
-func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
-	summary := r.URL.Query().Get("view") == "summary"
-
-	limit := 1000
-	if summary {
-		limit = 20 // compact rail sidebar view - not the full history
+// parseUnixTimeParam parses a from/to query param carrying unix seconds
+// (chosen over a formatted string so the server needn't guess which date
+// display format the client used).
+func parseUnixTimeParam(s string) (time.Time, bool) {
+	if s == "" {
+		return time.Time{}, false
 	}
-	if v := r.URL.Query().Get("limit"); v != "" {
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return time.Unix(n, 0), true
+}
+
+// readLogFileLines reads every line of a log file, raising the scanner's token
+// limit so long lines (stack traces, embedded JSON) aren't silently truncated.
+// A mid-file read error is logged and the lines gathered so far are returned.
+func readLogFileLines(path string) ([]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		logging.LogError(logging.KeyApp, "failed to read log file %s: %v", filepath.Base(path), err)
+	}
+	return lines, nil
+}
+
+// handleAPIGetLogsParsed parses one or more per-key log files back into
+// structured entries, merges + time-sorts them and renders them as a table
+// (default), a compact summary or reconstructed raw lines. It serves the
+// single-file and "All (merged)" sources and any from/to range: the range
+// filters server-side and bounds the result, so the viewer can reach entries
+// older than the newest-N slice a capped read would return.
+func handleAPIGetLogsParsed(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	summary := q.Get("view") == "summary"
+	merged := q.Get("name") == "all"
+
+	from, hasFrom := parseUnixTimeParam(q.Get("from"))
+	to, hasTo := parseUnixTimeParam(q.Get("to"))
+	ranged := hasFrom || hasTo
+
+	// perFile caps how many recent entries each file contributes to a *merge*,
+	// so one chatty file (app.log) can't crowd quieter per-key files out of the
+	// newest-N result. It doesn't apply to a single file or a from/to range
+	// (there the range bounds the result). limit is the final cap.
+	perFile, limit := 300, 5000
+	switch {
+	case summary:
+		perFile, limit = 20, 20 // compact rail sidebar view - not the full history
+	case ranged:
+		limit = 50000
+	}
+	if v := q.Get("limit"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			limit = n
 		}
 	}
 
-	dir := logging.GetLogsDir()
-	var entries []logging.LogEntry
-	for _, name := range logging.GetAllLogFiles() {
-		if !strings.HasSuffix(name, ".log") {
-			continue // skip rotated .log.N parts
+	var paths []string
+	if merged {
+		dir := logging.GetLogsDir()
+		for _, name := range logging.GetAllLogFiles() {
+			if strings.HasSuffix(name, ".log") { // skip rotated .log.N parts
+				paths = append(paths, filepath.Join(dir, name))
+			}
 		}
+	} else {
+		path := resolveLogFilePath(r)
+		if path == "" {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
+			return
+		}
+		paths = []string{path}
+	}
 
-		f, err := os.Open(filepath.Join(dir, name))
+	var entries []logging.LogEntry
+	for _, path := range paths {
+		lines, err := readLogFileLines(path)
 		if err != nil {
 			continue
 		}
-		var lines []string
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		f.Close()
 
 		key := logging.KeyApp
-		if base := strings.TrimSuffix(name, ".log"); base != "app" {
+		if base := strings.TrimSuffix(filepath.Base(path), ".log"); base != "app" {
 			key = logging.Key(base)
 		}
-		entries = append(entries, render.ParseLogLines(key, lines)...)
+		fileEntries := render.ParseLogLines(key, lines)
+		if merged {
+			// session separators only make sense per file - across the merge
+			// they interleave into noise
+			fileEntries = slices.DeleteFunc(fileEntries, func(e logging.LogEntry) bool { return e.Level == "session" })
+		}
+		if ranged {
+			// entries are chronological within a file, so this keeps only the
+			// windowed slice - the merged set never grows past the range
+			fileEntries = slices.DeleteFunc(fileEntries, func(e logging.LogEntry) bool {
+				return (hasFrom && e.Time.Before(from)) || (hasTo && e.Time.After(to))
+			})
+		} else if merged && len(fileEntries) > perFile {
+			fileEntries = fileEntries[len(fileEntries)-perFile:]
+		}
+		entries = append(entries, fileEntries...)
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Time.Before(entries[j].Time) })
@@ -99,11 +178,14 @@ func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
 		entries = entries[len(entries)-limit:]
 	}
 
-	if summary {
+	switch {
+	case summary:
 		writeResponse(w, r, entries, render.RenderLogTableSummary(entries))
-		return
+	case q.Get("raw") == "true":
+		writeResponse(w, r, entries, render.RawLogLines(entries))
+	default:
+		writeResponse(w, r, entries, render.RenderLogTable(entries))
 	}
-	writeResponse(w, r, entries, render.RenderLogTable(entries))
 }
 
 func resolveLogFilePath(r *http.Request) string {
@@ -123,20 +205,29 @@ func resolveLogFilePath(r *http.Request) string {
 }
 
 // @Summary Get log file contents
-// @Description Returns lines from a log file for the file-view tab. name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log into one chronologically sorted table, or name is omitted for the active app.log. chunk/limit/offset page through a single file (not supported for name=all).
+// @Description Returns a log file as a structured, time-sorted table (default). name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log, or name is omitted for the active app.log. from/to (unix seconds) filter server-side. raw=true switches to reconstructed monospace lines; a single file with no from/to also keeps its session grouping and chunk/limit/offset paging.
 // @Tags system
 // @Produce html
 // @Param name query string false "log file name, or 'all' to merge every key's log"
-// @Param view query string false "'summary' for a compact time+level+message view with a lower default limit (name=all only)"
-// @Param limit query int false "max lines/entries to return (default 1000, or 20 for view=summary)"
-// @Param offset query int false "lines to skip from the end, for paging a single file"
-// @Param chunk query bool false "return only the appended fragment, without the surrounding container"
-// @Success 200 {string} string "log lines HTML"
+// @Param from query int false "only entries at/after this unix-seconds time"
+// @Param to query int false "only entries at/before this unix-seconds time"
+// @Param raw query bool false "reconstructed monospace line view instead of the table"
+// @Param view query string false "'summary' for a compact time+level+message view with a lower default limit"
+// @Param limit query int false "max lines/entries to return (raw single file default 1000; table default 5000, or 50000 with from/to, or 20 for view=summary)"
+// @Param offset query int false "raw single file: lines to skip from the end, for paging"
+// @Param chunk query bool false "raw single file: return only the appended fragment, without the surrounding container"
+// @Success 200 {string} string "log HTML"
 // @Failure 404 {string} string "file logging not enabled"
 // @Router /api/logs/file [get]
 func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Query().Get("name") == "all" {
-		handleAPIGetLogsFileAll(w, r)
+	q := r.URL.Query()
+	ranged := q.Get("from") != "" || q.Get("to") != ""
+	// only the plain paged raw view of a single file uses the streaming reader
+	// below; everything else (table/summary, the merged source, any from/to
+	// range) goes through the parsed pipeline.
+	singleRawPaged := q.Get("name") != "all" && q.Get("raw") == "true" && !ranged
+	if !singleRawPaged {
+		handleAPIGetLogsParsed(w, r)
 		return
 	}
 
@@ -147,31 +238,24 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := 1000
-	if v := r.URL.Query().Get("limit"); v != "" {
+	if v := q.Get("limit"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			limit = n
 		}
 	}
 	offset := 0
-	if v := r.URL.Query().Get("offset"); v != "" {
+	if v := q.Get("offset"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
 			offset = n
 		}
 	}
-	isChunk := r.URL.Query().Get("chunk") == "true"
+	isChunk := q.Get("chunk") == "true"
 
-	f, err := os.Open(path)
+	lines, err := readLogFileLines(path)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
 		return
-	}
-	defer f.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
 	}
 
 	total := len(lines)
