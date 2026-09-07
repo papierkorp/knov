@@ -12,6 +12,7 @@ import (
 	"knov/internal/backup"
 	"knov/internal/dbmigration"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 
 	_ "modernc.org/sqlite"
 )
@@ -154,22 +155,47 @@ func (ss *sqliteStorage) initialize() error {
 	return nil
 }
 
+// indexKey normalizes any path form (relative, prefixed or absolute; linux or
+// windows separators) to the one clean key every search table is keyed on, so
+// on-save indexing, the periodic reindex and delete all address the same row.
+func indexKey(path string) string {
+	return pathutils.ToRelative(path)
+}
+
 // IndexFile indexes a file's content for search
 func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
+	path = indexKey(path)
 	now := time.Now().UTC()
 
-	_, err := ss.db.Exec("INSERT OR REPLACE INTO search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
+	// one transaction: a failed FTS insert must not leave a fresh indexed_at
+	// behind, or the reindex would skip the file and it'd stay missing from FTS.
+	tx, err := ss.db.Begin()
 	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("INSERT OR REPLACE INTO search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now); err != nil {
 		logging.LogError(logging.KeyApp, "failed to store search content for %s: %v", path, err)
 		return err
 	}
 
-	_, err = ss.db.Exec("INSERT OR REPLACE INTO search_index (path, content) VALUES (?, ?)", path, string(content))
-	if err != nil {
+	// path is UNINDEXED, so INSERT OR REPLACE would append a dup, not replace it.
+	if _, err := tx.Exec("DELETE FROM search_index WHERE path = ?", path); err != nil {
+		logging.LogError(logging.KeyApp, "failed to clear old search index for %s: %v", path, err)
+		return err
+	}
+
+	if _, err := tx.Exec("INSERT INTO search_index (path, content) VALUES (?, ?)", path, string(content)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to index file %s: %v", path, err)
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		logging.LogError(logging.KeyApp, "failed to commit search index for %s: %v", path, err)
 		return err
 	}
 
@@ -182,6 +208,7 @@ func (ss *sqliteStorage) GetIndexedAt(path string) (time.Time, error) {
 	ss.mutex.RLock()
 	defer ss.mutex.RUnlock()
 
+	path = indexKey(path)
 	var t time.Time
 	err := ss.db.QueryRow("SELECT indexed_at FROM search_content WHERE path = ?", path).Scan(&t)
 	if err == sql.ErrNoRows {
@@ -195,6 +222,7 @@ func (ss *sqliteStorage) GetIndexedContent(path string) ([]byte, error) {
 	ss.mutex.RLock()
 	defer ss.mutex.RUnlock()
 
+	path = indexKey(path)
 	var content []byte
 	err := ss.db.QueryRow("SELECT content FROM search_content WHERE path = ?", path).Scan(&content)
 	if err == sql.ErrNoRows {
@@ -212,6 +240,7 @@ func (ss *sqliteStorage) DeleteIndexedContent(path string) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
+	path = indexKey(path)
 	// remove from FTS index
 	_, err := ss.db.Exec("DELETE FROM search_index WHERE path = ?", path)
 	if err != nil {
@@ -297,17 +326,33 @@ func (ss *sqliteStorage) IndexDeletedFile(path string, content []byte) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
+	path = indexKey(path)
 	now := time.Now().UTC()
 
-	_, err := ss.db.Exec("INSERT OR REPLACE INTO deleted_search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
+	tx, err := ss.db.Begin()
 	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("INSERT OR REPLACE INTO deleted_search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now); err != nil {
 		logging.LogError(logging.KeyApp, "failed to store deleted search content for %s: %v", path, err)
 		return err
 	}
 
-	_, err = ss.db.Exec("INSERT OR REPLACE INTO deleted_search_index (path, content) VALUES (?, ?)", path, string(content))
-	if err != nil {
+	// path is UNINDEXED, so INSERT OR REPLACE would append a dup, not replace it.
+	if _, err := tx.Exec("DELETE FROM deleted_search_index WHERE path = ?", path); err != nil {
+		logging.LogError(logging.KeyApp, "failed to clear old deleted search index for %s: %v", path, err)
+		return err
+	}
+
+	if _, err := tx.Exec("INSERT INTO deleted_search_index (path, content) VALUES (?, ?)", path, string(content)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to index deleted file %s: %v", path, err)
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		logging.LogError(logging.KeyApp, "failed to commit deleted search index for %s: %v", path, err)
 		return err
 	}
 

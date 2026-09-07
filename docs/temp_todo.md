@@ -11,11 +11,13 @@
   - cache for books?
   - todo editor add a date at the end for each click
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
-  - fulltext search is not really full text
+  - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
+  - multiview in theme
 - fixes
   -
 - chore
-  - 
+  - dont show slideout in /kanban
+
 
 # Async follow up jobs
 
