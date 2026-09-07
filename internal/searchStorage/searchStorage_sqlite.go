@@ -81,7 +81,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 // initialize runs all pending migrations for this storage.
 func (ss *sqliteStorage) initialize() error {
-	const version = 3
+	const version = 4
 	steps := []dbmigration.Migration{
 		{
 			Up: func(tx *sql.Tx) error {
@@ -147,12 +147,50 @@ func (ss *sqliteStorage) initialize() error {
 				return err
 			},
 		},
+		{
+			// move off `porter ascii` (folds only ASCII, so "Müller" never
+			// matches "muller") to a unicode tokenizer that also strips
+			// diacritics. The tokenizer is fixed at CREATE, so rebuild both FTS
+			// tables from the *_content tables.
+			Up:   retokenize("porter unicode61 remove_diacritics 2"),
+			Down: retokenize("porter ascii"),
+		},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("search storage migration failed: %w", err)
 	}
 	logging.LogDebug(logging.KeyApp, "search sqlite storage ready at version %d", version)
 	return nil
+}
+
+// retokenize returns a migration step that drops both FTS5 tables and recreates
+// them with the given tokenizer, repopulating from the content tables.
+func retokenize(tokenizer string) func(*sql.Tx) error {
+	return func(tx *sql.Tx) error {
+		// full-corpus rebuild in one step - log the row count so a slow first
+		// boot after upgrade isn't mistaken for a hang.
+		var rows int
+		_ = tx.QueryRow(`SELECT
+			(SELECT count(*) FROM search_content) +
+			(SELECT count(*) FROM deleted_search_content)`).Scan(&rows)
+		logging.LogInfo(logging.KeyDBMigration, "search: rebuilding FTS index (%d rows) with tokenizer %q", rows, tokenizer)
+		_, err := tx.Exec(fmt.Sprintf(`
+			DROP TABLE IF EXISTS search_index;
+			CREATE VIRTUAL TABLE search_index USING fts5(
+				path UNINDEXED, content, tokenize='%[1]s'
+			);
+			INSERT INTO search_index (path, content)
+				SELECT path, CAST(content AS TEXT) FROM search_content;
+
+			DROP TABLE IF EXISTS deleted_search_index;
+			CREATE VIRTUAL TABLE deleted_search_index USING fts5(
+				path UNINDEXED, content, tokenize='%[1]s'
+			);
+			INSERT INTO deleted_search_index (path, content)
+				SELECT path, CAST(content AS TEXT) FROM deleted_search_content;
+		`, tokenizer))
+		return err
+	}
 }
 
 // indexKey normalizes any path form (relative, prefixed or absolute; linux or
