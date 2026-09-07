@@ -12,10 +12,11 @@
   - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
+  - logs add a timefilter
 - fixes
   -
 - chore
-  - adress the log warning
+  - 
 
 
 # Async follow up jobs

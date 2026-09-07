@@ -4,6 +4,7 @@ package files
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -786,6 +787,11 @@ func updateTitle(metadata *Metadata) {
 
 	buffer := make([]byte, 1024)
 	n, err := file.Read(buffer)
+	if err == io.EOF && n == 0 {
+		// empty file — no title to extract
+		metadata.Title = ""
+		return
+	}
 	if err != nil && n == 0 {
 		logging.LogWarning(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
 		return
