@@ -154,9 +154,10 @@ func RenderLogTable(entries []logging.LogEntry) string {
 	for i := len(entries) - 1; i >= 0; i-- {
 		e := entries[i]
 		fmt.Fprintf(&sb,
-			`<tr class="log-level-%s log-key-%s"><td>%s</td><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
+			`<tr class="log-level-%s log-key-%s" data-ts="%d"><td>%s</td><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
 			html.EscapeString(e.Level),
 			html.EscapeString(e.Key.String()),
+			e.Time.Unix(),
 			html.EscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
 			html.EscapeString(e.Level),
 			html.EscapeString(e.Key.String()),
@@ -249,10 +250,17 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 	content := `<style>
 .system-logs { display: flex; flex-direction: column; gap: .75rem; }
 .system-logs-toolbar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-#log-filter { flex: 1; min-width: 160px; max-width: 280px; padding: .3rem .6rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
-#log-level-filter { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
-#log-key-filter { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
-#log-source-select { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
+.system-logs-filters { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); padding-top: .6rem; }
+.system-logs-toolbar input, .system-logs-toolbar select { height: 2rem; padding: 0 .55rem; border: 1px solid var(--border); border-radius: 6px; font-size: .875rem; background: var(--bg); color: var(--text); }
+.system-logs-toolbar input:focus, .system-logs-toolbar select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+#log-filter { flex: 1; min-width: 160px; max-width: 280px; }
+.log-range-group { display: flex; align-items: center; gap: .4rem; height: 2rem; padding: 0 .3rem 0 .55rem; border: 1px solid var(--border); border-radius: 6px; background: color-mix(in srgb, var(--text) 3%, transparent); }
+.log-range-group > i { color: var(--text-secondary); font-size: .8rem; }
+.log-range { display: flex; align-items: center; gap: .35rem; font-size: .78rem; color: var(--text-secondary); }
+.log-range input { height: 1.6rem; padding: 0 .35rem; border-color: transparent; }
+.log-range-sep { color: var(--text-secondary); }
+.log-range-clear { display: flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; padding: 0; border: none; border-radius: 4px; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.log-range-clear:hover { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); }
 .system-logs-download { padding: .3rem .75rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; text-decoration: none; color: inherit; }
 .system-logs-download:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
 .log-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
@@ -282,6 +290,12 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 </style>` +
 		`<div class="system-logs">` +
 		`<div class="system-logs-toolbar">` +
+		fileSelect +
+		fmt.Sprintf(`<button class="btn-secondary" onclick="refreshLogs()">%s</button>`, t("Refresh")) +
+		fmt.Sprintf(`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)"><span class="log-pause-label">%s</span><span class="log-resume-label">%s</span></button>`, t("Pause"), t("Resume")) +
+		downloadBtn +
+		`</div>` +
+		`<div class="system-logs-toolbar system-logs-filters">` +
 		fmt.Sprintf(`<input id="log-filter" type="search" placeholder="%s" autocomplete="off" oninput="applyLogFilters()">`, t("Filter logs…")) +
 		`<select id="log-level-filter" onchange="applyLogFilters()">` +
 		fmt.Sprintf(`<option value="">%s</option>`, t("all levels")) +
@@ -293,10 +307,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		`<select id="log-key-filter" onchange="applyLogFilters()">` +
 		keyFilterOptions.String() +
 		`</select>` +
-		fmt.Sprintf(`<button class="btn-secondary" onclick="refreshLogs()">%s</button>`, t("Refresh")) +
-		fmt.Sprintf(`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)"><span class="log-pause-label">%s</span><span class="log-resume-label">%s</span></button>`, t("Pause"), t("Resume")) +
-		fileSelect +
-		downloadBtn +
+		fmt.Sprintf(`<span class="log-range-group"><i class="fa fa-clock"></i><label class="log-range"><span>%s</span><input id="log-from" type="datetime-local" step="1" onchange="applyLogFilters()"></label><span class="log-range-sep">&ndash;</span><label class="log-range"><span>%s</span><input id="log-to" type="datetime-local" step="1" onchange="applyLogFilters()"></label><button type="button" class="log-range-clear" title="%s" onclick="clearLogRange()"><i class="fa fa-xmark"></i></button></span>`, t("from"), t("to"), t("Clear range")) +
 		`</div>` +
 		`<div id="log-entries" hx-get="/api/logs" hx-trigger="load, every 5s" hx-swap="innerHTML"></div>` +
 		`</div>` +
@@ -322,6 +333,10 @@ function applyLogFilters() {
 	var msgQ   = ((document.getElementById('log-filter')       || {}).value || '').toLowerCase().trim();
 	var level  = (document.getElementById('log-level-filter')  || {}).value || '';
 	var key    = (document.getElementById('log-key-filter')    || {}).value || '';
+	var fromV  = (document.getElementById('log-from') || {}).value || '';
+	var toV    = (document.getElementById('log-to')   || {}).value || '';
+	var fromTs = fromV ? new Date(fromV).getTime() / 1000 : -Infinity;
+	var toTs   = toV   ? new Date(toV).getTime()   / 1000 :  Infinity;
 	var container = document.getElementById('log-entries');
 	if (!container) return;
 	var rows = container.querySelectorAll('tbody tr');
@@ -337,8 +352,16 @@ function applyLogFilters() {
 		var matchMsg   = msgQ === ''  || row.textContent.toLowerCase().includes(msgQ);
 		var matchLevel = level === '' || row.classList.contains('log-level-' + level);
 		var matchKey   = key === ''   || row.classList.contains('log-key-' + key);
-		row.style.display = matchMsg && matchLevel && matchKey ? '' : 'none';
+		var ts         = parseInt(row.dataset.ts || '0', 10);
+		var matchTime  = ts >= fromTs && ts <= toTs;
+		row.style.display = matchMsg && matchLevel && matchKey && matchTime ? '' : 'none';
 	});
+}
+
+function clearLogRange() {
+	var f = document.getElementById('log-from'); if (f) f.value = '';
+	var tEl = document.getElementById('log-to'); if (tEl) tEl.value = '';
+	applyLogFilters();
 }
 
 function refreshLogs() {
