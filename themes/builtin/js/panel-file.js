@@ -118,10 +118,12 @@ function setupFilePage() {
   }
 
   // settings/admin pages — no file panel content applies here
-  if (path === "/settings" || path === "/admin") {
+  if (path === "/settings" || path === "/admin" || path === "/kanban") {
     closePanel();
     return true;
   }
+
+
 
   // media overview/detail pages — media has its own detail view, not fp-file
   if (path.startsWith("/browse/") || path.startsWith("/media/")) {

@@ -16,7 +16,7 @@
 - fixes
   -
 - chore
-  - dont show slideout in /kanban
+  - 
 
 
 # Async follow up jobs
