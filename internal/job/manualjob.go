@@ -114,8 +114,11 @@ func (j *filterJob) Run(_ context.Context) error {
 	var lastErr error
 	for _, id := range ids {
 		config, err := filter.GetFilterConfig(id)
-		if err != nil || config == nil {
+		if err != nil {
 			logging.LogWarning(logging.KeyFileSync, "cronjob: failed to load filter config %s: %v", id, err)
+			continue
+		}
+		if config == nil {
 			continue
 		}
 		if err := filter.GenerateFilterIndex(id, config); err != nil {

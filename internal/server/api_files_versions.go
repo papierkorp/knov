@@ -68,8 +68,12 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 
 	case "previous":
 		versions, err := git.GetFileHistory(fullPath)
-		if err != nil || len(versions) < 2 {
+		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get previous version for %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"), http.StatusNotFound)
+			return
+		}
+		if len(versions) < 2 {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"), http.StatusNotFound)
 			return
 		}
@@ -148,9 +152,13 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 
 	if toCommit == "previous" {
 		versions, err := git.GetFileHistory(fullPath)
-		if err != nil || len(versions) < 2 {
+		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get previous commit for %s: %v", filePath, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get previous commit"), http.StatusInternalServerError)
+			return
+		}
+		if len(versions) < 2 {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"), http.StatusNotFound)
 			return
 		}
 		for i, v := range versions {

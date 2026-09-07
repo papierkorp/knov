@@ -999,10 +999,14 @@ func UpdateLinksForSingleFile(filePath string) error {
 	unlock := lockMetaPath(filePath)
 
 	metadata, err := MetaDataGet(filePath)
-	if err != nil || metadata == nil {
+	if err != nil {
 		unlock()
 		logging.LogWarning(logging.KeyApp, "failed to get metadata for file %s: %v", filePath, err)
 		return err
+	}
+	if metadata == nil {
+		unlock()
+		return nil
 	}
 
 	fanOut := updateUsedLinks(metadata)

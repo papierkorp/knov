@@ -83,7 +83,9 @@ func renderStaticWidget(config *dashboard.StaticConfig) (string, error) {
 func renderTagsWidget() (string, error) {
 	tagCount, err := files.GetAllTagsCountFromCache()
 	if err != nil || len(tagCount) == 0 {
-		logging.LogError(logging.KeyApp, "failed to get cached tag counts, fallback to live data: %v", err)
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to get cached tag counts, fallback to live data: %v", err)
+		}
 		tagCount, err = files.GetAllTags()
 		if err != nil {
 			return "", err
@@ -96,7 +98,9 @@ func renderTagsWidget() (string, error) {
 func renderCollectionsWidget() (string, error) {
 	collectionCount, err := files.GetAllCollectionsCountFromCache()
 	if err != nil || len(collectionCount) == 0 {
-		logging.LogError(logging.KeyApp, "failed to get cached collection counts, fallback to live data: %v", err)
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to get cached collection counts, fallback to live data: %v", err)
+		}
 		collectionCount, err = files.GetAllCollections()
 		if err != nil {
 			return "", err
@@ -109,7 +113,9 @@ func renderCollectionsWidget() (string, error) {
 func renderFoldersWidget() (string, error) {
 	folderCount, err := files.GetAllFoldersCountFromCache()
 	if err != nil || len(folderCount) == 0 {
-		logging.LogError(logging.KeyApp, "failed to get cached folder counts, fallback to live data: %v", err)
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to get cached folder counts, fallback to live data: %v", err)
+		}
 		folderCount, err = files.GetAllFolders()
 		if err != nil {
 			return "", err

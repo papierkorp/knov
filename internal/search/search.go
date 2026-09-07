@@ -46,7 +46,7 @@ func IndexAllFiles() error {
 		// its content to rebuild the trigram index below
 		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
 			content, err := searchStorage.GetIndexedContent(file.Path)
-			if err != nil || content == nil {
+			if err != nil {
 				logging.LogWarning(logging.KeySearchReindex, "failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
 				continue
 			}

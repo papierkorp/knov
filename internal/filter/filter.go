@@ -439,8 +439,11 @@ func RegenerateAllIndexes() {
 	}
 	for _, id := range ids {
 		config, err := GetFilterConfig(id)
-		if err != nil || config == nil {
+		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to load filter config %s: %v", id, err)
+			continue
+		}
+		if config == nil {
 			continue
 		}
 		if err := GenerateFilterIndex(id, config); err != nil {
