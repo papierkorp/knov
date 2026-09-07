@@ -55,11 +55,17 @@ var (
 	// run concurrently, or two same-second-precision set names could race on the same target.
 	backupMu sync.Mutex
 
-	// asyncCancel holds the cancel func for every StartAsync job currently in flight, keyed by
-	// its jobStorage id - looked up by CancelAsync to request cancellation of a specific run.
-	asyncCancelMu sync.Mutex
-	asyncCancel   = map[string]context.CancelFunc{}
+	// asyncRuns holds every StartAsync job currently in flight, keyed by its jobStorage id:
+	// cancel is looked up by CancelAsync to stop a specific run, job by GetProgress to read a
+	// running job's live Progress counter.
+	asyncRunsMu sync.Mutex
+	asyncRuns   = map[string]asyncRun{}
 )
+
+type asyncRun struct {
+	cancel context.CancelFunc
+	job    Job
+}
 
 // execute runs job under mu, recording start/finish in job history.
 // Returns ErrAlreadyRunning if the job is already active, or the job's own error.
@@ -145,17 +151,17 @@ func resumeAsync(mu *sync.Mutex, job Job, id string) error {
 // CancelAsync(id) call can request early termination - see CancelAsync.
 func runAsync(mu *sync.Mutex, job Job, id string) {
 	ctx, cancel := context.WithCancel(context.Background())
-	asyncCancelMu.Lock()
-	asyncCancel[id] = cancel
-	asyncCancelMu.Unlock()
+	asyncRunsMu.Lock()
+	asyncRuns[id] = asyncRun{cancel: cancel, job: job}
+	asyncRunsMu.Unlock()
 
 	go func() {
 		defer mu.Unlock()
 		defer cancel()
 		defer func() {
-			asyncCancelMu.Lock()
-			delete(asyncCancel, id)
-			asyncCancelMu.Unlock()
+			asyncRunsMu.Lock()
+			delete(asyncRuns, id)
+			asyncRunsMu.Unlock()
 		}()
 
 		status, errMsg := jobStorage.StatusDone, ""
@@ -184,13 +190,13 @@ func runAsync(mu *sync.Mutex, job Job, id string) {
 // running to completion unaffected. Returns ErrNotRunning if id has no job currently in flight
 // (already finished, or never existed).
 func CancelAsync(id string) error {
-	asyncCancelMu.Lock()
-	cancel, ok := asyncCancel[id]
-	asyncCancelMu.Unlock()
+	asyncRunsMu.Lock()
+	run, ok := asyncRuns[id]
+	asyncRunsMu.Unlock()
 	if !ok {
 		return fmt.Errorf("job %s: %w", id, ErrNotRunning)
 	}
-	cancel()
+	run.cancel()
 	return nil
 }
 

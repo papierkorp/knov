@@ -29,7 +29,7 @@ var OnMetadataRebuild func()
 // MetaDataLinksRebuild rebuilds all link metadata from scratch. Cancellation is cooperative:
 // if ctx is canceled it stops before the next file and returns ctx.Err(), leaving the
 // metadata half-rebuilt (a re-run is needed to get back to a consistent state).
-func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
+func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done, total int)) error {
 	logging.LogInfo(key, "metadata links rebuild started")
 
 	paths, err := contentStorage.ListFiles()
@@ -37,6 +37,17 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 		return err
 	}
 	logging.LogInfo(key, "docs files to process: %d", len(paths))
+
+	// progress spans the four sequential passes over paths below (the two media passes are a
+	// small tail, not counted); bump() is called once per file in each.
+	progressTotal := 4 * len(paths)
+	progressDone := 0
+	bump := func() {
+		progressDone++
+		if report != nil {
+			report(progressDone, progressTotal)
+		}
+	}
 
 	// load media files once — used in zeroth pass and final media pass
 	allMediaFiles, err := GetAllMediaFiles()
@@ -74,6 +85,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
@@ -91,6 +103,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 
 		metadata := metaCache[normalizedPath]
@@ -146,6 +159,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 
 		metadata := metaCache[normalizedPath]
@@ -177,6 +191,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {

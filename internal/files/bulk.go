@@ -15,11 +15,14 @@ import (
 // warning - only paths that failed to remove for another reason (permission, locked file),
 // which are NOT safe to report as deleted since they may still exist on disk. Stops early if
 // ctx is canceled, leaving the remaining paths untouched.
-func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string) []string {
+func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string, report func(done, total int)) []string {
 	var deleted []string
-	for _, fullPath := range fullPaths {
+	for i, fullPath := range fullPaths {
 		if ctx.Err() != nil {
 			break
+		}
+		if report != nil {
+			report(i+1, len(fullPaths))
 		}
 		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
@@ -45,8 +48,11 @@ type BulkUpdatePatch struct {
 
 // BulkUpdateMetadata applies patch to every file in matched, then refreshes the aggregate
 // caches once. Returns the number of files updated and the number that failed.
-func BulkUpdateMetadata(key logging.Key, matched []File, patch BulkUpdatePatch) (updated, failed int) {
-	for _, f := range matched {
+func BulkUpdateMetadata(key logging.Key, matched []File, patch BulkUpdatePatch, report func(done, total int)) (updated, failed int) {
+	for i, f := range matched {
+		if report != nil {
+			report(i+1, len(matched))
+		}
 		if err := applyBulkUpdatePatch(f.Metadata, patch); err != nil {
 			logging.LogError(key, "bulk-update-metadata: failed to save %s: %v", f.Metadata.Path, err)
 			failed++

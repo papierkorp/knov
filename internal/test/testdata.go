@@ -88,7 +88,7 @@ func setupTestMetadata() error {
 
 	createTestFilter()
 
-	return files.MetaDataLinksRebuild(context.Background(), logging.KeyApp)
+	return files.MetaDataLinksRebuild(context.Background(), logging.KeyApp, nil)
 }
 
 func createTestFilter() {

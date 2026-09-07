@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 
+	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/translation"
 )
@@ -23,9 +24,13 @@ func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable boo
 				`<button type="button" class="job-status-cancel" hx-delete="/api/jobs/%s" hx-target="#job-status-%s" hx-swap="outerHTML">%s</button>`,
 				safeID, safeID, template.HTMLEscapeString(translation.SprintfForRequest(lang, "cancel")))
 		}
+		label := translation.SprintfForRequest(lang, "working...")
+		if done, total, ok := job.GetProgress(id); ok {
+			label = translation.SprintfForRequest(lang, "working... %d/%d", done, total)
+		}
 		return fmt.Sprintf(
 			`<span id="job-status-%s" class="job-status-pending" hx-get="/api/jobs/%s" hx-trigger="every 1s" hx-swap="outerHTML"><i class="fa fa-spinner fa-spin"></i> %s%s</span>`,
-			safeID, safeID, template.HTMLEscapeString(translation.SprintfForRequest(lang, "working...")), cancelBtn)
+			safeID, safeID, template.HTMLEscapeString(label), cancelBtn)
 	case jobStorage.StatusDone:
 		return fmt.Sprintf(`<span id="job-status-%s" class="job-status-done"></span>`, safeID)
 	case jobStorage.StatusCanceled:

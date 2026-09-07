@@ -37,7 +37,7 @@ func StartFullRebuild() (string, error) {
 	return StartAsync(&rebuildMu, &fullRebuildJob{}, "")
 }
 
-type fullRebuildJob struct{}
+type fullRebuildJob struct{ withProgress }
 
 func (j *fullRebuildJob) Name() string { return JobTypeFullRebuild }
 
@@ -82,7 +82,7 @@ func (j *fullRebuildJob) Run(ctx context.Context) (err error) {
 		return ctx.Err()
 	}
 
-	if err := files.MetaDataLinksRebuild(ctx, logging.KeyFullRebuild); err != nil {
+	if err := files.MetaDataLinksRebuild(ctx, logging.KeyFullRebuild, j.prog.Report); err != nil {
 		return fmt.Errorf("failed to rebuild metadata links: %w", err)
 	}
 
@@ -364,8 +364,8 @@ func (j *gitRepackJob) Run(_ context.Context) error {
 // re-deleting its snapshot after a crash) - see files.BulkDeleteFiles - so a resumed run still
 // commits those. Paths that failed to remove for another reason are excluded, since they may
 // still exist on disk and committing them as deleted would desync git/cache from actual state.
-func deleteResolvedFiles(ctx context.Context, logPrefix string, fullPaths []string) []string {
-	deleted := files.BulkDeleteFiles(ctx, logging.KeyApp, fullPaths)
+func deleteResolvedFiles(ctx context.Context, logPrefix string, fullPaths []string, report func(done, total int)) []string {
+	deleted := files.BulkDeleteFiles(ctx, logging.KeyApp, fullPaths, report)
 
 	for _, fullPath := range deleted {
 		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
@@ -394,6 +394,7 @@ type bulkDeleteFilesJob struct {
 	fullPaths           []string
 	groupType, groupVal string
 	result              BulkDeleteResult
+	withProgress
 }
 
 func (j *bulkDeleteFilesJob) Name() string { return JobTypeBulkDeleteFiles }
@@ -403,7 +404,7 @@ func (j *bulkDeleteFilesJob) Name() string { return JobTypeBulkDeleteFiles }
 func (j *bulkDeleteFilesJob) Resumable() bool { return true }
 
 func (j *bulkDeleteFilesJob) Run(ctx context.Context) error {
-	deleted := deleteResolvedFiles(ctx, "bulk-delete-files", j.fullPaths)
+	deleted := deleteResolvedFiles(ctx, "bulk-delete-files", j.fullPaths, j.prog.Report)
 	j.result = BulkDeleteResult{Deleted: len(deleted)}
 	return ctx.Err()
 }
@@ -426,6 +427,7 @@ type deleteFolderJob struct {
 	fullPath   string   // resolved absolute folder path, removed once its files are gone
 	fullPaths  []string // resolved absolute file paths to delete
 	result     BulkDeleteResult
+	withProgress
 }
 
 func (j *deleteFolderJob) Name() string { return JobTypeDeleteFolder }
@@ -436,7 +438,7 @@ func (j *deleteFolderJob) Name() string { return JobTypeDeleteFolder }
 func (j *deleteFolderJob) Resumable() bool { return true }
 
 func (j *deleteFolderJob) Run(ctx context.Context) error {
-	deleted := deleteResolvedFiles(ctx, "delete-folder", j.fullPaths)
+	deleted := deleteResolvedFiles(ctx, "delete-folder", j.fullPaths, j.prog.Report)
 	j.result = BulkDeleteResult{Deleted: len(deleted)}
 	if err := ctx.Err(); err != nil {
 		// canceled before every file was deleted - the folder is deliberately left as-is
@@ -501,12 +503,13 @@ type bulkUpdateMetadataJob struct {
 	matched []files.File
 	patch   files.BulkUpdatePatch
 	result  BulkUpdateResult
+	withProgress
 }
 
 func (j *bulkUpdateMetadataJob) Name() string { return "bulk-update-metadata" }
 
 func (j *bulkUpdateMetadataJob) Run(_ context.Context) error {
-	updated, failed := files.BulkUpdateMetadata(logging.KeyApp, j.matched, j.patch)
+	updated, failed := files.BulkUpdateMetadata(logging.KeyApp, j.matched, j.patch, j.prog.Report)
 	j.result = BulkUpdateResult{Updated: updated, Failed: failed}
 	return nil
 }

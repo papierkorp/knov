@@ -3609,7 +3609,7 @@ const docTemplate = `{
         },
         "/api/logs/file": {
             "get": {
-                "description": "Returns a log file as a structured, time-sorted table (default). name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log, or name is omitted for the active app.log. from/to (unix seconds) filter server-side. raw=true switches to reconstructed monospace lines; a single file with no from/to also keeps its session grouping and chunk/limit/offset paging.",
+                "description": "Parses per-key log file(s) into structured entries, merges + time-sorts them and renders a table (default), a summary (view=summary) or monospace lines (raw=true). name picks one key's file (e.g. file-sync.log), name=all merges every key's log, omitted uses app.log. from/to (unix seconds) filter server-side - the range reaches entries older than a plain load returns.",
                 "produces": [
                     "text/html"
                 ],
@@ -3650,20 +3650,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "max lines/entries to return (raw single file default 1000; table default 5000, or 50000 with from/to, or 20 for view=summary)",
+                        "description": "max entries to return (table default 5000, or 50000 with from/to, or 20 for view=summary)",
                         "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "raw single file: lines to skip from the end, for paging",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "raw single file: return only the appended fragment, without the surrounding container",
-                        "name": "chunk",
                         "in": "query"
                     }
                 ],
