@@ -145,7 +145,6 @@ func InitAppConfig() {
 		logging.LogError(logging.KeyApp, "failed to initialize git repository: %s", err)
 	}
 
-	logging.SetTimeFormatter(FormatDateTimeSeconds)
 	logging.LogInfo(logging.KeyApp, "app config initialized")
 }
 

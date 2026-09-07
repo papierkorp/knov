@@ -237,6 +237,11 @@
       "translation": "Verwaiste Dateien bereinigen"
     },
     {
+      "id": "Clear range",
+      "message": "Clear range",
+      "translation": ""
+    },
+    {
       "id": "Code Folding",
       "message": "Code Folding",
       "translation": "Code-Faltung"
@@ -255,6 +260,11 @@
       "id": "Color",
       "message": "Color",
       "translation": "Farbe"
+    },
+    {
+      "id": "Confirm",
+      "message": "Confirm",
+      "translation": ""
     },
     {
       "id": "Contents",
@@ -967,6 +977,11 @@
       "translation": "Pausieren"
     },
     {
+      "id": "Please confirm",
+      "message": "Please confirm",
+      "translation": ""
+    },
+    {
       "id": "Preview",
       "message": "Preview",
       "translation": "Vorschau"
@@ -985,6 +1000,11 @@
       "id": "Push",
       "message": "Push",
       "translation": "Push"
+    },
+    {
+      "id": "Raw",
+      "message": "Raw",
+      "translation": ""
     },
     {
       "id": "Rebuild Metadata",
@@ -1285,6 +1305,11 @@
       "id": "Todo",
       "message": "Todo",
       "translation": "Todo"
+    },
+    {
+      "id": "Toggle raw / table view",
+      "message": "Toggle raw / table view",
+      "translation": ""
     },
     {
       "id": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
@@ -4395,6 +4420,11 @@
       "id": "separator",
       "message": "separator",
       "translation": "Trenner"
+    },
+    {
+      "id": "session started",
+      "message": "session started",
+      "translation": ""
     },
     {
       "id": "set a dashboard ID to use as the home page",

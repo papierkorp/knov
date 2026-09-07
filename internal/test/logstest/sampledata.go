@@ -3,7 +3,6 @@ package logstest
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -22,29 +21,6 @@ func newMarker() string {
 // anyone skimming logs/in-app-tests.log (or app.log for caseDownloadPathGuard) can tell at a
 // glance that an "error" entry is an expected test probe rather than a real failure.
 const probeNote = "deliberate test probe, not a real error - "
-
-// inAppTestsLogPath is the file logging.KeyInAppTests writes to - already a real, shared log
-// key (the job scheduler logs every suite run's pass/fail summary here), reused directly
-// rather than inventing a synthetic key. KeyInAppTests is exempt from SetIsolatedLogsDir's
-// redirect (see internal/test/isolated.go), so this is logging.LogFilePath, not a
-// GetLogsDir()-based join - it wouldn't be under GetLogsDir() during a --start-tests run.
-func inAppTestsLogPath() string {
-	return logging.LogFilePath(logging.KeyInAppTests)
-}
-
-// readLines reads a log file's current lines, oldest first - same shape handleAPIGetLogsFile's
-// bufio.Scanner loop produces.
-func readLines(path string) ([]string, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	content := strings.TrimRight(string(data), "\n")
-	if content == "" {
-		return nil, nil
-	}
-	return strings.Split(content, "\n"), nil
-}
 
 // resolveDownloadPath replicates handleAPIDownloadLogs/handleAPIGetLogsFile's unexported
 // resolveLogFilePath path-safety rule (internal/server/api_system.go) for a named (non-default)

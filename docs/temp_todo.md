@@ -13,7 +13,7 @@
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
 - fixes
-  -
+  - 
 - chore
   - 
 

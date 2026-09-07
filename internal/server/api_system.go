@@ -95,13 +95,20 @@ func readLogFileLines(path string) ([]string, error) {
 	return lines, nil
 }
 
-// handleAPIGetLogsParsed parses one or more per-key log files back into
-// structured entries, merges + time-sorts them and renders them as a table
-// (default), a compact summary or reconstructed raw lines. It serves the
-// single-file and "All (merged)" sources and any from/to range: the range
-// filters server-side and bounds the result, so the viewer can reach entries
-// older than the newest-N slice a capped read would return.
-func handleAPIGetLogsParsed(w http.ResponseWriter, r *http.Request) {
+// @Summary Get log file contents
+// @Description Parses per-key log file(s) into structured entries, merges + time-sorts them and renders a table (default), a summary (view=summary) or monospace lines (raw=true). name picks one key's file (e.g. file-sync.log), name=all merges every key's log, omitted uses app.log. from/to (unix seconds) filter server-side - the range reaches entries older than a plain load returns.
+// @Tags system
+// @Produce html
+// @Param name query string false "log file name, or 'all' to merge every key's log"
+// @Param from query int false "only entries at/after this unix-seconds time"
+// @Param to query int false "only entries at/before this unix-seconds time"
+// @Param raw query bool false "reconstructed monospace line view instead of the table"
+// @Param view query string false "'summary' for a compact time+level+message view with a lower default limit"
+// @Param limit query int false "max entries to return (table default 5000, or 50000 with from/to, or 20 for view=summary)"
+// @Success 200 {string} string "log HTML"
+// @Failure 404 {string} string "file logging not enabled"
+// @Router /api/logs/file [get]
+func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	summary := q.Get("view") == "summary"
 	merged := q.Get("name") == "all"
@@ -148,6 +155,11 @@ func handleAPIGetLogsParsed(w http.ResponseWriter, r *http.Request) {
 	for _, path := range paths {
 		lines, err := readLogFileLines(path)
 		if err != nil {
+			if !merged { // a single file that won't open is an error, not an empty view
+				logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
+				return
+			}
 			continue
 		}
 
@@ -173,6 +185,7 @@ func handleAPIGetLogsParsed(w http.ResponseWriter, r *http.Request) {
 		entries = append(entries, fileEntries...)
 	}
 
+	// no paging: entries past this cap are only reachable by narrowing from/to
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Time.Before(entries[j].Time) })
 	if len(entries) > limit {
 		entries = entries[len(entries)-limit:]
@@ -202,107 +215,6 @@ func resolveLogFilePath(r *http.Request) string {
 		return ""
 	}
 	return p
-}
-
-// @Summary Get log file contents
-// @Description Returns a log file as a structured, time-sorted table (default). name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log, or name is omitted for the active app.log. from/to (unix seconds) filter server-side. raw=true switches to reconstructed monospace lines; a single file with no from/to also keeps its session grouping and chunk/limit/offset paging.
-// @Tags system
-// @Produce html
-// @Param name query string false "log file name, or 'all' to merge every key's log"
-// @Param from query int false "only entries at/after this unix-seconds time"
-// @Param to query int false "only entries at/before this unix-seconds time"
-// @Param raw query bool false "reconstructed monospace line view instead of the table"
-// @Param view query string false "'summary' for a compact time+level+message view with a lower default limit"
-// @Param limit query int false "max lines/entries to return (raw single file default 1000; table default 5000, or 50000 with from/to, or 20 for view=summary)"
-// @Param offset query int false "raw single file: lines to skip from the end, for paging"
-// @Param chunk query bool false "raw single file: return only the appended fragment, without the surrounding container"
-// @Success 200 {string} string "log HTML"
-// @Failure 404 {string} string "file logging not enabled"
-// @Router /api/logs/file [get]
-func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	ranged := q.Get("from") != "" || q.Get("to") != ""
-	// only the plain paged raw view of a single file uses the streaming reader
-	// below; everything else (table/summary, the merged source, any from/to
-	// range) goes through the parsed pipeline.
-	singleRawPaged := q.Get("name") != "all" && q.Get("raw") == "true" && !ranged
-	if !singleRawPaged {
-		handleAPIGetLogsParsed(w, r)
-		return
-	}
-
-	path := resolveLogFilePath(r)
-	if path == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
-		return
-	}
-
-	limit := 1000
-	if v := q.Get("limit"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			limit = n
-		}
-	}
-	offset := 0
-	if v := q.Get("offset"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
-			offset = n
-		}
-	}
-	isChunk := q.Get("chunk") == "true"
-
-	lines, err := readLogFileLines(path)
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
-		return
-	}
-
-	total := len(lines)
-	end := total - offset
-	if end < 0 {
-		end = 0
-	}
-	start := end - limit
-	if start < 0 {
-		start = 0
-	}
-	chunk := lines[start:end]
-	hasMore := start > 0
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if hasMore {
-		w.Header().Set("X-Log-Has-More", "true")
-	}
-
-	lang := configmanager.GetLanguage()
-	loadEarlierLabel := translation.SprintfForRequest(lang, "Load earlier lines")
-
-	var sb strings.Builder
-	if isChunk {
-		shown := offset + limit
-		if shown > total {
-			shown = total
-		}
-		w.Header().Set("X-Log-Line-Info", translation.SprintfForRequest(lang, "showing last %d of %d lines", shown, total))
-		sb.WriteString(render.LogFileLines(chunk))
-	} else {
-		sb.WriteString(`<div id="log-file-container">`)
-		if hasMore {
-			sb.WriteString(fmt.Sprintf(
-				`<div id="log-more-area"><button class="btn-secondary" onclick="loadMoreLogLines()">%s</button> <span id="log-line-info" class="log-line-info">%s</span></div>`,
-				loadEarlierLabel,
-				translation.SprintfForRequest(lang, "showing last %d of %d lines", end-start, total),
-			))
-		} else {
-			sb.WriteString(fmt.Sprintf(`<div id="log-more-area" style="display:none"><button class="btn-secondary" onclick="loadMoreLogLines()">%s</button></div>`, loadEarlierLabel))
-		}
-		sb.WriteString(`<div class="log-file-lines" id="log-file-lines">`)
-		sb.WriteString(render.LogFileLines(chunk))
-		sb.WriteString(`</div></div>`)
-	}
-
-	writeResponse(w, r, chunk, sb.String())
 }
 
 // @Summary Get job history

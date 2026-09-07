@@ -23,8 +23,6 @@ import (
 	"knov/internal/version"
 )
 
-var logSessionLineRe = regexp.MustCompile(`^=== session started .* ===$`)
-
 // logSessionTimeRe matches both session-separator shapes and captures the
 // timestamp: the per-key files' "=== session started <ts> ===" and app.log's
 // banner middle line "session started <ts>". logRuleLineRe drops app.log's
@@ -32,14 +30,12 @@ var logSessionLineRe = regexp.MustCompile(`^=== session started .* ===$`)
 var logSessionTimeRe = regexp.MustCompile(`^(?:=== )?session started (.+?)(?: ===)?$`)
 var logRuleLineRe = regexp.MustCompile(`^═+$`)
 
-// parseLogTimestamp parses a log-line timestamp, trying the configured
-// date/time display format first, then the default layout app.log's startup
-// banner is written in before the formatter is wired up.
+// parseLogTimestamp parses a log-line timestamp. Log files store timestamps in
+// a fixed RFC3339 machine format (see logging.formatLogTime), so this never
+// depends on the current date/time display settings - reformatting to the
+// display style/timezone happens later, at render time.
 func parseLogTimestamp(s string) (time.Time, bool) {
-	if t, err := configmanager.ParseDateTimeSeconds(s); err == nil {
-		return t, true
-	}
-	if t, err := time.ParseInLocation("2006-01-02 15:04:05", s, configmanager.GetTimezone()); err == nil {
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
 		return t, true
 	}
 	return time.Time{}, false
@@ -68,55 +64,15 @@ func detectLogLevel(line string) string {
 	return ""
 }
 
-// LogFileLines groups raw log lines into collapsible sections, one per
-// "=== session started ===" marker, with only the most recent session expanded.
-func LogFileLines(lines []string) string {
-	lastSessionIdx := -1
-	for i, line := range lines {
-		if logSessionLineRe.MatchString(strings.TrimSpace(line)) {
-			lastSessionIdx = i
-		}
-	}
-
-	var sb strings.Builder
-	inSession := false
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if logSessionLineRe.MatchString(trimmed) {
-			if inSession {
-				sb.WriteString(`</div></details>`)
-			}
-			openAttr := ""
-			if i == lastSessionIdx {
-				openAttr = " open"
-			}
-			fmt.Fprintf(&sb, `<details class="log-session"%s><summary>%s</summary><div class="log-session-lines">`, openAttr, html.EscapeString(trimmed))
-			inSession = true
-			continue
-		}
-		class := "log-line"
-		if level := detectLogLevel(line); level != "" {
-			class += " log-level-" + level
-		}
-		fmt.Fprintf(&sb, `<div class="%s">`, class)
-		sb.WriteString(html.EscapeString(line))
-		sb.WriteString(`</div>`)
-	}
-	if inSession {
-		sb.WriteString(`</div></details>`)
-	}
-	return sb.String()
-}
-
 // logMessageRe splits the "[<caller>]: <message>" tail common to every log
 // line shape once the timestamp/level/key prefix has been stripped.
 var logMessageRe = regexp.MustCompile(`^\[([^\]]*)\]:\s?(.*)$`)
 
 // ParseLogLines parses raw lines from a single key's log file into LogEntry
 // values, so files can be merged into one chronological view (the "All"
-// option in the file-view dropdown). Session separators and anything whose
-// leading timestamp doesn't match the currently configured date/time display
-// format are skipped - lines written under a since-changed format won't parse.
+// option in the file-view dropdown). Session separators become marker
+// entries; a line with no parseable leading timestamp is folded into the
+// previous entry as a message continuation.
 func ParseLogLines(key logging.Key, lines []string) []logging.LogEntry {
 	var entries []logging.LogEntry
 	for _, line := range lines {
@@ -126,7 +82,7 @@ func ParseLogLines(key logging.Key, lines []string) []logging.LogEntry {
 		}
 
 		// session separators become full-width marker rows in the single-file
-		// table (the merged view drops them - see handleAPIGetLogsParsed)
+		// table (the merged view drops them - see handleAPIGetLogsFile)
 		if m := logSessionTimeRe.FindStringSubmatch(trimmed); m != nil {
 			if t, ok := parseLogTimestamp(m[1]); ok {
 				entries = append(entries, logging.LogEntry{Time: t, Level: "session", Key: key})
@@ -134,14 +90,21 @@ func ParseLogLines(key logging.Key, lines []string) []logging.LogEntry {
 			continue
 		}
 
-		fields := strings.Fields(trimmed)
-		if len(fields) < 3 {
-			continue
+		var (
+			ts string
+			t  time.Time
+			ok bool
+		)
+		if fields := strings.Fields(trimmed); len(fields) >= 3 {
+			ts = fields[0]
+			t, ok = parseLogTimestamp(ts)
 		}
-		ts := fields[0] + " " + fields[1]
-
-		t, ok := parseLogTimestamp(ts)
 		if !ok {
+			// no parseable RFC3339 timestamp = continuation of the previous
+			// entry (stack traces, pretty JSON) - fold it in rather than drop it
+			if n := len(entries); n > 0 && entries[n-1].Level != "session" {
+				entries[n-1].Message += "\n" + line
+			}
 			continue
 		}
 
@@ -208,11 +171,10 @@ func RenderLogTable(entries []logging.LogEntry) string {
 }
 
 // RawLogLines reconstructs structured entries into monospace log lines (no
-// table, no session grouping) - the "raw" view for sources with no single
-// underlying file to stream byte-for-byte (live, merged, and any from/to
-// range). Continuation lines of multi-line messages are already gone by this
-// point, so it's "raw-styled" rather than truly verbatim. Each row carries the
-// level/key classes and data-ts the client filter needs. Newest first.
+// table, no session grouping) - the "raw" view. Rebuilt from parsed fields,
+// so it's "raw-styled" rather than byte-for-byte verbatim; folded-in message
+// continuations are kept. Each row carries the level/key classes and data-ts
+// the client filter needs. Newest first.
 func RawLogLines(entries []logging.LogEntry) string {
 	var sb strings.Builder
 	sb.WriteString(`<div class="log-file-lines">`)
@@ -298,6 +260,11 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 	logFiles := logging.GetAllLogFiles()
 	hasFile := len(logFiles) > 0
 
+	// display-tz offset (seconds east of UTC) so the datetime-local pickers read
+	// in that tz, not the browser's. captured once for "now" - a range across a
+	// DST boundary skews by the DST delta, fine for a log viewer.
+	_, tzOffset := time.Now().In(configmanager.GetTimezone()).Zone()
+
 	var keyFilterOptions strings.Builder
 	fmt.Fprintf(&keyFilterOptions, `<option value="">%s</option>`, t("all keys"))
 	for _, key := range logging.AvailableKeys {
@@ -342,7 +309,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-table td:nth-child(1) { white-space: nowrap; }
 .log-table td:nth-child(2) { white-space: nowrap; }
 .log-table td:nth-child(3) { white-space: nowrap; }
-.log-table td:nth-child(5) { word-break: break-word; }
+.log-table td:nth-child(5) { word-break: break-word; white-space: pre-wrap; }
 .log-table tr.log-session-row td { padding: .85rem .6rem .4rem; background: color-mix(in srgb, var(--text) 6%, transparent); border-top: 2px solid var(--border); border-bottom: none; text-align: center; font-weight: 600; font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; color: var(--text-secondary); }
 .log-caller { white-space: nowrap; font-size: .75rem; color: var(--text-secondary) !important; }
 .log-level-debug td { color: var(--text-secondary); }
@@ -351,17 +318,12 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-level-error td { background: color-mix(in srgb, var(--danger) 15%, transparent); }
 .log-level-error td:nth-child(2) { color: var(--danger); font-weight: 600; }
 .log-file-lines { font-family: ui-monospace, monospace; font-size: .8rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; display: flex; flex-direction: column; }
-.log-session { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; }
-.log-session > summary { cursor: pointer; padding: .3rem .5rem; font-weight: 600; background: color-mix(in srgb, var(--text) 3%, transparent); }
-.log-session-lines { display: flex; flex-direction: column; }
 .log-line { padding: .15rem .55rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 35%, transparent); }
 .log-line:nth-child(even) { background: color-mix(in srgb, var(--text) 3%, transparent); }
 .log-line.log-level-debug { color: var(--text-secondary); }
 .log-line.log-level-warning { background: color-mix(in srgb, var(--warning) 15%, transparent); box-shadow: inset 3px 0 0 var(--warning); }
 .log-line.log-level-error { background: color-mix(in srgb, var(--danger) 15%, transparent); box-shadow: inset 3px 0 0 var(--danger); }
 .log-line:hover { background: color-mix(in srgb, var(--text) 7%, transparent); }
-#log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
-.log-line-info { font-size: .8rem; color: var(--text-secondary); }
 #log-view-toggle.active { background: var(--primary); color: var(--bg); }
 #log-pause-btn .log-resume-label { display: none; }
 #log-pause-btn.active .log-pause-label { display: none; }
@@ -389,23 +351,27 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		`</select>` +
 		fmt.Sprintf(`<span class="log-range-group"><i class="fa fa-clock"></i><label class="log-range"><span>%s</span><input id="log-from" type="datetime-local" step="1" onchange="onLogRangeChange()"></label><span class="log-range-sep">&ndash;</span><label class="log-range"><span>%s</span><input id="log-to" type="datetime-local" step="1" onchange="onLogRangeChange()"></label><button type="button" class="log-range-clear" title="%s" onclick="clearLogRange()"><i class="fa fa-xmark"></i></button></span>`, t("from"), t("to"), t("Clear range")) +
 		`</div>` +
-		`<div id="log-entries" hx-get="/api/logs" hx-trigger="load" hx-swap="innerHTML"></div>` +
+		`<div id="log-entries" hx-get="/api/logs" hx-vals='js:{"raw": _logRaw ? "true" : ""}' hx-trigger="load, poll-tick" hx-swap="innerHTML"></div>` +
 		`</div>` +
 		`<script>
 var _logPaused = false;
 var _logFileView = false;
 var _logRaw = false;
 var _logCurrentFile = '';
-var _logCurrentOffset = 0;
-var _logLimit = 1000;
+var _logTzOffsetSec = ` + strconv.Itoa(tzOffset) + `;
 
-// the live tail polls itself - explicit loads (refresh, source/raw/range change)
-// go straight through reloadLogSource(), so there is no request to intercept
-function pollLive() {
-	if (_logPaused || _logFileView) return;
-	htmx.ajax('GET', liveURL(), {target: '#log-entries', swap: 'innerHTML'});
+// htmx 4 dropped declarative trigger filters, so a plain interval fires
+// "poll-tick" on #log-entries - but only for the live view, and not while paused
+function shouldPollLive() { return !_logPaused && !_logFileView; }
+setInterval(function() { if (shouldPollLive()) htmx.trigger('#log-entries', 'poll-tick'); }, 5000);
+
+// datetime-local value (wall-clock in the display tz) -> unix seconds, so
+// range compares match each row's data-ts regardless of the browser tz
+function pickerToUnix(v) {
+	if (!v) return null;
+	if (v.length === 16) v += ':00'; // datetime-local omits :00 seconds
+	return Math.floor(Date.parse(v + 'Z') / 1000) - _logTzOffsetSec;
 }
-setInterval(pollLive, 5000);
 
 document.addEventListener('htmx:after:settle', function(e) {
 	if (e.target.id === 'log-entries') applyLogFilters();
@@ -415,10 +381,10 @@ function applyLogFilters() {
 	var msgQ   = ((document.getElementById('log-filter')       || {}).value || '').toLowerCase().trim();
 	var level  = (document.getElementById('log-level-filter')  || {}).value || '';
 	var key    = (document.getElementById('log-key-filter')    || {}).value || '';
-	var fromV  = (document.getElementById('log-from') || {}).value || '';
-	var toV    = (document.getElementById('log-to')   || {}).value || '';
-	var fromTs = fromV ? new Date(fromV).getTime() / 1000 : -Infinity;
-	var toTs   = toV   ? new Date(toV).getTime()   / 1000 :  Infinity;
+	var fromU  = pickerToUnix((document.getElementById('log-from') || {}).value || '');
+	var toU    = pickerToUnix((document.getElementById('log-to')   || {}).value || '');
+	var fromTs = fromU === null ? -Infinity : fromU;
+	var toTs   = toU   === null ?  Infinity : toU;
 	var container = document.getElementById('log-entries');
 	if (!container) return;
 	var rows = container.querySelectorAll('tbody tr');
@@ -426,8 +392,8 @@ function applyLogFilters() {
 		container.querySelectorAll('.log-line').forEach(function(row) {
 			var matchMsg   = msgQ === ''  || row.textContent.toLowerCase().includes(msgQ);
 			var matchLevel = level === '' || row.classList.contains('log-level-' + level);
-			// key/time filters only apply to reconstructed rows that carry the
-			// attributes - streaming single-file raw lines have neither
+			// app.log raw lines carry no log-key- class (they are all KeyApp),
+			// so a key filter must not hide them
 			var hasKey     = row.className.indexOf('log-key-') !== -1;
 			var matchKey   = key === '' || !hasKey || row.classList.contains('log-key-' + key);
 			var ts         = row.dataset.ts ? parseInt(row.dataset.ts, 10) : null;
@@ -452,15 +418,14 @@ function applyLogFilters() {
 	});
 }
 
-// logRangeParams returns the from/to inputs as server query params (unix
-// seconds), so file views can fetch exactly the wanted window instead of
-// only being able to narrow whatever newest-N slice is already loaded.
+// from/to inputs as unix-seconds query params, so a file view fetches exactly
+// the wanted window - how you reach entries older than a plain load returns.
 function logRangeParams() {
 	var p = [];
-	var f  = (document.getElementById('log-from') || {}).value || '';
-	var tt = (document.getElementById('log-to')   || {}).value || '';
-	if (f)  p.push('from=' + Math.floor(new Date(f).getTime()  / 1000));
-	if (tt) p.push('to='   + Math.floor(new Date(tt).getTime() / 1000));
+	var f  = pickerToUnix((document.getElementById('log-from') || {}).value || '');
+	var tt = pickerToUnix((document.getElementById('log-to')   || {}).value || '');
+	if (f  !== null) p.push('from=' + f);
+	if (tt !== null) p.push('to='   + tt);
 	return p;
 }
 
@@ -475,7 +440,6 @@ function liveURL() {
 }
 
 function reloadLogSource() {
-	_logCurrentOffset = 0;
 	htmx.ajax('GET', _logFileView ? logFileURL() : liveURL(), {target: '#log-entries', swap: 'innerHTML'});
 }
 
@@ -530,26 +494,6 @@ function onLogSourceChange(sel) {
 		}
 	}
 	reloadLogSource();
-}
-
-function loadMoreLogLines() {
-	_logCurrentOffset += _logLimit;
-	var url = '/api/logs/file?raw=true&chunk=true&limit=' + _logLimit + '&offset=' + _logCurrentOffset + '&name=' + encodeURIComponent(_logCurrentFile);
-	fetch(url)
-		.then(function(resp) {
-			var hasMore = resp.headers.get('X-Log-Has-More') === 'true';
-			var lineInfo = resp.headers.get('X-Log-Line-Info');
-			var moreArea = document.getElementById('log-more-area');
-			if (moreArea) moreArea.style.display = hasMore ? '' : 'none';
-			var info = document.getElementById('log-line-info');
-			if (info && lineInfo) info.textContent = lineInfo;
-			return resp.text();
-		})
-		.then(function(html) {
-			var linesEl = document.getElementById('log-file-lines');
-			if (linesEl) linesEl.insertAdjacentHTML('afterbegin', html);
-			applyLogFilters();
-		});
 }
 </script>`
 

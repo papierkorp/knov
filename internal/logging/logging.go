@@ -262,27 +262,14 @@ func MarkSessionStart(key Key) {
 
 // ── log functions ─────────────────────────────────────────────────────────────
 
-var (
-	timeFormatterMu sync.RWMutex
-	timeFormatter   func(time.Time) string
-)
-
-// SetTimeFormatter sets the function used to format timestamps in log file lines.
-// Call this after config is loaded to apply the user's datetime/timezone settings.
-func SetTimeFormatter(fn func(time.Time) string) {
-	timeFormatterMu.Lock()
-	timeFormatter = fn
-	timeFormatterMu.Unlock()
-}
-
+// formatLogTime renders the timestamp for on-disk log lines and session
+// separators. It is deliberately fixed to RFC3339 (a machine format carrying an
+// absolute UTC offset) and independent of the user's date/time display
+// settings, so changing those never retroactively breaks parsing of
+// already-written lines - the log viewer reformats to the configured display
+// style and timezone at render time.
 func formatLogTime(t time.Time) string {
-	timeFormatterMu.RLock()
-	fn := timeFormatter
-	timeFormatterMu.RUnlock()
-	if fn != nil {
-		return fn(t)
-	}
-	return t.Format("2006-01-02 15:04:05")
+	return t.Format(time.RFC3339)
 }
 
 func logLine(key Key, level, caller, format string, args ...any) string {

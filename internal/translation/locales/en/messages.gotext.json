@@ -237,6 +237,11 @@
       "translation": ""
     },
     {
+      "id": "Clear range",
+      "message": "Clear range",
+      "translation": ""
+    },
+    {
       "id": "Code Folding",
       "message": "Code Folding",
       "translation": ""
@@ -254,6 +259,11 @@
     {
       "id": "Color",
       "message": "Color",
+      "translation": ""
+    },
+    {
+      "id": "Confirm",
+      "message": "Confirm",
       "translation": ""
     },
     {
@@ -967,6 +977,11 @@
       "translation": ""
     },
     {
+      "id": "Please confirm",
+      "message": "Please confirm",
+      "translation": ""
+    },
+    {
       "id": "Preview",
       "message": "Preview",
       "translation": ""
@@ -984,6 +999,11 @@
     {
       "id": "Push",
       "message": "Push",
+      "translation": ""
+    },
+    {
+      "id": "Raw",
+      "message": "Raw",
       "translation": ""
     },
     {
@@ -1284,6 +1304,11 @@
     {
       "id": "Todo",
       "message": "Todo",
+      "translation": ""
+    },
+    {
+      "id": "Toggle raw / table view",
+      "message": "Toggle raw / table view",
       "translation": ""
     },
     {
@@ -4394,6 +4419,11 @@
     {
       "id": "separator",
       "message": "separator",
+      "translation": ""
+    },
+    {
+      "id": "session started",
+      "message": "session started",
       "translation": ""
     },
     {

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/test"
 )
 
@@ -38,73 +40,64 @@ func caseInMemoryRingBuffer() test.CaseResult {
 	return cr
 }
 
-// caseFilePaginationChunking replicates handleAPIGetLogsFile's offset/limit slicing
-// (internal/server/api_system.go:163-179) directly - that arithmetic is inline handler logic
-// with no exported wrapper. Writes 6 known probe lines, then pages them 3-at-a-time: the first
-// page (offset=0) must be the latest 3 lines with hasMore=true (total 6 > limit 3), the second
-// page (offset=3) must be the earlier 3 lines - the same "load earlier lines" chunking the
-// admin log-file view uses.
-func caseFilePaginationChunking() test.CaseResult {
-	name := "file-pagination-chunking"
+// caseParseLogContinuation covers render.ParseLogLines: (1) the fixed RFC3339 machine
+// timestamp on a real line round-trips into entry.Time regardless of the configured date/time
+// display style, and (2) continuation folding - a log record spanning several file lines
+// (stack traces, pretty-printed JSON) is written with only its first line carrying a timestamp
+// prefix, so the follow-on lines must be folded into the previous entry's Message rather than
+// dropped or turned into their own rows, while a continuation line with nothing before it is
+// dropped without panicking.
+func caseParseLogContinuation() test.CaseResult {
+	name := "parse-log-continuation"
 
 	if !logging.HasFileLogging() {
-		return errCase(name, fmt.Errorf("file logging is disabled, cannot exercise file pagination"))
+		return errCase(name, fmt.Errorf("file logging is disabled, cannot exercise log parsing"))
 	}
 
 	marker := newMarker()
-	const n = 6
-	for i := 0; i < n; i++ {
-		logging.LogError(logging.KeyInAppTests, probeNote+"%s line %d", marker, i)
-	}
+	logging.LogError(logging.KeyInAppTests, probeNote+"%s L0\n%s L1\n%s L2", marker, marker, marker)
 
-	lines, err := readLines(inAppTestsLogPath())
+	data, err := os.ReadFile(logging.LogFilePath(logging.KeyInAppTests))
 	if err != nil {
 		return errCase(name, err)
 	}
-	total := len(lines)
+	lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
 
-	page := func(limit, offset int) (chunk []string, hasMore bool) {
-		end := total - offset
-		if end < 0 {
-			end = 0
+	markerEntries := func(in []string) []logging.LogEntry {
+		var out []logging.LogEntry
+		for _, e := range render.ParseLogLines(logging.KeyInAppTests, in) {
+			if strings.Contains(e.Message, marker) {
+				out = append(out, e)
+			}
 		}
-		start := end - limit
-		if start < 0 {
-			start = 0
-		}
-		return lines[start:end], start > 0
+		return out
 	}
 
-	latest, latestHasMore := page(3, 0)
-	earlier, _ := page(3, 3)
+	folded := markerEntries(lines)
+	foldedOK := len(folded) == 1 && strings.Contains(folded[0].Message, "\n") &&
+		strings.Contains(folded[0].Message, "L0") &&
+		strings.Contains(folded[0].Message, "L1") &&
+		strings.Contains(folded[0].Message, "L2")
 
-	latestOK := linesContainMarkerRange(latest, marker, 3, 5)
-	earlierOK := linesContainMarkerRange(earlier, marker, 0, 2)
+	// the fixed machine-format (RFC3339) timestamp on the first line must round-trip into
+	// entry.Time no matter what date/time display style is configured
+	tsOK := len(folded) == 1 && !folded[0].Time.IsZero() && time.Since(folded[0].Time) < 5*time.Minute
 
-	success := latestOK && earlierOK && latestHasMore
+	// a continuation line with nothing before it is dropped, not folded or panicked on
+	orphan := markerEntries(append([]string{"    " + marker + " orphan"}, lines...))
+	orphanOK := len(orphan) == 1 && !strings.Contains(orphan[0].Message, "orphan")
+
+	success := foldedOK && tsOK && orphanOK
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "offset=0/limit=3 returns lines 3-5 with hasMore=true, offset=3/limit=3 returns lines 0-2",
-		Actual:   fmt.Sprintf("latestOK=%v earlierOK=%v latestHasMore=%v (total=%d)", latestOK, earlierOK, latestHasMore, total),
+		Expected: "the 3-line record parses to one entry whose Message keeps L0/L1/L2 and whose Time round-trips; a leading orphan continuation is dropped",
+		Actual:   fmt.Sprintf("foldedOK=%v tsOK=%v orphanOK=%v (marker entries: %d)", foldedOK, tsOK, orphanOK, len(folded)),
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "file pagination/chunking did not slice the expected lines"
+		cr.Error = "ParseLogLines did not fold multi-line records as expected"
 	}
 	return cr
-}
-
-// linesContainMarkerRange checks every "<marker> line <i>" probe for i in [from, to] appears
-// somewhere in chunk - substring containment rather than strict positional equality, tolerating
-// any real log activity from the running app interleaved with the probe lines.
-func linesContainMarkerRange(chunk []string, marker string, from, to int) bool {
-	joined := strings.Join(chunk, "\n")
-	for i := from; i <= to; i++ {
-		if !strings.Contains(joined, fmt.Sprintf("%s line %d", marker, i)) {
-			return false
-		}
-	}
-	return true
 }
 
 // caseDownloadPathGuard covers handleAPIDownloadLogs' path-safety guard (a name containing a
@@ -112,8 +105,8 @@ func linesContainMarkerRange(chunk []string, marker string, from, to int) bool {
 // raw, untouched content - the download handler itself does nothing but io.Copy the file.
 // Uses KeyApp rather than KeyInAppTests: this checks that resolveDownloadPath (GetLogsDir()-
 // based, same as the real handler) agrees with where the file actually is, which only holds
-// for keys that aren't exempt from SetIsolatedLogsDir's redirect - KeyInAppTests is (see
-// inAppTestsLogPath), KeyApp isn't.
+// for keys that aren't exempt from SetIsolatedLogsDir's redirect - KeyInAppTests is, KeyApp
+// isn't.
 func caseDownloadPathGuard() test.CaseResult {
 	name := "download-path-guard"
 
