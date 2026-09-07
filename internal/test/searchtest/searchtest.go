@@ -21,6 +21,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseSearchTitleOnly,
 		caseSearchFullContent,
+		caseSearchMultiWordPartial,
+		caseSearchLoneCharNoFlood,
 		caseSearchEmptyQuery,
 		caseSearchLimit,
 		caseSearchDeletedFileByTitle,

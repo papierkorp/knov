@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"knov/internal/backup"
 	"knov/internal/dbmigration"
@@ -320,25 +323,90 @@ func (ss *sqliteStorage) ListAllIndexedFiles() ([]string, error) {
 	return paths, rows.Err()
 }
 
-// SearchContent performs full-text search using FTS5
-func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult, error) {
-	ss.mutex.RLock()
-	defer ss.mutex.RUnlock()
+const (
+	// clause cap: a multi-KB paste otherwise builds a MATCH expression FTS5
+	// rejects for complexity.
+	maxSearchTokens = 32
+	// rune cap: a long unbroken blob (base64, minified line) is one token the
+	// clause cap never trims; dropped rather than truncated.
+	maxSearchTokenRunes = 64
+)
 
-	// use FTS5 match query with BM25 ranking
-	sqlQuery := `
-		SELECT
-			si.path,
-			sc.content,
-			bm25(search_index) as score
-		FROM search_index si
-		JOIN search_content sc ON si.path = sc.path
-		WHERE search_index MATCH ?
-		ORDER BY score
-		LIMIT ?
-	`
+// buildMatchQueries turns a raw user string into two safe FTS5 MATCH
+// expressions - every operator char is dropped while tokenizing, so the input
+// can't cause a syntax error. strict ANDs every token (precise). widened is the
+// fallback when strict finds nothing: exact phrase OR any token, last token
+// prefix-matched so a half-typed word still hits.
+//
+// Deliberate: a symbol-only / lone-char query ("C++", "---") yields "" here, so
+// ftsMatchSearch returns nothing and file search falls through to the trigram
+// fallback. That trade is accepted.
+func buildMatchQueries(raw string) (strict, widened string) {
+	tokens := strings.FieldsFunc(raw, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	// drop tokens FTS5 can't use well (measured in runes, not bytes):
+	//   - lone ascii chars ("c" from "C++"): floods strict, which counts as a
+	//     hit and starves the trigram fallback. keep lone multi-byte runes (CJK).
+	//   - over-long blobs: would exact-match nothing anyway.
+	tokens = slices.DeleteFunc(tokens, func(t string) bool {
+		r := []rune(t)
+		return (len(r) == 1 && r[0] < 128) || len(r) > maxSearchTokenRunes
+	})
+	if len(tokens) == 0 {
+		return "", ""
+	}
+	if len(tokens) > maxSearchTokens {
+		logging.LogDebug(logging.KeyApp, "search query capped from %d to %d tokens", len(tokens), maxSearchTokens)
+		tokens = tokens[:maxSearchTokens]
+	}
 
-	rows, err := ss.db.Query(sqlQuery, query, limit)
+	quoted := make([]string, len(tokens))
+	for i, t := range tokens {
+		quoted[i] = `"` + t + `"`
+	}
+	strict = strings.Join(quoted, " AND ")
+
+	prefixed := append([]string(nil), quoted...)
+	prefixed[len(prefixed)-1] += `*` // prefix-match the final token for as-you-type
+
+	parts := make([]string, 0, len(prefixed)+1)
+	if len(tokens) > 1 {
+		parts = append(parts, `"`+strings.Join(tokens, " ")+`"`)
+	}
+	parts = append(parts, prefixed...)
+	widened = strings.Join(parts, " OR ")
+	return strict, widened
+}
+
+// ftsMatchSearch runs an FTS5 MATCH against indexTable (a literal table name,
+// never user input), trying the conjunctive query first and widening to the
+// disjunctive one only when it returns nothing.
+func (ss *sqliteStorage) ftsMatchSearch(indexTable, query string, limit int) ([]SearchResult, error) {
+	strict, widened := buildMatchQueries(query)
+	if strict == "" {
+		return nil, nil
+	}
+	results, err := ss.runFTSMatch(indexTable, strict, limit)
+	if err != nil || len(results) > 0 {
+		return results, err
+	}
+	return ss.runFTSMatch(indexTable, widened, limit)
+}
+
+// runFTSMatch runs one FTS5 MATCH, yielding paths best-first by bm25. indexTable
+// is interpolated into SQL, so it is checked against the known tables, not
+// trusted.
+func (ss *sqliteStorage) runFTSMatch(indexTable, match string, limit int) ([]SearchResult, error) {
+	if indexTable != "search_index" && indexTable != "deleted_search_index" {
+		return nil, fmt.Errorf("unknown search index table %q", indexTable)
+	}
+	sqlQuery := fmt.Sprintf(
+		"SELECT path FROM %[1]s WHERE %[1]s MATCH ? ORDER BY bm25(%[1]s) LIMIT ?",
+		indexTable,
+	)
+
+	rows, err := ss.db.Query(sqlQuery, match, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -347,14 +415,26 @@ func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult,
 	var results []SearchResult
 	for rows.Next() {
 		var result SearchResult
-		if err := rows.Scan(&result.Path, &result.Content, &result.Score); err != nil {
+		if err := rows.Scan(&result.Path); err != nil {
 			return nil, err
 		}
 		results = append(results, result)
 	}
-
-	logging.LogDebug(logging.KeyApp, "search query '%s' returned %d results", query, len(results))
 	return results, rows.Err()
+}
+
+// SearchContent performs full-text search using FTS5
+func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult, error) {
+	ss.mutex.RLock()
+	defer ss.mutex.RUnlock()
+
+	results, err := ss.ftsMatchSearch("search_index", query, limit)
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "search query '%s' failed: %v", query, err)
+		return nil, err
+	}
+	logging.LogDebug(logging.KeyApp, "search query '%s' returned %d results", query, len(results))
+	return results, nil
 }
 
 // IndexDeletedFile indexes a deleted file's pre-deletion content in the
@@ -403,35 +483,13 @@ func (ss *sqliteStorage) SearchDeletedContent(query string, limit int) ([]Search
 	ss.mutex.RLock()
 	defer ss.mutex.RUnlock()
 
-	sqlQuery := `
-		SELECT
-			si.path,
-			sc.content,
-			bm25(deleted_search_index) as score
-		FROM deleted_search_index si
-		JOIN deleted_search_content sc ON si.path = sc.path
-		WHERE deleted_search_index MATCH ?
-		ORDER BY score
-		LIMIT ?
-	`
-
-	rows, err := ss.db.Query(sqlQuery, query, limit)
+	results, err := ss.ftsMatchSearch("deleted_search_index", query, limit)
 	if err != nil {
+		logging.LogWarning(logging.KeyApp, "deleted-file search query '%s' failed: %v", query, err)
 		return nil, err
 	}
-	defer rows.Close()
-
-	var results []SearchResult
-	for rows.Next() {
-		var result SearchResult
-		if err := rows.Scan(&result.Path, &result.Content, &result.Score); err != nil {
-			return nil, err
-		}
-		results = append(results, result)
-	}
-
 	logging.LogDebug(logging.KeyApp, "deleted-file search query '%s' returned %d results", query, len(results))
-	return results, rows.Err()
+	return results, nil
 }
 
 // GetBackendType returns the backend type

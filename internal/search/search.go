@@ -158,11 +158,12 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 func searchFilesRepository(query string, limit int, allFiles []files.File) ([]files.File, error) {
 	logging.LogDebug(logging.KeyApp, "searching for: %s (limit: %d)", query, limit)
 
-	// use much higher FTS limit to ensure we get all relevant files before deduplication
-	// FTS can return multiple matches per file, so we need a higher limit to find all unique files
-	ftsLimit := limit * 10 // multiply by 10 to account for multiple matches per file
+	// IndexFile keeps one row per path, so FTS yields one hit per file; a small
+	// multiplier plus the floor keeps headroom for rows later dropped by
+	// visibility filtering / fileMap misses without the old 10x over-fetch.
+	ftsLimit := limit * 3
 	if ftsLimit < 100 {
-		ftsLimit = 100 // minimum FTS limit to ensure we don't miss files
+		ftsLimit = 100 // floor so a small caller limit still leaves room after filtering
 	}
 
 	searchResults, err := searchStorage.SearchContent(query, ftsLimit)
@@ -197,6 +198,9 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 	return results, nil
 }
 
+// searchFilesRepositoryFallback is the manual disk scan used only when the FTS
+// query itself errors (index unavailable). A successful FTS query that finds
+// nothing goes to trigram instead (see searchFilesRepository).
 func searchFilesRepositoryFallback(query string, limit int, allFiles []files.File) ([]files.File, error) {
 	queryLower := strings.ToLower(query)
 	var results []files.File

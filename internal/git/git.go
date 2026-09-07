@@ -2463,9 +2463,11 @@ func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile
 	return results, nil
 }
 
-// searchDeletedFilesByContentLiveWalk is the original commit-log walk,
-// kept as a fallback for when the FTS index query fails (e.g. malformed
-// FTS5 query syntax) or hasn't been populated yet.
+// searchDeletedFilesByContentLiveWalk is the original commit-log walk, kept as
+// a fallback for when the FTS index query fails (search DB unavailable). The
+// MATCH builder sanitizes input, so a malformed FTS5 query is no longer a
+// failure mode; a query that sanitizes to nothing (symbol-only, e.g. "C++")
+// just yields no indexed matches.
 func searchDeletedFilesByContentLiveWalk(query string, limit int) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {

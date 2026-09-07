@@ -33,6 +33,9 @@ const (
 const (
 	betaContentMarker  = "BetaUniqueContentPhrase"
 	deltaContentMarker = "DeltaContentMarker"
+	// a leading slice of betaContentMarker's single indexed token - lets the
+	// prefix-match case name what it needs instead of hardcoding a slice length.
+	betaContentMarkerPrefix = "BetaUniqueCo"
 )
 
 func testPath(name string) string {

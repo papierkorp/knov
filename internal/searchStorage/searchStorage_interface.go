@@ -24,11 +24,10 @@ type SearchStorage interface {
 	Restore(srcDir string) error
 }
 
-// SearchResult represents a search result
+// SearchResult represents a search result. Only the path is carried - callers
+// resolve the file themselves and the render layer builds its own snippets.
 type SearchResult struct {
-	Path    string
-	Content []byte
-	Score   float64
+	Path string
 }
 
 var storage SearchStorage
