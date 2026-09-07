@@ -272,6 +272,7 @@
 {{ template "rail-modals" . }}
 
 <script src="/static/htmx-4.0.0.min.js"></script>
+<script src="/themes/{{.CurrentTheme}}/js/confirm-modal.js"></script>
 <script src="/static/codemirror6-bundle.min.js"></script>
 <script src="/static/sortable-1.15.0.min.js"></script>
 <script src="/static/handsontable-16.2.0.full.min.js"></script>
@@ -323,6 +324,17 @@
                 <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="confirm-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Please confirm"}}</h3>
+        <p id="confirm-modal-message"></p>
+        <div class="modal-actions">
+            <button type="button" id="confirm-modal-ok" class="btn-danger">{{T "Confirm"}}</button>
+            <button type="button" id="confirm-modal-cancel" class="btn-secondary" autofocus>{{T "Cancel"}}</button>
+        </div>
     </div>
 </div>
 

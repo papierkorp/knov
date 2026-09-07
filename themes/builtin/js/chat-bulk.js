@@ -82,11 +82,13 @@ function chatBulkSubmit(mode) {
 }
 
 function chatBulkDelete() {
-    if (!confirm('Delete selected messages?')) return;
-    htmx.ajax('DELETE', '/api/chat/messages/bulk', {
-        swap: 'none',
-        values: { ids: chatBulkGetIDs() }
-    }).then(chatBulkRemoveSelected);
+    window.showConfirm('Delete selected messages?').then(function (ok) {
+        if (!ok) return;
+        htmx.ajax('DELETE', '/api/chat/messages/bulk', {
+            swap: 'none',
+            values: { ids: chatBulkGetIDs() }
+        }).then(chatBulkRemoveSelected);
+    });
 }
 
 // compact message kebab menu (to new file / append / delete) uses the

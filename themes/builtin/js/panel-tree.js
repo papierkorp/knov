@@ -83,7 +83,7 @@ function initTreeRename() {
           res.text().then((html) => {
             const tmp = document.createElement("div");
             tmp.innerHTML = html;
-            alert(tmp.textContent.trim());
+            window.showToast("error", tmp.textContent.trim());
             cancel();
           });
         }
@@ -175,7 +175,7 @@ function initTreeDragDrop() {
           res.text().then((html) => {
             const tmp = document.createElement("div");
             tmp.innerHTML = html;
-            alert(tmp.textContent.trim());
+            window.showToast("error", tmp.textContent.trim());
           });
         }
       });
@@ -196,7 +196,7 @@ function initTreeDragDrop() {
           res.text().then((html) => {
             const tmp = document.createElement("div");
             tmp.innerHTML = html;
-            alert(tmp.textContent.trim());
+            window.showToast("error", tmp.textContent.trim());
           });
         }
       });

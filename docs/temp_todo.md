@@ -10,13 +10,12 @@
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - cache for books?
   - todo editor add a date at the end for each click
-  - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
 - fixes
   -
 - chore
-  - 
+  - adress the log warning
 
 
 # Async follow up jobs

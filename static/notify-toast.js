@@ -18,6 +18,9 @@
         }, 200);
     }
 
+    // exposed so hand-written JS can raise an in-app toast instead of alert()
+    window.showToast = showToast;
+
     document.body.addEventListener('notify', function (e) {
         var detail = e.detail;
         if (detail && detail.type && detail.message) {
