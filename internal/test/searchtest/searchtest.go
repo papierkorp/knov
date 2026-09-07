@@ -26,6 +26,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseSearchDeletedFileByTitle,
 		caseSearchDeletedFileByContent,
 		caseSearchScopedHidePath,
+		caseSearchCommitReindexNoDuplicate,
 	}
 
 	result := &test.SuiteResult{Suite: "search"}
