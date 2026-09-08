@@ -24,7 +24,7 @@ func (r *renderer) renderChildren(n ast.Node) {
 // registerHeadingAnchors walks the whole tree up front, computing each
 // heading's anchor slug with the same algorithm (and, walked in the same
 // document order, the same collision counting) the web view uses to assign
-// header ids — see utils.GenerateID and parser.InjectHeaderIDs. This lets a
+// header ids — see utils.GenerateID and parser.SlugHeading. This lets a
 // same-document "#slug" link (e.g. from a wiki link or a hand-typed anchor)
 // resolve to an fpdf internal link before that heading has actually been
 // drawn, since a link can point forward in the document.

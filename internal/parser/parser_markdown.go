@@ -204,15 +204,15 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = h.postprocessTodoStates(result)
 	result = sanitizeHTML(result)
-	result = InjectHeaderIDs(result)
 	result = h.addHeaderButtons(result, filePath)
 	result = h.wrapHeaderSections(result, filePath)
 	return []byte(result), nil
 }
 
-// inlineMD is the shared goldmark instance for RenderInlineMarkdown. goldmark is
-// safe for concurrent use, so one instance avoids rebuilding the parser on every
-// call (RenderInlineMarkdown runs once per heading in parser.Headings).
+// inlineMD is the shared goldmark instance for RenderInlineMarkdown and
+// RenderHeadingInline. goldmark is safe for concurrent use, so one instance
+// avoids rebuilding the parser on every call (RenderHeadingInline runs once per
+// heading, both in parser.Headings and in the render-time heading renderer).
 var inlineMD = goldmark.New(goldmark.WithExtensions(extension.GFM))
 
 // RenderInlineMarkdown renders inline markdown (code, bold, italic, links) to HTML.
@@ -228,14 +228,37 @@ func RenderInlineMarkdown(s string) string {
 	return strings.TrimSpace(result)
 }
 
+var headingInlineRe = regexp.MustCompile(`(?s)<h1[^>]*>(.*?)</h1>`)
+
+// RenderHeadingInline renders s as a heading's inline content, used only to feed
+// SlugHeading: renderHeading calls it for the render-time id and HeadingID calls
+// it for the pre-render scan, so both slug off the same HTML (the visible heading
+// markup comes from goldmark's normal child rendering, not from here). Rendering s
+// on its own would let a leading block marker ("1. ", "- ", "> ") turn into a
+// list or blockquote and drop the marker text; wrapping it in "# " keeps
+// goldmark on the inline path and also strips a trailing "##" the scan leaves in.
+func RenderHeadingInline(s string) string {
+	var buf bytes.Buffer
+	if err := inlineMD.Convert([]byte("# "+s), &buf); err != nil {
+		return s
+	}
+	m := headingInlineRe.FindStringSubmatch(buf.String())
+	if m == nil {
+		return s
+	}
+	return strings.TrimSpace(m[1])
+}
+
 // ---------------------------------------------------------------------------
 // Custom node renderer — handles code blocks (chroma), tables (HTMX), images
 // ---------------------------------------------------------------------------
 
 type knovNodeRenderer struct {
-	filePath string
-	blocks   []codeBlock
-	tableIdx int
+	filePath  string
+	blocks    []codeBlock
+	tableIdx  int
+	usedIDs   map[string]int // heading-id collision counts for this document
+	headingID string         // id of the heading currently being rendered (set on enter, used on exit)
 	html.Config
 }
 
@@ -243,11 +266,13 @@ func newKnovNodeRenderer(filePath string, blocks []codeBlock) renderer.NodeRende
 	return &knovNodeRenderer{
 		filePath: filePath,
 		blocks:   blocks,
+		usedIDs:  make(map[string]int),
 		Config:   html.NewConfig(),
 	}
 }
 
 func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(ast.KindHeading, r.renderHeading)
 	reg.Register(ast.KindFencedCodeBlock, r.renderFencedCode)
 	reg.Register(ast.KindCodeBlock, r.renderCodeBlock)
 	reg.Register(ast.KindImage, r.renderImage)
@@ -258,6 +283,39 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 	if r.filePath != PathlessRender {
 		reg.Register(extast.KindTable, r.renderTable)
 	}
+}
+
+// renderHeading writes the <hN id> wrapper and the trailing anchor link, but
+// lets goldmark render the heading's children itself (WalkContinue) so the
+// visible markup matches the rest of the document (typographer, hard wraps).
+// The id is slugged through the shared SlugHeading from the raw heading text so
+// it matches parser.Headings (section editing / autocomplete) without a second,
+// drift-prone computation. usedIDs lives on the renderer, so collisions dedupe
+// in document order; headings never nest, so one headingID field is enough to
+// carry the id from the enter call to the exit call.
+//
+// Emitted format contract: `<hN id="slug">` - id is the first and only attribute
+// on the tag. GenerateTOC, addHeaderButtons and wrapHeaderSections all read the
+// id positionally with a regex that expects it right after the level, so adding
+// another attribute here (or moving id) silently blanks the TOC and the header
+// buttons. Change those regexes too if this format changes.
+func (r *knovNodeRenderer) renderHeading(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	n := node.(*ast.Heading)
+	if !entering {
+		fmt.Fprintf(w, `<a href="#%s" class="header-anchor" aria-hidden="true">#</a></h%d>`, r.headingID, n.Level)
+		return ast.WalkContinue, nil
+	}
+
+	var raw bytes.Buffer
+	lines := n.Lines()
+	for i := 0; i < lines.Len(); i++ {
+		seg := lines.At(i)
+		raw.Write(seg.Value(source))
+	}
+
+	r.headingID = SlugHeading(RenderHeadingInline(raw.String()), r.usedIDs)
+	fmt.Fprintf(w, `<h%d id="%s">`, n.Level, r.headingID)
+	return ast.WalkContinue, nil
 }
 
 func (r *knovNodeRenderer) renderFencedCode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
@@ -413,6 +471,8 @@ func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock
 
 // restoreOrphanCodeBlocks replaces any KNOVCODEBLOCK placeholder that the node renderer
 // did not handle (e.g. inside a <p> tag due to unusual nesting) with highlighted HTML.
+// The replacement is chroma output (<pre>/<code>/<span>, code text HTML-escaped), so it
+// can never reintroduce a live <h1-6> after the renderer has assigned heading ids.
 func (h *MarkdownHandler) restoreOrphanCodeBlocks(html string, blocks []codeBlock) string {
 	for i := len(blocks) - 1; i >= 0; i-- {
 		if blocks[i].rendered {
@@ -437,6 +497,11 @@ type htmlWrapperBlock struct {
 	openHTML  string
 	closeHTML string
 }
+
+// headingTagRe matches an opening or closing <h1>-<h6> tag. Used to keep raw HTML
+// that bypasses goldmark (restored wrapper blocks) from smuggling in a heading
+// the renderer never saw and so never gave an id.
+var headingTagRe = regexp.MustCompile(`(?i)</?h[1-6][^>]*>`)
 
 // extractHTMLBlocks pulls the opening/closing wrapper for the given tag out of bare
 // HTML blocks and replaces them with placeholders, so they survive goldmark's
@@ -493,8 +558,12 @@ func (h *MarkdownHandler) extractHTMLBlocks(content []byte, tag, innerTag string
 
 		idx := len(blocks)
 		blocks = append(blocks, htmlWrapperBlock{
-			openHTML:  strings.Join(openLines, "\n"),
-			closeHTML: block[len(block)-1],
+			// strip any <h1-6> from the wrapper lines: restoreHTMLBlocks reinserts
+			// these verbatim after the renderer has already given every real heading
+			// its id, so a stray heading tag here would be an id-less phantom that no
+			// anchor, TOC entry or section edit can reach.
+			openHTML:  headingTagRe.ReplaceAllString(strings.Join(openLines, "\n"), ""),
+			closeHTML: headingTagRe.ReplaceAllString(block[len(block)-1], ""),
 		})
 
 		placeholder := fmt.Sprintf("KNOVHTML%s%d", strings.ToUpper(tag), idx)

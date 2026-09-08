@@ -11,7 +11,7 @@ import (
 // GenerateID generates a unique ID from header text with collision handling.
 //
 // This is the one slug function for header ids: the markdown renderer/TOC
-// (parser.InjectHeaderIDs), the pdf exporter and internal/book all call it.
+// (parser.SlugHeading), the pdf exporter and internal/book all call it.
 // internal/book resolves a `.book` "path#section" entry by slugging the anchor
 // through here and matching it against the rendered header id, so changing the
 // slug rules silently breaks book section references - keep it in sync or route

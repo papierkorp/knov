@@ -95,7 +95,7 @@ func caseHeadingsDedupIDs() test.CaseResult {
 }
 
 // caseHeadingsUnicodeID covers unicode letters surviving in the id (not dropped as ASCII-only
-// slugging would), matching parser.InjectHeaderIDs.
+// slugging would), matching the rendered anchor ids (parser.SlugHeading).
 func caseHeadingsUnicodeID() test.CaseResult {
 	hs := headingsOf("# Persönliche Übersicht")
 	return result("headings-unicode-id", "persönliche-übersicht", idOf(hs, 0))
@@ -120,6 +120,59 @@ func caseHeadingsLinkID() test.CaseResult {
 func caseHeadingsWikiLinkAliasID() test.CaseResult {
 	hs := headingsOf("## [[some/page|Overview]]")
 	return result("headings-wikilink-alias-id", "overview", idOf(hs, 0))
+}
+
+// caseHeadingScanMatchesRenderIDs is the end-to-end guard for the refactor's core
+// invariant: the ids parser.Headings computes from raw source (used by section
+// editing) must equal the ids the markdown renderer actually puts on the <hN>
+// tags (read back here via GenerateTOC, as the autocomplete endpoint does). The
+// two sides share SlugHeading but are fed differently resolved text, so this pins
+// that they still agree across links, wikilink aliases, unicode, dedupe order,
+// numbered headings, inline formatting and a trailing "##".
+func caseHeadingScanMatchesRenderIDs() test.CaseResult {
+	name := "heading-scan-matches-render-ids"
+	src := "# Intro\n" +
+		"## See [the docs](http://example.com/x)\n" +
+		"## [[some/page|Overview]]\n" +
+		"## Persönliche Übersicht\n" +
+		"## Notes\n" +
+		"## Notes\n" +
+		"## 1. Introduction\n" +
+		"## *Bold* and `code`\n" +
+		"## Trailing ##\n"
+	want := "intro,see-the-docs,overview,persönliche-übersicht,notes,notes-1,1-introduction,bold-and-code,trailing"
+
+	var scanIDs []string
+	for _, h := range parser.Headings(strings.Split(src, "\n")) {
+		scanIDs = append(scanIDs, h.ID)
+	}
+
+	h := parser.NewMarkdownHandler()
+	parsed, err := h.Parse([]byte(src))
+	if err != nil {
+		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+	}
+	rendered, err := h.Render(parsed, "note.md")
+	if err != nil {
+		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+	}
+	var renderIDs []string
+	for _, item := range parser.GenerateTOC(string(rendered)) {
+		renderIDs = append(renderIDs, item.ID)
+	}
+
+	scan, render := strings.Join(scanIDs, ","), strings.Join(renderIDs, ",")
+	got := fmt.Sprintf("scan=%s render=%s", scan, render)
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("scan=%s render=%s", want, want),
+		Actual:   got,
+		Success:  scan == want && render == want,
+	}
+	if !cr.Success {
+		cr.Error = "pre-render scan ids and rendered anchor ids diverged"
+	}
+	return cr
 }
 
 func idOf(hs []parser.Heading, i int) string {

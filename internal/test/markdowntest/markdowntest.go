@@ -29,6 +29,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseHeadingsUnicodeID,
 		caseHeadingsLinkID,
 		caseHeadingsWikiLinkAliasID,
+		caseHeadingScanMatchesRenderIDs,
 		caseHeadingsRequireSpaceAndLevel,
 		caseHeadingsSkipFrontMatter,
 		caseStripFencedBlocksBothMarkers,

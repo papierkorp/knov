@@ -126,7 +126,9 @@ func PreprocessTodoStates(content []byte) []byte {
 }
 
 // postprocessTodoStates replaces KNOVTODO placeholders in rendered HTML with
-// proper todo-state icons and adds state classes to their parent <li>.
+// proper todo-state icons and adds state classes to their parent <li>. Every
+// replacement is <li>/<span>/<i> only, so it can never reintroduce a live
+// <h1-6> after the renderer has assigned heading ids.
 func (h *MarkdownHandler) postprocessTodoStates(html string) string {
 	// cancelled: was rendered as checked [x] with KNOVTODO:cancelled placeholder
 	html = regexp.MustCompile(
