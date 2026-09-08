@@ -16,7 +16,6 @@
   - 
 - chore
   - s3 backup tests?
-  - builtin theme - tree slideout reload doesnt honor collapsed folders
   - heading-id refactor follow-ups (from review):
     - strip the trailing "##" closing sequence in markdown.ATXHeading (CommonMark) so parser.Headings(...).Text is clean and RenderHeadingInline no longer needs the "# " wrapper trick for it
     - fold addHeaderButtons into knovNodeRenderer.renderHeading (it now owns heading emission) so per-heading button injection isn't a separate regex pass; leave wrapHeaderSections as the only cross-cutting one

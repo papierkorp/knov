@@ -11,10 +11,8 @@
 
 - i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
 - check current status of the project
-- give me the full file not just the changes
 - always search the project since you already have all the files
 - no need for backwards compability since the app is not released yet - you can remove functions/routes
-- i create the uploaded files using the Makefiles - so the filenames are not completly the same in the repo, there is a FILE_LIST.txt with the tree command for you to have a overview over all files in the repo
 - no need to update the changelogs since they are auto generated per git commits
 
 ## Architecture

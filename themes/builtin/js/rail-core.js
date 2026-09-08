@@ -144,11 +144,21 @@ function reloadPanel(panelId) {
   if (!el) return;
   const url = el.dataset.url;
   if (!url) return;
+  // the swap discards the client-side-only fp-tree-collapsed folds — remember
+  // which folder paths were collapsed so they can be re-applied afterwards
+  const collapsed = [...el.querySelectorAll("li.fp-tree-collapsed")]
+    .map((li) => li.querySelector(":scope > button.fp-tree-dir, :scope > .browse-item-row > button.fp-tree-dir")?.dataset.path)
+    .filter(Boolean);
   htmx.ajax("GET", url, {
     target: el,
     swap: "innerHTML",
     headers: { Accept: "text/html" },
   }).then(() => {
+    collapsed.forEach((p) => {
+      el.querySelector(`button.fp-tree-dir[data-path="${CSS.escape(p)}"]`)
+        ?.closest("li")
+        .classList.add("fp-tree-collapsed");
+    });
     // the swap replaced the content an active client-side filter had hidden
     // rows in — re-apply it from the still-populated search input
     const input = el
