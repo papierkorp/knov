@@ -204,7 +204,6 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = h.postprocessTodoStates(result)
 	result = sanitizeHTML(result)
-	result = h.addHeaderButtons(result, filePath)
 	result = h.wrapHeaderSections(result, filePath)
 	return []byte(result), nil
 }
@@ -236,7 +235,7 @@ var headingInlineRe = regexp.MustCompile(`(?s)<h1[^>]*>(.*?)</h1>`)
 // markup comes from goldmark's normal child rendering, not from here). Rendering s
 // on its own would let a leading block marker ("1. ", "- ", "> ") turn into a
 // list or blockquote and drop the marker text; wrapping it in "# " keeps
-// goldmark on the inline path and also strips a trailing "##" the scan leaves in.
+// goldmark on the inline path.
 func RenderHeadingInline(s string) string {
 	var buf bytes.Buffer
 	if err := inlineMD.Convert([]byte("# "+s), &buf); err != nil {
@@ -255,6 +254,7 @@ func RenderHeadingInline(s string) string {
 
 type knovNodeRenderer struct {
 	filePath  string
+	relPath   string // pathutils.ToRelative(filePath); PathlessRender when there is no source file
 	blocks    []codeBlock
 	tableIdx  int
 	usedIDs   map[string]int // heading-id collision counts for this document
@@ -265,6 +265,7 @@ type knovNodeRenderer struct {
 func newKnovNodeRenderer(filePath string, blocks []codeBlock) renderer.NodeRenderer {
 	return &knovNodeRenderer{
 		filePath: filePath,
+		relPath:  pathutils.ToRelative(filePath),
 		blocks:   blocks,
 		usedIDs:  make(map[string]int),
 		Config:   html.NewConfig(),
@@ -295,14 +296,19 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 // carry the id from the enter call to the exit call.
 //
 // Emitted format contract: `<hN id="slug">` - id is the first and only attribute
-// on the tag. GenerateTOC, addHeaderButtons and wrapHeaderSections all read the
-// id positionally with a regex that expects it right after the level, so adding
-// another attribute here (or moving id) silently blanks the TOC and the header
-// buttons. Change those regexes too if this format changes.
+// on the tag. GenerateTOC and wrapHeaderSections both read the id positionally
+// with a regex that expects it right after the level, so adding another attribute
+// here (or moving id) silently blanks the TOC and the section wrappers. Change
+// those regexes too if this format changes.
+//
+// On exit it also emits the per-heading section buttons (see headerButtons),
+// keyed off r.headingID rather than the tag text. This is the only place heading
+// markup is produced, so a heading goldmark never parses as one (raw HTML) gets
+// no id and no buttons.
 func (r *knovNodeRenderer) renderHeading(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	n := node.(*ast.Heading)
 	if !entering {
-		fmt.Fprintf(w, `<a href="#%s" class="header-anchor" aria-hidden="true">#</a></h%d>`, r.headingID, n.Level)
+		fmt.Fprintf(w, `<a href="#%s" class="header-anchor" aria-hidden="true">#</a>%s</h%d>`, r.headingID, r.headerButtons(), n.Level)
 		return ast.WalkContinue, nil
 	}
 
@@ -599,34 +605,28 @@ func resolveMediaPath(dest string) string {
 	return ""
 }
 
-// addHeaderButtons injects edit-section anchor buttons into every header tag. With no
-// source file to target (PathlessRender) none are emitted.
-func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string {
-	relPath := pathutils.ToRelative(filePath)
-	if relPath == PathlessRender {
-		return htmlContent
+// headerButtons returns the per-heading section buttons (pdf export + edit section)
+// that renderHeading appends inside every <hN>, keyed to the heading currently being
+// rendered. Empty for a pathless render (no source file to target).
+func (r *knovNodeRenderer) headerButtons() string {
+	if r.relPath == PathlessRender {
+		return ""
 	}
-	headerRe := regexp.MustCompile(`<h([1-6])\s+id="([^"]+)"[^>]*>(.*?)</h[1-6]>`)
-	return headerRe.ReplaceAllStringFunc(htmlContent, func(match string) string {
-		parts := headerRe.FindStringSubmatch(match)
-		if len(parts) < 4 {
-			return match
-		}
-		pdfBtn := ""
-		if configmanager.PDFShowHeaderButton.Get() {
-			pdfBtn = fmt.Sprintf(
-				`<a href="/api/files/export/pdf?filepath=%s&section=%s" class="header-pdf-btn" title="%s"><i class="fa fa-file-pdf"></i></a>`,
-				url.QueryEscape(relPath), url.QueryEscape(parts[2]),
-				translation.SprintfForRequest(configmanager.GetLanguage(), "export section to pdf"),
-			)
-		}
-		editBtn := fmt.Sprintf(
-			`<a href="/files/edit/%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
-			relPath, parts[2],
-			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
+	lang := configmanager.GetLanguage()
+	pdfBtn := ""
+	if configmanager.PDFShowHeaderButton.Get() {
+		pdfBtn = fmt.Sprintf(
+			`<a href="/api/files/export/pdf?filepath=%s&section=%s" class="header-pdf-btn" title="%s"><i class="fa fa-file-pdf"></i></a>`,
+			url.QueryEscape(r.relPath), url.QueryEscape(r.headingID),
+			translation.SprintfForRequest(lang, "export section to pdf"),
 		)
-		return fmt.Sprintf(`<h%s id="%s">%s%s%s</h%s>`, parts[1], parts[2], parts[3], pdfBtn, editBtn, parts[1])
-	})
+	}
+	editBtn := fmt.Sprintf(
+		`<a href="/files/edit/%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
+		r.relPath, r.headingID,
+		translation.SprintfForRequest(lang, "edit section"),
+	)
+	return pdfBtn + editBtn
 }
 
 // wrapHeaderSections wraps content between headers in <div class="content-section">

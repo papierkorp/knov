@@ -16,11 +16,7 @@
   - 
 - chore
   - s3 backup tests?
-  - heading-id refactor follow-ups (from review):
-    - strip the trailing "##" closing sequence in markdown.ATXHeading (CommonMark) so parser.Headings(...).Text is clean and RenderHeadingInline no longer needs the "# " wrapper trick for it
-    - fold addHeaderButtons into knovNodeRenderer.renderHeading (it now owns heading emission) so per-heading button injection isn't a separate regex pass; leave wrapHeaderSections as the only cross-cutting one
-    - raw-HTML headings without an id are now dropped from the TOC/anchors - confirm no shipped docs/system pages rely on that
-    - headingTagRe in extractHTMLBlocks deletes <h1-6> elements inside restored wrapper blocks (details/summary) - keeps the text but drops the tag, verify acceptable
+
 
 # Async follow up jobs
 

@@ -57,10 +57,9 @@ func ScanHeadings(lines []string) []RawHeading {
 }
 
 // ATXHeading approximates CommonMark's ATX heading rule for one line: 1-6 leading '#',
-// then a space/tab or end of line, returning the level (1-6) and trimmed text. Returns
-// ok=false otherwise. Known simplifications: it trims any amount of leading indentation
-// (CommonMark stops at 3 spaces) and it keeps a trailing "##" closing sequence in the
-// text (CommonMark strips it).
+// then a space/tab or end of line, returning the level (1-6) and trimmed text with any
+// optional closing "#" sequence removed. Returns ok=false otherwise. Known
+// simplification: it trims any amount of leading indentation (CommonMark stops at 3 spaces).
 func ATXHeading(line string) (level int, text string, ok bool) {
 	t := strings.TrimSpace(line)
 	level = len(t) - len(strings.TrimLeft(t, "#"))
@@ -71,7 +70,17 @@ func ATXHeading(line string) (level int, text string, ok bool) {
 	if rest != "" && !strings.HasPrefix(rest, " ") && !strings.HasPrefix(rest, "\t") {
 		return 0, "", false
 	}
-	return level, strings.TrimSpace(rest), true
+	text = strings.TrimSpace(rest)
+	// drop the optional CommonMark closing sequence: trailing '#'s that are either
+	// the whole text or preceded by a space/tab.
+	if trimmed := strings.TrimRight(text, "#"); trimmed != text {
+		if trimmed == "" {
+			text = ""
+		} else if end := trimmed[len(trimmed)-1]; end == ' ' || end == '\t' {
+			text = strings.TrimRight(trimmed, " \t")
+		}
+	}
+	return level, text, true
 }
 
 // SplitFrontMatter splits content into (frontmatterYAML, body). frontmatter is
@@ -107,11 +116,11 @@ func frontMatterBodyLine(lines []string) int {
 
 // CodeBlock is one fenced code block located by CodeBlocks.
 type CodeBlock struct {
-	Indent       string // leading whitespace of the opening fence line
-	Lang         string // info string after the fence marker, trimmed ("" when absent)
-	Body         string // block content with the fence lines removed, lines joined by "\n"
-	Start        int    // 0-based index of the opening fence line
-	End          int    // 0-based index of the block's last line: the closing fence line,
+	Indent string // leading whitespace of the opening fence line
+	Lang   string // info string after the fence marker, trimmed ("" when absent)
+	Body   string // block content with the fence lines removed, lines joined by "\n"
+	Start  int    // 0-based index of the opening fence line
+	End    int    // 0-based index of the block's last line: the closing fence line,
 	//                      or the final content line when Unterminated. Always in range.
 	Unterminated bool // no closing fence was found; the block runs to the end of content
 }
