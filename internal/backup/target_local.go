@@ -128,6 +128,20 @@ func (t *localTarget) Locked(name string) (bool, error) {
 	return false, err
 }
 
+func (t *localTarget) LockedNames() (map[string]bool, error) {
+	entries, err := os.ReadDir(t.root)
+	if err != nil {
+		return nil, err
+	}
+	locked := make(map[string]bool)
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), lockExt) {
+			locked[strings.TrimSuffix(e.Name(), lockExt)] = true
+		}
+	}
+	return locked, nil
+}
+
 // LogEvent appends a new event to the target's history file (a single JSON array, rewritten
 // atomically) - callers (Run/Restore) are already serialized by job.backupMu, so a plain
 // read-modify-write needs no extra locking of its own.

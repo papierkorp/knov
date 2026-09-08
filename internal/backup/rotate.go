@@ -69,21 +69,21 @@ func Rotate(target BackupTarget, keepDays, keepDefault int) error {
 	if err != nil {
 		return err
 	}
+	locked, err := target.LockedNames()
+	if err != nil {
+		return err
+	}
 
 	now := time.Now()
 	keep := make(map[string]bool, len(entries))
 	defaultKept := 0
 
 	for _, e := range entries { // newest first
-		locked, err := target.Locked(e.name)
-		if err != nil {
-			logging.LogWarning(logging.KeyApp, "backup rotate: failed to check lock on %s: %v", e.name, err)
-		}
 		isDefault := IsDefaultSet(e.name)
 		withinDays := keepDays > 0 && now.Sub(e.t) <= time.Duration(keepDays)*24*time.Hour
 		needsFloor := isDefault && defaultKept < keepDefault
 
-		if locked || withinDays || needsFloor {
+		if locked[e.name] || withinDays || needsFloor {
 			keep[e.name] = true
 		}
 		if isDefault && keep[e.name] {

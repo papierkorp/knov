@@ -6,7 +6,6 @@
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
-  - add s3 to backup storage
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - cache for books?
   - todo editor add a date at the end for each click
@@ -16,7 +15,9 @@
 - fixes
   - 
 - chore
-  - index editor add text
+  - subheader: `## 1. Versuch - per HAProxy und public IP` is not editable
+  - where does test/editor-tests/edtest-filter.md and example_filter.md come from? i feel like they are randomly there without me running the tests
+  - s3 backup tests?
 
 # Async follow up jobs
 

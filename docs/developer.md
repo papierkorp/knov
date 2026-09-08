@@ -531,6 +531,64 @@ http.Error(w, "...", http.StatusInternalServerError)
 - triggered manually from `/system/backup` (`job.RunBackup`/`RunRestore`, logged into `JobRun` history like `gitPushJob`), with a storage checkbox row for partial backups and a lock/unlock/download action per available log row
 - optional scheduled backups: `KNOV_BACKUP_AUTO_ENABLED`/`KNOV_BACKUP_AUTO_CRON` (AppConfig env vars, restart required — same two-layer split as everything else in Configuration Management above) gate `job.checkAutoBackup`, ticked every `backupAutoCheckInterval` (fixed, 15m) from `job.Start()` — it's a no-op unless enabled and `backup.AutoBackupDue` finds the parsed cron schedule's (`backup.ParseCronSchedule`, `github.com/robfig/cron/v3`) next occurrence after the newest existing set (via `backup.ParseSetTime`) has already passed, so the check cadence and the actual backup cadence are decoupled. Driving this off the last set's own timestamp rather than a "ran today" flag means a device that isn't running 24/7 still catches up on a missed slot as soon as it's next on, instead of a slot that only ever lands outside its usage window getting skipped entirely
 
+## Testing S3 backups with MinIO in Docker
+
+### 1. Start MinIO
+
+```bash
+docker run -d --name knov-minio \
+  -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=knovtest \
+  -e MINIO_ROOT_PASSWORD=knovtest123 \
+  minio/minio server /data --console-address ":9001"
+```
+
+- `:9000` = S3 API, `:9001` = web console (http://localhost:9001, login `knovtest` / `knovtest123`).
+
+### 2. Create the bucket
+
+Either click **Create Bucket → `knov-backups`** in the console, or one-shot with the mc client:
+
+```bash
+docker run --rm --network host --entrypoint sh minio/mc -c \
+  "mc alias set local http://localhost:9000 knovtest knovtest123 && mc mb -p local/knov-backups"
+```
+
+### 3. Point the **dev** instance at it
+
+Add to the dev `.env` (port 1324 — leave the real instance on 1325 alone):
+
+```
+KNOV_BACKUP_S3_BUCKET=knov-backups
+KNOV_BACKUP_S3_ENDPOINT=localhost:9000
+KNOV_BACKUP_S3_ACCESS_KEY=knovtest
+KNOV_BACKUP_S3_SECRET_KEY=knovtest123
+KNOV_BACKUP_S3_USE_SSL=false
+KNOV_BACKUP_S3_REGION=us-east-1
+KNOV_BACKUP_S3_PREFIX=dev/
+```
+
+`USE_SSL=false` because local MinIO is plain HTTP. `PREFIX` is optional.
+
+### 4. Restart and exercise it
+
+Restart the dev app, then at `/system/backup`:
+
+1. **Create backup** → a `dev/<setname>.tar.gz` object should appear in the MinIO console.
+2. **Lock** a set → a `dev/<setname>.locked` object appears; **Unlock** removes it.
+3. **Download** → streams the archive straight from MinIO.
+4. **Restore** → takes a fresh safety snapshot (new object), then restarts.
+5. Create several backups and confirm rotation deletes the oldest objects per `KNOV_BACKUP_ROTATION_KEEP_DAYS` / `_KEEP_DEFAULT`.
+6. Check `dev/log.json` in the bucket — the append-only backup/restore history.
+
+### 5. Cleanup
+
+```bash
+docker rm -f knov-minio
+```
+
+Then remove the `KNOV_BACKUP_S3_*` lines from `.env` to fall back to local `KNOV_BACKUPS_PATH`.
+
 # Editor Types
 
 Each file can have an editor type stored in its metadata (`editor` field). The type controls which editor opens when the file is edited. The editor is resolved in this order: explicit metadata → file extension → parser detection → default (toastui).

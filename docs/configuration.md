@@ -236,6 +236,15 @@ Available at **Admin => Backups** (`/system/backup`).
   - it's within `KNOV_BACKUP_ROTATION_KEEP_DAYS` days (default 7) - any kind, full or partial
   - it's a full backup and among the `KNOV_BACKUP_ROTATION_KEEP_DEFAULT` most recent full backups (default 10) - a long-term floor so coming back after months away still leaves something restorable, even if daily backups lapsed. Partial backups (e.g. "just metadata") get no long-term floor of their own - once they age out of the days window, they're deleted
   - it's locked - click "Lock" on any set to keep it forever regardless of the two settings above, until "Unlock" is clicked
+- **S3 storage** - by default backup sets are `.tar.gz` files on the local filesystem under `KNOV_BACKUPS_PATH`. Set `KNOV_BACKUP_S3_BUCKET` to store them in an S3 bucket instead (works with AWS S3 and any S3-compatible service: MinIO, Cloudflare R2, Backblaze B2, DigitalOcean Spaces). `KNOV_BACKUPS_PATH` is then unused. Everything else (rotation, locking, the log page, download, restore, auto-profiles) works identically.
+  - `KNOV_BACKUP_S3_ENDPOINT` - endpoint host, no scheme, e.g. `s3.amazonaws.com`, `nyc3.digitaloceanspaces.com`, `localhost:9000`. Required whenever the bucket is set
+  - `KNOV_BACKUP_S3_ACCESS_KEY` / `KNOV_BACKUP_S3_SECRET_KEY` - credentials (redacted on `/system/environment`)
+  - `KNOV_BACKUP_S3_REGION` - e.g. `us-east-1`; leave empty for providers that don't need it (Cloudflare R2 wants `auto`)
+  - `KNOV_BACKUP_S3_PREFIX` - optional key prefix inside the bucket, e.g. `knov/backups/`; empty = bucket root
+  - `KNOV_BACKUP_S3_USE_SSL` - `true` (default) connects over HTTPS; set `false` only for a plain-HTTP local or private-LAN MinIO. With `false` against any endpoint reachable over the public internet the access/secret key cross the network unencrypted
+  - The bucket must already exist - knov doesn't create it. A wrong endpoint, bad credentials or a missing bucket surface as an error on `/system/backup` (and in the log for scheduled backups), not silently. Changing any `KNOV_BACKUP_S3_*` value requires a restart
+  - One bucket+prefix belongs to a single knov instance. The event log (`log.json`) is rewritten whole on every backup and archive names collide across instances, so two instances sharing a bucket+prefix will lose log entries and can clobber each other's sets - give each its own bucket or a distinct prefix
+  - Backups contain the full dataset, so on the bucket side enable server-side encryption and object versioning, and hand knov a key scoped to just get/put/list/delete under the prefix
 - **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_PROFILES` to one or more `name:cron:storages` entries, semicolon-separated, to create backups periodically in the background, on top of manual ones:
   - `cron` is a standard 5-field expression, e.g. `0 18 * * *` for daily at 18:00
   - `storages` is comma-separated and may be empty for the default backup set (metadata, chat, kanban, notifications, config, search)

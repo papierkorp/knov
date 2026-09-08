@@ -70,6 +70,13 @@ type AppConfig struct {
 	BackupAutoProfiles          []BackupProfile
 	BackupRotationKeepDays      int
 	BackupRotationKeepDefault   int
+	BackupS3Endpoint            string
+	BackupS3Region              string
+	BackupS3Bucket              string
+	BackupS3Prefix              string
+	BackupS3AccessKey           string
+	BackupS3SecretKey           string
+	BackupS3UseSSL              bool
 	LogFileEnabled              bool
 	LogMaxSizeMB                int
 	LogMaxFiles                 int
@@ -184,6 +191,20 @@ func GetBackupRotationKeepDays() int {
 // backup sets are kept regardless of either setting.
 func GetBackupRotationKeepDefault() int {
 	return appConfig.BackupRotationKeepDefault
+}
+
+// GetBackupS3Config returns the S3 backup-storage settings. A non-empty Bucket switches backup
+// storage from the local filesystem (KNOV_BACKUPS_PATH) to S3 - see job.DefaultBackupTarget.
+func GetBackupS3Config() backup.S3Config {
+	return backup.S3Config{
+		Endpoint:  appConfig.BackupS3Endpoint,
+		Region:    appConfig.BackupS3Region,
+		Bucket:    appConfig.BackupS3Bucket,
+		Prefix:    appConfig.BackupS3Prefix,
+		AccessKey: appConfig.BackupS3AccessKey,
+		SecretKey: appConfig.BackupS3SecretKey,
+		UseSSL:    appConfig.BackupS3UseSSL,
+	}
 }
 
 // SetBackupAutoProfiles overrides BackupAutoProfiles in memory only (no .env write) - this is an

@@ -211,6 +211,13 @@ var EnvVarDefs = []EnvVarDef{
 	),
 	intDef("KNOV_BACKUP_ROTATION_KEEP_DAYS", "backup", "how many days of backup sets (default or partial) to always keep, regardless of count", 7, func(c *AppConfig) *int { return &c.BackupRotationKeepDays }),
 	intDef("KNOV_BACKUP_ROTATION_KEEP_DEFAULT", "backup", "on top of that, the minimum number of default backups to always keep regardless of age - a floor\nso coming back after months away still leaves something restorable. A backup set can also be\nlocked individually on /system/backup to always be kept, ignoring both settings above, until unlocked", 10, func(c *AppConfig) *int { return &c.BackupRotationKeepDefault }),
+	stringDef("KNOV_BACKUP_S3_BUCKET", "backup", "S3 bucket backup sets are written to and restored from. Non-empty switches backup storage from the\nlocal filesystem (KNOV_BACKUPS_PATH) to S3 (or any S3-compatible service: MinIO, Cloudflare R2,\nBackblaze B2, DigitalOcean Spaces). Leave empty for local-filesystem backups", "", func(c *AppConfig) *string { return &c.BackupS3Bucket }),
+	stringDef("KNOV_BACKUP_S3_ENDPOINT", "backup", "S3 endpoint host, no scheme (e.g. s3.amazonaws.com, nyc3.digitaloceanspaces.com, localhost:9000).\nRequired when KNOV_BACKUP_S3_BUCKET is set", "", func(c *AppConfig) *string { return &c.BackupS3Endpoint }),
+	stringDef("KNOV_BACKUP_S3_REGION", "backup", "S3 region for backup storage (e.g. us-east-1); may be left empty for providers that don't need it", "", func(c *AppConfig) *string { return &c.BackupS3Region }),
+	stringDef("KNOV_BACKUP_S3_PREFIX", "backup", "key prefix applied to every backup object in the bucket (e.g. knov/backups/); empty = bucket root", "", func(c *AppConfig) *string { return &c.BackupS3Prefix }),
+	stringDef("KNOV_BACKUP_S3_ACCESS_KEY", "backup", "S3 access key id", "", func(c *AppConfig) *string { return &c.BackupS3AccessKey }, withSensitive()),
+	stringDef("KNOV_BACKUP_S3_SECRET_KEY", "backup", "S3 secret access key", "", func(c *AppConfig) *string { return &c.BackupS3SecretKey }, withSensitive()),
+	boolDef("KNOV_BACKUP_S3_USE_SSL", "backup", "connect to the S3 endpoint over HTTPS", true, func(c *AppConfig) *bool { return &c.BackupS3UseSSL }),
 }
 
 // applyEnvDefs populates cfg from every documented env var that has an AppConfig field

@@ -45,6 +45,9 @@ type BackupTarget interface {
 	Lock(name string) error
 	Unlock(name string) error
 	Locked(name string) (bool, error)
+	// LockedNames returns every currently-locked set name in one call, so Log/Rotate don't do a
+	// per-set round-trip (one HEAD request each on a remote target) just to read lock state.
+	LockedNames() (map[string]bool, error)
 	// LogEvent durably appends kind/set/source/now to the target's event history - see Events.
 	LogEvent(kind EventKind, set string, source EventSource) error
 	// Events returns every logged event, oldest first.

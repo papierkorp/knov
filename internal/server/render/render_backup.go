@@ -63,6 +63,24 @@ func autoBackupStatusHTML(t func(string, ...any) string) string {
 	return sb.String()
 }
 
+// backupStorageText is the one-line "where backup sets currently go" description shown under the
+// auto-backup status: a local filesystem path, or an S3 bucket (with prefix and endpoint when
+// set). job.BackupStorage returns the pieces; composing and translating them is render's job.
+func backupStorageText(t func(string, ...any) string) string {
+	s := job.BackupStorage()
+	if s.Kind != "S3" {
+		return t("local filesystem: %s", s.Path)
+	}
+	loc := s.Bucket
+	if s.Prefix != "" {
+		loc += "/" + s.Prefix
+	}
+	if s.Endpoint != "" {
+		loc += " @ " + s.Endpoint
+	}
+	return t("S3: %s", loc)
+}
+
 // rowManifest returns e.Set's manifest, fetched once per row and shared between
 // backupContentsLabel and restoreTouchesGit rather than each reading the archive on its own. Nil
 // whenever there's nothing to read: e is a default set (its manifest is never shown), unavailable
@@ -105,6 +123,8 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 
 	var sb strings.Builder
 	sb.WriteString(autoBackupStatusHTML(t))
+	fmt.Fprintf(&sb, `<p class="backup-storage">%s</p>`,
+		template.HTMLEscapeString(t("Backup storage: %s", backupStorageText(t))))
 	fmt.Fprintf(&sb, `<table class="backup-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th></th></tr></thead><tbody>`,
 		t("Time"), t("Event"), t("Trigger"), t("Contents"))
 	if len(entries) == 0 {
@@ -236,6 +256,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-table td { padding: .28rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: middle; }
 .backup-note { color: var(--text-secondary); font-size: .8rem; margin-bottom: .75rem; }
 .backup-auto-status { font-size: .8rem; margin: 0 0 .5rem; }
+.backup-storage { font-size: .8rem; margin: 0 0 .5rem; color: var(--text-secondary); }
 .backup-create-form { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
 .backup-storage-select { display: flex; flex-wrap: wrap; gap: .1rem 1rem; }
 .backup-storage-option { display: flex; align-items: center; gap: .3rem; font-size: .85rem; }

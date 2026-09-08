@@ -142,6 +142,11 @@
       "translation": ""
     },
     {
+      "id": "Backup storage: {Arg_1}",
+      "message": "Backup storage: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "Backups",
       "message": "Backups",
       "translation": ""
@@ -802,11 +807,6 @@
       "translation": ""
     },
     {
-      "id": "Load earlier lines",
-      "message": "Load earlier lines",
-      "translation": ""
-    },
-    {
       "id": "Loading files...",
       "message": "Loading files...",
       "translation": "Loading files..."
@@ -1027,8 +1027,8 @@
       "translation": ""
     },
     {
-      "id": "Release notes / Changelog",
-      "message": "Release notes / Changelog",
+      "id": "Release",
+      "message": "Release",
       "translation": ""
     },
     {
@@ -1219,6 +1219,11 @@
     {
       "id": "Status",
       "message": "Status",
+      "translation": ""
+    },
+    {
+      "id": "Storage",
+      "message": "Storage",
       "translation": ""
     },
     {
@@ -2657,11 +2662,6 @@
       "translation": ""
     },
     {
-      "id": "failed to read changelogs",
-      "message": "failed to read changelogs",
-      "translation": ""
-    },
-    {
       "id": "failed to read conflict file",
       "message": "failed to read conflict file",
       "translation": ""
@@ -3817,6 +3817,11 @@
       "translation": ""
     },
     {
+      "id": "no changelog available",
+      "message": "no changelog available",
+      "translation": ""
+    },
+    {
       "id": "no children",
       "message": "no children",
       "translation": ""
@@ -4502,11 +4507,6 @@
       "translation": ""
     },
     {
-      "id": "showing last {Integer} of {Integer_1} lines",
-      "message": "showing last {Integer} of {Integer_1} lines",
-      "translation": ""
-    },
-    {
       "id": "size",
       "message": "size",
       "translation": ""
@@ -4934,6 +4934,11 @@
     {
       "id": "working...",
       "message": "working...",
+      "translation": ""
+    },
+    {
+      "id": "working... {Integer}/{Integer_1}",
+      "message": "working... {Integer}/{Integer_1}",
       "translation": ""
     },
     {

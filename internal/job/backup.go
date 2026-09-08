@@ -14,6 +14,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strings"
 	"time"
 
 	"knov/internal/backup"
@@ -31,11 +32,41 @@ func init() {
 	backup.SetLocationFunc(configmanager.GetTimezone)
 }
 
-// DefaultBackupTarget returns the local-filesystem backup target every backup/restore call uses,
-// rooted at KNOV_BACKUPS_PATH - a folder next to (not inside) the storages it snapshots, so it
-// can be pointed at separate storage (e.g. a different disk) without touching StoragePath.
+// DefaultBackupTarget returns the backup target every backup/restore call uses. It's an S3 bucket
+// when KNOV_BACKUP_S3_BUCKET is set, otherwise the local filesystem rooted at KNOV_BACKUPS_PATH -
+// a folder next to (not inside) the storages it snapshots, so it can be pointed at separate
+// storage (e.g. a different disk) without touching StoragePath.
 func DefaultBackupTarget() (backup.BackupTarget, error) {
+	if cfg := configmanager.GetBackupS3Config(); cfg.Bucket != "" {
+		return backup.NewS3Target(cfg)
+	}
 	return backup.NewLocalTarget(configmanager.GetBackupsPath())
+}
+
+// BackupStorageInfo describes where backup sets currently go, for the status line on
+// /system/backup. Kind is "local" or "S3"; the remaining fields are populated per kind and left
+// empty otherwise. Composing this into display text is render's job, not job's.
+type BackupStorageInfo struct {
+	Kind     string // "local" or "S3"
+	Path     string // local: the KNOV_BACKUPS_PATH directory
+	Bucket   string // S3: bucket name
+	Prefix   string // S3: key prefix, "" for bucket root
+	Endpoint string // S3: endpoint host
+}
+
+// BackupStorage reports the configured backup storage target - S3 when KNOV_BACKUP_S3_BUCKET is
+// set, otherwise the local filesystem.
+func BackupStorage() BackupStorageInfo {
+	cfg := configmanager.GetBackupS3Config()
+	if cfg.Bucket == "" {
+		return BackupStorageInfo{Kind: "local", Path: configmanager.GetBackupsPath()}
+	}
+	return BackupStorageInfo{
+		Kind:     "S3",
+		Bucket:   cfg.Bucket,
+		Prefix:   strings.Trim(cfg.Prefix, "/"),
+		Endpoint: cfg.Endpoint,
+	}
 }
 
 // ListBackupLog returns the full backup/restore history, newest first, enriched with each

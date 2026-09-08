@@ -32,6 +32,10 @@ func Log(target BackupTarget) ([]LogEntry, error) {
 	if err != nil {
 		return nil, err
 	}
+	locked, err := target.LockedNames()
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "backup: failed to list locked sets: %v", err)
+	}
 	available := make(map[string]bool, len(names))
 	for _, n := range names {
 		available[n] = true
@@ -44,7 +48,7 @@ func Log(target BackupTarget) ([]LogEntry, error) {
 		if e.Kind == EventBackup {
 			loggedBackup[e.Set] = true
 		}
-		entry.Default, entry.Locked = logEntryFlags(target, e.Set, entry.Available)
+		entry.Default, entry.Locked = logEntryFlags(e.Set, entry.Available, locked)
 		entries = append(entries, entry)
 	}
 
@@ -58,21 +62,17 @@ func Log(target BackupTarget) ([]LogEntry, error) {
 		if err != nil {
 			continue
 		}
-		isDefault, locked := logEntryFlags(target, n, true)
-		entries = append(entries, LogEntry{Kind: EventBackup, Set: n, Time: t, Available: true, Default: isDefault, Locked: locked})
+		isDefault, isLocked := logEntryFlags(n, true, locked)
+		entries = append(entries, LogEntry{Kind: EventBackup, Set: n, Time: t, Available: true, Default: isDefault, Locked: isLocked})
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Time.After(entries[j].Time) })
 	return entries, nil
 }
 
-func logEntryFlags(target BackupTarget, name string, available bool) (isDefault, locked bool) {
+func logEntryFlags(name string, available bool, locked map[string]bool) (isDefault, isLocked bool) {
 	if !available {
 		return false, false
 	}
-	locked, err := target.Locked(name)
-	if err != nil {
-		logging.LogWarning(logging.KeyApp, "backup: failed to check lock on %s: %v", name, err)
-	}
-	return IsDefaultSet(name), locked
+	return IsDefaultSet(name), locked[name]
 }

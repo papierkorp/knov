@@ -142,6 +142,11 @@
       "translation": "Backup erstellt: {Arg_1}"
     },
     {
+      "id": "Backup storage: {Arg_1}",
+      "message": "Backup storage: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "Backups",
       "message": "Backups",
       "translation": "Backups"
@@ -802,11 +807,6 @@
       "translation": "Live"
     },
     {
-      "id": "Load earlier lines",
-      "message": "Load earlier lines",
-      "translation": "Frühere Zeilen laden"
-    },
-    {
       "id": "Loading files...",
       "message": "Loading files...",
       "translation": "Lade Dateien..."
@@ -1027,9 +1027,9 @@
       "translation": "Relative Zeilennummern"
     },
     {
-      "id": "Release notes / Changelog",
-      "message": "Release notes / Changelog",
-      "translation": "Release Notes / Änderungsprotokoll"
+      "id": "Release",
+      "message": "Release",
+      "translation": ""
     },
     {
       "id": "Rename",
@@ -1220,6 +1220,11 @@
       "id": "Status",
       "message": "Status",
       "translation": "Status"
+    },
+    {
+      "id": "Storage",
+      "message": "Storage",
+      "translation": ""
     },
     {
       "id": "Storage Statistics",
@@ -2657,11 +2662,6 @@
       "translation": "Fehler bei der Verarbeitung der Tabelle"
     },
     {
-      "id": "failed to read changelogs",
-      "message": "failed to read changelogs",
-      "translation": "Fehler beim Lesen der Änderungsprotokolle"
-    },
-    {
       "id": "failed to read conflict file",
       "message": "failed to read conflict file",
       "translation": "Fehler beim Lesen der Konfliktdatei"
@@ -3817,6 +3817,11 @@
       "translation": "keine Boards konfiguriert"
     },
     {
+      "id": "no changelog available",
+      "message": "no changelog available",
+      "translation": ""
+    },
+    {
       "id": "no children",
       "message": "no children",
       "translation": "keine Unterelemente"
@@ -4502,11 +4507,6 @@
       "translation": "Zeilennummern relativ zum Cursor anzeigen — nützlich mit Vim-Modus"
     },
     {
-      "id": "showing last {Integer} of {Integer_1} lines",
-      "message": "showing last {Integer} of {Integer_1} lines",
-      "translation": "zeige die letzten {Integer} von {Integer_1} Zeilen"
-    },
-    {
       "id": "size",
       "message": "size",
       "translation": "Größe"
@@ -4935,6 +4935,11 @@
       "id": "working...",
       "message": "working...",
       "translation": "arbeite..."
+    },
+    {
+      "id": "working... {Integer}/{Integer_1}",
+      "message": "working... {Integer}/{Integer_1}",
+      "translation": ""
     },
     {
       "id": "your browser does not support audio playback",
