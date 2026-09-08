@@ -148,6 +148,16 @@ function reloadPanel(panelId) {
     target: el,
     swap: "innerHTML",
     headers: { Accept: "text/html" },
+  }).then(() => {
+    // the swap replaced the content an active client-side filter had hidden
+    // rows in — re-apply it from the still-populated search input
+    const input = el
+      .closest(".rail-tab-panel")
+      ?.querySelector(".fp-browse-search-row input, .fp-latest-search-wrap input");
+    const q = input?.value.trim();
+    if (q && typeof filterGroupContent === "function") {
+      filterGroupContent(panelId.replace(/^fp-/, ""), q);
+    }
   });
   el.dataset.loaded = "true";
 }

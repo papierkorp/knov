@@ -118,7 +118,7 @@ function setupFilePage() {
   }
 
   // settings/admin pages — no file panel content applies here
-  if (path === "/settings" || path === "/admin" || path === "/kanban") {
+  if (path === "/settings" || path === "/admin" || path === "/kanban" || path === "/files/new") {
     closePanel();
     return true;
   }
