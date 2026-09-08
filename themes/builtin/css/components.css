@@ -146,14 +146,18 @@
   cursor: pointer;
 }
 
-.file-form .form-actions {
+.file-form .form-actions,
+#entry-editor .form-actions,
+#component-list-editor .form-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
 }
 
-#editor-status > * {
+#editor-status > *,
+#entry-editor-status > *,
+#list-editor-status > * {
   margin: 0;
   padding: 6px 12px; /* 8px - 2px for borders */
 }

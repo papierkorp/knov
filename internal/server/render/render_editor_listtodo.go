@@ -120,8 +120,8 @@ func RenderListEditor(filepath string, todoMode bool) string {
 		<div class="form-actions">
 			<button type="submit" class="btn-primary">%s</button>
 			<button type="button" onclick="window.location.href='%s'" class="btn-secondary">%s</button>
+			<div id="list-editor-status"></div>
 		</div>
-		<div id="list-editor-status"></div>
 	</form>
 
 	<script>

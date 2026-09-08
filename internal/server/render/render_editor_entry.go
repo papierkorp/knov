@@ -114,8 +114,8 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	// single-quoted attribute wrapping a JSON string literal, both layers escaped, so a
 	// filepath containing a quote/apostrophe can't break out of the attribute or the JS
 	fmt.Fprintf(&html, `<button type="button" onclick='location.href=%s' class="btn-secondary">%s</button>`, htmlpkg.EscapeString(jsEscapeString(cancelURL)), t("cancel"))
-	html.WriteString(`</div>`)
 	html.WriteString(`<div id="entry-editor-status"></div>`)
+	html.WriteString(`</div>`)
 	html.WriteString(`</form>`)
 
 	// move/remove/reindex script - use window scope for HTMX compatibility

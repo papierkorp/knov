@@ -17,7 +17,6 @@
   - 
 - chore
   - index editor add text
-  - index editor save - success message is in a extra line
 
 # Async follow up jobs
 
