@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"knov/internal/configmanager"
@@ -107,9 +108,22 @@ func createTestFilter() {
 	}
 }
 
+// deleteTestFilter removes every filter config under the test/ prefix - the example_filter
+// seeded by createTestFilter plus any left behind by the test suites (e.g.
+// test/editors-tests/edtest-filter), so cleaning test data leaves nothing test-related.
 func deleteTestFilter() {
-	if err := filter.DeleteFilterConfig("test/example_filter"); err != nil {
-		logging.LogError(logging.KeyApp, "failed to delete test filter: %v", err)
+	ids, err := filter.GetAllFilters()
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to list filters for cleanup: %v", err)
+		return
+	}
+	for _, id := range ids {
+		if !strings.HasPrefix(id, "test/") {
+			continue
+		}
+		if err := filter.DeleteFilterConfig(id); err != nil {
+			logging.LogError(logging.KeyApp, "failed to delete test filter %s: %v", id, err)
+		}
 	}
 }
 

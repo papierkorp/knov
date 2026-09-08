@@ -16,7 +16,6 @@
   - 
 - chore
   - subheader: `## 1. Versuch - per HAProxy und public IP` is not editable
-  - where does test/editor-tests/edtest-filter.md and example_filter.md come from? i feel like they are randomly there without me running the tests
   - s3 backup tests?
 
 # Async follow up jobs

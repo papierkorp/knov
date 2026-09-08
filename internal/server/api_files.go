@@ -941,6 +941,14 @@ func removeFileAndMetadata(fullPath string) error {
 		return err
 	}
 	relPath := pathutils.ToRelative(fullPath)
+	// a filter index file carries a paired config in configStorage - drop it too, or
+	// RegenerateAllIndexes recreates the file on the next metadata change
+	if filter.GetFilterConfigForFile(relPath) != nil {
+		id := strings.TrimSuffix(relPath, configmanager.ExtensionForEditor("index"))
+		if err := filter.DeleteFilterConfig(id); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to delete filter config for %s: %v", relPath, err)
+		}
+	}
 	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, relPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
 	}
