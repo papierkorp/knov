@@ -590,52 +590,66 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// RenderChangelog concatenates the curated end-user release notes
-// (docs/releases/*.md, newest first) into one rendered HTML string - shared by
-// the full /system/changelog page and the rail "changelog" content snippet's
-// fragment endpoint. Before the first tagged release exists it falls back to
-// README.md.
-func RenderChangelog() (string, error) {
-	mdHandler := parser.NewMarkdownHandler()
+// RenderChangelog concatenates the full changelog history
+// (docs/changelogs/<year>.md, newest year first) into one rendered HTML string -
+// shared by the /system/changelog page and the rail "changelog" fragment. It has
+// no README or release-notes fallback; with no changelog files it returns a
+// placeholder.
+func RenderChangelog() string {
+	if html := renderDocsMarkdown("docs/changelogs", func(a, b string) bool { return a > b }); html != "" {
+		return html
+	}
+	return `<p class="no-changelog">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no changelog available") + `</p>`
+}
 
+// RenderRelease renders the static release-information preamble (docs/release.md)
+// followed by the version/build info table and the curated end-user release
+// notes (docs/releases/*.md, newest first) - shared by the /system/release page
+// and the rail "release" fragment.
+func RenderRelease() string {
+	var out strings.Builder
+	if data, err := docsFiles.ReadFile("docs/release.md"); err == nil {
+		if rendered, err := parser.NewMarkdownHandler().Render(data, parser.PathlessRender); err == nil {
+			out.Write(rendered)
+		}
+	}
+	out.WriteString(RenderVersionInfo(false))
+	out.WriteString(renderDocsMarkdown("docs/releases", releaseBefore))
+	return out.String()
+}
+
+// renderDocsMarkdown reads every *.md directly inside the embedded dir, orders
+// the names with less, renders each as pathless markdown and concatenates the
+// resulting HTML.
+func renderDocsMarkdown(dir string, less func(a, b string) bool) string {
 	var names []string
-	if entries, err := docsFiles.ReadDir("docs/releases"); err == nil {
+	if entries, err := docsFiles.ReadDir(dir); err == nil {
 		for _, entry := range entries {
 			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".md") {
 				names = append(names, entry.Name())
 			}
 		}
 	}
+	sort.Slice(names, func(i, j int) bool { return less(names[i], names[j]) })
 
-	if len(names) == 0 {
-		data, err := docsFiles.ReadFile("README.md")
-		if err != nil {
-			return "", err
-		}
-		rendered, err := mdHandler.Render(data, parser.PathlessRender)
-		return string(rendered), err
-	}
-
-	sort.Slice(names, func(i, j int) bool { return releaseBefore(names[i], names[j]) })
-
+	mdHandler := parser.NewMarkdownHandler()
 	var combined strings.Builder
 	for _, name := range names {
-		data, err := docsFiles.ReadFile("docs/releases/" + name)
+		data, err := docsFiles.ReadFile(dir + "/" + name)
 		if err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to read release notes %s: %v", name, err)
+			logging.LogWarning(logging.KeyApp, "failed to read %s/%s: %v", dir, name, err)
 			continue
 		}
 
 		rendered, err := mdHandler.Render(data, parser.PathlessRender)
 		if err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to render release notes %s: %v", name, err)
+			logging.LogWarning(logging.KeyApp, "failed to render %s/%s: %v", dir, name, err)
 			continue
 		}
 
 		combined.Write(rendered)
 	}
-
-	return combined.String(), nil
+	return combined.String()
 }
 
 // releaseBefore orders release-notes filenames for display: "unreleased.md"
@@ -660,23 +674,27 @@ func semverKey(name string) int {
 }
 
 func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	lang := configmanager.GetLanguage()
-	html, err := RenderChangelog()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(lang, "failed to read changelogs"), http.StatusInternalServerError)
-		return
-	}
+	renderSystemMarkdownPage(w, "Changelog", "system/changelog.md", RenderChangelog())
+}
 
-	fileContent := &files.FileContent{
-		HTML: html,
-		TOC:  parser.GenerateTOC(html),
+func HandleSystemRelease(w http.ResponseWriter, r *http.Request) {
+	renderSystemMarkdownPage(w, "Release", "system/release.md", RenderRelease())
+}
+
+// renderSystemMarkdownPage wraps pre-rendered HTML in the fileview template so it
+// gets a table of contents and the system-page chrome. The TOC (and its rail
+// panel) is only attached when the page has more than one heading.
+func renderSystemMarkdownPage(w http.ResponseWriter, title, virtualPath, html string) {
+	fileContent := &files.FileContent{HTML: html}
+	if toc := parser.GenerateTOC(html); len(toc) > 1 {
+		fileContent.TOC = toc
 	}
 
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileViewTemplateData("Changelog", "system/changelog.md", fileContent)
+	data := thememanager.NewFileViewTemplateData(title, virtualPath, fileContent)
 	data.SystemPage = true
 	if err := tm.Render(w, "fileview", data); err != nil {
-		logging.LogError(logging.KeyApp, "failed to render changelog page: %v", err)
+		logging.LogError(logging.KeyApp, "failed to render %s page: %v", title, err)
 	}
 }
 
@@ -707,8 +725,10 @@ func GetVersionInfo() VersionInfo {
 
 // RenderVersionInfo renders the version/build-info table - shared by the
 // full /system/version page and the rail "version" content snippet's
-// fragment endpoint.
-func RenderVersionInfo() string {
+// fragment endpoint. withChangelogLink appends a link to /system/changelog
+// (omitted when embedded in the /system/release page, which already lists the
+// release notes).
+func RenderVersionInfo(withChangelogLink bool) string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
 		return translation.SprintfForRequest(lang, key, args...)
@@ -719,7 +739,7 @@ func RenderVersionInfo() string {
 			template.HTMLEscapeString(label), template.HTMLEscapeString(value))
 	}
 
-	return `<style>
+	out := `<style>
 .version-table { border-collapse: collapse; font-size: .9rem; min-width: 320px; }
 .version-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 .version-label { font-weight: 600; white-space: nowrap; width: 160px; }
@@ -733,13 +753,16 @@ func RenderVersionInfo() string {
 		row(t("Go version"), runtime.Version()) +
 		row(t("OS / Arch"), runtime.GOOS+"/"+runtime.GOARCH) +
 		row(t("Last commit"), version.LastCommitMessage) +
-		`</tbody></table>` +
-		fmt.Sprintf(`<a class="version-changelog-link" href="/system/changelog">%s &rarr;</a>`, t("Release notes / Changelog"))
+		`</tbody></table>`
+	if withChangelogLink {
+		out += fmt.Sprintf(`<a class="version-changelog-link" href="/system/changelog">%s &rarr;</a>`, t("Changelog"))
+	}
+	return out
 }
 
 func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	if err := tm.RenderSystemPage(w, "Version", template.HTML(RenderVersionInfo())); err != nil {
+	if err := tm.RenderSystemPage(w, "Version", template.HTML(RenderVersionInfo(true))); err != nil {
 		logging.LogError(logging.KeyApp, "failed to render version page: %v", err)
 	}
 }

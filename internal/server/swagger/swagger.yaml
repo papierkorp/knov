@@ -4445,18 +4445,14 @@ paths:
       - system
   /api/system/changelog:
     get:
-      description: Returns the rendered changelog as HTML (for HTMX) - the same content
-        shown on the /system/changelog page, for embedding in the rail "changelog"
-        panel
+      description: Returns the rendered changelog history as HTML (for HTMX) - the
+        same content shown on the /system/changelog page, for embedding in the rail
+        "changelog" panel
       produces:
       - text/html
       responses:
         "200":
           description: changelog HTML
-          schema:
-            type: string
-        "500":
-          description: failed to read changelogs
           schema:
             type: string
       summary: Get changelog
@@ -4511,6 +4507,21 @@ paths:
               $ref: '#/definitions/job.JobRun'
             type: array
       summary: Get job history
+      tags:
+      - system
+  /api/system/release:
+    get:
+      description: Returns the rendered version info and release notes as HTML (for
+        HTMX) - the same content shown on the /system/release page, for embedding
+        in the rail "release" panel
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: release HTML
+          schema:
+            type: string
+      summary: Get release notes
       tags:
       - system
   /api/system/restart:

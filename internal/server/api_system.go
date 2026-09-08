@@ -240,23 +240,27 @@ func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} render.VersionInfo
 // @Router /api/system/version [get]
 func handleAPIGetSystemVersion(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, render.GetVersionInfo(), render.RenderVersionInfo())
+	writeResponse(w, r, render.GetVersionInfo(), render.RenderVersionInfo(true))
 }
 
 // @Summary Get changelog
-// @Description Returns the rendered changelog as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail "changelog" panel
+// @Description Returns the rendered changelog history as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail "changelog" panel
 // @Tags system
 // @Produce html
 // @Success 200 {string} string "changelog HTML"
-// @Failure 500 {string} string "failed to read changelogs"
 // @Router /api/system/changelog [get]
 func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	html, err := render.RenderChangelog()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read changelogs"), http.StatusInternalServerError)
-		return
-	}
-	writeResponse(w, r, nil, html)
+	writeResponse(w, r, nil, render.RenderChangelog())
+}
+
+// @Summary Get release notes
+// @Description Returns the rendered version info and release notes as HTML (for HTMX) - the same content shown on the /system/release page, for embedding in the rail "release" panel
+// @Tags system
+// @Produce html
+// @Success 200 {string} string "release HTML"
+// @Router /api/system/release [get]
+func handleAPIGetSystemRelease(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, r, nil, render.RenderRelease())
 }
 
 // @Summary Get environment variables

@@ -100,6 +100,8 @@ const RAIL_SNIPPETS = [
   { id: "environment-page", icon: "fa-arrow-up-right-from-square", label: "open environment page", kind: "link", link: "/system/environment" },
   { id: "changelog", icon: "fa-scroll", label: "changelog", kind: "content", url: () => "/api/system/changelog" },
   { id: "changelog-page", icon: "fa-arrow-up-right-from-square", label: "open changelog page", kind: "link", link: "/system/changelog" },
+  { id: "release", icon: "fa-tag", label: "release", kind: "content", url: () => "/api/system/release" },
+  { id: "release-page", icon: "fa-arrow-up-right-from-square", label: "open release page", kind: "link", link: "/system/release" },
 ];
 
 function railSnippetByID(id) {

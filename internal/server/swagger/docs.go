@@ -5806,7 +5806,7 @@ const docTemplate = `{
         },
         "/api/system/changelog": {
             "get": {
-                "description": "Returns the rendered changelog as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail \"changelog\" panel",
+                "description": "Returns the rendered changelog history as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail \"changelog\" panel",
                 "produces": [
                     "text/html"
                 ],
@@ -5817,12 +5817,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "changelog HTML",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "failed to read changelogs",
                         "schema": {
                             "type": "string"
                         }
@@ -5895,6 +5889,26 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/job.JobRun"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/release": {
+            "get": {
+                "description": "Returns the rendered version info and release notes as HTML (for HTMX) - the same content shown on the /system/release page, for embedding in the rail \"release\" panel",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get release notes",
+                "responses": {
+                    "200": {
+                        "description": "release HTML",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

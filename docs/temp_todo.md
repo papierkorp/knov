@@ -12,11 +12,14 @@
   - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
+  - upgrade path tool in /system/release which shows the changes from one speicific build to another
 - fixes
   - 
 - chore
-  - 
-
+  - tree - reload button doesnt respect the filter
+  - close sidebar for /files/new
+  - index editor add text
+  - index editor save - success message is in a extra line
 
 # Async follow up jobs
 
