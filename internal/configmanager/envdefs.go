@@ -175,6 +175,7 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── notifications ──
 	intDef("KNOV_NOTIFY_DURATION", "notifications", "how long toast notifications stay visible, in milliseconds", 3500, func(c *AppConfig) *int { return &c.NotifyDuration }),
+	stringDef("KNOV_NOTIFY_MIN_LEVEL", "notifications", "minimum severity that still shows a toast (lower levels are still written to the notification log)", "info", func(c *AppConfig) *string { return &c.NotifyMinLevel }, withOptions("info", "warning", "error", "off")),
 
 	// ── kanban ──
 	boolDef("KNOV_KANBAN_EVENTS_ENABLED", "kanban", "set to false to disable kanban event logging entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.KanbanEventsEnabled }),

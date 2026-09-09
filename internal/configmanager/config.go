@@ -66,6 +66,7 @@ type AppConfig struct {
 	KanbanAncestorAllowedStatus []string
 	KanbanBoards                []KanbanBoard
 	NotifyDuration              int
+	NotifyMinLevel              string
 	DefaultEditor               string
 	BackupAutoProfiles          []BackupProfile
 	BackupRotationKeepDays      int
@@ -147,6 +148,7 @@ func InitAppConfig() {
 	}
 
 	initLogLevel()
+	initNotifyMinLevel()
 
 	if err := InitGitRepository(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize git repository: %s", err)
@@ -172,6 +174,25 @@ func SetDataAndStoragePaths(dataPath, storagePath string) {
 // GetNotifyDuration returns the notification toast display duration in milliseconds
 func GetNotifyDuration() int {
 	return appConfig.NotifyDuration
+}
+
+// GetNotifyMinLevel returns the minimum notification severity that still shows a
+// toast: "info", "warning", "error" or "off". Lower levels are still written to
+// the persistent notification log.
+func GetNotifyMinLevel() string {
+	return appConfig.NotifyMinLevel
+}
+
+// initNotifyMinLevel normalizes KNOV_NOTIFY_MIN_LEVEL (trim + lowercase) and warns
+// on an unrecognized value, falling back to "info" so a typo never silently
+// changes which notifications toast.
+func initNotifyMinLevel() {
+	level := strings.ToLower(strings.TrimSpace(appConfig.NotifyMinLevel))
+	if !slices.Contains([]string{"info", "warning", "error", "off"}, level) {
+		logging.LogWarning(logging.KeyApp, "invalid KNOV_NOTIFY_MIN_LEVEL '%s', falling back to 'info'", appConfig.NotifyMinLevel)
+		level = "info"
+	}
+	appConfig.NotifyMinLevel = level
 }
 
 // GetBackupAutoProfiles returns the configured automatic backup profiles - each independently

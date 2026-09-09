@@ -54,12 +54,13 @@ func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType strin
 	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, cancellable, progress))
 }
 
-// writeAPIError writes an honest status-coded error response: it fires an error
-// toast via notify.SetHeader (also persisting it to the notification log), then
-// writes a body that honours the request Accept header the same way writeResponse
-// does - an inline status-message span for htmx/browser clients, a JSON error
-// object for clients asking for application/json. Every failure return in the
-// server handlers goes through this.
+// writeAPIError writes an honest status-coded error response whose body honours the
+// request Accept header the same way writeResponse does - an inline status-message
+// span for htmx/browser clients (htmx 4 swaps 4xx/5xx bodies by default, so the
+// error still shows inline), a JSON error object for application/json clients.
+//
+// It also fires an error toast + notification-log entry via notify.SetHeader;
+// KNOV_NOTIFY_MIN_LEVEL mutes the toast (the log entry always persists).
 func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message string) {
 	notify.SetHeader(w, notify.LevelError, message)
 	acceptHeader := r.Header.Get("Accept")

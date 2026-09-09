@@ -9,7 +9,8 @@
 //     pending=true. The new page picks it up via a single DOMContentLoaded fetch
 //     to GET /api/notifications/flash.
 //
-// Both write to notificationStorage for the persistent log.
+// Both write to notificationStorage for the persistent log. A level below
+// KNOV_NOTIFY_MIN_LEVEL still persists but shows no toast (see muted).
 // JS injection is handled by render.RenderNotificationJS, called by thememanager.
 package notify
 
@@ -18,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 )
@@ -37,16 +39,36 @@ type payload struct {
 	Message string `json:"message"`
 }
 
+// severity ranks levels for the KNOV_NOTIFY_MIN_LEVEL gate.
+var severity = map[Level]int{LevelInfo: 0, LevelSuccess: 0, LevelWarning: 1, LevelError: 2}
+
+// muted reports whether a notification at level should skip its toast for the
+// configured minimum level. It is still written to the persistent log.
+func muted(level Level) bool {
+	switch configmanager.GetNotifyMinLevel() {
+	case "off":
+		return true
+	case "error":
+		return severity[level] < severity[LevelError]
+	case "warning":
+		return severity[level] < severity[LevelWarning]
+	default: // "info" (normalized at startup)
+		return false
+	}
+}
+
 // SetHeader fires an immediate toast via HX-Trigger and persists the notification.
 // Use for in-page responses where the user stays on the same page.
 func SetHeader(w http.ResponseWriter, level Level, message string) {
-	p := payload{Type: level, Message: message}
-	data, err := json.Marshal(map[string]payload{"notify": p})
-	if err != nil {
-		logging.LogError(logging.KeyApp, "notify: failed to marshal header payload: %v", err)
-		return
+	if !muted(level) {
+		p := payload{Type: level, Message: message}
+		data, err := json.Marshal(map[string]payload{"notify": p})
+		if err != nil {
+			logging.LogError(logging.KeyApp, "notify: failed to marshal header payload: %v", err)
+			return
+		}
+		w.Header().Set("HX-Trigger", string(data))
 	}
-	w.Header().Set("HX-Trigger", string(data))
 
 	if _, err := notificationStorage.Add(string(level), message, false); err != nil {
 		logging.LogError(logging.KeyApp, "notify: failed to persist notification: %v", err)
@@ -57,7 +79,8 @@ func SetHeader(w http.ResponseWriter, level Level, message string) {
 // Use for navigation responses (HX-Redirect / HX-Refresh) where HX-Trigger
 // would be lost before the browser renders the toast.
 func SetFlash(level Level, message string) {
-	if _, err := notificationStorage.Add(string(level), message, true); err != nil {
+	// muted levels persist but are not pending, so no toast fires on the next load.
+	if _, err := notificationStorage.Add(string(level), message, !muted(level)); err != nil {
 		logging.LogError(logging.KeyApp, "notify: failed to store flash notification: %v", err)
 	}
 }
