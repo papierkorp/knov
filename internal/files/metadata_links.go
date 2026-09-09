@@ -48,14 +48,17 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 
 	// progress spans the four sequential passes over paths plus the two media passes (zeroth
 	// and final), so the bar keeps advancing to the end instead of pinning at N/N during the
-	// media tail; bump() is called once per file in each.
+	// media tail; bump() is called once at the top of each per-file loop body. It reports the
+	// count completed so far (before incrementing), so the bar trails the item in flight rather
+	// than jumping to N/N while the last file is still processing; a final report on success
+	// closes it out at N/N.
 	progressTotal := 4*len(paths) + 2*len(allMediaFiles)
 	progressDone := 0
 	bump := func() {
-		progressDone++
 		if report != nil {
 			report(progressDone, progressTotal)
 		}
+		progressDone++
 	}
 
 	// zeroth pass: clear LinksToHere on all media files so stale references don't persist.
@@ -242,6 +245,9 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 	logging.LogInfo(key, "media refs found in docs usedlinks: %d media files referenced", mediaCount)
 
 	logging.LogInfo(key, "metadata links rebuild completed")
+	if report != nil {
+		report(progressTotal, progressTotal)
+	}
 	if OnMetadataRebuild != nil {
 		OnMetadataRebuild()
 	}

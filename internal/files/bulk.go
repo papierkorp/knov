@@ -21,17 +21,18 @@ func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string, r
 		if ctx.Err() != nil {
 			break
 		}
+		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
+			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
+		} else {
+			if err := MetaDataDeleteNoRefresh(key, pathutils.ToRelative(fullPath)); err != nil {
+				logging.LogWarning(key, "bulk-delete-files: failed to delete metadata for %s: %v", fullPath, err)
+			}
+			deleted = append(deleted, fullPath)
+		}
+		// report after the item is handled, so the bar reaches N/N only once the work is done
 		if report != nil {
 			report(i+1, len(fullPaths))
 		}
-		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
-			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
-			continue
-		}
-		if err := MetaDataDeleteNoRefresh(key, pathutils.ToRelative(fullPath)); err != nil {
-			logging.LogWarning(key, "bulk-delete-files: failed to delete metadata for %s: %v", fullPath, err)
-		}
-		deleted = append(deleted, fullPath)
 	}
 	if len(deleted) > 0 {
 		RefreshCaches()
@@ -50,12 +51,13 @@ type BulkUpdatePatch struct {
 // caches once. Returns the number of files updated and the number that failed.
 func BulkUpdateMetadata(key logging.Key, matched []File, patch BulkUpdatePatch, report func(done, total int)) (updated, failed int) {
 	for i, f := range matched {
-		if report != nil {
-			report(i+1, len(matched))
-		}
 		if err := applyBulkUpdatePatch(f.Metadata, patch); err != nil {
 			logging.LogError(key, "bulk-update-metadata: failed to save %s: %v", f.Metadata.Path, err)
 			failed++
+		}
+		// report after the item is handled, so the bar reaches N/N only once the work is done
+		if report != nil {
+			report(i+1, len(matched))
 		}
 	}
 	RefreshCaches()
