@@ -7,7 +7,6 @@
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
-  - cache for books?
   - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
@@ -16,6 +15,7 @@
   - 
 - chore
   - s3 backup tests?
+  - cache for books?
 
 
 # Async follow up jobs
