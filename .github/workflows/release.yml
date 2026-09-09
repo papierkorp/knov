@@ -24,6 +24,7 @@ jobs:
       - run: go install golang.org/x/text/cmd/gotext@latest
 
       - run: make prod
+      - run: make mobile
 
       - name: prepare release notes
         run: |
@@ -34,6 +35,6 @@ jobs:
             cp README.md release_notes.md
           fi
 
-      - run: gh release create ${{ github.ref_name }} bin/knov bin/knov.exe --notes-file release_notes.md
+      - run: gh release create ${{ github.ref_name }} bin/knov bin/knov.exe bin/knov-arm64 --notes-file release_notes.md
         env:
           GH_TOKEN: ${{ github.token }}
