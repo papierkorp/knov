@@ -38,17 +38,6 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 	}
 	logging.LogInfo(key, "docs files to process: %d", len(paths))
 
-	// progress spans the four sequential passes over paths below (the two media passes are a
-	// small tail, not counted); bump() is called once per file in each.
-	progressTotal := 4 * len(paths)
-	progressDone := 0
-	bump := func() {
-		progressDone++
-		if report != nil {
-			report(progressDone, progressTotal)
-		}
-	}
-
 	// load media files once — used in zeroth pass and final media pass
 	allMediaFiles, err := GetAllMediaFiles()
 	if err != nil {
@@ -57,6 +46,18 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 	}
 	logging.LogInfo(key, "media files found: %d", len(allMediaFiles))
 
+	// progress spans the four sequential passes over paths plus the two media passes (zeroth
+	// and final), so the bar keeps advancing to the end instead of pinning at N/N during the
+	// media tail; bump() is called once per file in each.
+	progressTotal := 4*len(paths) + 2*len(allMediaFiles)
+	progressDone := 0
+	bump := func() {
+		progressDone++
+		if report != nil {
+			report(progressDone, progressTotal)
+		}
+	}
+
 	// zeroth pass: clear LinksToHere on all media files so stale references don't persist.
 	// Re-gets current metadata under Mutate rather than writing the pre-rebuild snapshot
 	// back, so a concurrent edit landing mid-rebuild isn't reverted (see metadata.go godoc).
@@ -64,6 +65,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
 		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			if !existed {
@@ -213,6 +215,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		bump()
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
 		linksToHere := linksToHereMap[normalizedPath]
 		if linksToHere == nil {
