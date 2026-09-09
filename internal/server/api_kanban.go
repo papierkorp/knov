@@ -62,7 +62,7 @@ func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJobStarted(w, r, id, job.JobTypeFileSync, false)
+	respondJobStarted(w, r, id, job.JobTypeFileSync)
 }
 
 // @Summary Get kanban board for a folder

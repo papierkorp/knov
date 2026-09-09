@@ -236,7 +236,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJobStarted(w, r, id, job.JobTypeFullRebuild, false)
+	respondJobStarted(w, r, id, job.JobTypeFullRebuild)
 }
 
 // @Summary Rebuild metadata links for a single file

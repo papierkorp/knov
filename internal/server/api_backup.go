@@ -96,7 +96,7 @@ func handleAPIRestoreBackup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJobStarted(w, r, id, job.JobTypeRestore, false)
+	respondJobStarted(w, r, id, job.JobTypeRestore)
 }
 
 // @Summary Lock a backup

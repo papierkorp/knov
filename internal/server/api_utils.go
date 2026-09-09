@@ -39,14 +39,14 @@ func setAttachmentFilename(w http.ResponseWriter, filename string) {
 
 // respondJobStarted writes the initial htmx polling-spinner response for a just-started async
 // job (job.StartAsync), collapsing the identical record-build + render block every StartAsync
-// handler otherwise repeats. listItem wraps the span in <li> for the lone browse-tree caller
-// (delete-folder), whose hx-target is a tree row rather than a bare span.
-func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType string, listItem bool) {
+// handler otherwise repeats. Delete-folder is the lone browse-tree caller, whose hx-target is a
+// tree row rather than a bare span, so its span is wrapped in <li>.
+func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType string) {
 	lang := configmanager.GetLanguage()
 	rec := &jobStorage.JobRecord{ID: id, Type: jobType, Status: jobStorage.StatusRunning}
 	cancellable := job.IsCancellable(jobType)
 	progress := job.GetProgress(id)
-	if listItem {
+	if jobType == job.JobTypeDeleteFolder {
 		writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec, cancellable, progress))
 		return
 	}

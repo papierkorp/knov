@@ -1033,7 +1033,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJobStarted(w, r, id, job.JobTypeDeleteFolder, true)
+	respondJobStarted(w, r, id, job.JobTypeDeleteFolder)
 }
 
 // @Summary Delete all files in a collection or folder
@@ -1114,7 +1114,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "started bulk delete of %d files from %s=%s (job %s)", len(toDelete), groupType, value, id)
 
-	respondJobStarted(w, r, id, job.JobTypeBulkDeleteFiles, false)
+	respondJobStarted(w, r, id, job.JobTypeBulkDeleteFiles)
 }
 
 // @Summary Get headers (TOC) for a file
