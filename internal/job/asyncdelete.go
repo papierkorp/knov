@@ -173,6 +173,27 @@ func RecoverInterrupted() {
 	}
 }
 
+// notifyAsyncFinished stores a pending notification for a finished StartAsync job so tabs
+// other than the one that triggered it surface the outcome on their next page load (the
+// triggering tab gets its own toast/redirect from the polling handler). Mirrors
+// markInterrupted's pending-notification pattern - no live push. Canceled runs are skipped:
+// they're user-initiated from a tab, and types that need special cancel messaging (e.g.
+// full-rebuild) already add their own notification.
+func notifyAsyncFinished(name, status, errMsg string) {
+	var level, msg string
+	switch status {
+	case jobStorage.StatusDone:
+		level, msg = "success", fmt.Sprintf("%s finished", name)
+	case jobStorage.StatusError:
+		level, msg = "error", fmt.Sprintf("%s failed: %s", name, errMsg)
+	default:
+		return
+	}
+	if _, err := notificationStorage.Add(level, msg, true); err != nil {
+		logging.LogError(logging.KeyApp, "failed to store finished-job notification for %s: %v", name, err)
+	}
+}
+
 func markInterrupted(rec jobStorage.JobRecord, reason string) {
 	if err := jobStorage.UpdateStatus(rec.ID, jobStorage.StatusInterrupted, reason); err != nil {
 		logging.LogError(logging.KeyApp, "failed to mark job %s interrupted: %v", rec.ID, err)

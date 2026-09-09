@@ -181,6 +181,7 @@ func runAsync(mu *sync.Mutex, job Job, id string) {
 		if err := jobStorage.UpdateStatus(id, status, errMsg); err != nil {
 			logging.LogError(logging.KeyApp, "failed to persist finished status for job %s (%s): %v", job.Name(), id, err)
 		}
+		notifyAsyncFinished(job.Name(), status, errMsg)
 	}()
 }
 
