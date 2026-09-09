@@ -16,7 +16,6 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/job"
-	"knov/internal/jobStorage"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -237,9 +236,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lang := configmanager.GetLanguage()
-	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeFullRebuild, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+	respondJobStarted(w, r, id, job.JobTypeFullRebuild, false)
 }
 
 // @Summary Rebuild metadata links for a single file

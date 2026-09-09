@@ -11,7 +11,6 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/job"
-	"knov/internal/jobStorage"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -97,9 +96,7 @@ func handleAPIRestoreBackup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lang := configmanager.GetLanguage()
-	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeRestore, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+	respondJobStarted(w, r, id, job.JobTypeRestore, false)
 }
 
 // @Summary Lock a backup

@@ -14,7 +14,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/filter"
 	"knov/internal/job"
-	"knov/internal/jobStorage"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
@@ -63,9 +62,7 @@ func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lang := configmanager.GetLanguage()
-	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeFileSync, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+	respondJobStarted(w, r, id, job.JobTypeFileSync, false)
 }
 
 // @Summary Get kanban board for a folder

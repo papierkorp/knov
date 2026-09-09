@@ -13,8 +13,9 @@ import (
 // htmx polling of GET /api/jobs/{id}: a self-polling spinner while running (with a cancel button
 // if cancellable - see job.IsCancellable), an empty tag once done (its caller's success feedback
 // - toast/redirect - is set separately by the handler), or an inline message if it failed, was
-// canceled, or was interrupted by a restart.
-func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable bool) string {
+// canceled, or was interrupted by a restart. progress is resolved by the handler (job.GetProgress)
+// and passed in, so this stays a pure string builder.
+func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable bool, progress job.ProgressSnapshot) string {
 	safeID := template.HTMLEscapeString(id)
 	switch rec.Status {
 	case jobStorage.StatusRunning:
@@ -25,8 +26,8 @@ func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable boo
 				safeID, safeID, template.HTMLEscapeString(translation.SprintfForRequest(lang, "cancel")))
 		}
 		label := translation.SprintfForRequest(lang, "working...")
-		if done, total, ok := job.GetProgress(id); ok {
-			label = translation.SprintfForRequest(lang, "working... %d/%d", done, total)
+		if progress.Reported() {
+			label = translation.SprintfForRequest(lang, "working... %d/%d", progress.Done, progress.Total)
 		}
 		return fmt.Sprintf(
 			`<span id="job-status-%s" class="job-status-pending" hx-get="/api/jobs/%s" hx-trigger="every 1s" hx-swap="outerHTML"><i class="fa fa-spinner fa-spin"></i> %s%s</span>`,
@@ -46,6 +47,6 @@ func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable boo
 // tree row (hx-target="closest li") into a polling status span. Every later poll response
 // swaps just the inner span (RenderJobStatus), keeping this <li> wrapper - and its parent
 // <ul>'s valid content model - stable.
-func RenderJobStatusListItem(lang, id string, rec *jobStorage.JobRecord, cancellable bool) string {
-	return "<li>" + RenderJobStatus(lang, id, rec, cancellable) + "</li>"
+func RenderJobStatusListItem(lang, id string, rec *jobStorage.JobRecord, cancellable bool, progress job.ProgressSnapshot) string {
+	return "<li>" + RenderJobStatus(lang, id, rec, cancellable, progress) + "</li>"
 }

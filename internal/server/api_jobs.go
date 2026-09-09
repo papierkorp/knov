@@ -98,7 +98,7 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(lang, "job failed: %s", rec.Error))
 	}
 
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type), job.GetProgress(id)))
 }
 
 // @Summary Cancel a running async job

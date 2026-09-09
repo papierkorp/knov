@@ -22,7 +22,6 @@ import (
 	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/job"
-	"knov/internal/jobStorage"
 	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/parser"
@@ -1034,9 +1033,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lang := configmanager.GetLanguage()
-	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeDeleteFolder, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec, job.IsCancellable(rec.Type)))
+	respondJobStarted(w, r, id, job.JobTypeDeleteFolder, true)
 }
 
 // @Summary Delete all files in a collection or folder
@@ -1117,9 +1114,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "started bulk delete of %d files from %s=%s (job %s)", len(toDelete), groupType, value, id)
 
-	lang := configmanager.GetLanguage()
-	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeBulkDeleteFiles, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+	respondJobStarted(w, r, id, job.JobTypeBulkDeleteFiles, false)
 }
 
 // @Summary Get headers (TOC) for a file
