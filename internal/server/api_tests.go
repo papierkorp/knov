@@ -23,8 +23,7 @@ func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data setup completed"))
@@ -44,8 +43,7 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data cleaned"))

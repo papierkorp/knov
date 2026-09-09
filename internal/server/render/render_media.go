@@ -167,6 +167,9 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 	html.WriteString(`</div>`) // close filter-buttons
 	html.WriteString(`</div>`) // close media-filter
 
+	// swap target for delete errors (HX-Retarget), keeps the grid intact
+	html.WriteString(`<div id="component-media-error"></div>`)
+
 	// hidden-by-settings warning
 	if hiddenCount > 0 {
 		fmt.Fprintf(&html, `<div class="media-hidden-warning"><i class="fa fa-eye-slash"></i> %s</div>`,

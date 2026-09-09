@@ -34,7 +34,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	sectionID := r.URL.Query().Get("section")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -46,7 +46,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		composed, err := book.Compose(filePath)
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to compose book %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"))
 			return
 		}
 		content = []byte(composed)
@@ -57,7 +57,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		sectionContent, err := handler.ExtractSection(filePath, sectionID, configmanager.GetSectionEditIncludeSubheaders())
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to extract section %s in file %s: %v", sectionID, filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
 		content = []byte(sectionContent)
@@ -69,7 +69,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		fileContent, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to read file %s: %v", fullPath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
 		content = fileContent
@@ -78,7 +78,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	pdf, err := renderPDFSafely(filePath, content)
 	if err != nil {
 		logging.LogError(logging.KeyPdfExport, "pdf export: failed to convert file to pdf %s: %v", filePath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"))
 		return
 	}
 

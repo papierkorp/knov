@@ -2066,6 +2066,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2157,12 +2158,15 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
-          description: deleted
+          description: empty body; sets HX-Redirect to / plus a success flash
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
       summary: Delete filter
       tags:
       - filter
@@ -2234,12 +2238,16 @@ paths:
         name: logic
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
-          description: success message
+          description: empty body; sets HX-Redirect to the saved filter's index page
+            plus a success flash
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
       summary: Save filter configuration
       tags:
       - filter
@@ -2495,22 +2503,6 @@ paths:
       - text/html
       responses: {}
       summary: Get kanban event log
-      tags:
-      - kanban
-  /api/kanban/{board}/files:
-    get:
-      description: Returns the file paths of all cards currently on the kanban board
-        for a board, sorted.
-      parameters:
-      - description: Board slug
-        in: path
-        name: board
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      summary: Get kanban card file paths
       tags:
       - kanban
   /api/kanban/{board}/filter:

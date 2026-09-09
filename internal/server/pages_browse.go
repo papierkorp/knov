@@ -23,7 +23,7 @@ func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "search", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -42,7 +42,7 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "browsefiles", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -53,7 +53,7 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "browse", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -64,7 +64,7 @@ func handleBrowseMedia(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "mediaoverview", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -103,7 +103,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 
 		err := tm.Render(w, "mediaview", data)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 			return
 		}
 		return
@@ -124,7 +124,7 @@ func handleBrowseMetadata(w http.ResponseWriter, r *http.Request) {
 	metadataType := chi.URLParam(r, "metadata")
 
 	if metadataType == "" {
-		http.Error(w, "missing metadata type", http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, "missing metadata type")
 		return
 	}
 
@@ -133,7 +133,7 @@ func handleBrowseMetadata(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "browsemetadata", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }

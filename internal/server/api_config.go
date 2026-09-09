@@ -46,7 +46,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 
 	if err := system.CanRestart(); err != nil {
 		logging.LogError(logging.KeyApp, "cannot restart: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restart"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restart"))
 		return
 	}
 
@@ -91,33 +91,27 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/favicon [post]
 func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(2 << 20); err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"))
 		return
 	}
 	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	if ext != ".ico" && ext != ".png" && ext != ".svg" {
-		w.WriteHeader(http.StatusBadRequest)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "only .ico, .png and .svg files are allowed"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "only .ico, .png and .svg files are allowed"))
 		return
 	}
 
 	faviconDir := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon")
 	if err := os.MkdirAll(faviconDir, 0755); err != nil {
 		logging.LogError(logging.KeyApp, "favicon upload: failed to create directory: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
@@ -125,17 +119,13 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(file)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "favicon upload: failed to read file: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 		return
 	}
 
 	if err := os.WriteFile(destPath, data, 0644); err != nil {
 		logging.LogError(logging.KeyApp, "favicon upload: failed to write file: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
 
@@ -166,9 +156,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 	destPath := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon", "favicon"+ext)
 	if err := os.Remove(destPath); err != nil && !os.IsNotExist(err) {
 		logging.LogError(logging.KeyApp, "favicon delete: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon"))
-		writeResponse(w, r, nil, "")
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon"))
 		return
 	}
 
@@ -189,7 +177,7 @@ func handleAPIExportSettings(w http.ResponseWriter, r *http.Request) {
 	data, err := configmanager.ExportSettingsJSON()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to export settings: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export settings"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export settings"))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -206,25 +194,25 @@ func handleAPIExportSettings(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/import [post]
 func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(1 << 20); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file"))
 		return
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 		return
 	}
 
 	skipped, err := configmanager.ImportSettingsJSON(data)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file"))
 		return
 	}
 

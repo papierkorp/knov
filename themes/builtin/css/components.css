@@ -921,6 +921,9 @@ body[data-dark-mode="true"] .tooltip::after {
   gap: 20px;
   margin-top: 20px;
 }
+#component-media-error:not(:empty) {
+  margin-top: 15px;
+}
 .media-item {
   background: var(--bg-secondary);
   border-radius: 8px;

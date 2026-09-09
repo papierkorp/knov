@@ -33,7 +33,7 @@ import (
 func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"))
 		return
 	}
 
@@ -89,7 +89,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	headers, rows, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to extract table from %s: %v", filepath, err)
-		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
 		return
 	}
 

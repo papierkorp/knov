@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"slices"
@@ -17,6 +18,15 @@ import (
 	"knov/internal/translation"
 )
 
+// backupErrorStatus maps a backup operation error to an HTTP status: an unknown set is a 404,
+// anything else falls back to the caller's default.
+func backupErrorStatus(err error, fallback int) int {
+	if errors.Is(err, job.ErrUnknownBackupSet) {
+		return http.StatusNotFound
+	}
+	return fallback
+}
+
 // @Summary List the backup/restore history
 // @Description Lists every backup created and restore applied, newest first, as JSON, a full HTML table (for HTMX, the same content shown on the /system/backup page), or - with view=summary - a compact time/event list (for the rail "backup" panel)
 // @Tags system
@@ -27,7 +37,7 @@ import (
 func handleAPIGetBackups(w http.ResponseWriter, r *http.Request) {
 	entries, err := job.ListBackupLog()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"))
 		return
 	}
 	html := render.RenderBackupLog(entries)
@@ -49,14 +59,13 @@ func handleAPICreateBackup(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	name, err := job.RunBackup(r.Form["storages"]...)
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error())))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
 	entries, err := job.ListBackupLog()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"))
 		return
 	}
 
@@ -84,15 +93,13 @@ func handleAPIRestoreBackup(w http.ResponseWriter, r *http.Request) {
 	touchesGit := manifestErr == nil && (slices.Contains(manifest, files.DocsStorageName) || slices.Contains(manifest, files.MediaStorageName))
 	if touchesGit && git.RemoteEnabled() && r.FormValue("confirm") != "true" {
 		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it")
-		notify.SetHeader(w, notify.LevelError, msg)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, msg))
+		writeAPIError(w, r, http.StatusBadRequest, msg)
 		return
 	}
 
 	id, err := job.RunRestore(name)
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error())))
+		writeAPIError(w, r, backupErrorStatus(err, http.StatusInternalServerError), translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
@@ -125,14 +132,13 @@ func handleBackupLockToggle(w http.ResponseWriter, r *http.Request, apply func(s
 	name := chi.URLParam(r, "name")
 
 	if err := apply(name); err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error())))
+		writeAPIError(w, r, backupErrorStatus(err, http.StatusInternalServerError), translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
 	entries, err := job.ListBackupLog()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"))
 		return
 	}
 	writeResponse(w, r, entries, render.RenderBackupLog(entries))
@@ -149,14 +155,13 @@ func handleAPIDeleteBackup(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
 	if err := job.DeleteBackup(name); err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error())))
+		writeAPIError(w, r, backupErrorStatus(err, http.StatusConflict), translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
 	entries, err := job.ListBackupLog()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"))
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "backup deleted"))
@@ -175,7 +180,7 @@ func handleAPIDownloadBackup(w http.ResponseWriter, r *http.Request) {
 
 	rc, err := job.OpenBackup(name)
 	if err != nil {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 	defer rc.Close()

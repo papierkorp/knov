@@ -57,7 +57,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 			histResults, err = search.SearchDeletedFilesByContent(query, limit)
 		}
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"))
 			return
 		}
 		writeResponse(w, r, histResults, render.RenderSearchHistoryResults(histResults, query))
@@ -72,7 +72,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		results, err = search.SearchFiles(query, limit)
 	}
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "search failed"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "search failed"))
 		return
 	}
 

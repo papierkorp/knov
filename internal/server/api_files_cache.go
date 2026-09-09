@@ -20,7 +20,7 @@ import (
 func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"))
 		return
 	}
 	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeTree)
@@ -41,7 +41,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		cachedFilePaths, err := files.GetAllFilePathsFromCache()
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get cached file paths: %v", err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"))
 			return
 		}
 		html := render.RenderFilesOptionsFromPaths(cachedFilePaths)
@@ -52,7 +52,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"))
 		return
 	}
 

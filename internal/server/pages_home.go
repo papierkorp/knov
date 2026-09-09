@@ -19,7 +19,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 			tm := thememanager.GetThemeManager()
 			data := thememanager.NewDashboardTemplateData(dash)
 			if err := tm.Render(w, "dashboardview", data); err != nil {
-				http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 			}
 			return
 		}
@@ -34,7 +34,7 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "settings", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -46,7 +46,7 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "admin", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -57,7 +57,7 @@ func handleHelp(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "help", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -66,6 +66,6 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("chat")
 	if err := tm.Render(w, "chat", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }

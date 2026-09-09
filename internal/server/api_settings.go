@@ -76,7 +76,7 @@ func handleAPIGetSettingsSection(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown section"), http.StatusNotFound)
+	writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown section"))
 }
 
 // @Summary Get all settings
@@ -111,7 +111,7 @@ func handleAPIGetAllSettings(w http.ResponseWriter, r *http.Request) {
 // @Router /api/settings [post]
 func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
 		return
 	}
 	errs := configmanager.BulkSetFromForm(r.Form)
@@ -120,7 +120,7 @@ func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 		for i, e := range errs {
 			msgs[i] = e.Error()
 		}
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", strings.Join(msgs, "; ")), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", strings.Join(msgs, "; ")))
 		return
 	}
 	writeResponse(w, r, "saved", "")
@@ -141,15 +141,15 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
 	s := configmanager.GetSetting(key)
 	if s == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting"))
 		return
 	}
 	if err := s.SetFromString(r.FormValue(key)); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 	if err := configmanager.SaveSettings(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
 		return
 	}
 	if rs, ok := s.(configmanager.RenderableSetting); ok && rs.GetMeta().Refresh {

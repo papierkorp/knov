@@ -59,7 +59,7 @@ func handleAPIGetNotifications(w http.ResponseWriter, r *http.Request) {
 	notifications, err := notificationStorage.GetRecent(limit)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get notifications: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get notifications"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get notifications"))
 		return
 	}
 
@@ -76,7 +76,7 @@ func handleAPIGetNotifications(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteNotifications(w http.ResponseWriter, r *http.Request) {
 	if err := notificationStorage.Clear(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to clear notifications: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to clear notifications"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to clear notifications"))
 		return
 	}
 
@@ -93,13 +93,13 @@ func handleAPIDeleteNotifications(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteNotification(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing id"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing id"))
 		return
 	}
 
 	if err := notificationStorage.DeleteByID(id); err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete notification %s: %v", id, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete notification"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete notification"))
 		return
 	}
 
@@ -107,7 +107,7 @@ func handleAPIDeleteNotification(w http.ResponseWriter, r *http.Request) {
 	notifications, err := notificationStorage.GetRecent(50)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get notifications after delete: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get notifications"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get notifications"))
 		return
 	}
 

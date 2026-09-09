@@ -19,7 +19,7 @@ func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "dashboardnew", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -28,7 +28,7 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"))
 		return
 	}
 
@@ -37,7 +37,7 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 
 	err = tm.Render(w, "dashboardedit", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -50,7 +50,7 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		http.Error(w, "dashboard not found", http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, "dashboard not found")
 		return
 	}
 
@@ -59,7 +59,7 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 
 	err = tm.Render(w, "dashboardview", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -68,20 +68,20 @@ func handleKanbanSelect(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewKanbanSelectTemplateData(configmanager.GetKanbanBoards())
 	if err := tm.Render(w, "kanban", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
 func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	board, ok := configmanager.GetKanbanBoardBySlug(chi.URLParam(r, "board"))
 	if !ok {
-		http.Error(w, "unknown board", http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, "unknown board")
 		return
 	}
 	tm := thememanager.GetThemeManager()
 	filterPanel := render.RenderKanbanFilterPanel(board.Slug)
 	data := thememanager.NewKanbanTemplateData(board, nil, filterPanel)
 	if err := tm.Render(w, "kanban", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }

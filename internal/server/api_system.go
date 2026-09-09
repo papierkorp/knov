@@ -33,8 +33,7 @@ import (
 func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunCacheInvalidate(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to invalidate cache: %v", err)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
 		return
 	}
 
@@ -145,7 +144,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 	} else {
 		path := resolveLogFilePath(r)
 		if path == "" {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"))
 			return
 		}
 		paths = []string{path}
@@ -157,7 +156,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			if !merged { // a single file that won't open is an error, not an empty view
 				logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"))
 				return
 			}
 			continue
@@ -289,14 +288,14 @@ func handleAPIGetSystemEnvironment(w http.ResponseWriter, r *http.Request) {
 func handleAPIDownloadLogs(w http.ResponseWriter, r *http.Request) {
 	path := resolveLogFilePath(r)
 	if path == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"))
 		return
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to open log file for download: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"))
 		return
 	}
 	defer f.Close()

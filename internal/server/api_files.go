@@ -88,7 +88,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to read folder %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read folder"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read folder"))
 		return
 	}
 
@@ -141,7 +141,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
 		return
 	}
 
@@ -156,7 +156,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -184,7 +184,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -193,7 +193,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(lang, "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to get metadata"))
 		return
 	}
 
@@ -279,7 +279,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -287,7 +287,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get raw content: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get raw content"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get raw content"))
 		return
 	}
 
@@ -304,7 +304,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/save [post]
 func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -313,7 +313,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
 
@@ -332,7 +332,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		dir := filepath.Dir(fullPath)
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 			return
 		}
 	}
@@ -340,7 +340,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to save file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
 	go git.CommitFile(fullPath)
@@ -403,11 +403,10 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// for existing file updates, send notify toast
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
-	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+	writeResponse(w, r, map[string]string{"filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"),
-		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	writeResponse(w, r, map[string]string{"filepath": filePath}, render.RenderStatusMessage(render.StatusOK, successMsg))
+		pathutils.ToFileURL(filePath),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
 // @Summary Cycle a todo checkbox's state in place from the rendered file view
@@ -422,8 +421,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 	// htmx processes HX-Trigger toasts on every response, success or error, so notify
 	// the user even though the failed request leaves the rendered view untouched.
 	fail := func(status int, message string) {
-		notify.SetHeader(w, notify.LevelError, message)
-		http.Error(w, message, status)
+		writeAPIError(w, r, status, message)
 	}
 
 	if err := r.ParseForm(); err != nil {
@@ -481,7 +479,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -491,7 +489,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		composed, err := book.Compose(filePath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to compose book %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"))
 			return
 		}
 		markdown = composed
@@ -499,7 +497,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		content, err := os.ReadFile(pathutils.ToDocsPath(filePath))
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to read file %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
 		markdown = dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
@@ -576,7 +574,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
 		return
 	}
 
@@ -584,7 +582,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	err = zipWriter.Close()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
 		return
 	}
 
@@ -671,7 +669,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
 		return
 	}
 
@@ -679,7 +677,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 	err = zipWriter.Close()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
 		return
 	}
 
@@ -706,7 +704,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	value := r.URL.Query().Get("value")
 
 	if metadata == "" || value == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing metadata or value parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing metadata or value parameter"))
 		return
 	}
 
@@ -735,7 +733,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	browsedFiles, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to browse files: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to browse files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to browse files"))
 		return
 	}
 
@@ -756,7 +754,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))
 		return
 	}
 
@@ -787,7 +785,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))
 		return
 	}
 
@@ -805,21 +803,21 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/rename/{filepath} [post]
 func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		return
 	}
 
 	// get current file path from URL
 	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/rename/")
 	if currentPath == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
 	// get new name from form (can be full path or just filename)
 	newName := r.FormValue("name")
 	if newName == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "new file path is required"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "new file path is required"))
 		return
 	}
 
@@ -835,7 +833,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"),
 	}
 	if handleMoveError(err, "rename file", currentPath, newPath, msgs, func(status int, message string) {
-		writeAPIError(w, status, message)
+		writeAPIError(w, r, status, message)
 	}) {
 		return
 	}
@@ -868,19 +866,19 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/move-folder/{folderpath} [post]
 func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		return
 	}
 
 	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/move-folder/")
 	if currentPath == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
 
 	targetParent := r.FormValue("target")
 	if targetParent == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target folder is required"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target folder is required"))
 		return
 	}
 
@@ -888,7 +886,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	if folderName == "" {
 		folderName = filepath.Base(currentPath)
 	} else if strings.Contains(folderName, "/") || strings.Contains(folderName, "\\") {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
 		return
 	}
 	newPath := filepath.Clean(targetParent + "/" + folderName)
@@ -900,19 +898,19 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 
 	// prevent moving a folder into itself or a descendant
 	if strings.HasPrefix(newPath+"/", currentPath+"/") {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
 		return
 	}
 
 	currentFullPath := pathutils.ToDocsPath(currentPath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
 		return
 	}
 
 	newFullPath := pathutils.ToDocsPath(newPath)
 	if _, err := os.Stat(newFullPath); err == nil {
-		writeAPIError(w, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
+		writeAPIError(w, r, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
 		return
 	}
 
@@ -923,7 +921,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		writeAPIError(w, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
+		writeAPIError(w, r, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
 		return
 	}
 
@@ -971,7 +969,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// get file path from URL
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/delete/")
 	if filePath == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
@@ -980,14 +978,14 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// check if file exists
 	fullPath := pathutils.ToDocsPath(filePath)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		return
 	}
 
 	// delete the file, its metadata, and commit the deletion to git
 	if err := removeFileAndMetadata(fullPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete file %s: %v", filePath, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"))
 		return
 	}
 
@@ -1009,14 +1007,14 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 	folderPath := strings.TrimPrefix(r.URL.Path, "/api/files/delete-folder/")
 	if folderPath == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
 
 	fullPath := pathutils.ToDocsPath(folderPath)
 	info, err := os.Stat(fullPath)
 	if os.IsNotExist(err) || !info.IsDir() {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
 		return
 	}
 
@@ -1029,7 +1027,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		writeAPIError(w, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
+		writeAPIError(w, r, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
 		return
 	}
 
@@ -1052,22 +1050,19 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 	value := r.URL.Query().Get("value")
 
 	if groupType == "" || value == "" {
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "missing type or value parameter")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing type or value parameter"))
 		return
 	}
 
 	if groupType != "collection" && groupType != "folder" && groupType != "tag" {
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "type must be collection, folder or tag")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "type must be collection, folder or tag"))
 		return
 	}
 
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get all files: %v", err)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files")))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"))
 		return
 	}
 
@@ -1107,8 +1102,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 	id, err := job.StartBulkDeleteFiles(toDelete, groupType, value)
 	if err != nil {
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
@@ -1133,14 +1127,14 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 	bare := r.URL.Query().Get("bare") != ""
 	if filePath == "" {
-		http.Error(w, "missing filepath", http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, "missing filepath")
 		return
 	}
 
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -1160,7 +1154,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 
 	rendered, err := handler.Render(content, fullPath)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -1195,7 +1189,7 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 

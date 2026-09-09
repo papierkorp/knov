@@ -38,7 +38,7 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 	messages, total, err := chat.GetPage(filePath, offset)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get chat messages: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load chat"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load chat"))
 		return
 	}
 
@@ -62,13 +62,13 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 // @Router /api/chat/messages [post]
 func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	content := strings.TrimSpace(r.FormValue("chat-input"))
 	if content == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "message cannot be empty"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "message cannot be empty"))
 		return
 	}
 
@@ -81,7 +81,7 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	msg, err := chat.Add(content, filePath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to add chat message: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save message"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save message"))
 		return
 	}
 
@@ -100,7 +100,7 @@ func handleAPIDeleteChatMessage(w http.ResponseWriter, r *http.Request) {
 
 	if err := chat.Delete(id); err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete chat message %s: %v", id, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete message"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete message"))
 		return
 	}
 
@@ -119,7 +119,7 @@ func handleAPIGetChatByID(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"))
 		return
 	}
 
@@ -139,7 +139,7 @@ func handleAPIGetChatMoveForm(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"))
 		return
 	}
 
@@ -167,7 +167,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -175,13 +175,13 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	mode := r.FormValue("mode")
 
 	if target == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "target is required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target is required"))
 		return
 	}
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "message not found"))
 		return
 	}
 
@@ -225,7 +225,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write file during chat move: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move message"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move message"))
 		return
 	}
 
@@ -259,7 +259,7 @@ func handleAPIGetChatBulkForm(w http.ResponseWriter, r *http.Request) {
 
 func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
 		return
 	}
 
@@ -269,7 +269,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	editor := files.EditorType(r.FormValue("editor"))
 
 	if rawIDs == "" || target == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"))
 		return
 	}
 
@@ -291,7 +291,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(parts) == 0 {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no valid messages found"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no valid messages found"))
 		return
 	}
 
@@ -325,7 +325,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write file during bulk chat move: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"))
 		return
 	}
 
@@ -352,13 +352,13 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 // @Router /api/chat/messages/bulk [delete]
 func handleAPIBulkDeleteChatMessages(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
 		return
 	}
 
 	rawIDs := r.FormValue("ids")
 	if rawIDs == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "ids are required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "ids are required"))
 		return
 	}
 

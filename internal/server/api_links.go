@@ -23,7 +23,7 @@ import (
 func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -51,7 +51,7 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -79,7 +79,7 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -107,7 +107,7 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -138,7 +138,7 @@ func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -166,7 +166,7 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -188,7 +188,7 @@ func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	metadata, err := files.MetaDataGet(filePath)
@@ -219,17 +219,17 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 	folderPath := r.URL.Query().Get("folder")
 	if folderPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder parameter"))
 		return
 	}
 	ancestors, err := files.GetAncestorsInFolder(folderPath)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"))
 		return
 	}
 	ancestors, err = kanban.FilterAncestorsByAllowedStatus(ancestors, folderPath)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"))
 		return
 	}
 
@@ -261,7 +261,7 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	paths, err := search.GetRelatedFiles(filePath, 5)
@@ -280,7 +280,7 @@ func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetSameFolderFiles(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	paths, err := files.GetFilesInSameFolder(filePath, 5)
@@ -299,7 +299,7 @@ func handleAPIGetSameFolderFiles(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetSameTagFiles(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 	paths, err := files.GetFilesWithSameTags(filePath, 5)
@@ -322,7 +322,7 @@ func handleAPIGetConflictDiff(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	conflictPath := r.URL.Query().Get("conflict")
 	if filePath == "" || conflictPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or conflict parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or conflict parameter"))
 		return
 	}
 

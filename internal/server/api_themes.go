@@ -84,7 +84,7 @@ func handleAPIGetThemeSettings(w http.ResponseWriter, r *http.Request) {
 	themeName := chi.URLParam(r, "themeName")
 
 	if themeName == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name is required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name is required"))
 		return
 	}
 
@@ -112,7 +112,7 @@ func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
 	value := r.FormValue("value")
 
 	if themeName == "" || settingKey == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name and setting key are required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name and setting key are required"))
 		return
 	}
 
@@ -166,7 +166,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 	value := r.FormValue("value")
 
 	if key == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "key parameter is required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "key parameter is required"))
 		return
 	}
 
@@ -177,7 +177,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 	// get setting definition to determine type
 	setting, exists := schema[key]
 	if !exists {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting key"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting key"))
 		return
 	}
 

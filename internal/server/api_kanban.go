@@ -2,7 +2,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -27,12 +26,12 @@ import (
 func resolveBoard(w http.ResponseWriter, r *http.Request) (configmanager.KanbanBoard, bool) {
 	slug := chi.URLParam(r, "board")
 	if slug == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing board"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing board"))
 		return configmanager.KanbanBoard{}, false
 	}
 	board, ok := configmanager.GetKanbanBoardBySlug(slug)
 	if !ok {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown board"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown board"))
 		return configmanager.KanbanBoard{}, false
 	}
 	return board, true
@@ -58,7 +57,7 @@ func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		http.Error(w, msg, status)
+		writeAPIError(w, r, status, msg)
 		return
 	}
 
@@ -108,7 +107,7 @@ func handleAPIGetKanbanArchive(w http.ResponseWriter, r *http.Request) {
 	cards, err := kanban.Archived(board.FolderPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get archived cards for %s: %v", board.FolderPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get archived cards"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get archived cards"))
 		return
 	}
 
@@ -130,7 +129,7 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -156,7 +155,7 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 // @Router /api/kanban/card/move [post]
 func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -164,11 +163,11 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 	newStatus := r.FormValue("status")
 
 	if filePath == "" || newStatus == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or status"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or status"))
 		return
 	}
 	if !slices.Contains(configmanager.GetKanbanStatuses(), newStatus) {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid kanban status"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid kanban status"))
 		return
 	}
 
@@ -180,8 +179,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, filePath, newStatus)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
 		return
 	}
 
@@ -210,13 +208,13 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	status := r.FormValue("status")
 	if status == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing status"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing status"))
 		return
 	}
 
@@ -232,7 +230,7 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		logging.LogError(logging.KeyApp, "kanban: save order failed for %s: %v", board.FolderPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save order"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save order"))
 		return
 	}
 
@@ -306,7 +304,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	events, err := kanban.GetEvents(board.FolderPath, filePath, from, to, limit)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get kanban events for %s: %v", board.FolderPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get events"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get events"))
 		return
 	}
 
@@ -333,27 +331,4 @@ func parseEventBoundary(s string, endOfDay bool) (time.Time, error) {
 		d = d.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 	}
 	return d, nil
-}
-
-// @Summary Get kanban card file paths
-// @Description Returns the file paths of all cards currently on the kanban board for a board, sorted.
-// @Tags kanban
-// @Param board path string true "Board slug"
-// @Produce json
-// @Router /api/kanban/{board}/files [get]
-func handleAPIGetKanbanFiles(w http.ResponseWriter, r *http.Request) {
-	board, ok := resolveBoard(w, r)
-	if !ok {
-		return
-	}
-
-	paths, err := kanban.FilesForFolder(board.FolderPath)
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(paths)
 }

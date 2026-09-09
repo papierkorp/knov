@@ -59,13 +59,13 @@ type bulkUpdateResult struct {
 // @Router /api/metadata/bulk-update [post]
 func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
 		return
 	}
 
 	patchValue := r.FormValue("patchValue")
 	if patchValue == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"))
 		return
 	}
 
@@ -74,7 +74,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 	case "set-editor":
 		editor := files.EditorType(patchValue)
 		if !slices.Contains(files.AllEditorTypes(), editor) {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid editor type"), http.StatusBadRequest)
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid editor type"))
 			return
 		}
 		p.Editor = &editor
@@ -83,7 +83,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 	case "remove-tag":
 		p.TagsRemove = []string{patchValue}
 	default:
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"))
 		return
 	}
 
@@ -96,7 +96,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 	matched, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "bulk-update: filter failed: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"))
 		return
 	}
 
@@ -117,12 +117,11 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 		TagsRemove: p.TagsRemove,
 	})
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 	if result.Failed > 0 {
@@ -148,7 +147,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -156,7 +155,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get metadata for %s: %v", normalizedPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 
@@ -164,7 +163,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(normalizedPath, "media/") {
 			metadata = &files.Metadata{Path: normalizedPath}
 		} else {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 			return
 		}
 	}
@@ -192,12 +191,12 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 	var metadata files.Metadata
 
 	if err := json.NewDecoder(r.Body).Decode(&metadata); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid json"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid json"))
 		return
 	}
 
 	if metadata.Path == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "path is required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "path is required"))
 		return
 	}
 
@@ -205,7 +204,7 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 	// single lock acquisition for path, so the request is atomic against other writers again.
 	path := pathutils.ToWithPrefix(metadata.Path)
 	if err := files.SetMetadataNoRefresh(path, &metadata); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 	files.RefreshCaches()
@@ -227,12 +226,11 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	id, err := job.StartFullRebuild()
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 
@@ -252,13 +250,13 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 	filePath := chi.URLParam(r, "*")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
 
 	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"))
 		return
 	}
 
@@ -284,7 +282,7 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 
 	allMetadata, err := files.MetaDataExportAll()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export metadata"))
 		return
 	}
 
@@ -300,7 +298,7 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", "attachment; filename=metadata_export.json")
 		if err := json.NewEncoder(w).Encode(allMetadata); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to encode json"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to encode json"))
 			return
 		}
 	}
@@ -317,7 +315,7 @@ func handleAPIScanBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	broken, err := files.FindBrokenLinks()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to scan for broken links: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for broken links"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for broken links"))
 		return
 	}
 
@@ -336,7 +334,7 @@ func handleAPIScanBrokenLinks(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/broken-links/repair [post]
 func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -345,12 +343,11 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 
 	result, err := job.RunRepairBrokenLinks(entries)
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 	repaired, skipped := result.Repaired, result.Skipped
@@ -380,17 +377,17 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -407,17 +404,17 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -434,17 +431,17 @@ func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -461,17 +458,17 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -489,17 +486,17 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -526,12 +523,12 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 	editor := r.FormValue("editor")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	if err := files.SetEditor(pathutils.ToWithPrefix(filePath), files.EditorType(editor)); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -553,8 +550,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	newpath := r.FormValue("newpath")
 
 	if filePath == "" || newpath == "" {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
 		return
 	}
 
@@ -582,8 +578,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"),
 	}
 	if handleMoveError(err, context, filePath, newpath, msgs, func(status int, message string) {
-		notify.SetHeader(w, notify.LevelError, message)
-		http.Error(w, message, status)
+		writeAPIError(w, r, status, message)
 	}) {
 		return
 	}
@@ -610,18 +605,18 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 	createdAtStr := r.FormValue("createdat")
 
 	if filePath == "" || createdAtStr == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or createdat parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or createdat parameter"))
 		return
 	}
 
 	createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"))
 		return
 	}
 
 	if err := files.SetCreatedAt(pathutils.ToWithPrefix(filePath), createdAt); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -643,18 +638,18 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	lastEditedStr := r.FormValue("lastedited")
 
 	if filePath == "" || lastEditedStr == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or lastedited parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or lastedited parameter"))
 		return
 	}
 
 	lastEdited, err := time.Parse("2006-01-02 15:04:05", lastEditedStr)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"))
 		return
 	}
 
 	if err := files.SetLastEdited(pathutils.ToWithPrefix(filePath), lastEdited); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -676,7 +671,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	tagsStr := r.FormValue("tags")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -699,8 +694,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 
 	sanitized, err := files.SanitizeKanbanTags(tags)
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
@@ -713,7 +707,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	newKbTag := kanban.TagFromList(sanitized)
 
 	if err := files.SetTags(pathutils.ToWithPrefix(filePath), sanitized); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -739,7 +733,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 	parentsStr := r.FormValue("parents")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -755,9 +749,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 			}
 			fullParentPath := pathutils.ToFullPath(parent)
 			if _, err := os.Stat(fullParentPath); os.IsNotExist(err) {
-				html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
-				notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
-				writeResponse(w, r, nil, html)
+				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
 				return
 			}
 		}
@@ -766,7 +758,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.SetParents(pathutils.ToWithPrefix(filePath), parents); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -802,7 +794,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 			}
 			tags, err := files.GetAllTags()
 			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
 				return
 			}
 			var tagList []string
@@ -827,7 +819,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		}
 		tags, err = files.GetAllTags()
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
 			return
 		}
 	}
@@ -859,7 +851,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 			}
 			collections, err := files.GetAllCollections()
 			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
 				return
 			}
 			var collectionList []string
@@ -884,7 +876,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		}
 		collections, err = files.GetAllCollections()
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
 			return
 		}
 	}
@@ -916,7 +908,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 			}
 			folders, err := files.GetAllFolders()
 			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
 				return
 			}
 			var folderList []string
@@ -941,7 +933,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		}
 		folders, err = files.GetAllFolders()
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
 			return
 		}
 	}
@@ -967,7 +959,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 			}
 			cachedTitles, err = files.GetAllTitles()
 			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"), http.StatusInternalServerError)
+				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"))
 				return
 			}
 		}
@@ -983,7 +975,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 	if err != nil || len(titles) == 0 {
 		titles, err = files.GetAllTitles()
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"))
 			return
 		}
 	}
@@ -1022,7 +1014,7 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		}
 		filetypes, err = files.GetAllEditors()
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"))
 			return
 		}
 	}
@@ -1039,17 +1031,17 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -1066,17 +1058,17 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -1093,17 +1085,17 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
 	}
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -1124,13 +1116,13 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
@@ -1152,7 +1144,7 @@ func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/references [post]
 func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -1161,7 +1153,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 	description := r.FormValue("description")
 
 	if filePath == "" || refURL == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"))
 		return
 	}
 
@@ -1182,12 +1174,12 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return true, nil
 	})
 	if notFound {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -1205,7 +1197,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/references [delete]
 func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -1214,7 +1206,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 
 	if filePath == "" || refURL == "" {
 		logging.LogWarning(logging.KeyApp, "delete reference: missing filepath or url in request")
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"))
 		return
 	}
 
@@ -1237,12 +1229,12 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return true, nil
 	})
 	if notFound {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
@@ -1264,7 +1256,7 @@ func handleAPIMetadataInlineDisplay(w http.ResponseWriter, r *http.Request) {
 	field := r.URL.Query().Get("field")
 	filePath := r.URL.Query().Get("filepath")
 	if field == "" || filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return
 	}
 	metadata, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
@@ -1283,7 +1275,7 @@ func handleAPIMetadataInlineEdit(w http.ResponseWriter, r *http.Request) {
 	field := r.URL.Query().Get("field")
 	filePath := r.URL.Query().Get("filepath")
 	if field == "" || filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return
 	}
 	metadata, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))

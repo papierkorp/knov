@@ -155,14 +155,14 @@ func entryEditorKindFor(bookMode bool, lang string) entryEditorKind {
 func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) {
 	lang := configmanager.GetLanguage()
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(lang, "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "failed to parse form"))
 		return
 	}
 
 	// dont rename to filepath otherwise filepath.join will not work anymore because of the import
 	filezpath := r.FormValue("filepath")
 	if filezpath == "" {
-		http.Error(w, translation.SprintfForRequest(lang, "missing filepath"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "missing filepath"))
 		return
 	}
 
@@ -198,7 +198,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	// serialize back to markdown - a file entry is stored as a [[wikilink]] so link detection works
 	if err := contentStorage.WriteFile(fullPath, []byte(book.ToMarkdown(entries)), 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write %s file: %v", kind.extKey, err)
-		http.Error(w, kind.failMsg, http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, kind.failMsg)
 		return
 	}
 	go git.CommitFile(fullPath)
@@ -221,9 +221,8 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 
 	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
-	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
-		kind.savedMsg, filezpath, translation.SprintfForRequest(lang, "view file"))
-	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessage(render.StatusOK, successMsg))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessageWithLink(render.StatusOK,
+		kind.savedMsg, pathutils.ToFileURL(filezpath), translation.SprintfForRequest(lang, "view file")))
 }
 
 // @Summary Add index/book entry
@@ -236,13 +235,13 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 // @Router /api/editor/entry/add-entry [post]
 func handleAPIAddEntry(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	entryType := r.FormValue("type")
 	if entryType == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing type"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing type"))
 		return
 	}
 
@@ -275,13 +274,13 @@ func handleAPISaveFilterEditor(w http.ResponseWriter, r *http.Request) {
 // @Router /api/editor/listeditor [post]
 func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	filePath := r.FormValue("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
 
@@ -303,7 +302,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	var listItems []render.ListItem
 	if err := json.Unmarshal([]byte(content), &listItems); err != nil {
 		logging.LogError(logging.KeyApp, "failed to parse list items: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse list content"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse list content"))
 		return
 	}
 
@@ -317,14 +316,14 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
 	// save content as markdown
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write list file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"))
 		return
 	}
 	go git.CommitFile(fullPath)
@@ -349,11 +348,10 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "saved list file: %s", filePath)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
-	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
-		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessage(render.StatusOK, successMsg))
+		pathutils.ToFileURL(filePath),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
 // @Summary Save table data
@@ -373,7 +371,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	// parse multipart form data (FormData from JavaScript)
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB max
 		logging.LogError(logging.KeyApp, "failed to parse multipart form: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -381,7 +379,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug(logging.KeyApp, "received filepath: '%s'", filePath)
 	if filePath == "" {
 		logging.LogError(logging.KeyApp, "missing filepath in form data")
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
@@ -392,7 +390,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug(logging.KeyApp, "received headers: %d bytes, rows: %d bytes, tableIndex: %s", len(headersJSON), len(rowsJSON), tableIndexStr)
 
 	if headersJSON == "" || rowsJSON == "" || tableIndexStr == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing data"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing data"))
 		return
 	}
 
@@ -400,7 +398,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	var headers []string
 	if err := json.Unmarshal([]byte(headersJSON), &headers); err != nil {
 		logging.LogError(logging.KeyApp, "failed to parse headers: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"))
 		return
 	}
 
@@ -408,7 +406,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	var rows [][]string
 	if err := json.Unmarshal([]byte(rowsJSON), &rows); err != nil {
 		logging.LogError(logging.KeyApp, "failed to parse rows: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"))
 		return
 	}
 
@@ -433,7 +431,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	handler := contentHandler.GetHandler("markdown")
 	if err := handler.SaveTable(filePath, tableIndex, headers, rows); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save table in file %s: %v", filePath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
 	go git.CommitFile(pathutils.ToFullPath(filePath))
@@ -470,7 +468,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -497,7 +495,7 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/section/save [post]
 func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
@@ -506,12 +504,12 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
 	if sectionID == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"))
 		return
 	}
 
@@ -519,7 +517,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	handler := contentHandler.GetHandler("markdown")
 	if err := handler.SaveSection(filePath, sectionID, content); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save section %s in file %s: %v", sectionID, filePath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
 	go git.CommitFile(pathutils.ToFullPath(filePath))
@@ -560,13 +558,13 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/convert-to-markdown [post]
 func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		return
 	}
 
 	filePath := r.FormValue("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -576,7 +574,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 		return
 	}
 
@@ -590,20 +588,17 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	// save markdown file
 	if err := os.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write markdown file %s: %v", markdownFullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"))
 		return
 	}
 	go git.CommitFile(markdownFullPath)
 
 	logging.LogInfo(logging.KeyApp, "converted dokuwiki file to markdown: %s -> %s", filePath, markdownFileName)
 
-	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+	html := render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
-		markdownFileName,
-		markdownFileName)
-
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, `<div class="status-ok">%s</div>`, successMsg)
+		pathutils.ToFileURL(markdownFileName), markdownFileName)
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": markdownFileName}, html)
 }
 
 // defaultMarkdownEditor returns the configured default editor for markdown files.

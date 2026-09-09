@@ -2283,6 +2283,7 @@ const docTemplate = `{
             "get": {
                 "description": "Compare two versions of a file",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2533,6 +2534,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2581,9 +2583,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success message",
+                        "description": "empty body; sets HX-Redirect to the saved filter's index page plus a success flash",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -2638,6 +2643,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete a filter from config storage and its metadata",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2655,9 +2661,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "deleted",
+                        "description": "empty body; sets HX-Redirect to / plus a success flash",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -3062,28 +3071,6 @@ const docTemplate = `{
                         "description": "Max number of events (default 200, 0 = unlimited)",
                         "name": "limit",
                         "in": "query"
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/kanban/{board}/files": {
-            "get": {
-                "description": "Returns the file paths of all cards currently on the kanban board for a board, sorted.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "kanban"
-                ],
-                "summary": "Get kanban card file paths",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Board slug",
-                        "name": "board",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {}

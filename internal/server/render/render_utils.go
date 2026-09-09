@@ -29,15 +29,19 @@ const (
 	StatusInfo    StatusClass = "status-info"
 )
 
-// RenderStatusMessage renders a status message span with predefined status class
+// RenderStatusMessage renders a status message span with predefined status class.
+// message is HTML-escaped - it is routinely built from error strings and
+// user-controlled file paths, so callers must pass plain text, not markup.
 func RenderStatusMessage(class StatusClass, message string) string {
-	return fmt.Sprintf(`<span class="%s">%s</span>`, string(class), message)
+	return fmt.Sprintf(`<span class="%s">%s</span>`, string(class), htmlpkg.EscapeString(message))
 }
 
-// RenderStatusMessageWithLink renders a status message span with a link
+// RenderStatusMessageWithLink renders a status message span with a link. message,
+// linkURL and linkText are HTML-escaped - linkText/linkURL are commonly derived
+// from user-controlled file paths.
 func RenderStatusMessageWithLink(class StatusClass, message, linkURL, linkText string) string {
 	return fmt.Sprintf(`<span class="%s">%s: <a href="%s">%s</a></span>`,
-		string(class), message, linkURL, linkText)
+		string(class), htmlpkg.EscapeString(message), htmlpkg.EscapeString(linkURL), htmlpkg.EscapeString(linkText))
 }
 
 // RenderSelectOptions renders option elements for select dropdown

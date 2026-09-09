@@ -66,7 +66,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	if query != "" {
 		results, err := git.SearchGitByTitle(query, count, false)
 		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to search git history"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to search git history"))
 			return
 		}
 		if !since.IsZero() || !until.IsZero() {
@@ -81,7 +81,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 
 	allFiles, err := git.GetRecentlyChangedFiles(count, offset, since, until)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"))
 		return
 	}
 
@@ -117,12 +117,11 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 // @Router /api/git/push [post]
 func handleAPIGitPush(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunGitPush(); err != nil {
-		level := notify.LevelError
+		status := http.StatusInternalServerError
 		if configmanager.GetGitRemote() == "" {
-			level = notify.LevelWarning
+			status = http.StatusBadRequest
 		}
-		notify.SetHeader(w, level, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
+		writeAPIError(w, r, status, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "push triggered"))
@@ -137,12 +136,11 @@ func handleAPIGitPush(w http.ResponseWriter, r *http.Request) {
 // @Router /api/git/pull [post]
 func handleAPIGitPull(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunGitPull(); err != nil {
-		level := notify.LevelError
+		status := http.StatusInternalServerError
 		if configmanager.GetGitRemote() == "" {
-			level = notify.LevelWarning
+			status = http.StatusBadRequest
 		}
-		notify.SetHeader(w, level, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
+		writeAPIError(w, r, status, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "pull completed"))
@@ -158,15 +156,13 @@ func handleAPIGitPull(w http.ResponseWriter, r *http.Request) {
 func handleAPIGitTestAuth(w http.ResponseWriter, r *http.Request) {
 	remote := configmanager.GetGitRemote()
 	if remote == "" {
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured"))
 		return
 	}
 
 	result, err := git.TestAuth()
 	if err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "auth test failed"))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, err.Error()))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 

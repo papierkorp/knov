@@ -27,8 +27,9 @@
 ## API
 
 - make the api RESTful
+- always return an honest HTTP status code: real 4xx/5xx on failure (use writeAPIError), never a soft 200 with an error body. htmx 4 swaps 4xx/5xx response bodies by default, so the inline error still shows. a valid request that legitimately has no data is a 200 empty-state, not an error
 - if you create an api call keep in mind to keep it theme friendly (lean more towards being generic) and also add comments for swagger to work, also stay with accept form data we dont need to accept json
-- for every return in the api folder use: writeResponse
+- for every return in the api folder use: writeResponse (success) or writeAPIError (failure)
 - dont forget to use translation.SprintfForRequest in the server package for handler and the render package for EVERY String
 
 ## Logging

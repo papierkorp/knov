@@ -31,7 +31,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	fileContent, err := files.GetFileContent(fullPath)
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
 		return
 	}
 
@@ -58,7 +58,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	err = tm.Render(w, "fileview", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -72,7 +72,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "fileedit", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -85,7 +85,7 @@ func handleFileNewList(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("list-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -93,7 +93,7 @@ func handleFileNewTodo(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("todo-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -101,7 +101,7 @@ func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("filter-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -109,7 +109,7 @@ func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("index-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -117,7 +117,7 @@ func handleFileNewBook(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("book-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -126,7 +126,7 @@ func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewFileNewTemplateData("codemirror-editor")
 	data.Data.PrefillPath = r.URL.Query().Get("prefillpath")
 	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}
 }
 
@@ -145,7 +145,7 @@ func handleFileEditTable(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "filedittable", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }
@@ -157,7 +157,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		filePath := strings.TrimPrefix(r.URL.Path, "/files/history/")
 
 		if filePath == "" {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 			return
 		}
 
@@ -167,7 +167,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get file history for %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file history"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file history"))
 			return
 		}
 
@@ -199,7 +199,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 		err = tm.Render(w, "history", data)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 			return
 		}
 		return
@@ -211,7 +211,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 	err := tm.Render(w, "history", data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 		return
 	}
 }

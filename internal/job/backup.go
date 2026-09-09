@@ -289,6 +289,10 @@ func (j *restoreJob) Message() string {
 	return fmt.Sprintf("restored backup set %s, restarting", j.setName)
 }
 
+// ErrUnknownBackupSet is returned when a named backup set does not exist, letting handlers map it
+// to a 404 rather than a generic 500.
+var ErrUnknownBackupSet = errors.New("unknown backup set")
+
 // resolveExistingSet opens the default backup target and confirms name is an existing set on it -
 // name also ends up as part of a filesystem path, so callers must reject it outright rather than
 // trust it as-is.
@@ -302,7 +306,7 @@ func resolveExistingSet(name string) (backup.BackupTarget, error) {
 		return nil, fmt.Errorf("failed to list backups: %w", err)
 	}
 	if !slices.Contains(names, name) {
-		return nil, fmt.Errorf("unknown backup set %q", name)
+		return nil, fmt.Errorf("%w %q", ErrUnknownBackupSet, name)
 	}
 	return target, nil
 }

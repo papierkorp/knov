@@ -13,6 +13,7 @@ import (
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 )
 
@@ -53,13 +54,24 @@ func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType strin
 	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, cancellable, progress))
 }
 
-// writeAPIError writes a status-coded HTML error response, replacing the
-// repeated header/status/write block previously duplicated across the file
-// rename/move/delete handlers.
-func writeAPIError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "text/html")
+// writeAPIError writes an honest status-coded error response: it fires an error
+// toast via notify.SetHeader (also persisting it to the notification log), then
+// writes a body that honours the request Accept header the same way writeResponse
+// does - an inline status-message span for htmx/browser clients, a JSON error
+// object for clients asking for application/json. Every failure return in the
+// server handlers goes through this.
+func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message string) {
+	notify.SetHeader(w, notify.LevelError, message)
+	acceptHeader := r.Header.Get("Accept")
+	if strings.Contains(acceptHeader, "text/html") || strings.Contains(acceptHeader, "*/*") {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(status)
+		w.Write([]byte(render.RenderStatusMessage(render.StatusError, message)))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write([]byte(render.RenderStatusMessage(render.StatusError, message)))
+	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
 
 // moveErrorMessages holds a call site's translated response text for each outcome

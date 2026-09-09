@@ -2,7 +2,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -29,7 +28,7 @@ import (
 func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/versions/")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -59,7 +58,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to read current file %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
 		html := render.RenderFileAtVersion(string(content), filePath, "current", "current", translation.SprintfForRequest(configmanager.GetLanguage(), "current version"), output)
@@ -70,11 +69,11 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get previous version for %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"), http.StatusNotFound)
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"))
 			return
 		}
 		if len(versions) < 2 {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"), http.StatusNotFound)
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"))
 			return
 		}
 		commit = versions[1].Commit
@@ -83,8 +82,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 	content, err := git.GetFileAtCommit(fullPath, commit)
 	if err != nil {
 		logging.LogDebug(logging.KeyApp, "failed to get file %s at commit %s: %v", filePath, commit, err)
-		html := `<div class="version-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available") + `</div>`
-		writeResponse(w, r, map[string]string{"error": "version no longer available"}, html)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available"))
 		return
 	}
 
@@ -106,13 +104,13 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 // @Param filepath path string true "File path"
 // @Param from query string true "From commit hash or 'current'"
 // @Param to query string true "To commit hash or 'current'"
-// @Produce html
+// @Produce json,html
 // @Success 200 "File diff content"
 // @Router /api/files/versions/diff/{filepath} [get]
 func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/versions/diff/")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
@@ -120,7 +118,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	toCommit := r.URL.Query().Get("to")
 
 	if fromCommit == "" || toCommit == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing from or to parameters"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing from or to parameters"))
 		return
 	}
 
@@ -130,9 +128,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get current commit: %v", err)
-			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprintf(w, `<div class="version-error">%s</div>`,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 			return
 		}
 		fromCommit = currentCommit
@@ -142,9 +138,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get current commit: %v", err)
-			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprintf(w, `<div class="version-error">%s</div>`,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 			return
 		}
 		toCommit = currentCommit
@@ -154,11 +148,11 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get previous commit for %s: %v", filePath, err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get previous commit"), http.StatusInternalServerError)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get previous commit"))
 			return
 		}
 		if len(versions) < 2 {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"), http.StatusNotFound)
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"))
 			return
 		}
 		for i, v := range versions {
@@ -171,7 +165,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 			if len(versions) > 1 {
 				toCommit = versions[1].Commit
 			} else {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"), http.StatusNotFound)
+				writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"))
 				return
 			}
 		}
@@ -180,10 +174,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	diff, oldCommit, newCommit, err := git.GetFileDiff(fullPath, fromCommit, toCommit)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get diff for %s between %s and %s: %v", filePath, fromCommit, toCommit, err)
-		// return soft HTML error so htmx does not treat this as a hard failure
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, `<div class="version-error">%s</div>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 		return
 	}
 
@@ -231,13 +222,13 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/versions/restore/")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
 
 	commit := r.FormValue("commit")
 	if commit == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing commit parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing commit parameter"))
 		return
 	}
 
@@ -245,8 +236,7 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 
 	if err := git.RestoreFileToCommit(fullPath, commit); err != nil {
 		logging.LogError(logging.KeyApp, "failed to restore file %s to commit %s: %v", filePath, commit, err)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"))
 		return
 	}
 

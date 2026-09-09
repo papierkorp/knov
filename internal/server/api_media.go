@@ -15,7 +15,6 @@ import (
 	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
-	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -40,14 +39,14 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	contextPath := r.FormValue("context_path")
 	if contextPath == "" {
 		logging.LogWarning(logging.KeyApp, "media upload attempted without context path")
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"))
 		return
 	}
 
 	// prevent uploads to unsaved files (context_path like "new")
 	if contextPath == "new" || strings.HasPrefix(contextPath, "new/") {
 		logging.LogWarning(logging.KeyApp, "media upload attempted for unsaved file: %s", contextPath)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"))
 		return
 	}
 
@@ -57,7 +56,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to parse multipart form: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse upload form"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse upload form"))
 		return
 	}
 
@@ -65,7 +64,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get uploaded file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"))
 		return
 	}
 	defer file.Close()
@@ -82,7 +81,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 		default:
 			statusCode = http.StatusInternalServerError
 		}
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), statusCode)
+		writeAPIError(w, r, statusCode, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 
@@ -119,7 +118,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get media files: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load media files"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load media files"))
 		return
 	}
 
@@ -177,7 +176,7 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -209,7 +208,7 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	mediaPath := chi.URLParam(r, "*")
 	if mediaPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"))
 		return
 	}
 
@@ -225,7 +224,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	fullPath := pathutils.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
 	exists, err := contentStorage.FileExists(fullPath)
 	if err != nil || !exists {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"))
 		return
 	}
 
@@ -234,66 +233,22 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
 		logging.LogWarning(logging.KeyApp, "cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
 
-		// get current filter
-		filter := r.URL.Query().Get("filter")
-		if filter == "" {
-			filter = "all"
+		refs := metadata.LinksToHere
+		if len(refs) > 5 {
+			refs = append(refs[:5:5], translation.SprintfForRequest(configmanager.GetLanguage(), "and %d more", len(metadata.LinksToHere)-5))
 		}
-
-		// get all media files for re-rendering
-		mediaFiles, err := files.GetAllMediaFiles()
-		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load media files"), http.StatusInternalServerError)
-			return
-		}
-
-		// get orphaned media from cache
-		orphanedMedia, err := files.GetOrphanedMediaFromCache()
-		if err != nil {
-			orphanedMedia = []string{}
-		}
-
-		// filter media files
-		filteredMedia := files.FilterMediaFiles(mediaFiles, orphanedMedia, filter)
-
-		// build error message with referencing files
-		var referencingFiles []string
-		maxShow := 5
-		for i, ref := range metadata.LinksToHere {
-			if i >= maxShow {
-				referencingFiles = append(referencingFiles, fmt.Sprintf("... %s %d %s",
-					translation.SprintfForRequest(configmanager.GetLanguage(), "and"),
-					len(metadata.LinksToHere)-maxShow,
-					translation.SprintfForRequest(configmanager.GetLanguage(), "more")))
-				break
-			}
-			referencingFiles = append(referencingFiles, fmt.Sprintf(`<a href="/files/%s" target="_blank">%s</a>`, ref, ref))
-		}
-
-		errorMsg := fmt.Sprintf(`<div class="status-error">
-			<strong>%s</strong><br><br>
-			%s:<br>%s
-		</div>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "cannot delete media file"),
-			translation.SprintfForRequest(configmanager.GetLanguage(), "still referenced by"),
-			strings.Join(referencingFiles, "<br>"))
-
-		// render media list with error message at the top
-		mediaListHTML := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia), 0)
-
-		// inject error message at the beginning of the media content
-		finalHTML := strings.Replace(mediaListHTML, `<div id="component-media-content">`,
-			`<div id="component-media-content">`+errorMsg, 1)
-
-		// 200 so htmx swaps the content
-		writeResponse(w, r, map[string]any{"error": "still referenced", "references": metadata.LinksToHere}, finalHTML)
+		// route the error into the list's own error slot so the grid survives the failed swap
+		w.Header().Set("HX-Retarget", "#component-media-error")
+		w.Header().Set("HX-Reswap", "innerHTML")
+		writeAPIError(w, r, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(),
+			"cannot delete media file: still referenced by %s", strings.Join(refs, ", ")))
 		return
 	}
 
 	// delete file from filesystem
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete media file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"))
 		return
 	}
 
@@ -314,7 +269,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get media files after deletion: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to refresh media list"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to refresh media list"))
 		return
 	}
 
@@ -345,13 +300,13 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 // @Router /api/media/preview [get]
 func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 	if !configmanager.GetPreviewsEnabled() {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "previews are disabled"), http.StatusNotImplemented)
+		writeAPIError(w, r, http.StatusNotImplemented, translation.SprintfForRequest(configmanager.GetLanguage(), "previews are disabled"))
 		return
 	}
 
 	mediaPath := r.URL.Query().Get("path")
 	if mediaPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing path parameter"), http.StatusBadRequest)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing path parameter"))
 		return
 	}
 
@@ -379,7 +334,7 @@ func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := files.GetMediaStorageStats()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get media storage stats: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get storage stats"), http.StatusInternalServerError)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get storage stats"))
 		return
 	}
 
@@ -401,8 +356,7 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
-		http.Error(w, err.Error(), status)
+		writeAPIError(w, r, status, err.Error())
 		return
 	}
 
@@ -447,24 +401,19 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 // @Router /api/media/rename/{filepath} [post]
 func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		return
 	}
 
 	currentRel := chi.URLParam(r, "*")
 	if currentRel == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
 	newRel := strings.TrimSpace(r.FormValue("newpath"))
 	if newRel == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "new path is required")))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "new path is required"))
 		return
 	}
 
@@ -483,8 +432,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"),
 	}
 	if handleMoveError(err, "media rename", currentRel, newRel, msgs, func(status int, message string) {
-		w.WriteHeader(status)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, message))
+		writeAPIError(w, r, status, message)
 	}) {
 		return
 	}

@@ -29,18 +29,18 @@ import (
 func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing job id"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing job id"))
 		return
 	}
 
 	rec, err := jobStorage.Get(id)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to load job status %s: %v", id, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load job status"))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load job status"))
 		return
 	}
 	if rec == nil {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "job not found"))
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "job not found"))
 		return
 	}
 
@@ -116,17 +116,17 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteJob(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
-		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing job id"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing job id"))
 		return
 	}
 
 	if err := job.CancelAsync(id); err != nil {
 		if errors.Is(err, job.ErrNotRunning) {
-			writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "job not running"))
+			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "job not running"))
 			return
 		}
 		logging.LogError(logging.KeyApp, "failed to cancel job %s: %v", id, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to cancel job"))
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to cancel job"))
 		return
 	}
 

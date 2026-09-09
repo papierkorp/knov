@@ -11,15 +11,24 @@
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
   - upgrade path tool in /system/release which shows the changes from one speicific build to another
+  - add settings button to tables (same as codemirror editor)
 - fixes
-  - 
+  - table alignment is not working
 - chore
   - s3 backup tests?
   - cache for books?
+  - replace all hand-built urls with pathutils
+  - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console
+  - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
+  - writeAPIError follow-ups (from the honest-status-code sweep)
+    - make the error toast + notification-log persist opt-in, not baked into every writeAPIError - GET/poll/lazy-load endpoints and plain validation 400s should be able to fail silently (e.g. mutations/5xx only, or a silent variant); then audit the converted GET handlers
+    - de-duplicate content negotiation: writeAPIError re-implements Accept sniffing - share one helper with writeResponse so success/error responses agree, and sweep the @Produce swagger annotations to match
+    - confirm notify.SetHeader JSON-escapes the message before it goes into the HX-Trigger header (error messages now routinely embed user file paths and raw err.Error())
+    - add tests for writeAPIError: html vs json vs missing-Accept body, and no double error toast from call sites
 
 # every other time
 
-- take a look at all routes if we use writeResponse everywhere neccessary and if we can update the functions where we only use json to htmx as well
+- take a look at all routes if we use writeResponse everywhere neccessary and if we can update the functions where we only use json to htmx as well if its useful
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
 - pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
 - check the whole codebase for hardcoded colors and replace theme with the vars provided by the defaults.css file
