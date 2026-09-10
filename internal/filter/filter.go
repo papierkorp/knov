@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"knov/internal/configStorage"
+	"knov/internal/configeditor"
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -330,15 +329,13 @@ func ValidateConfig(config *Config) error {
 	return nil
 }
 
-// filterKey returns the configStorage key for a filter ID
-func filterKey(id string) string {
-	return "filter/" + id
-}
+// store is the shared persistence + paired-file descriptor for the filter editor.
+var store = configeditor.MustNew("filter/", files.EditorTypeFilter, "index")
 
-// filterIndexPath returns the docs-relative path of the index file paired with a filter.
+// FilterIndexPath returns the docs-relative path of the index file paired with a filter.
 // Respects the useExtensionIndex setting: returns e.g. "my/filter.index" or "my/filter.md".
 func FilterIndexPath(filterID string) string {
-	return filterID + configmanager.ExtensionForEditor("index")
+	return store.PairedPath(filterID)
 }
 
 // GenerateFilterIndex runs the filter and writes the results as a physical index file.
@@ -353,27 +350,15 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	var sb strings.Builder
 	for _, file := range result.Files {
 		rel := pathutils.ToRelative(file.Path)
-		sb.WriteString(fmt.Sprintf("- [%s](%s)\n", rel, rel))
+		fmt.Fprintf(&sb, "- [%s](%s)\n", rel, rel)
 	}
 
-	indexPath := FilterIndexPath(filterID)
-	fullPath := pathutils.ToDocsPath(indexPath)
-
-	if err := contentStorage.WriteFile(fullPath, []byte(sb.String()), 0644); err != nil {
-		return fmt.Errorf("failed to write filter index %s: %w", indexPath, err)
+	pairedPath := store.PairedPath(filterID)
+	if err := store.WritePaired(filterID, []byte(sb.String())); err != nil {
+		return err
 	}
 
-	// save metadata marking this as a filter-editor file so the filter editor opens -
-	// the physical file uses the "index" extension, so the editor type must be forced
-	// rather than left to extension inference
-	normalizedIndexPath := pathutils.ToWithPrefix(indexPath)
-	if err := files.MetaDataSync(normalizedIndexPath); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to save metadata for filter index %s: %v", indexPath, err)
-	} else if err := files.SetEditor(normalizedIndexPath, files.EditorTypeFilter); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to set editor for filter index %s: %v", indexPath, err)
-	}
-
-	logging.LogInfo(logging.KeyApp, "generated filter index: %s (%d files)", indexPath, len(result.Files))
+	logging.LogInfo(logging.KeyApp, "generated filter index: %s (%d files)", pairedPath, len(result.Files))
 	return nil
 }
 
@@ -388,7 +373,7 @@ func SaveFilterConfig(config *Config, filterID string) error {
 		return fmt.Errorf("failed to marshal filter config: %w", err)
 	}
 
-	if err := configStorage.Set(filterKey(filterID), data); err != nil {
+	if err := store.Set(filterID, data); err != nil {
 		return fmt.Errorf("failed to save filter config: %w", err)
 	}
 
@@ -404,7 +389,7 @@ func SaveFilterConfig(config *Config, filterID string) error {
 // GetFilterConfigForFile returns the filter config paired with a viewed index file
 // (docs-relative path), or nil when the path is not a saved filter's index file.
 func GetFilterConfigForFile(relPath string) *Config {
-	id := strings.TrimSuffix(relPath, configmanager.ExtensionForEditor("index"))
+	id := store.IDFromPath(relPath)
 	config, err := GetFilterConfig(id)
 	if err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to load filter config for %s: %v", relPath, err)
@@ -415,7 +400,7 @@ func GetFilterConfigForFile(relPath string) *Config {
 
 // GetFilterConfig loads a filter configuration from configStorage
 func GetFilterConfig(filterID string) (*Config, error) {
-	data, err := configStorage.Get(filterKey(filterID))
+	data, err := store.Get(filterID)
 	if err != nil {
 		return nil, err
 	}
@@ -454,30 +439,12 @@ func RegenerateAllIndexes() {
 }
 
 func GetAllFilters() ([]string, error) {
-	keys, err := configStorage.List("filter/")
-	if err != nil {
-		return nil, err
-	}
-	ids := make([]string, len(keys))
-	for i, k := range keys {
-		ids[i] = strings.TrimPrefix(k, "filter/")
-	}
-	return ids, nil
+	return store.List()
 }
 
 // DeleteFilterConfig removes a filter from configStorage and its paired index file.
 func DeleteFilterConfig(filterID string) error {
-	// delete the index file and its metadata
-	indexPath := FilterIndexPath(filterID)
-	fullPath := pathutils.ToDocsPath(indexPath)
-	if err := contentStorage.DeleteFile(fullPath); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to delete filter index file %s: %v", fullPath, err)
-	}
-	if err := files.MetaDataDelete(pathutils.ToWithPrefix(indexPath)); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to delete filter index metadata %s: %v", indexPath, err)
-	}
-
-	return configStorage.Delete(filterKey(filterID))
+	return store.Delete(filterID)
 }
 
 // filterFieldName returns the form field name scoped to a widget, or standalone if widgetIndex < 0.

@@ -6,7 +6,7 @@
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
-  - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
+  - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?) just like the filter editor (use `configeditor.Kind`)
   - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
@@ -20,7 +20,6 @@
   - replace all hand-built urls with pathutils
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
-  - i want to add another editor like the filter editor where the logic lives in the config folder and it presents a markdown file - can we prepare
 
 
 # every other time
