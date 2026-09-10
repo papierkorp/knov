@@ -41,17 +41,5 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseBulkChatMoveDelete,
 	}
 
-	result := &test.SuiteResult{Suite: "editors"}
-	for _, c := range cases {
-		cr := c()
-		result.Cases = append(result.Cases, cr)
-		if cr.Success {
-			result.Passed++
-		} else {
-			result.Failed++
-		}
-	}
-	result.Total = len(cases)
-	result.Success = result.Failed == 0
-	return result, nil
+	return test.RunCases("editors", cases), nil
 }

@@ -17,11 +17,10 @@
 - fixes
   - table alignment is not working
 - chore
-  - s3 backup tests?
-  - cache for books?
   - replace all hand-built urls with pathutils
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
+  - i want to add another editor like the filter editor where the logic lives in the config folder and it presents a markdown file - can we prepare
 
 
 # every other time

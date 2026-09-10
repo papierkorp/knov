@@ -28,24 +28,14 @@ func (Suite) Run() (*test.SuiteResult, error) {
 
 	for _, tc := range testConfigs {
 		caseResult := runCase(tc)
-		result.Cases = append(result.Cases, caseResult)
-		if caseResult.Success {
-			result.Passed++
-		} else {
-			result.Failed++
+		result.Add(caseResult)
+		if !caseResult.Success {
 			logging.LogInfo(logging.KeyFilterDebug, "test %s failed: %s", caseResult.Name, caseResult.Error)
 		}
 	}
 
-	scopedCase := caseFilterScopedHidePath()
-	result.Cases = append(result.Cases, scopedCase)
-	if scopedCase.Success {
-		result.Passed++
-	} else {
-		result.Failed++
-	}
+	result.Add(caseFilterScopedHidePath())
 
-	result.Total = len(testConfigs) + 1
 	result.Success = result.Failed == 0
 
 	if result.Failed > 0 {

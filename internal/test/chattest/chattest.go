@@ -35,17 +35,5 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseDeleteForFile,
 	}
 
-	result := &test.SuiteResult{Suite: "chat"}
-	for _, c := range cases {
-		cr := c()
-		result.Cases = append(result.Cases, cr)
-		if cr.Success {
-			result.Passed++
-		} else {
-			result.Failed++
-		}
-	}
-	result.Total = len(cases)
-	result.Success = result.Failed == 0
-	return result, nil
+	return test.RunCases("chat", cases), nil
 }

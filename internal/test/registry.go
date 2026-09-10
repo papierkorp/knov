@@ -31,6 +31,7 @@ func RunAllTests(name string) (*SuiteResult, error) {
 		result.Total += suiteResult.Total
 		result.Passed += suiteResult.Passed
 		result.Failed += suiteResult.Failed
+		result.Skipped += suiteResult.Skipped
 	}
 
 	result.Success = result.Failed == 0

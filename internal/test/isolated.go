@@ -79,7 +79,7 @@ func RunAllTestsAndLog(name string) (*SuiteResult, error) {
 	}
 
 	if result.Failed == 0 {
-		logging.LogInfo(logging.KeyInAppTests, "run-tests %s: %d passed, %d failed", result.Suite, result.Passed, result.Failed)
+		logging.LogInfo(logging.KeyInAppTests, "run-tests %s: %d passed, %d skipped, %d failed", result.Suite, result.Passed, result.Skipped, result.Failed)
 		return result, nil
 	}
 
@@ -89,6 +89,6 @@ func RunAllTestsAndLog(name string) (*SuiteResult, error) {
 			failedNames = append(failedNames, fmt.Sprintf("%s: %s", c.Name, c.Error))
 		}
 	}
-	logging.LogWarning(logging.KeyInAppTests, "run-tests %s: %d passed, %d failed (%s)", result.Suite, result.Passed, result.Failed, strings.Join(failedNames, ", "))
+	logging.LogWarning(logging.KeyInAppTests, "run-tests %s: %d passed, %d skipped, %d failed (%s)", result.Suite, result.Passed, result.Skipped, result.Failed, strings.Join(failedNames, ", "))
 	return result, nil
 }

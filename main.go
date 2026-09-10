@@ -236,11 +236,14 @@ func runHeadlessTests(name string, removeTestDir bool) {
 	}
 
 	for _, c := range result.Cases {
-		if !c.Success {
+		switch {
+		case c.Skipped:
+			fmt.Printf("SKIP %s: %s\n", c.Name, c.Actual)
+		case !c.Success:
 			fmt.Printf("FAIL %s: %s\n", c.Name, c.Error)
 		}
 	}
-	fmt.Printf("%d passed, %d failed, %d total\n", result.Passed, result.Failed, result.Total)
+	fmt.Printf("%d passed, %d skipped, %d failed, %d total\n", result.Passed, result.Skipped, result.Failed, result.Total)
 
 	code := 0
 	if !result.Success {

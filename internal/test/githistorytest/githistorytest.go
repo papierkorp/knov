@@ -32,15 +32,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 
 	result := &test.SuiteResult{Suite: "git-history"}
 	for _, c := range cases {
-		cr := c(state)
-		result.Cases = append(result.Cases, cr)
-		if cr.Success {
-			result.Passed++
-		} else {
-			result.Failed++
-		}
+		result.Add(c(state))
 	}
-	result.Total = len(cases)
 	result.Success = result.Failed == 0
 	return result, nil
 }
