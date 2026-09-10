@@ -52,7 +52,6 @@ func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
 	id, err := job.StartFileSyncManual()
 	if err != nil {
 		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "sync already running")
-		notify.SetHeader(w, notify.LevelError, msg)
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
