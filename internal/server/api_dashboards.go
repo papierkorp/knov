@@ -249,7 +249,7 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 // @Description Get dashboard form for create or edit
 // @Tags dashboards
 // @Param id query string false "Dashboard ID for edit mode"
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "dashboard form html"
 // @Router /api/dashboards/form [get]
 func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
@@ -274,7 +274,7 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 // @Summary Get widget form
 // @Description Get empty widget form for adding new widget
 // @Tags dashboards
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "widget form html"
 // @Router /api/dashboards/widget-form [post]
 func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
@@ -297,7 +297,7 @@ func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param index query string true "Widget index"
 // @Param widgets[X][type] query string false "Widget type"
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "widget config html"
 // @Router /api/dashboards/widget-config [get]
 // @Router /api/dashboards/widget-config [post]
@@ -376,7 +376,7 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 // @Param dashboardId formData string true "Dashboard ID"
 // @Param widgetId path string true "Widget ID"
 // @Accept application/x-www-form-urlencoded
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "rendered widget html"
 // @Failure 400 {string} string "missing parameters"
 // @Failure 404 {string} string "widget not found"

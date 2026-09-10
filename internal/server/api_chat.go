@@ -237,16 +237,6 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
 }
 
-// @Summary Bulk move chat messages to a file
-// @Description Concatenates selected messages and moves them to a new or existing file
-// @Tags chat
-// @Accept application/x-www-form-urlencoded
-// @Param ids formData string true "Comma-separated message IDs"
-// @Param mode formData string true "Mode: new or append"
-// @Param target formData string true "Target filename (new) or existing file path (append)"
-// @Param editor formData string false "Editor type for new files"
-// @Produce json,html
-// @Router /api/chat/messages/bulk/move [post]
 // @Summary Get bulk move form HTML
 // @Tags chat
 // @Param mode query string true "Form mode: new or append"
@@ -257,6 +247,16 @@ func handleAPIGetChatBulkForm(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, nil, render.RenderChatBulkMoveForm(mode))
 }
 
+// @Summary Bulk move chat messages to a file
+// @Description Concatenates selected messages and moves them to a new or existing file
+// @Tags chat
+// @Accept application/x-www-form-urlencoded
+// @Param ids formData string true "Comma-separated message IDs"
+// @Param mode formData string true "Mode: new or append"
+// @Param target formData string true "Target filename (new) or existing file path (append)"
+// @Param editor formData string false "Editor type for new files"
+// @Produce json,html
+// @Router /api/chat/messages/bulk/move [post]
 func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))

@@ -44,7 +44,7 @@ func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 // @Summary Get recent log entries
 // @Description Returns the most recent in-memory log entries across every key, newest first, as an HTML table (default) or - with raw=true - verbatim-style monospace lines. Powers the "Live" view on the admin logs page.
 // @Tags system
-// @Produce html
+// @Produce json,html
 // @Param raw query bool false "render as verbatim monospace lines instead of a table"
 // @Success 200 {string} string "log HTML"
 // @Router /api/logs [get]
@@ -97,7 +97,7 @@ func readLogFileLines(path string) ([]string, error) {
 // @Summary Get log file contents
 // @Description Parses per-key log file(s) into structured entries, merges + time-sorts them and renders a table (default), a summary (view=summary) or monospace lines (raw=true). name picks one key's file (e.g. file-sync.log), name=all merges every key's log, omitted uses app.log. from/to (unix seconds) filter server-side - the range reaches entries older than a plain load returns.
 // @Tags system
-// @Produce html
+// @Produce json,html
 // @Param name query string false "log file name, or 'all' to merge every key's log"
 // @Param from query int false "only entries at/after this unix-seconds time"
 // @Param to query int false "only entries at/before this unix-seconds time"

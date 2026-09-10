@@ -21,7 +21,7 @@ import (
 // @Description request) runs in the background; returns a small status fragment - a
 // @Description self-polling spinner while running, empty once done, or an inline error message.
 // @Tags jobs
-// @Produce html
+// @Produce json,html
 // @Param id path string true "Job id"
 // @Success 200 {object} jobStorage.JobRecord
 // @Failure 404 {object} string "job not found"
@@ -108,7 +108,7 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 // @Description poll GET /api/jobs/{id} for the eventual "canceled" status. Only job types the
 // @Description jobs UI shows a cancel button for actually honor it - see job.IsCancellable.
 // @Tags jobs
-// @Produce html
+// @Produce json,html
 // @Param id path string true "Job id"
 // @Success 200 {object} jobStorage.JobRecord
 // @Failure 404 {object} string "job not running"

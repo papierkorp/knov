@@ -133,7 +133,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 // @Summary Get file content as html
 // @Tags files
 // @Param filepath path string true "File path"
-// @Produce text/html
+// @Produce json,html
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
@@ -273,7 +273,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 // @Description Returns unprocessed file content for editing
 // @Tags files
 // @Param filepath query string true "File path"
-// @Produce json,plain
+// @Produce json,html
 // @Success 200 {string} string "raw content"
 // @Router /api/files/raw [get]
 func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
@@ -300,7 +300,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param filepath formData string true "File path"
 // @Param content formData string true "File content"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/save [post]
 func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -415,7 +415,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param filepath formData string true "file path"
 // @Param line formData int true "0-indexed source line of the checkbox"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/todo-toggle [post]
 func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 	// htmx processes HX-Trigger toasts on every response, success or error, so notify
@@ -746,7 +746,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 // @Summary Get metadata form HTML for file editing
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/metadata/form [get]
 func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
@@ -764,7 +764,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 // @Summary Get file form HTML
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/form [get]
 func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
@@ -776,7 +776,7 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
 // @Param filetype query string false "Default file type (optional for new files)"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/metadata-form [get]
 func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
@@ -798,7 +798,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param filepath path string true "Current file path"
 // @Param name formData string true "New file name"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "success message"
 // @Router /api/files/rename/{filepath} [post]
 func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
@@ -861,7 +861,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param folderpath path string true "Current folder path (relative, no docs/ prefix)"
 // @Param target formData string true "Target parent folder path"
-// @Produce json
+// @Produce json,html
 // @Success 200 {object} map[string]string
 // @Router /api/files/move-folder/{folderpath} [post]
 func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
@@ -962,7 +962,7 @@ func removeFileAndMetadata(fullPath string) error {
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Param filepath path string true "File path to delete"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "success message"
 // @Router /api/files/delete/{filepath} [delete]
 func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
@@ -1001,7 +1001,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 // @Description Recursively deletes a folder, all files inside it, and their metadata
 // @Tags files
 // @Param folderpath path string true "Folder path to delete (relative, no docs/ prefix)"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "success message"
 // @Router /api/files/delete-folder/{folderpath} [delete]
 func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
@@ -1040,7 +1040,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param type query string true "Type to delete by: collection or folder"
 // @Param value query string true "Collection or folder name"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "deleted N files"
 // @Failure 400 {string} string "missing parameters"
 // @Failure 500 {string} string "delete failed"

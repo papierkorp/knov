@@ -70,7 +70,7 @@ func handleAPIGetNotifications(w http.ResponseWriter, r *http.Request) {
 // @Summary Clear all notifications
 // @Description Removes all notifications from the persistent log.
 // @Tags notifications
-// @Produce json
+// @Produce json,html
 // @Success 200 {object} string "cleared"
 // @Router /api/notifications [delete]
 func handleAPIDeleteNotifications(w http.ResponseWriter, r *http.Request) {

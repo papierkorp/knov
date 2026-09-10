@@ -31,7 +31,7 @@ import (
 // @Tags editor
 // @Param filepath query string false "file path (optional for new files)"
 // @Param editor query string false "editor type (optional for new files)"
-// @Produce html
+// @Produce json,html
 // @Router /api/editor [get]
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	fp := r.URL.Query().Get("filepath")
@@ -231,7 +231,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 // @Accept x-www-form-urlencoded
 // @Param type formData string true "entry type (separator, file, title)"
 // @Param mode formData string false "index (default) or book"
-// @Produce html
+// @Produce json,html
 // @Router /api/editor/entry/add-entry [post]
 func handleAPIAddEntry(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -270,7 +270,7 @@ func handleAPISaveFilterEditor(w http.ResponseWriter, r *http.Request) {
 // @Param filepath formData string true "file path"
 // @Param content formData string true "list content as json"
 // @Param mode formData string false "list or todo"
-// @Produce html
+// @Produce json,html
 // @Router /api/editor/listeditor [post]
 func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -362,7 +362,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 // @Param headers formData string true "table headers as JSON array"
 // @Param rows formData string true "table rows as JSON array"
 // @Param tableIndex formData string true "table index in document"
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "success message"
 // @Failure 400 {string} string "invalid request"
 // @Failure 500 {string} string "server error"
@@ -463,7 +463,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 // @Tags editor
 // @Param filepath query string true "file path"
 // @Param tableIndex query string false "table index (default 0)"
-// @Produce html
+// @Produce json,html
 // @Router /api/editor/tableeditor [get]
 func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
@@ -491,7 +491,7 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 // @Param filepath formData string true "file path"
 // @Param sectionid formData string true "section id"
 // @Param content formData string true "section content"
-// @Produce html
+// @Produce json,html
 // @Router /api/files/section/save [post]
 func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -550,7 +550,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 // @Description Convert a single DokuWiki file to Markdown format and save as new file
 // @Tags files
 // @Accept application/x-www-form-urlencoded
-// @Produce text/html
+// @Produce json,html
 // @Param filepath formData string true "File path"
 // @Success 200 {string} string "conversion success message"
 // @Failure 400 {string} string "invalid request"

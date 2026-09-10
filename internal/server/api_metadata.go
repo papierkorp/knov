@@ -218,7 +218,7 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 // @Description orphaned media cache) in the background; returns a polling status fragment - see
 // @Description GET /api/jobs/{id}.
 // @Tags metadata
-// @Produce html
+// @Produce json,html
 // @Success 200 {object} jobStorage.JobRecord
 // @Failure 409 {string} string "rebuild already running"
 // @Failure 500 {string} string "failed to start rebuild"

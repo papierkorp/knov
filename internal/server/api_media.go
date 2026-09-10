@@ -198,7 +198,7 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 // @Description Deletes a media file and its metadata
 // @Tags media
 // @Param mediapath path string true "Media file path to delete"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "success message"
 // @Failure 400 {string} string "missing media path"
 // @Failure 404 {string} string "media file not found"
@@ -293,7 +293,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 // @Tags media
 // @Param path query string true "media file path"
 // @Param size query int false "preview size in pixels (default from settings)"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "HTML preview element"
 // @Failure 400 {string} string "invalid request"
 // @Failure 404 {string} string "media file not found"
@@ -392,7 +392,7 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param filepath path string true "Current media file path (without media/ prefix)"
 // @Param newpath formData string true "New media file path (without media/ prefix)"
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "success"
 // @Failure 400 {string} string "invalid request"
 // @Failure 404 {string} string "file not found"
@@ -448,7 +448,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 // @Summary Get media rename form
 // @Tags media
 // @Param filepath path string true "Media file path (without media/ prefix)"
-// @Produce html
+// @Produce json,html
 // @Router /api/media/rename-form/{filepath} [get]
 func handleAPIMediaRenameForm(w http.ResponseWriter, r *http.Request) {
 	relativePath := chi.URLParam(r, "*")
@@ -458,7 +458,7 @@ func handleAPIMediaRenameForm(w http.ResponseWriter, r *http.Request) {
 // @Summary Get media path display
 // @Tags media
 // @Param filepath path string true "Media file path (without media/ prefix)"
-// @Produce html
+// @Produce json,html
 // @Router /api/media/path-display/{filepath} [get]
 func handleAPIMediaPathDisplay(w http.ResponseWriter, r *http.Request) {
 	relativePath := chi.URLParam(r, "*")

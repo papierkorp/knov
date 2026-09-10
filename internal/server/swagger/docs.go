@@ -17,48 +17,14 @@ const docTemplate = `{
     "paths": {
         "/api/chat/bulk-form": {
             "get": {
-                "description": "Concatenates selected messages and moves them to a new or existing file",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
                 "produces": [
-                    "application/json",
-                    "text/html",
                     "text/html"
                 ],
                 "tags": [
-                    "chat",
                     "chat"
                 ],
                 "summary": "Get bulk move form HTML",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Comma-separated message IDs",
-                        "name": "ids",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Mode: new or append",
-                        "name": "mode",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Target filename (new) or existing file path (append)",
-                        "name": "target",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Editor type for new files",
-                        "name": "editor",
-                        "in": "formData"
-                    },
                     {
                         "type": "string",
                         "description": "Form mode: new or append",
@@ -167,14 +133,12 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json",
-                    "text/html",
                     "text/html"
                 ],
                 "tags": [
-                    "chat",
                     "chat"
                 ],
-                "summary": "Get bulk move form HTML",
+                "summary": "Bulk move chat messages to a file",
                 "parameters": [
                     {
                         "type": "string",
@@ -202,13 +166,6 @@ const docTemplate = `{
                         "description": "Editor type for new files",
                         "name": "editor",
                         "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Form mode: new or append",
-                        "name": "mode",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {}
@@ -534,6 +491,7 @@ const docTemplate = `{
                     "multipart/form-data"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -699,6 +657,7 @@ const docTemplate = `{
             "get": {
                 "description": "Get dashboard form for create or edit",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -769,6 +728,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -805,6 +765,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -840,6 +801,7 @@ const docTemplate = `{
             "post": {
                 "description": "Get empty widget form for adding new widget",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -863,6 +825,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1122,6 +1085,7 @@ const docTemplate = `{
             "get": {
                 "description": "Returns the appropriate editor based on file metadata or editor query param",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1195,6 +1159,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1279,6 +1244,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1314,6 +1280,7 @@ const docTemplate = `{
             "get": {
                 "description": "Returns table editor component with Handsontable",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1343,6 +1310,7 @@ const docTemplate = `{
                     "multipart/form-data"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1479,6 +1447,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1526,6 +1495,7 @@ const docTemplate = `{
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1551,6 +1521,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1592,6 +1563,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Recursively deletes a folder, all files inside it, and their metadata",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1624,6 +1596,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1857,6 +1830,7 @@ const docTemplate = `{
         "/api/files/form": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -1977,6 +1951,7 @@ const docTemplate = `{
         "/api/files/metadata-form": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2003,6 +1978,7 @@ const docTemplate = `{
         "/api/files/metadata/form": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2027,7 +2003,8 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -2099,7 +2076,7 @@ const docTemplate = `{
                 "description": "Returns unprocessed file content for editing",
                 "produces": [
                     "application/json",
-                    "text/plain"
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -2131,6 +2108,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2169,6 +2147,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2201,6 +2180,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2240,6 +2220,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2480,6 +2461,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2503,6 +2485,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2601,6 +2584,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2810,6 +2794,7 @@ const docTemplate = `{
             "get": {
                 "description": "Polled by htmx while an async job (started via a delete-folder or bulk-delete\nrequest) runs in the background; returns a small status fragment - a\nself-polling spinner while running, empty once done, or an inline error message.",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -2843,6 +2828,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Requests cancellation of a running async job (a delete-folder, bulk-delete or\nmetadata-full-rebuild run) by canceling its context. Cancellation is cooperative - the\njob only stops at its next checkpoint, so the response still reflects \"running\";\npoll GET /api/jobs/{id} for the eventual \"canceled\" status. Only job types the\njobs UI shows a cancel button for actually honor it - see job.IsCancellable.",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3155,6 +3141,7 @@ const docTemplate = `{
         "/api/kanban/{board}/tags": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3536,6 +3523,7 @@ const docTemplate = `{
             "get": {
                 "description": "Returns the most recent in-memory log entries across every key, newest first, as an HTML table (default) or - with raw=true - verbatim-style monospace lines. Powers the \"Live\" view on the admin logs page.",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3598,6 +3586,7 @@ const docTemplate = `{
             "get": {
                 "description": "Parses per-key log file(s) into structured entries, merges + time-sorts them and renders a table (default), a summary (view=summary) or monospace lines (raw=true). name picks one key's file (e.g. file-sync.log), name=all merges every key's log, omitted uses app.log. from/to (unix seconds) filter server-side - the range reaches entries older than a plain load returns.",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3768,6 +3757,7 @@ const docTemplate = `{
         "/api/media/path-display/{filepath}": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3790,6 +3780,7 @@ const docTemplate = `{
             "get": {
                 "description": "Returns HTML for a media preview image",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3836,6 +3827,7 @@ const docTemplate = `{
         "/api/media/rename-form/{filepath}": {
             "get": {
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -3861,6 +3853,7 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -4016,6 +4009,7 @@ const docTemplate = `{
             "delete": {
                 "description": "Deletes a media file and its metadata",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -4937,6 +4931,7 @@ const docTemplate = `{
             "post": {
                 "description": "Starts a full metadata rebuild (init all + purge stale/duplicates + links +\norphaned media cache) in the background; returns a polling status fragment - see\nGET /api/jobs/{id}.",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -5266,7 +5261,8 @@ const docTemplate = `{
             "delete": {
                 "description": "Removes all notifications from the persistent log.",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "notifications"
@@ -6055,6 +6051,7 @@ const docTemplate = `{
             "get": {
                 "description": "Get all theme settings as HTML form elements",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [

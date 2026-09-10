@@ -22,7 +22,6 @@
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - writeAPIError follow-ups (from the honest-status-code sweep, git commit e5c34cb19bc7b3097f7ce574e4bca9a768d69520)
-    - de-duplicate content negotiation: writeAPIError re-implements Accept sniffing - share one helper with writeResponse so success/error responses agree, and sweep the @Produce swagger annotations to match
     - confirm notify.SetHeader JSON-escapes the message before it goes into the HX-Trigger header (error messages now routinely embed user file paths and raw err.Error())
     - add tests for writeAPIError: html vs json vs missing-Accept body, and no double error toast from call sites
 

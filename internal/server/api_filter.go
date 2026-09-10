@@ -73,7 +73,7 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 // @Tags filter
 // @Accept application/x-www-form-urlencoded
 // @Param row_index formData int false "Row index"
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "filter criteria row html"
 // @Router /api/filters/criteria-row [get]
 func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 // @Param metadata formData string true "Metadata field name"
 // @Param row_index formData int true "Row index"
 // @Param value formData string false "Current value"
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "filter value input html"
 // @Router /api/filters/value-input [get]
 func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +185,7 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 // @Description Add new filter criteria row for filter forms
 // @Tags filter
 // @Accept application/x-www-form-urlencoded
-// @Produce text/html
+// @Produce json,html
 // @Success 200 {string} string "filter criteria row html"
 // @Router /api/filters/add-criteria [post]
 func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {

@@ -240,7 +240,7 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 // @Summary Get all non-kanban tags used in a board's kanban cards
 // @Tags kanban
 // @Param board path string true "Board slug"
-// @Produce html
+// @Produce json,html
 // @Router /api/kanban/{board}/tags [get]
 func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 	board, ok := configmanager.GetKanbanBoardBySlug(chi.URLParam(r, "board"))

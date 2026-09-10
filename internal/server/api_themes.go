@@ -137,7 +137,7 @@ func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
 // @Summary Get theme settings form
 // @Description Get all theme settings as HTML form elements
 // @Tags themes
-// @Produce html
+// @Produce json,html
 // @Success 200 {string} string "HTML form elements"
 // @Router /api/themes/settings [get]
 func handleAPIGetThemeSettingsForm(w http.ResponseWriter, r *http.Request) {

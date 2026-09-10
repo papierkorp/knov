@@ -190,7 +190,7 @@ func handleAPIExportSettings(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Accept multipart/form-data
 // @Param file formData file true "Settings JSON file"
-// @Produce html
+// @Produce json,html
 // @Router /api/config/import [post]
 func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(1 << 20); err != nil {

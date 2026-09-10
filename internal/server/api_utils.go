@@ -17,16 +17,28 @@ import (
 	"knov/internal/server/render"
 )
 
-func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
-	acceptHeader := r.Header.Get("Accept")
+// wantsHTML reports whether the response body should be HTML rather than JSON.
+// It is the single content-negotiation rule shared by writeResponse and
+// writeAPIError so success and error responses always agree on the format.
+// An explicit "application/json" in Accept always wins (API clients that also
+// send a trailing "*/*" still get JSON); otherwise "text/html" or a bare "*/*"
+// (htmx / browsers) selects HTML. A missing Accept header defaults to JSON.
+func wantsHTML(r *http.Request) bool {
+	accept := r.Header.Get("Accept")
+	if strings.Contains(accept, "application/json") {
+		return false
+	}
+	return strings.Contains(accept, "text/html") || strings.Contains(accept, "*/*")
+}
 
-	if strings.Contains(acceptHeader, "text/html") || strings.Contains(acceptHeader, "*/*") {
+func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
+	if wantsHTML(r) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(htmlData))
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(jsonData)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(jsonData)
 }
 
 // setAttachmentFilename sets a Content-Disposition header for filename,
@@ -63,8 +75,7 @@ func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType strin
 // KNOV_NOTIFY_MIN_LEVEL mutes the toast (the log entry always persists).
 func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message string) {
 	notify.SetHeader(w, notify.LevelError, message)
-	acceptHeader := r.Header.Get("Accept")
-	if strings.Contains(acceptHeader, "text/html") || strings.Contains(acceptHeader, "*/*") {
+	if wantsHTML(r) {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(status)
 		w.Write([]byte(render.RenderStatusMessage(render.StatusError, message)))

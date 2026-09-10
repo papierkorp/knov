@@ -25,7 +25,7 @@ import (
 // @Param order query string false "Sort order (asc/desc)" default(asc)
 // @Param search query string false "Search query"
 // @Param filter query []string false "Column filter, repeatable, format '<columnIndex>:<value>'"
-// @Produce text/html
+// @Produce html
 // @Success 200 {string} string "table html fragment"
 // @Failure 400 {string} string "invalid parameters"
 // @Failure 500 {string} string "failed to process table"

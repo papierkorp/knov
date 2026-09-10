@@ -467,43 +467,17 @@ info:
 paths:
   /api/chat/bulk-form:
     get:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: Concatenates selected messages and moves them to a new or existing
-        file
       parameters:
-      - description: Comma-separated message IDs
-        in: formData
-        name: ids
-        required: true
-        type: string
-      - description: 'Mode: new or append'
-        in: formData
-        name: mode
-        required: true
-        type: string
-      - description: Target filename (new) or existing file path (append)
-        in: formData
-        name: target
-        required: true
-        type: string
-      - description: Editor type for new files
-        in: formData
-        name: editor
-        type: string
       - description: 'Form mode: new or append'
         in: query
         name: mode
         required: true
         type: string
       produces:
-      - application/json
-      - text/html
       - text/html
       responses: {}
       summary: Get bulk move form HTML
       tags:
-      - chat
       - chat
   /api/chat/messages:
     get:
@@ -679,19 +653,12 @@ paths:
         in: formData
         name: editor
         type: string
-      - description: 'Form mode: new or append'
-        in: query
-        name: mode
-        required: true
-        type: string
       produces:
       - application/json
       - text/html
-      - text/html
       responses: {}
-      summary: Get bulk move form HTML
+      summary: Bulk move chat messages to a file
       tags:
-      - chat
       - chat
   /api/components/table:
     get:
@@ -834,6 +801,7 @@ paths:
         required: true
         type: file
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Import user settings from JSON
@@ -1083,6 +1051,7 @@ paths:
         name: id
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1134,6 +1103,7 @@ paths:
         name: widgets[X][type]
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1158,6 +1128,7 @@ paths:
         name: widgets[X][type]
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1171,6 +1142,7 @@ paths:
     post:
       description: Get empty widget form for adding new widget
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1197,6 +1169,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1232,6 +1205,7 @@ paths:
         name: editor
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get appropriate editor for file
@@ -1284,6 +1258,7 @@ paths:
         name: mode
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Add index/book entry
@@ -1349,6 +1324,7 @@ paths:
         name: mode
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Save list editor
@@ -1368,6 +1344,7 @@ paths:
         name: tableIndex
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get table editor form
@@ -1399,6 +1376,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1481,6 +1459,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1507,6 +1486,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get file content as html
@@ -1525,6 +1505,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1552,6 +1533,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1573,6 +1555,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1728,6 +1711,7 @@ paths:
         name: filepath
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get file form HTML
@@ -1814,6 +1798,7 @@ paths:
         name: filetype
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get metadata form HTML
@@ -1827,6 +1812,7 @@ paths:
         name: filepath
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get metadata form HTML for file editing
@@ -1850,6 +1836,7 @@ paths:
         type: string
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: OK
@@ -1898,7 +1885,7 @@ paths:
         type: string
       produces:
       - application/json
-      - text/plain
+      - text/html
       responses:
         "200":
           description: raw content
@@ -1924,6 +1911,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -1949,6 +1937,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Save file content
@@ -1976,6 +1965,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Save section content
@@ -2000,6 +1990,7 @@ paths:
         required: true
         type: integer
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Cycle a todo checkbox's state in place from the rendered file view
@@ -2176,6 +2167,7 @@ paths:
       - application/x-www-form-urlencoded
       description: Add new filter criteria row for filter forms
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2196,6 +2188,7 @@ paths:
         name: row_index
         type: integer
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2272,6 +2265,7 @@ paths:
         name: value
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2388,6 +2382,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2413,6 +2408,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2566,6 +2562,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get all non-kanban tags used in a board's kanban cards
@@ -2895,6 +2892,7 @@ paths:
         name: raw
         type: boolean
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2961,6 +2959,7 @@ paths:
         name: limit
         type: integer
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -2984,6 +2983,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -3091,6 +3091,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get media path display
@@ -3110,6 +3111,7 @@ paths:
         name: size
         type: integer
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -3136,6 +3138,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses: {}
       summary: Get media rename form
@@ -3159,6 +3162,7 @@ paths:
         required: true
         type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -3843,6 +3847,7 @@ paths:
         orphaned media cache) in the background; returns a polling status fragment - see
         GET /api/jobs/{id}.
       produces:
+      - application/json
       - text/html
       responses:
         "200":
@@ -4047,6 +4052,7 @@ paths:
       description: Removes all notifications from the persistent log.
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: cleared
@@ -4673,6 +4679,7 @@ paths:
     get:
       description: Get all theme settings as HTML form elements
       produces:
+      - application/json
       - text/html
       responses:
         "200":
