@@ -20,8 +20,7 @@
     - add tests
   - codemirror editor jump from title/filepath directly to the editor window with tab
   - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
-  - use more features of tabulator: https://www.tabulator.info/examples/6.x/
-    - add a settings menu in the editor just like for the codemirror editor
+  - codemirror: add table button
 - fixes
   - 
 - chore

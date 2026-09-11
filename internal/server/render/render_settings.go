@@ -44,6 +44,12 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 		if s.GetMeta().Group == configmanager.GroupCodeMirror && s.Key() != configmanager.CodeMirrorShowToolbar.Key() {
 			continue
 		}
+		// The rest of GroupTableEditor is surfaced via the settings menu in the table
+		// editor toolbar instead (see tableEditorSettingsMenuHTML) — TableEditorShowSettingsMenu
+		// stays here since it controls whether that menu exists at all.
+		if s.GetMeta().Group == configmanager.GroupTableEditor && s.Key() != configmanager.TableEditorShowSettingsMenu.Key() {
+			continue
+		}
 		g := s.GetMeta().Group
 		if _, exists := groupMap[g]; !exists {
 			groupOrder = append(groupOrder, g)

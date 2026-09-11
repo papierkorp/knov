@@ -73,6 +73,56 @@ var (
 		Desc:  "hide markdown syntax markers on lines the cursor isn't touching, Obsidian/Typora-style live preview",
 	})
 
+	// ── Editor / Table Editor ──────────────────────────────────────────────────
+	TableEditorShowSettingsMenu = register(&BoolSetting{
+		key: "tableEditorShowSettingsMenu", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Show Settings Menu",
+		Desc:  "display the gear-menu button for adjusting table editor behavior",
+	})
+	TableEditorSelectableRows = register(&BoolSetting{
+		key: "tableEditorSelectableRows", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Selectable Rows",
+		Desc:  "enable dragging rows by their row-number/handle column to reorder them",
+	})
+	TableEditorSelectableCellRange = register(&BoolSetting{
+		key: "tableEditorSelectableCellRange", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Selectable Cell Range",
+		Desc:  "enable click-and-drag range selection of cells for copy/paste, independent of row dragging",
+	})
+	TableEditorPagination = register(&BoolSetting{
+		key: "tableEditorPagination", Default: false,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Pagination",
+		Desc:  "paginate rows instead of showing them all in a scrolling list",
+	})
+	TableEditorRowNumbers = register(&BoolSetting{
+		key: "tableEditorRowNumbers", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Row Numbers",
+		Desc:  "show row numbers in the drag-handle column",
+	})
+	TableEditorSorting = register(&BoolSetting{
+		key: "tableEditorSorting", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Column Sorting",
+		Desc:  "allow clicking column headers to sort rows",
+	})
+	TableEditorEditableColumns = register(&BoolSetting{
+		key: "tableEditorEditableColumns", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Editable Columns",
+		Desc:  "allow double-clicking a cell to edit its value",
+	})
+	TableEditorContextMenus = register(&BoolSetting{
+		key: "tableEditorContextMenus", Default: true,
+		Section: SectionEditor, Group: GroupTableEditor,
+		Label: "Context Menus",
+		Desc:  "show the right-click menu for inserting/removing rows and columns",
+	})
+
 	// ── Editor / All Editors ──────────────────────────────────────────────────
 	DefaultMarkdownEditor = register(&StringSetting{
 		key: "defaultMarkdownEditor", Default: "codemirror-editor",

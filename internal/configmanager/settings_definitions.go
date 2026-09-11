@@ -33,6 +33,7 @@ var (
 	GroupNone            = SettingGroup{}
 	GroupAllEditors      = SettingGroup{Key: "all-editors", Label: "All Editors"}
 	GroupCodeMirror      = SettingGroup{Key: "code-mirror", Label: "CodeMirror"}
+	GroupTableEditor     = SettingGroup{Key: "table-editor", Label: "Table Editor"}
 	GroupSectionEditing  = SettingGroup{Key: "section-editing", Label: "Section Editing & Display"}
 	GroupFileExtensions  = SettingGroup{Key: "file-extensions", Label: "File Extensions", Description: "Use dedicated file extensions instead of .md for these editor types"}
 	GroupPreviewSettings = SettingGroup{Key: "preview-settings", Label: "Preview Settings"}

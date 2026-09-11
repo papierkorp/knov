@@ -4,6 +4,7 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -12,6 +13,134 @@ import (
 	"knov/internal/translation"
 	"knov/internal/types"
 )
+
+// tableEditorSettingsMenuHTML renders the gear-menu button in the table editor toolbar,
+// exposing the GroupTableEditor settings the same way codeMirrorSettingsMenuHTML does for
+// CodeMirror: reuses renderSettingItem so persistence and markup stay identical to /settings.
+func tableEditorSettingsMenuHTML(lang string) string {
+	if !configmanager.TableEditorShowSettingsMenu.Get() {
+		return ""
+	}
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+	var sb strings.Builder
+	sb.WriteString(`<div id="component-table-editor-settings" class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
+	fmt.Fprintf(&sb, `<button type="button" class="btn-secondary" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>`,
+		t("editor settings"))
+	sb.WriteString(`<div class="fp-menu" x-ref="menu" :hidden="!open">`)
+	for _, s := range configmanager.SettingsBySection(configmanager.SectionEditor) {
+		if s.GetMeta().Group == configmanager.GroupTableEditor && s.Key() != configmanager.TableEditorShowSettingsMenu.Key() {
+			sb.WriteString(renderSettingItem(s, t))
+		}
+	}
+	sb.WriteString(`</div></div>`)
+	return sb.String()
+}
+
+// jsTableEditorSettingsMenu wires the table editor settings menu: each boolean toggle persists
+// via its own htmx form (see renderSettingItem) and is additionally applied live by rebuilding
+// the running Tabulator instance via reinitTable.
+func jsTableEditorSettingsMenu() string {
+	if !configmanager.TableEditorShowSettingsMenu.Get() {
+		return ""
+	}
+	return `
+	document.getElementById('component-table-editor-settings').addEventListener('change', function(e) {
+		var cb = e.target.closest('input[type=checkbox][name^="tableEditor"]');
+		if (!cb) return;
+		var opt = cb.name.slice('tableEditor'.length);
+		opt = opt.charAt(0).toLowerCase() + opt.slice(1);
+		var patch = {};
+		patch[opt] = cb.checked;
+		reinitTable(patch);
+	});`
+}
+
+// tableOptionsJS renders the tableOptions JS object literal from the GroupTableEditor
+// settings. Each field is written next to its own value instead of through a shared
+// positional Sprintf argument list, so two adjacent booleans can't be silently swapped.
+func tableOptionsJS() string {
+	opts := []struct {
+		key   string
+		value bool
+	}{
+		{"selectableRows", configmanager.TableEditorSelectableRows.Get()},
+		{"selectableCellRange", configmanager.TableEditorSelectableCellRange.Get()},
+		{"pagination", configmanager.TableEditorPagination.Get()},
+		{"rowNumbers", configmanager.TableEditorRowNumbers.Get()},
+		{"sorting", configmanager.TableEditorSorting.Get()},
+		{"editableColumns", configmanager.TableEditorEditableColumns.Get()},
+		{"contextMenus", configmanager.TableEditorContextMenus.Get()},
+	}
+	var sb strings.Builder
+	sb.WriteString("{\n")
+	for i, o := range opts {
+		fmt.Fprintf(&sb, "\t%s: %t", o.key, o.value)
+		if i < len(opts)-1 {
+			sb.WriteString(",")
+		}
+		sb.WriteString("\n")
+	}
+	sb.WriteString("}")
+	return sb.String()
+}
+
+// headerContextMenuScript renders the column header-context-menu/insert-column JS, with
+// each translated label declared right next to the %s it fills rather than buried in a
+// shared positional argument list far away in the template.
+func headerContextMenuScript(lang string) string {
+	insertLeft := jsEscapeString(translation.SprintfForRequest(lang, "insert column left"))
+	insertRight := jsEscapeString(translation.SprintfForRequest(lang, "insert column right"))
+	alignLeft := jsEscapeString(translation.SprintfForRequest(lang, "align left"))
+	alignCenter := jsEscapeString(translation.SprintfForRequest(lang, "align center"))
+	alignRight := jsEscapeString(translation.SprintfForRequest(lang, "align right"))
+	removeColumn := jsEscapeString(translation.SprintfForRequest(lang, "remove column"))
+	newColumn := jsEscapeString(translation.SprintfForRequest(lang, "new column"))
+	return fmt.Sprintf(`
+function headerContextMenuItems() {
+	return [
+		{ label: %s, action: function(e, column) { insertColumn(column, true); } },
+		{ label: %s, action: function(e, column) { insertColumn(column, false); } },
+		{ separator: true },
+		{ label: %s, action: function(e, column) { setColumnAlign(column, 'left'); } },
+		{ label: %s, action: function(e, column) { setColumnAlign(column, 'center'); } },
+		{ label: %s, action: function(e, column) { setColumnAlign(column, 'right'); } },
+		{ separator: true },
+		{ label: %s, action: function(e, column) { column.delete(); } },
+	];
+}
+
+function insertColumn(column, before) {
+	const field = 'col' + (nextColIndex++);
+	const title = %s;
+	table.addColumn({
+		title: title,
+		field: field,
+		editor: tableOptions.editableColumns ? 'input' : false,
+		headerSort: tableOptions.sorting,
+		titleFormatter: makeTitleFormatter(title),
+		headerContextMenu: tableOptions.contextMenus ? headerContextMenuItems() : undefined,
+	}, before, column.getField());
+}`, insertLeft, insertRight, alignLeft, alignCenter, alignRight, removeColumn, newColumn)
+}
+
+// rowContextMenuScript renders the row-context-menu JS, with each translated label
+// declared right next to the %s it fills (see headerContextMenuScript).
+func rowContextMenuScript(lang string) string {
+	insertAbove := jsEscapeString(translation.SprintfForRequest(lang, "insert row above"))
+	insertBelow := jsEscapeString(translation.SprintfForRequest(lang, "insert row below"))
+	removeRow := jsEscapeString(translation.SprintfForRequest(lang, "remove row"))
+	return fmt.Sprintf(`
+function rowContextMenuItems() {
+	return [
+		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), true, row); } },
+		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), false, row); } },
+		{ separator: true },
+		{ label: %s, action: function(e, row) { row.delete(); } },
+	];
+}`, insertAbove, insertBelow, removeRow)
+}
 
 // RenderTableEditorForm renders the complete table editor form
 func RenderTableEditorForm(filePath string, tableIndex int) string {
@@ -45,6 +174,8 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	}
 
 	downloadName := pathutils.BaseWithoutExt(filePath) + ".csv"
+	settingsMenu := tableEditorSettingsMenuHTML(configmanager.GetLanguage())
+	settingsJS := jsTableEditorSettingsMenu()
 
 	html := fmt.Sprintf(`
 <div class="table-editor-toolbar">
@@ -57,6 +188,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	<button type="button" onclick="downloadTable()" class="btn-secondary">
 		<i class="fa fa-download"></i> %s
 	</button>
+	%s
 </div>
 <div id="table-editor-container">
 	<div id="tabulator-container"></div>
@@ -90,6 +222,15 @@ function headerEditIcon() {
 	return '<i class="fa fa-pen table-editor-rename-header"></i>';
 }
 
+// Tabulator only builds its own clickable sort arrow (needed by headerSortClickElement:
+// 'icon') as part of its *default* header renderer, which this titleFormatter replaces
+// entirely - so the icon has to be added here by hand to keep sorting clickable at all.
+// 'icon' mode (rather than 'header') avoids a documented conflict where a whole-header
+// click handler fights with selectableRangeColumns' own header click handler.
+function sortIconHTML() {
+	return '<span class="tabulator-col-sorter tabulator-col-sorter-element"><span class="tabulator-arrow"></span></span>';
+}
+
 // binds the rename icon's click directly, stopping propagation so it
 // doesn't also trigger Tabulator's built-in header-click sort
 function makeTitleFormatter(title) {
@@ -103,7 +244,7 @@ function makeTitleFormatter(title) {
 				});
 			}
 		});
-		return title + headerEditIcon();
+		return title + (tableOptions.editableColumns ? headerEditIcon() : '') + (tableOptions.sorting ? sortIconHTML() : '');
 	};
 }
 
@@ -112,8 +253,8 @@ function buildColumns(headers, aligns) {
 		return {
 			title: header,
 			field: 'col' + index,
-			editor: 'input',
-			headerSort: true,
+			editor: tableOptions.editableColumns ? 'input' : false,
+			headerSort: tableOptions.sorting,
 			titleFormatter: makeTitleFormatter(header),
 			hozAlign: (aligns && aligns[index]) || 'left',
 		};
@@ -144,64 +285,115 @@ function emptyRowData() {
 
 let nextColIndex = tableData.headers.length;
 
-function insertColumn(column, before) {
-	const field = 'col' + (nextColIndex++);
-	const title = %s;
-	table.addColumn({
-		title: title,
-		field: field,
-		editor: 'input',
-		headerSort: true,
-		titleFormatter: makeTitleFormatter(title),
-	}, before, column.getField());
+%s
+
+// live-toggleable via the settings menu (jsTableEditorSettingsMenu) - patched in place by
+// reinitTable, which rebuilds the Tabulator instance so the new options actually take effect
+let tableOptions = %s;
+
+%s
+
+let table;
+
+function createTable(data, columns) {
+	columns.forEach(function(c) {
+		c.headerContextMenu = tableOptions.contextMenus ? headerContextMenuItems() : undefined;
+		c.headerSort = tableOptions.sorting;
+		c.editor = tableOptions.editableColumns ? 'input' : false;
+	});
+	// with neither numbers nor drag-to-reorder active, the row-header column would show
+	// nothing at all, so drop it entirely instead of leaving an empty strip
+	const showRowHeader = tableOptions.rowNumbers || tableOptions.selectableRows;
+	table = new Tabulator(container, {
+		data: data,
+		columns: columns,
+		layout: 'fitDataStretch',
+		height: computeTableHeight(),
+		movableRows: tableOptions.selectableRows,
+		movableColumns: true,
+		editTriggerEvent: 'dblclick',
+		headerSortClickElement: 'icon',
+		rowHeader: showRowHeader ? { headerSort: false, resizable: false, frozen: true, minWidth: 30, width: 30, hozAlign: 'center', formatter: tableOptions.rowNumbers ? 'rownum' : 'handle', editor: false, rowHandle: tableOptions.selectableRows } : undefined,
+		history: true,
+		clipboard: tableOptions.selectableCellRange,
+		selectableRange: tableOptions.selectableCellRange,
+		selectableRangeColumns: tableOptions.selectableCellRange,
+		selectableRangeRows: tableOptions.selectableCellRange,
+		// cleared via our own keydown handler below, which groups the whole
+		// selection into a single history entry
+		selectableRangeClearCells: false,
+		pagination: tableOptions.pagination,
+		paginationSize: %d,
+		rowContextMenu: tableOptions.contextMenus ? rowContextMenuItems() : undefined,
+	});
+	registerRangeClearHistory(table.modules.history);
+	table.on('cellEdited', function(cell) {
+		// keep a trailing spare row, same as the previous editor's minSpareRows
+		if (cell.getRow().getPosition() === table.getDataCount()) {
+			table.addRow({});
+		}
+	});
 }
 
-const table = new Tabulator(container, {
-	data: rowsToObjects(tableData.headers, tableData.rows).concat([{}]),
-	columns: buildColumns(tableData.headers, tableData.aligns),
-	layout: 'fitDataStretch',
-	height: computeTableHeight(),
-	movableRows: true,
-	movableColumns: true,
-	editTriggerEvent: 'dblclick',
-	headerSortClickElement: 'icon',
-	rowHeader: { headerSort: false, resizable: false, frozen: true, minWidth: 30, width: 30, hozAlign: 'center', formatter: 'rownum', editor: false, rowHandle: true },
-	history: true,
-	clipboard: true,
-	selectableRange: true,
-	selectableRangeColumns: true,
-	selectableRangeRows: true,
-	selectableRangeClearCells: true,
-	rowContextMenu: [
-		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), true, row); } },
-		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), false, row); } },
-		{ separator: true },
-		{ label: %s, action: function(e, row) { row.delete(); } },
-	],
-	columnDefaults: {
-		headerContextMenu: [
-			{ label: %s, action: function(e, column) { insertColumn(column, true); } },
-			{ label: %s, action: function(e, column) { insertColumn(column, false); } },
-			{ separator: true },
-			{ label: %s, action: function(e, column) { setColumnAlign(column, 'left'); } },
-			{ label: %s, action: function(e, column) { setColumnAlign(column, 'center'); } },
-			{ label: %s, action: function(e, column) { setColumnAlign(column, 'right'); } },
-			{ separator: true },
-			{ label: %s, action: function(e, column) { column.delete(); } },
-		],
-	},
+// Tabulator's built-in range-clear writes each cell's value one at a time, so its
+// history module records one undo step per cell. Register a combined history type
+// once (shared across table rebuilds) so our keydown handler below can collapse a
+// whole selection's clear into a single entry - one undo restores every cell.
+//
+// This reaches into undocumented Tabulator internals (history.constructor.undoers/redoers,
+// history.history, history.index) that aren't covered by any automated test - there's no JS
+// test harness in this repo. Re-verify range-clear undo/redo by hand after bumping the
+// vendored tabulator-*.min.js.
+function registerRangeClearHistory(history) {
+	var HistoryClass = history.constructor;
+	if (HistoryClass.undoers.rangeClear) return;
+	HistoryClass.undoers.rangeClear = function(e) {
+		e.data.forEach(function(entry) {
+			entry.component.setValueProcessData(entry.data.oldValue);
+			entry.component.cellRendered();
+		});
+	};
+	HistoryClass.redoers.rangeClear = function(e) {
+		e.data.forEach(function(entry) {
+			entry.component.setValueProcessData(entry.data.newValue);
+			entry.component.cellRendered();
+		});
+	};
+}
+
+container.addEventListener('keydown', function(e) {
+	if ((e.key !== 'Delete' && e.key !== 'Backspace') || !tableOptions.selectableCellRange) return;
+	if (table.modules.edit && table.modules.edit.currentCell) return;
+	var ranges = table.getRanges().filter(function(r) { return r.getCells().length; });
+	if (!ranges.length) return;
+	e.preventDefault();
+	var history = table.modules.history;
+	var beforeIndex = history.index;
+	ranges.forEach(function(r) { r.clearValues(); });
+	if (history.index > beforeIndex) {
+		var entries = history.history.splice(beforeIndex + 1, history.index - beforeIndex);
+		history.index = beforeIndex;
+		history.action('rangeClear', entries[0].component, entries);
+	}
 });
+
+createTable(rowsToObjects(tableData.headers, tableData.rows).concat([{}]), buildColumns(tableData.headers, tableData.aligns));
+
+// rebuilds the table in place with a patched option, preserving current data/columns -
+// mirrors reinitCodeMirror (render_editor_codemirror.go)
+function reinitTable(patch) {
+	Object.assign(tableOptions, patch);
+	const data = table.getData();
+	const columns = table.getColumnDefinitions().filter(function(c) { return c.field; }).map(function(c) { return Object.assign({}, c); });
+	table.destroy();
+	createTable(data, columns);
+}
 
 window.addEventListener('resize', function() {
 	table.setHeight(computeTableHeight());
 });
 
-table.on('cellEdited', function(cell) {
-	// keep a trailing spare row, same as the previous editor's minSpareRows
-	if (cell.getRow().getPosition() === table.getDataCount()) {
-		table.addRow({});
-	}
-});
+%s
 
 function setColumnAlign(column, align) {
 	column.updateDefinition({ hozAlign: align });
@@ -294,20 +486,16 @@ function downloadTable() {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "download csv"),
+		settingsMenu,
 		string(tableJSON),
 		jsEscapeString(filePath),
 		jsEscapeString(returnURL),
 		jsEscapeString(downloadName),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "new column")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert row above")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert row below")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "remove row")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert column left")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert column right")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align left")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align center")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align right")),
-		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "remove column")),
+		headerContextMenuScript(configmanager.GetLanguage()),
+		tableOptionsJS(),
+		rowContextMenuScript(configmanager.GetLanguage()),
+		configmanager.GetTablePageSize(),
+		settingsJS,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
 	)
 
