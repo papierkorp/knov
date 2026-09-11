@@ -22,7 +22,6 @@
   - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
   - use more features of tabulator: https://www.tabulator.info/examples/6.x/
     - add a settings menu in the editor just like for the codemirror editor
-    - darkmode for tabulator
 - fixes
   - 
 - chore

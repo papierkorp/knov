@@ -131,7 +131,7 @@
 }
 
 .page-file-dittable .tabulator-header,
-.page-file-dittable .tabulator-col,
+.page-file-dittable .tabulator-header .tabulator-col,
 .page-file-dittable .tabulator-footer {
   background-color: var(--bg-secondary);
   border-color: var(--border);

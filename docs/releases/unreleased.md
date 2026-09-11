@@ -1,5 +1,8 @@
 # unreleased
 
+## changes
+- support per-column alignment in table editor
+
 ## features
 - change tableeditor from handsontable to MIT licensed tabulator
 - new tracker editor
