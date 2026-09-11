@@ -1334,7 +1334,7 @@ paths:
       - editor
   /api/editor/tableeditor:
     get:
-      description: Returns table editor component with Handsontable
+      description: Returns table editor component with Tabulator
       parameters:
       - description: file path
         in: query

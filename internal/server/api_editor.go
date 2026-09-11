@@ -466,7 +466,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Get table editor form
-// @Description Returns table editor component with Handsontable
+// @Description Returns table editor component with Tabulator
 // @Tags editor
 // @Param filepath query string true "file path"
 // @Param tableIndex query string false "table index (default 0)"

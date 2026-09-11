@@ -220,6 +220,17 @@ func ToSlash(path string) string {
 	return filepath.ToSlash(path)
 }
 
+// BaseWithoutExt returns the filename component of path with its extension stripped
+// (e.g. "docs/notes.md" -> "notes"). Handles both "/" and "\" separators regardless
+// of host OS, unlike filepath.Base/Ext which only split on the OS's own separator.
+func BaseWithoutExt(path string) string {
+	base := path
+	if i := strings.LastIndexAny(path, `/\`); i >= 0 {
+		base = path[i+1:]
+	}
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
 // FolderContains reports whether dirPath is folderPath itself or a subfolder of it
 // (recursive folder-path matching) — shared by kanban board scoping and
 // auto-create-tag folder scoping.

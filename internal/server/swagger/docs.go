@@ -1278,7 +1278,7 @@ const docTemplate = `{
         },
         "/api/editor/tableeditor": {
             "get": {
-                "description": "Returns table editor component with Handsontable",
+                "description": "Returns table editor component with Tabulator",
                 "produces": [
                     "application/json",
                     "text/html"

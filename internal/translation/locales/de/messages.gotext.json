@@ -697,6 +697,11 @@
       "translation": "Todo-Dateien ausblenden"
     },
     {
+      "id": "Hide Tracker Files",
+      "message": "Hide Tracker Files",
+      "translation": ""
+    },
+    {
       "id": "Hide Video Files",
       "message": "Hide Video Files",
       "translation": "Videodateien ausblenden"
@@ -1087,6 +1092,11 @@
       "translation": "Cronjob ausführen"
     },
     {
+      "id": "S3: {Arg_1}",
+      "message": "S3: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
       "message": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
       "translation": "Beispieldateien werden beim allerersten Start automatisch eingerichtet. Nutze unten \"Testdaten bereinigen\", um sie zu entfernen."
@@ -1222,11 +1232,6 @@
       "translation": "Status"
     },
     {
-      "id": "Storage",
-      "message": "Storage",
-      "translation": ""
-    },
-    {
       "id": "Storage Statistics",
       "message": "Storage Statistics",
       "translation": "Speicherstatistik"
@@ -1322,6 +1327,11 @@
       "translation": "Verfolge Dateien als Karten, die durch Phasen wandern, z. B. von Eingang über in Bearbeitung bis erledigt. Das ist kein separates System – eine Karte ist einfach eine Datei mit einem Status-Tag, also bleibt es überall sonst in der App dieselbe Datei. Boards werden in den Einstellungen konfiguriert."
     },
     {
+      "id": "Tracker",
+      "message": "Tracker",
+      "translation": ""
+    },
+    {
       "id": "Trigger",
       "message": "Trigger",
       "translation": "Auslöser"
@@ -1375,6 +1385,11 @@
       "id": "Use .todo Extension",
       "message": "Use .todo Extension",
       "translation": ".todo-Endung verwenden"
+    },
+    {
+      "id": "Use .tracker Extension",
+      "message": "Use .tracker Extension",
+      "translation": ""
     },
     {
       "id": "Use Icons for Task Checkboxes",
@@ -1487,6 +1502,11 @@
       "translation": "hinzufügen"
     },
     {
+      "id": "add counter",
+      "message": "add counter",
+      "translation": ""
+    },
+    {
       "id": "add file",
       "message": "add file",
       "translation": "Datei hinzufügen"
@@ -1597,6 +1617,11 @@
       "translation": "und"
     },
     {
+      "id": "and {Integer} more",
+      "message": "and {Integer} more",
+      "translation": ""
+    },
+    {
       "id": "append",
       "message": "append",
       "translation": "anhängen"
@@ -1630,11 +1655,6 @@
       "id": "at",
       "message": "at",
       "translation": "am"
-    },
-    {
-      "id": "auth test failed",
-      "message": "auth test failed",
-      "translation": "Authentifizierungstest fehlgeschlagen"
     },
     {
       "id": "auth test passed",
@@ -1732,9 +1752,9 @@
       "translation": "abgebrochen"
     },
     {
-      "id": "cannot delete media file",
-      "message": "cannot delete media file",
-      "translation": "Mediendatei kann nicht gelöscht werden"
+      "id": "cannot delete media file: still referenced by {Arg_1}",
+      "message": "cannot delete media file: still referenced by {Arg_1}",
+      "translation": ""
     },
     {
       "id": "cannot move folder into itself",
@@ -1900,6 +1920,11 @@
       "id": "copy link",
       "message": "copy link",
       "translation": "Link kopieren"
+    },
+    {
+      "id": "counter name",
+      "message": "counter name",
+      "translation": ""
     },
     {
       "id": "create",
@@ -2177,6 +2202,11 @@
       "translation": "herunterladen"
     },
     {
+      "id": "download csv",
+      "message": "download csv",
+      "translation": ""
+    },
+    {
       "id": "drag-and-drop nested list",
       "message": "drag-and-drop nested list",
       "translation": "verschachtelte Drag-and-Drop-Liste"
@@ -2337,6 +2367,11 @@
       "translation": "Todo-Dateien aus Dateilisten und Browse-Ansichten ausschließen"
     },
     {
+      "id": "exclude tracker files from file listings and browse views",
+      "message": "exclude tracker files from file listings and browse views",
+      "translation": ""
+    },
+    {
       "id": "exclude video files from file listings and browse views",
       "message": "exclude video files from file listings and browse views",
       "translation": "Videodateien aus Dateilisten und Browse-Ansichten ausschließen"
@@ -2455,6 +2490,11 @@
       "id": "failed to delete notification",
       "message": "failed to delete notification",
       "translation": "Fehler beim Löschen der Benachrichtigung"
+    },
+    {
+      "id": "failed to delete tracker",
+      "message": "failed to delete tracker",
+      "translation": ""
     },
     {
       "id": "failed to encode json",
@@ -2602,6 +2642,11 @@
       "translation": "Fehler beim Laden der Mediendateien"
     },
     {
+      "id": "failed to load tracker",
+      "message": "failed to load tracker",
+      "translation": ""
+    },
+    {
       "id": "failed to move file",
       "message": "failed to move file",
       "translation": "Fehler beim Verschieben der Datei"
@@ -2687,6 +2732,11 @@
       "translation": "Fehler beim Neuaufbau der Metadaten-Links"
     },
     {
+      "id": "failed to record change",
+      "message": "failed to record change",
+      "translation": ""
+    },
+    {
       "id": "failed to refresh media list",
       "message": "failed to refresh media list",
       "translation": "Fehler beim Aktualisieren der Medienliste"
@@ -2765,6 +2815,11 @@
       "id": "failed to save setting",
       "message": "failed to save setting",
       "translation": "Fehler beim Speichern der Einstellung"
+    },
+    {
+      "id": "failed to save tracker",
+      "message": "failed to save tracker",
+      "translation": ""
     },
     {
       "id": "failed to scan for broken links",
@@ -3257,6 +3312,26 @@
       "translation": "info"
     },
     {
+      "id": "insert column left",
+      "message": "insert column left",
+      "translation": ""
+    },
+    {
+      "id": "insert column right",
+      "message": "insert column right",
+      "translation": ""
+    },
+    {
+      "id": "insert row above",
+      "message": "insert row above",
+      "translation": ""
+    },
+    {
+      "id": "insert row below",
+      "message": "insert row below",
+      "translation": ""
+    },
+    {
       "id": "invalid dashboard json",
       "message": "invalid dashboard json",
       "translation": "ungültiges Dashboard-JSON"
@@ -3532,6 +3607,11 @@
       "translation": "lädt..."
     },
     {
+      "id": "local filesystem: {Arg_1}",
+      "message": "local filesystem: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
       "translation": "Testdaten für Entwicklungs- und Testzwecke verwalten"
@@ -3722,11 +3802,6 @@
       "translation": "Parameter \"type\" oder \"value\" fehlt"
     },
     {
-      "id": "more",
-      "message": "more",
-      "translation": "mehr"
-    },
-    {
       "id": "more actions",
       "message": "more actions",
       "translation": "weitere Aktionen"
@@ -3762,9 +3837,29 @@
       "translation": "my-filter"
     },
     {
+      "id": "my-tracker",
+      "message": "my-tracker",
+      "translation": ""
+    },
+    {
+      "id": "name and save the tracker, then use +/- to log changes",
+      "message": "name and save the tracker, then use +/- to log changes",
+      "translation": ""
+    },
+    {
       "id": "name is required",
       "message": "name is required",
       "translation": "Name ist erforderlich"
+    },
+    {
+      "id": "named counters logged with +/- and shown as a stats table",
+      "message": "named counters logged with +/- and shown as a stats table",
+      "translation": ""
+    },
+    {
+      "id": "new column",
+      "message": "new column",
+      "translation": ""
     },
     {
       "id": "new file",
@@ -4047,6 +4142,11 @@
       "translation": "Operator"
     },
     {
+      "id": "optional heading",
+      "message": "optional heading",
+      "translation": ""
+    },
+    {
       "id": "optional title",
       "message": "optional title",
       "translation": "optionaler Titel"
@@ -4207,9 +4307,19 @@
       "translation": "entfernen"
     },
     {
+      "id": "remove column",
+      "message": "remove column",
+      "translation": ""
+    },
+    {
       "id": "remove custom favicon and revert to default?",
       "message": "remove custom favicon and revert to default?",
       "translation": "benutzerdefiniertes Favicon entfernen und zum Standard zurückkehren?"
+    },
+    {
+      "id": "remove row",
+      "message": "remove row",
+      "translation": ""
     },
     {
       "id": "remove tag",
@@ -4320,6 +4430,16 @@
       "id": "save todo files as .todo instead of .md",
       "message": "save todo files as .todo instead of .md",
       "translation": "Todo-Dateien als .todo statt .md speichern"
+    },
+    {
+      "id": "save tracker",
+      "message": "save tracker",
+      "translation": ""
+    },
+    {
+      "id": "save tracker files as .tracker instead of .md",
+      "message": "save tracker files as .tracker instead of .md",
+      "translation": ""
     },
     {
       "id": "saved search, built visually",
@@ -4542,11 +4662,6 @@
       "translation": "Status geändert: {Arg_1} → {Arg_2}"
     },
     {
-      "id": "still referenced by",
-      "message": "still referenced by",
-      "translation": "wird noch referenziert von"
-    },
-    {
       "id": "suggested fix",
       "message": "suggested fix",
       "translation": "vorgeschlagene Korrektur"
@@ -4695,6 +4810,31 @@
       "id": "total media files",
       "message": "total media files",
       "translation": "Mediendateien insgesamt"
+    },
+    {
+      "id": "tracker configuration",
+      "message": "tracker configuration",
+      "translation": ""
+    },
+    {
+      "id": "tracker deleted",
+      "message": "tracker deleted",
+      "translation": ""
+    },
+    {
+      "id": "tracker name",
+      "message": "tracker name",
+      "translation": ""
+    },
+    {
+      "id": "tracker name is required",
+      "message": "tracker name is required",
+      "translation": ""
+    },
+    {
+      "id": "tracker saved successfully",
+      "message": "tracker saved successfully",
+      "translation": ""
     },
     {
       "id": "type",

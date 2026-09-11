@@ -84,7 +84,7 @@
   background: var(--border);
 }
 
-/* handsontable container — keep ID: referenced by JS */
+/* tabulator container — keep ID: referenced by JS */
 .page-file-dittable #table-editor-container {
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -93,7 +93,7 @@
   min-height: 400px;
 }
 
-.page-file-dittable #handsontable-container {
+.page-file-dittable #tabulator-container {
   width: 100%;
   overflow: hidden;
 }
@@ -123,6 +123,63 @@
   font-weight: 600;
 }
 
+/* theme tabulator to the app's color vars instead of its hardcoded light theme */
+.page-file-dittable .tabulator {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.page-file-dittable .tabulator-header,
+.page-file-dittable .tabulator-col,
+.page-file-dittable .tabulator-footer {
+  background-color: var(--bg-secondary);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.page-file-dittable .tabulator-row,
+.page-file-dittable .tabulator-table {
+  background-color: var(--bg) !important;
+  color: var(--text);
+}
+
+.page-file-dittable .tabulator-row.tabulator-row-even {
+  background-color: var(--bg-secondary) !important;
+}
+
+.page-file-dittable .tabulator-row.tabulator-selected,
+.page-file-dittable .tabulator-row:hover {
+  background-color: color-mix(in srgb, var(--primary) 15%, var(--bg)) !important;
+}
+
+.page-file-dittable .tabulator-cell.tabulator-editing input {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--primary);
+}
+
+.page-file-dittable .table-editor-rename-header {
+  margin-left: 6px;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* context menu popup is appended to <body>, so it can't be scoped under .page-file-dittable */
+.tabulator-popup-container {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.tabulator-menu-item:hover {
+  background: color-mix(in srgb, var(--primary) 15%, var(--bg));
+}
+
+.tabulator-menu-separator {
+  border-color: var(--border);
+}
+
 @media (max-width: 768px) {
   .page-file-dittable {
     padding: 10px;
@@ -142,7 +199,7 @@
 /* mobile: let a table wider than the viewport scroll horizontally */
 @media (max-width: 700px) {
   .page-file-dittable #table-editor-container,
-  .page-file-dittable #handsontable-container {
+  .page-file-dittable #tabulator-container {
     overflow-x: auto;
   }
 }
