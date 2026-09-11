@@ -1600,6 +1600,16 @@ blockquote p blockquote p,
   background: var(--bg);
 }
 
+.table-container th[data-align="center"],
+.table-container td[data-align="center"] {
+  text-align: center;
+}
+
+.table-container th[data-align="right"],
+.table-container td[data-align="right"] {
+  text-align: right;
+}
+
 .table-filter-row th,
 .view-reader .table-filter-row th {
   padding: 0 8px 6px;

@@ -1341,6 +1341,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "per-column alignment as JSON array (left/center/right)",
+                        "name": "aligns",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
                         "description": "table index in document",
                         "name": "tableIndex",
                         "in": "formData",

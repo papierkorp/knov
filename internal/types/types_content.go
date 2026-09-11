@@ -11,6 +11,7 @@ type TableData struct {
 type SimpleTableData struct {
 	Headers    []string   `json:"headers"`
 	Rows       [][]string `json:"rows"`
+	Aligns     []string   `json:"aligns"` // per-column "left"/"center"/"right"
 	Total      int        `json:"total"`
 	TableIndex int        `json:"tableIndex"` // for UI operations
 }

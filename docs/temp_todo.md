@@ -22,8 +22,9 @@
   - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
   - use more features of tabulator: https://www.tabulator.info/examples/6.x/
     - add a settings menu in the editor just like for the codemirror editor
+    - darkmode for tabulator
 - fixes
-  - table alignment is not working
+  - 
 - chore
   - replace all hand-built urls with pathutils
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console

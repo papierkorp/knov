@@ -1372,6 +1372,10 @@ paths:
         name: rows
         required: true
         type: string
+      - description: per-column alignment as JSON array (left/center/right)
+        in: formData
+        name: aligns
+        type: string
       - description: table index in document
         in: formData
         name: tableIndex

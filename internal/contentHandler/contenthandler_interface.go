@@ -12,11 +12,11 @@ type ContentHandler interface {
 	// SaveSection saves content to a specific section by ID
 	SaveSection(filePath, sectionID, content string) error
 
-	// ExtractTable extracts table data at specific index, returns headers and rows
-	ExtractTable(filePath string, tableIndex int) (headers []string, rows [][]string, err error)
+	// ExtractTable extracts table data at specific index, returns headers, rows and per-column alignment
+	ExtractTable(filePath string, tableIndex int) (headers []string, rows [][]string, aligns []string, err error)
 
-	// SaveTable saves table data at specific index
-	SaveTable(filePath string, tableIndex int, headers []string, rows [][]string) error
+	// SaveTable saves table data and per-column alignment at specific index
+	SaveTable(filePath string, tableIndex int, headers []string, rows [][]string, aligns []string) error
 
 	// SupportsSection returns true if the handler supports section operations
 	SupportsSection() bool

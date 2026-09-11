@@ -89,31 +89,31 @@ func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent
 	return nil
 }
 
-// ExtractTable extracts table data at specific index, returns headers and rows
-func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) ([]string, [][]string, error) {
+// ExtractTable extracts table data at specific index, returns headers, rows and per-column alignment
+func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) ([]string, [][]string, []string, error) {
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to read file: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	tableData, err := h.extractTableFromMarkdown(string(content), tableIndex)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return tableData.Headers, tableData.Rows, nil
+	return tableData.Headers, tableData.Rows, tableData.Aligns, nil
 }
 
-// SaveTable saves table data at specific index
-func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, headers []string, rows [][]string) error {
+// SaveTable saves table data and per-column alignment at specific index
+func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, headers []string, rows [][]string, aligns []string) error {
 	fullPath := pathutils.ToDocsPath(filePath)
 	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	updatedContent := h.replaceTableInMarkdown(string(originalContent), headers, rows, tableIndex)
+	updatedContent := h.replaceTableInMarkdown(string(originalContent), headers, rows, aligns, tableIndex)
 
 	if err := contentStorage.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
@@ -316,7 +316,8 @@ func (h *MarkdownContentHandler) parseMarkdownTable(lines []string) *types.Simpl
 	headerLine := strings.Trim(lines[0], " ")
 	headers := h.parseTableRow(headerLine)
 
-	// skip separator line (index 1)
+	aligns := h.parseAlignRow(lines[1], len(headers))
+
 	var rows [][]string
 	for i := 2; i < len(lines); i++ {
 		row := h.parseTableRow(lines[i])
@@ -335,8 +336,32 @@ func (h *MarkdownContentHandler) parseMarkdownTable(lines []string) *types.Simpl
 	return &types.SimpleTableData{
 		Headers: headers,
 		Rows:    rows,
+		Aligns:  aligns,
 		Total:   len(rows),
 	}
+}
+
+// parseAlignRow parses the markdown header separator row (e.g. "|:---|:---:|---:|")
+// into per-column alignment ("left", "center" or "right"), padded/trimmed to colCount.
+func (h *MarkdownContentHandler) parseAlignRow(line string, colCount int) []string {
+	cells := h.parseTableRow(line)
+	aligns := make([]string, colCount)
+	for i := range aligns {
+		aligns[i] = "left"
+		if i >= len(cells) {
+			continue
+		}
+		cell := cells[i]
+		left := strings.HasPrefix(cell, ":")
+		right := strings.HasSuffix(cell, ":")
+		switch {
+		case left && right:
+			aligns[i] = "center"
+		case right:
+			aligns[i] = "right"
+		}
+	}
+	return aligns
 }
 
 // parseTableRow parses a single markdown table row. Trims exactly one
@@ -360,7 +385,7 @@ func (h *MarkdownContentHandler) parseTableRow(line string) []string {
 }
 
 // replaceTableInMarkdown replaces a table in markdown content
-func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers []string, rows [][]string, tableIndex int) string {
+func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers []string, rows [][]string, aligns []string, tableIndex int) string {
 	logging.LogDebug(logging.KeyApp, "replaceTableInMarkdown: looking for table %d, headers=%v, rows count=%d", tableIndex, headers, len(rows))
 
 	lines := strings.Split(content, "\n")
@@ -411,7 +436,7 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 			if inTable {
 				tableEndIdx = i
 				logging.LogDebug(logging.KeyApp, "table %d ended at line %d, generating replacement", tableIndex, i)
-				newTable := h.generateMarkdownTable(headers, rows)
+				newTable := h.generateMarkdownTable(headers, rows, aligns)
 
 				logging.LogDebug(logging.KeyApp, "replacing table from line %d to %d with %d new lines", tableStartIdx, tableEndIdx, len(newTable))
 				// replace the old table with new table
@@ -426,7 +451,7 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 	// handle case where table is at end of file
 	if inTable {
 		logging.LogDebug(logging.KeyApp, "table %d at end of file, generating replacement", tableIndex)
-		newTable := h.generateMarkdownTable(headers, rows)
+		newTable := h.generateMarkdownTable(headers, rows, aligns)
 		result = append(result[:tableStartIdx], newTable...)
 	}
 
@@ -435,7 +460,7 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 }
 
 // generateMarkdownTable creates markdown table from data
-func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows [][]string) []string {
+func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows [][]string, aligns []string) []string {
 	var lines []string
 
 	logging.LogDebug(logging.KeyApp, "generateMarkdownTable: headers=%v, rows count=%d", headers, len(rows))
@@ -444,10 +469,17 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 	headerRow := "| " + strings.Join(headers, " | ") + " |"
 	lines = append(lines, headerRow)
 
-	// separator row
+	// separator row, reflecting per-column alignment where given
 	separators := make([]string, len(headers))
 	for i := range separators {
-		separators[i] = "---"
+		switch {
+		case i < len(aligns) && aligns[i] == "center":
+			separators[i] = ":---:"
+		case i < len(aligns) && aligns[i] == "right":
+			separators[i] = "---:"
+		default:
+			separators[i] = "---"
+		}
 	}
 	sepRow := "| " + strings.Join(separators, " | ") + " |"
 	lines = append(lines, sepRow)

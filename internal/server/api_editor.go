@@ -368,6 +368,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 // @Param filepath formData string true "file path"
 // @Param headers formData string true "table headers as JSON array"
 // @Param rows formData string true "table rows as JSON array"
+// @Param aligns formData string false "per-column alignment as JSON array (left/center/right)"
 // @Param tableIndex formData string true "table index in document"
 // @Produce json,html
 // @Success 200 {string} string "success message"
@@ -417,6 +418,16 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// parse aligns (optional, defaults to left for every column when absent)
+	var aligns []string
+	if alignsJSON := r.FormValue("aligns"); alignsJSON != "" {
+		if err := json.Unmarshal([]byte(alignsJSON), &aligns); err != nil {
+			logging.LogError(logging.KeyApp, "failed to parse aligns: %v", err)
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"))
+			return
+		}
+	}
+
 	// parse table index
 	tableIndex := 0
 	if tableIndexStr != "" {
@@ -436,7 +447,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 
 	// save table using contenthandler
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveTable(filePath, tableIndex, headers, rows); err != nil {
+	if err := handler.SaveTable(filePath, tableIndex, headers, rows, aligns); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save table in file %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return

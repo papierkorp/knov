@@ -86,7 +86,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler := contentHandler.GetHandler("markdown")
-	headers, rows, err := handler.ExtractTable(filepath, tableIndex)
+	headers, rows, aligns, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to extract table from %s: %v", filepath, err)
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
@@ -95,7 +95,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	// keep a reference to the full, unfiltered table so filter dropdown
 	// options stay complete regardless of the currently active search/filters
-	fullTableData := simpleToTableData(headers, rows)
+	fullTableData := simpleToTableData(headers, rows, aligns)
 
 	tableData := fullTableData
 
@@ -120,16 +120,22 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 // simpleToTableData converts plain string table data into the typed TableData structure
 // used by the sort/search/paginate helpers.
-func simpleToTableData(headers []string, rows [][]string) *types.TableData {
+func simpleToTableData(headers []string, rows [][]string, aligns []string) *types.TableData {
+	align := func(col int) string {
+		if col < len(aligns) && aligns[col] != "" {
+			return aligns[col]
+		}
+		return "left"
+	}
 	tHeaders := make([]types.TableHeader, len(headers))
 	for i, h := range headers {
-		tHeaders[i] = types.TableHeader{Content: parser.RenderInlineMarkdown(h), DataType: "text", Align: "left", Sortable: true, ColumnIdx: i}
+		tHeaders[i] = types.TableHeader{Content: parser.RenderInlineMarkdown(h), DataType: "text", Align: align(i), Sortable: true, ColumnIdx: i}
 	}
 	tRows := make([][]types.TableCell, len(rows))
 	for i, row := range rows {
 		tRow := make([]types.TableCell, len(row))
 		for j, cell := range row {
-			tRow[j] = types.TableCell{Content: parser.RenderInlineMarkdown(cell), DataType: "text", Align: "left", RawValue: cell}
+			tRow[j] = types.TableCell{Content: parser.RenderInlineMarkdown(cell), DataType: "text", Align: align(j), RawValue: cell}
 		}
 		tRows[i] = tRow
 	}

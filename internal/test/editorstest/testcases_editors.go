@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/book"
@@ -505,7 +506,7 @@ func caseTableCreateEditSave() test.CaseResult {
 	}
 
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveTable(relPath, 0, []string{"A", "B"}, [][]string{{"3", "4"}, {"5", "6"}}); err != nil {
+	if err := handler.SaveTable(relPath, 0, []string{"A", "B"}, [][]string{{"3", "4"}, {"5", "6"}}, nil); err != nil {
 		return errCase(name, err)
 	}
 	if err := files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relPath)); err != nil {
@@ -527,6 +528,54 @@ func caseTableCreateEditSave() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "table content not updated after SaveTable"
+	}
+	return cr
+}
+
+// caseTableAlignRoundTrip exercises per-column alignment: parse a markdown table with
+// mixed left/center/right columns, then save new alignment and confirm it survives
+// a second extract (mirrors the ExtractTable/SaveTable contract used by the table editor API).
+func caseTableAlignRoundTrip() test.CaseResult {
+	name := "table-align"
+	relPath := testPath("table_align.md")
+
+	initial := "# Aligned table\n\n| A | B | C |\n| :--- | :---: | ---: |\n| 1 | 2 | 3 |\n"
+	if err := writeFile(relPath, initial); err != nil {
+		return errCase(name, err)
+	}
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
+		return errCase(name, err)
+	}
+
+	handler := contentHandler.GetHandler("markdown")
+	_, _, aligns, err := handler.ExtractTable(relPath, 0)
+	if err != nil {
+		return errCase(name, err)
+	}
+	wantInitial := []string{"left", "center", "right"}
+	if !slices.Equal(aligns, wantInitial) {
+		return errCase(name, fmt.Errorf("extracted aligns = %v, want %v", aligns, wantInitial))
+	}
+
+	newAligns := []string{"right", "left", "center"}
+	if err := handler.SaveTable(relPath, 0, []string{"A", "B", "C"}, [][]string{{"1", "2", "3"}}, newAligns); err != nil {
+		return errCase(name, err)
+	}
+
+	_, _, gotAligns, err := handler.ExtractTable(relPath, 0)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := slices.Equal(gotAligns, newAligns)
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("aligns %v persisted and re-extracted", newAligns),
+		Actual:   fmt.Sprintf("%v", gotAligns),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "alignment did not round-trip through SaveTable/ExtractTable"
 	}
 	return cr
 }

@@ -17,7 +17,7 @@ import (
 func RenderTableEditorForm(filePath string, tableIndex int) string {
 	// extract table from markdown using contenthandler
 	handler := contentHandler.GetHandler("markdown")
-	headers, rows, err := handler.ExtractTable(filePath, tableIndex)
+	headers, rows, aligns, err := handler.ExtractTable(filePath, tableIndex)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to extract table from file %s: %v", filePath, err)
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
@@ -26,6 +26,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	tableData := &types.SimpleTableData{
 		Headers:    headers,
 		Rows:       rows,
+		Aligns:     aligns,
 		Total:      len(rows),
 		TableIndex: tableIndex,
 	}
@@ -106,7 +107,7 @@ function makeTitleFormatter(title) {
 	};
 }
 
-function buildColumns(headers) {
+function buildColumns(headers, aligns) {
 	return headers.map(function(header, index) {
 		return {
 			title: header,
@@ -114,6 +115,7 @@ function buildColumns(headers) {
 			editor: 'input',
 			headerSort: true,
 			titleFormatter: makeTitleFormatter(header),
+			hozAlign: (aligns && aligns[index]) || 'left',
 		};
 	});
 }
@@ -156,7 +158,7 @@ function insertColumn(column, before) {
 
 const table = new Tabulator(container, {
 	data: rowsToObjects(tableData.headers, tableData.rows).concat([{}]),
-	columns: buildColumns(tableData.headers),
+	columns: buildColumns(tableData.headers, tableData.aligns),
 	layout: 'fitDataStretch',
 	height: computeTableHeight(),
 	movableRows: true,
@@ -181,6 +183,10 @@ const table = new Tabulator(container, {
 			{ label: %s, action: function(e, column) { insertColumn(column, true); } },
 			{ label: %s, action: function(e, column) { insertColumn(column, false); } },
 			{ separator: true },
+			{ label: %s, action: function(e, column) { setColumnAlign(column, 'left'); } },
+			{ label: %s, action: function(e, column) { setColumnAlign(column, 'center'); } },
+			{ label: %s, action: function(e, column) { setColumnAlign(column, 'right'); } },
+			{ separator: true },
 			{ label: %s, action: function(e, column) { column.delete(); } },
 		],
 	},
@@ -196,6 +202,10 @@ table.on('cellEdited', function(cell) {
 		table.addRow({});
 	}
 });
+
+function setColumnAlign(column, align) {
+	column.updateDefinition({ hozAlign: align });
+}
 
 function openHeaderRenameInput(column) {
 	const currentHeader = column.getDefinition().title;
@@ -239,6 +249,7 @@ function openHeaderRenameInput(column) {
 function saveTable() {
 	const columns = dataColumns();
 	const headers = columns.map(function(c) { return c.getDefinition().title; });
+	const aligns = columns.map(function(c) { return c.getDefinition().hozAlign || 'left'; });
 	const fields = columns.map(function(c) { return c.getField(); });
 	const data = table.getData().map(function(row) {
 		return fields.map(function(f) { return row[f] !== undefined ? row[f] : ''; });
@@ -249,6 +260,7 @@ function saveTable() {
 	formData.append('filepath', filePath);
 	formData.append('headers', JSON.stringify(headers));
 	formData.append('rows', JSON.stringify(data));
+	formData.append('aligns', JSON.stringify(aligns));
 	formData.append('tableIndex', tableIndex.toString());
 
 	fetch('/api/editor/tableeditor', {
@@ -292,6 +304,9 @@ function downloadTable() {
 		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "remove row")),
 		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert column left")),
 		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "insert column right")),
+		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align left")),
+		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align center")),
+		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "align right")),
 		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "remove column")),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
 	)
