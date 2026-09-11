@@ -148,7 +148,8 @@
 
 .file-form .form-actions,
 #entry-editor .form-actions,
-#component-list-editor .form-actions {
+#component-list-editor .form-actions,
+#component-tracker-editor .form-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -3262,6 +3263,101 @@ dl.media-info dd {
 }
 
 .page-filter .filter-no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+/* =============================================
+   tracker editor
+   ============================================= */
+
+#component-tracker-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+}
+
+#tracker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#component-tracker-editor .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#component-tracker-editor .form-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+#tracker-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#component-tracker-editor .tracker-counter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#component-tracker-editor .tracker-counter-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 0.88rem;
+}
+
+#component-tracker-editor .tracker-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#component-tracker-editor .tracker-stepper .btn-secondary {
+  min-width: 32px;
+  padding: 6px 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+#component-tracker-editor .tracker-counter-total {
+  min-width: 2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+}
+
+#component-tracker-editor .tracker-remove-btn {
+  padding: 6px 9px;
+  line-height: 1;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+#component-tracker-editor .tracker-remove-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+#component-tracker-editor .tracker-hint {
+  margin: 0;
   color: var(--text-secondary);
   font-style: italic;
   font-size: 0.85em;

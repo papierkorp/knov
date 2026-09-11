@@ -82,6 +82,7 @@ type EditorType string
 
 const (
 	EditorTypeFilter     EditorType = "filter-editor"
+	EditorTypeTracker    EditorType = "tracker-editor"
 	EditorTypeList       EditorType = "list-editor"
 	EditorTypeTodo       EditorType = "todo-editor"
 	EditorTypeIndex      EditorType = "index-editor"
@@ -99,6 +100,7 @@ type EditorTypeCount map[string]int
 func AllEditorTypes() []EditorType {
 	return []EditorType{
 		EditorTypeFilter,
+		EditorTypeTracker,
 		EditorTypeList,
 		EditorTypeTodo,
 		EditorTypeIndex,
@@ -119,6 +121,8 @@ func EditorFromExtension(path string) EditorType {
 		return EditorTypeTodo
 	case ".index", ".moc":
 		return EditorTypeIndex
+	case ".tracker":
+		return EditorTypeTracker
 	case ".book":
 		return EditorTypeBook
 	case ".txt":

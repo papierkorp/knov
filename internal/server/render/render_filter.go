@@ -59,10 +59,8 @@ func RenderFilterForm(opts FilterFormOpts) string {
 		if !opts.IsEdit {
 			html.WriteString(`<div class="form-group">`)
 			html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter name") + `:</label>`)
-			datalistInput := GenerateDatalistInput("filterid-input", "filterid", opts.FilterID,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "my-filter"), "/api/files/folder-suggestions")
-			datalistInput = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
-			html.WriteString(datalistInput)
+			html.WriteString(GenerateDatalistInput("filterid-input", "filterid", opts.FilterID,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "my-filter"), "/api/files/folder-suggestions", true))
 			html.WriteString(`</div>`)
 		} else {
 			html.WriteString(fmt.Sprintf(`<input type="hidden" name="filterid" value="%s" />`, opts.FilterID))
@@ -435,7 +433,7 @@ func RenderFilterValueInput(id, name, value, metadataField string) string {
 		return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"/>`,
 			id, name, value, placeholder)
 	}
-	return GenerateDatalistInput(id, name, value, placeholder, apiEndpoint)
+	return GenerateDatalistInput(id, name, value, placeholder, apiEndpoint, false)
 }
 
 func filterValueInputMeta(metadataField string) (apiEndpoint, placeholder string) {

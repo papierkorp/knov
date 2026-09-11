@@ -99,6 +99,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
 	r.Get("/files/new/filter", handleFileNewFilter)
+	r.Get("/files/new/tracker", handleFileNewTracker)
 	r.Get("/files/new/index", handleFileNewIndex)
 	r.Get("/files/new/book", handleFileNewBook)
 
@@ -151,6 +152,13 @@ func NewRouter() *chi.Mux {
 			r.Post("/add-criteria", handleAPIAddFilterCriteria)
 			r.Post("/save", handleAPIFilterSave)
 			r.Delete("/delete/*", handleAPIFilterDelete)
+		})
+
+		r.Route("/trackers", func(r chi.Router) {
+			r.Post("/save", handleAPITrackerSave)
+			r.Post("/add-counter", handleAPIAddTrackerCounter)
+			r.Post("/tick", handleAPITrackerTick)
+			r.Delete("/delete/*", handleAPITrackerDelete)
 		})
 
 		// ----------------------------------------------------------------------------------------

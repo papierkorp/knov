@@ -129,6 +129,12 @@ var (
 		Label: "Use .index Extension",
 		Desc:  "save index files as .index instead of .md",
 	})
+	UseExtensionTracker = register(&BoolSetting{
+		key: "useExtensionTracker", Default: false,
+		Section: SectionEditor, Group: GroupFileExtensions,
+		Label: "Use .tracker Extension",
+		Desc:  "save tracker files as .tracker instead of .md",
+	})
 	UseExtensionBook = register(&BoolSetting{
 		key: "useExtensionBook", Default: true,
 		Section: SectionEditor, Group: GroupFileExtensions,
@@ -266,6 +272,12 @@ var (
 		Section: SectionFileTypes, Group: GroupEditorTypes,
 		Label: "Hide Filter Files",
 		Desc:  "exclude filter files from file listings and browse views",
+	})
+	HideTracker = register(&BoolSetting{
+		key: "hideTracker", Default: false,
+		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Label: "Hide Tracker Files",
+		Desc:  "exclude tracker files from file listings and browse views",
 	})
 	HideIndex = register(&BoolSetting{
 		key: "hideIndex", Default: false,

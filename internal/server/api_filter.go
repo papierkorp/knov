@@ -213,9 +213,9 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 // @Param id path string true "filter id"
 // @Produce json,html
 // @Success 200 {object} map[string]string "empty body; sets HX-Redirect to / plus a success flash"
-// @Router /api/filters/{id} [delete]
+// @Router /api/filters/delete/{id} [delete]
 func handleAPIFilterDelete(w http.ResponseWriter, r *http.Request) {
-	filterID := strings.TrimPrefix(r.URL.Path, "/api/filters/")
+	filterID := strings.TrimPrefix(r.URL.Path, "/api/filters/delete/")
 
 	if err := filter.DeleteFilterConfig(filterID); err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete filter config %s: %v", filterID, err)

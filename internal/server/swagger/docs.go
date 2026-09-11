@@ -2510,6 +2510,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/filters/delete/{id}": {
+            "delete": {
+                "description": "Delete a filter from config storage and its metadata",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Delete filter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "empty body; sets HX-Redirect to / plus a success flash",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/filters/save": {
             "post": {
                 "description": "Save filter configuration to config storage",
@@ -2618,39 +2651,6 @@ const docTemplate = `{
                         "description": "filter value input html",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/filters/{id}": {
-            "delete": {
-                "description": "Delete a filter from config storage and its metadata",
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "filter"
-                ],
-                "summary": "Delete filter",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "filter id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "empty body; sets HX-Redirect to / plus a success flash",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -6176,6 +6176,161 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/trackers/add-counter": {
+            "post": {
+                "description": "Return HTML for a new empty tracker counter name input",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "tracker"
+                ],
+                "summary": "Add tracker counter row",
+                "responses": {
+                    "200": {
+                        "description": "tracker counter row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/trackers/delete/{id}": {
+            "delete": {
+                "description": "Delete a tracker from config storage and its paired file",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "tracker"
+                ],
+                "summary": "Delete tracker",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "tracker id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "empty body; sets HX-Redirect to /",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/trackers/save": {
+            "post": {
+                "description": "Save a tracker's title and reconcile its counters by id (removed counters lose their recorded counts); regenerates the paired markdown table",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "tracker"
+                ],
+                "summary": "Save tracker configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tracker identifier (name)",
+                        "name": "trackerid",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional heading",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Counter ids (blank for a new counter), index-aligned with counter_title[]",
+                        "name": "counter_id[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Counter titles, index-aligned with counter_id[]",
+                        "name": "counter_title[]",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "empty body; sets HX-Redirect to the tracker's edit page",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/trackers/tick": {
+            "post": {
+                "description": "Add +1/-1 to a counter's day bucket, save, and return the updated counter row",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "tracker"
+                ],
+                "summary": "Record a tracker change",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tracker identifier (name)",
+                        "name": "trackerid",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Counter id",
+                        "name": "counterid",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Change: 1 or -1",
+                        "name": "delta",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated tracker counter row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -6424,6 +6579,7 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "filter-editor",
+                "tracker-editor",
                 "list-editor",
                 "todo-editor",
                 "index-editor",
@@ -6432,6 +6588,7 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "EditorTypeFilter",
+                "EditorTypeTracker",
                 "EditorTypeList",
                 "EditorTypeTodo",
                 "EditorTypeIndex",

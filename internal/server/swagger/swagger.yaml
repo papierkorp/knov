@@ -170,6 +170,7 @@ definitions:
   files.EditorType:
     enum:
     - filter-editor
+    - tracker-editor
     - list-editor
     - todo-editor
     - index-editor
@@ -178,6 +179,7 @@ definitions:
     type: string
     x-enum-varnames:
     - EditorTypeFilter
+    - EditorTypeTracker
     - EditorTypeList
     - EditorTypeTodo
     - EditorTypeIndex
@@ -2139,28 +2141,6 @@ paths:
       summary: Filter files by metadata
       tags:
       - filter
-  /api/filters/{id}:
-    delete:
-      description: Delete a filter from config storage and its metadata
-      parameters:
-      - description: filter id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: empty body; sets HX-Redirect to / plus a success flash
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete filter
-      tags:
-      - filter
   /api/filters/add-criteria:
     post:
       consumes:
@@ -2196,6 +2176,28 @@ paths:
           schema:
             type: string
       summary: Get filter criteria row
+      tags:
+      - filter
+  /api/filters/delete/{id}:
+    delete:
+      description: Delete a filter from config storage and its metadata
+      parameters:
+      - description: filter id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: empty body; sets HX-Redirect to / plus a success flash
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete filter
       tags:
       - filter
   /api/filters/save:
@@ -4713,4 +4715,110 @@ paths:
       summary: Update theme setting
       tags:
       - themes
+  /api/trackers/add-counter:
+    post:
+      description: Return HTML for a new empty tracker counter name input
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: tracker counter row html
+          schema:
+            type: string
+      summary: Add tracker counter row
+      tags:
+      - tracker
+  /api/trackers/delete/{id}:
+    delete:
+      description: Delete a tracker from config storage and its paired file
+      parameters:
+      - description: tracker id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: empty body; sets HX-Redirect to /
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete tracker
+      tags:
+      - tracker
+  /api/trackers/save:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Save a tracker's title and reconcile its counters by id (removed
+        counters lose their recorded counts); regenerates the paired markdown table
+      parameters:
+      - description: Tracker identifier (name)
+        in: formData
+        name: trackerid
+        required: true
+        type: string
+      - description: Optional heading
+        in: formData
+        name: title
+        type: string
+      - description: Counter ids (blank for a new counter), index-aligned with counter_title[]
+        in: formData
+        name: counter_id[]
+        type: array
+      - description: Counter titles, index-aligned with counter_id[]
+        in: formData
+        name: counter_title[]
+        type: array
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: empty body; sets HX-Redirect to the tracker's edit page
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Save tracker configuration
+      tags:
+      - tracker
+  /api/trackers/tick:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Add +1/-1 to a counter's day bucket, save, and return the updated
+        counter row
+      parameters:
+      - description: Tracker identifier (name)
+        in: formData
+        name: trackerid
+        required: true
+        type: string
+      - description: Counter id
+        in: formData
+        name: counterid
+        required: true
+        type: string
+      - description: 'Change: 1 or -1'
+        in: formData
+        name: delta
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: updated tracker counter row html
+          schema:
+            type: string
+      summary: Record a tracker change
+      tags:
+      - tracker
 swagger: "2.0"

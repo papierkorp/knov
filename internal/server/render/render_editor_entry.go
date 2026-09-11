@@ -80,9 +80,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	if !isEdit {
 		html.WriteString(`<div class="form-group">`)
 		fmt.Fprintf(&html, `<label>%s</label>`, t("file path"))
-		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", t("path/to/file"), "/api/files/folder-suggestions")
-		datalistInput = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
-		html.WriteString(datalistInput)
+		html.WriteString(GenerateDatalistInput("filepath-input", "filepath", "", t("path/to/file"), "/api/files/folder-suggestions", true))
 		html.WriteString(`</div>`)
 	} else {
 		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, htmlpkg.EscapeString(filePath))
@@ -221,7 +219,7 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		inputID := fmt.Sprintf("entry-file-%d", entryRowCounter.Add(1))
 		html.WriteString(`<div class="entry-file">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, t("file"))
-		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, placeholder, "/api/files/autocomplete"))
+		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, placeholder, "/api/files/autocomplete", false))
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
 		if p, _ := parser.ResolveWikiTarget(entry.Value); p != "" {

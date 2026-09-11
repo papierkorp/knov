@@ -73,6 +73,13 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			logging.LogError(logging.KeyApp, "failed to render filter editor: %v", renderErr)
 			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
+	case files.EditorTypeTracker:
+		var renderErr error
+		if html, renderErr = render.RenderTrackerEditor(fp); renderErr != nil {
+			logging.LogError(logging.KeyApp, "failed to render tracker editor: %v", renderErr)
+			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load tracker"))
+			return
+		}
 	case files.EditorTypeIndex:
 		var renderErr error
 		if html, renderErr = render.RenderIndexEditor(fp); renderErr != nil {

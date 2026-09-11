@@ -8,6 +8,7 @@ railSnippetByID("new").body = () => `<div class="flyout-content" data-snippet="n
   <a href="/files/new/list" onclick="closePanel()">List</a>
   <a href="/files/new/todo" onclick="closePanel()">Todo</a>
   <a href="/files/new/filter" onclick="closePanel()">Filter</a>
+  <a href="/files/new/tracker" onclick="closePanel()">Tracker</a>
   <a href="/files/new/index" onclick="closePanel()">Index</a>
   <a href="/files/new/book" onclick="closePanel()">Book</a>
 </div>`;

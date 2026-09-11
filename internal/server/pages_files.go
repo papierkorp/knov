@@ -41,9 +41,15 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		fileContent.HTML = render.RenderBookViewPrefix(filePath) + fileContent.HTML
 	}
 
-	// a saved filter renders its results live, honoring the configured display type,
-	// instead of the static markdown index file paired with it.
-	if html, ok := render.RenderFilterFileView(pathutils.ToRelative(filePath)); ok {
+	// a saved filter/tracker re-renders live (filter results honoring the configured
+	// display, or the tracker's rolling-window stats) instead of the static markdown
+	// paired with it. tracker is gated on its editor tag; filter falls back to a
+	// path->config probe so a paired file with missing/stale metadata still renders live.
+	if fileContent.Editor == files.EditorTypeTracker {
+		if html, ok := render.RenderTrackerFileView(pathutils.ToRelative(filePath)); ok {
+			fileContent.HTML = html
+		}
+	} else if html, ok := render.RenderFilterFileView(pathutils.ToRelative(filePath)); ok {
 		fileContent.HTML = html
 	}
 
@@ -100,6 +106,14 @@ func handleFileNewTodo(w http.ResponseWriter, r *http.Request) {
 func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("filter-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
+	}
+}
+
+func handleFileNewTracker(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("tracker-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, fmt.Sprintf("error rendering template: %v", err))
 	}

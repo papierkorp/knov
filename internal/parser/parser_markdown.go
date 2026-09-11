@@ -33,7 +33,7 @@ func NewMarkdownHandler() *MarkdownHandler {
 
 // markdownExtensions are the extensions the markdown handler renders rather than letting
 // fall through to the plaintext handler. One list so CanHandle and IsMarkdownExtension agree.
-var markdownExtensions = []string{".md", ".markdown", ".index", ".moc", ".list", ".todo", ".book"}
+var markdownExtensions = []string{".md", ".markdown", ".index", ".moc", ".list", ".todo", ".book", ".tracker"}
 
 func (h *MarkdownHandler) CanHandle(filename string) bool {
 	return IsMarkdownExtension(filename)

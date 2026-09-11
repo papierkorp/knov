@@ -7,7 +7,6 @@ package render
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
@@ -64,10 +63,10 @@ func RenderListEditor(filepath string, todoMode bool) string {
 		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filepath)
 	} else {
 		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "",
-			translation.SprintfForRequest(lang, placeholderExt), "/api/files/folder-suggestions")
+			translation.SprintfForRequest(lang, placeholderExt), "/api/files/folder-suggestions", true)
 		filepathInputHTML = `<div class="form-group"><label>` +
 			translation.SprintfForRequest(lang, "file path") + `:</label>` +
-			strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1) +
+			datalistInput +
 			`</div>`
 	}
 

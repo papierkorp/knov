@@ -51,8 +51,9 @@ type File struct {
 }
 
 type FileContent struct {
-	HTML string
-	TOC  []parser.TOCItem
+	HTML   string
+	TOC    []parser.TOCItem
+	Editor EditorType // resolved editor type, so view handlers can dispatch without re-sniffing
 }
 
 // pathsToFiles converts file paths to File structs
@@ -157,7 +158,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 
 	// strip section edit buttons for editors with no inline section editing (a composed
 	// book emits none anyway, but keep it in the set for clarity)
-	if editor == EditorTypeFilter || editor == EditorTypeList ||
+	if editor == EditorTypeFilter || editor == EditorTypeTracker || editor == EditorTypeList ||
 		editor == EditorTypeTodo || editor == EditorTypeIndex || editor == EditorTypeBook {
 		html = sectionEditBtnRe.ReplaceAll(html, nil)
 	}
@@ -166,8 +167,9 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	toc := parser.GenerateTOC(processedContent)
 
 	return &FileContent{
-		HTML: processedContent,
-		TOC:  toc,
+		HTML:   processedContent,
+		TOC:    toc,
+		Editor: editor,
 	}, nil
 }
 

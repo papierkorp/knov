@@ -237,23 +237,21 @@ func PathContains(root, candidate string) bool {
 	return candidate == root || strings.HasPrefix(candidate, root+string(filepath.Separator))
 }
 
-// ToFileURL returns a browser-safe URL for viewing a file.
-// Segments are path-escaped so spaces, Unicode, and special characters work correctly.
-func ToFileURL(rel string) string {
-	rel = filepath.ToSlash(rel)
-	parts := strings.Split(rel, "/")
+// escapeRelPath path-escapes each segment of a relative path and joins them with "/",
+// so spaces, Unicode, and special characters survive as a URL path.
+func escapeRelPath(rel string) string {
+	parts := strings.Split(filepath.ToSlash(rel), "/")
 	for i, p := range parts {
 		parts[i] = url.PathEscape(p)
 	}
-	return "/files/" + strings.Join(parts, "/")
+	return strings.Join(parts, "/")
 }
 
+// ToFileURL returns a browser-safe URL for viewing a file.
+func ToFileURL(rel string) string { return "/files/" + escapeRelPath(rel) }
+
+// ToFileEditURL returns a browser-safe URL for editing a file.
+func ToFileEditURL(rel string) string { return "/files/edit/" + escapeRelPath(rel) }
+
 // ToMediaURL returns a browser-safe URL for viewing a media file.
-func ToMediaURL(rel string) string {
-	rel = filepath.ToSlash(rel)
-	parts := strings.Split(rel, "/")
-	for i, p := range parts {
-		parts[i] = url.PathEscape(p)
-	}
-	return "/media/" + strings.Join(parts, "/")
-}
+func ToMediaURL(rel string) string { return "/media/" + escapeRelPath(rel) }

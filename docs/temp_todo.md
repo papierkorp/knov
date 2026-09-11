@@ -6,7 +6,6 @@
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
-  - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?) just like the filter editor (use `configeditor.Kind`)
   - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
@@ -14,12 +13,22 @@
   - add settings button to tables (same as codemirror editor)
   - a collection/library for books so i can download multiple books with one click
   - evaluate between https://www.ag-grid.com/, https://bossanova.uk/jspreadsheet/, https://www.tabulator.info/ and our current handsontable solution based on size, performance and license - would it be worth to switch to another solution which advantages/disadvantages would we have?
+  - tracker editor
+    - give me options to define the output file
+    - are entries removed from the json if we remove them from the editor?
+    - add 3 dots to the right of the "+" and move the "X" remove button into there
+    - add a reset to 0 button (in red) to the 3 dots
+    - add tests
+  - codemirror editor jump from title/filepath directly to the editor window with tab
+  - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
 - fixes
   - table alignment is not working
 - chore
   - replace all hand-built urls with pathutils
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` only works if i disalbe and enable it in the developer console
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
+  - Not a concern at this app's scale, but noting the shape: every `Tick` (each individual +/- click) does load → mutate → `json.MarshalIndent` the whole config → atomic file write → rebuild the entire stats markdown (summary + full by-month matrix) → second atomic file write for the paired file. `Total` re-scans a counter's whole `Days` map four times per counter for the summary, plus once more per counter per month. For a personal tracker this is trivial; it would matter only with years of daily data and rapid clicking, and the global mutex serializes it all. I would not optimize now, just be aware the write amplification per click is fairly high.
+  - storageinterface for the editors or keep them in the config storage?
 
 
 # every other time

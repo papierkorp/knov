@@ -212,9 +212,13 @@ func GetFormValue(slice []string, index int) string {
 // GenerateDatalistInput creates an input field with path autocomplete (without save).
 // The data-path-autocomplete attribute is wired up by wiki-autocomplete.js on
 // DOMContentLoaded and on every htmx swap, so no per-input inline script is needed.
-func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) string {
-	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" placeholder="%s" data-path-autocomplete="%s"/>`,
-		htmlpkg.EscapeString(id), htmlpkg.EscapeString(name), htmlpkg.EscapeString(value),
+func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string, required bool) string {
+	requiredAttr := ""
+	if required {
+		requiredAttr = " required"
+	}
+	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input"%s autocomplete="off" placeholder="%s" data-path-autocomplete="%s"/>`,
+		htmlpkg.EscapeString(id), htmlpkg.EscapeString(name), htmlpkg.EscapeString(value), requiredAttr,
 		htmlpkg.EscapeString(placeholder), htmlpkg.EscapeString(apiEndpoint))
 }
 
