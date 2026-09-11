@@ -1,5 +1,8 @@
 (function () {
     function addCopyButtons(root) {
+        // htmx 4 outerHTML swaps can pass a whitespace text node as the settle
+        // target, which has no querySelectorAll
+        if (!root || typeof root.querySelectorAll !== 'function') return;
         root.querySelectorAll('pre:not([data-copy-ready]):not(.CodeMirror-line)').forEach(function (pre) {
             pre.setAttribute('data-copy-ready', '1');
             var btn = document.createElement('button');

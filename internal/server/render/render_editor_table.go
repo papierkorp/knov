@@ -162,6 +162,7 @@ const table = new Tabulator(container, {
 	movableRows: true,
 	movableColumns: true,
 	editTriggerEvent: 'dblclick',
+	headerSortClickElement: 'icon',
 	rowHeader: { headerSort: false, resizable: false, frozen: true, minWidth: 30, width: 30, hozAlign: 'center', formatter: 'rownum', editor: false, rowHandle: true },
 	history: true,
 	clipboard: true,

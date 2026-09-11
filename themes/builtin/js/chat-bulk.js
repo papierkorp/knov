@@ -2,7 +2,10 @@
 var chatSelected = new Set();
 
 function chatBindMessageClick(root) {
-    (root || document).querySelectorAll('.chat-message:not([data-bulk-bound])').forEach(function (msg) {
+    // htmx 4 outerHTML swaps can pass a whitespace text node as the settle
+    // target, which has no querySelectorAll
+    if (!root || typeof root.querySelectorAll !== 'function') root = document;
+    root.querySelectorAll('.chat-message:not([data-bulk-bound])').forEach(function (msg) {
         msg.setAttribute('data-bulk-bound', '1');
         msg.addEventListener('click', function (e) {
             if (e.target.closest('button,a,textarea,input')) return;

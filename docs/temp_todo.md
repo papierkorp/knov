@@ -30,9 +30,7 @@
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors or keep them in the config storage?
   - fix javascript console errors
-  - **Security:** `jsEscape` (pre-existing, unchanged) escapes backslash/quotes/newlines but not `</script>`. That's an existing weakness on `filePath`/`returnURL`, but `downloadName` is a *new* value threaded through the same sink from the same user-controlled `filepath` query param — so the diff extends a latent script-injection surface rather than introducing it fresh. Worth a quick check on whether `filepath` is constrained upstream before it reaches this render function.
-  - **Side Effects / Global State:** `let nextColIndex` and `const table`/`const container` are declared at top-level script scope inside an inline `<script>` that's presumably injected via an htmx swap. If this fragment can ever be swapped into the DOM twice without a full page reload, redeclaring these `const`/`let` bindings would throw. This mirrors the pre-existing `const hot` pattern from the Handsontable version, so it's not newly introduced, but `nextColIndex` is one more identifier riding on the same assumption.
-
+  - dashboard no save message pop up, and in file is not displayed if not scrolled down
 
 # every other time
 
