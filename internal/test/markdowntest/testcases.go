@@ -188,6 +188,43 @@ func caseHeadingScanMatchesRenderIDs() test.CaseResult {
 	return cr
 }
 
+// sectionEditIDRe reads the section id straight off each rendered section-edit-btn's
+// href, mirroring wrapHeaderSections' own idRe/headerRe scan of the rendered HTML.
+var sectionEditIDRe = regexp.MustCompile(`\?section=([^"]*)"[^>]*class="section-edit-btn"`)
+
+// caseWrapHeaderSectionsMatchesHeadingIDs guards wrapHeaderSections' regex scan of the
+// rendered HTML (see its doc comment on parser_markdown.go): it must produce exactly one
+// content-section per heading, each with a section-edit-btn keyed to that heading's id.
+func caseWrapHeaderSectionsMatchesHeadingIDs() test.CaseResult {
+	name := "wrap-header-sections-matches-heading-ids"
+	src := "# Intro\ntext\n## Notes\nmore\n## Notes\neven more\n"
+	want := "intro,notes,notes-1"
+
+	rendered, err := parser.NewMarkdownHandler().Render([]byte(src), "note.md")
+	if err != nil {
+		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+	}
+	got := string(rendered)
+
+	sections := strings.Count(got, `class="content-section"`)
+	var sectionIDs []string
+	for _, m := range sectionEditIDRe.FindAllStringSubmatch(got, -1) {
+		sectionIDs = append(sectionIDs, m[1])
+	}
+	gotIDs := strings.Join(sectionIDs, ",")
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("sections=3 ids=%s", want),
+		Actual:   fmt.Sprintf("sections=%d ids=%s", sections, gotIDs),
+		Success:  sections == 3 && gotIDs == want,
+	}
+	if !cr.Success {
+		cr.Error = "content-section count or section-edit-btn ids diverged from headings"
+	}
+	return cr
+}
+
 func idOf(hs []parser.Heading, i int) string {
 	if i >= len(hs) {
 		return "<none>"
