@@ -34,7 +34,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = fmt.Sprintf("/files/%s", filepath)
+		cancelURL = pathutils.ToFileURL(filepath)
 	}
 
 	lang := configmanager.GetLanguage()

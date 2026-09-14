@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"knov/internal/pathutils"
 )
 
 // processDokuWikiSyntax applies unified detection and rendering for all syntax types
@@ -121,7 +123,7 @@ func (h *Converter) processMediaLinks(content string, outputFormat string) strin
 			altText = filepath.Base(mediaPath)
 		}
 
-		mediaURL := fmt.Sprintf("/media/%s", mediaPath)
+		mediaURL := pathutils.ToMediaURL(mediaPath)
 
 		// PDFs render as links, everything else as images
 		if strings.ToLower(filepath.Ext(mediaPath)) == ".pdf" {
@@ -290,12 +292,12 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 					// links pointing at binary/media files go to /media/, not /files/docs/
 					isMediaFile := ext != "" && ext != ".md" && ext != ".txt"
 					if isMediaFile {
-						convertedURL = fmt.Sprintf("/media/%s%s", url, anchor)
+						convertedURL = pathutils.ToMediaURL(url) + anchor
 					} else {
 						if !strings.HasSuffix(url, ".md") {
 							url += ".md"
 						}
-						convertedURL = fmt.Sprintf("/files/docs/%s%s", url, anchor)
+						convertedURL = pathutils.ToFileURL("docs/"+url) + anchor
 					}
 				} else {
 					// just an anchor link
@@ -480,7 +482,7 @@ func (h *Converter) convertIncludeSections(content string, outputFormat string) 
 		}
 
 		// use /files/docs/ prefix consistently
-		webPath := fmt.Sprintf("/files/docs/%s%s", url, anchor)
+		webPath := pathutils.ToFileURL("docs/"+url) + anchor
 
 		if outputFormat == "html" {
 			return fmt.Sprintf(`<a href="%s">%s</a>`, webPath, pathSection)

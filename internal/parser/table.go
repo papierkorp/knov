@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 	"knov/internal/types"
 )
@@ -374,8 +375,8 @@ func RenderTableHTML(data, fullData *types.TableData, filepath string, tableInde
 
 	html += `<div class="table-footer">`
 
-	html += fmt.Sprintf(`<a href="/files/edittable/%s?tableindex=%d" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a>`,
-		filepath, tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
+	html += fmt.Sprintf(`<a href="%s?tableindex=%d" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a>`,
+		pathutils.ToFileEditTableURL(filepath), tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
 
 	html += `<div class="table-footer-right">`
 

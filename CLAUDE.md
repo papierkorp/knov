@@ -21,6 +21,7 @@
 - same for the job, the job package should just include a wrapper
 - i dont want any html generation in the handler - use the render subpackage for any html strings
 - if anything related to paths prop up - use the pathutils package!
+- never hand-build /files/, /files/edit/, /media/, /files/edittable/, or /files/history/ URLs with string concat or fmt.Sprintf - use pathutils.ToFileURL / ToFileEditURL / ToMediaURL / ToFileEditTableURL / ToFileHistoryURL instead
 - if working with paths - we have to take care of both linux and windows os paths
 - we updated to htmx 4.0 so the syntax is different to htmx 2.0 be careful of this
 

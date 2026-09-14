@@ -8,6 +8,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -193,8 +194,8 @@ func brokenLinkSuggestedCell(suggested string) string {
 	if !files.IsImageFile(strings.ToLower(filepath.Ext(relativePath))) {
 		return suggested
 	}
-	return fmt.Sprintf(`<img src="/media/%s" alt="%s" class="media-compact-thumb" loading="lazy"> %s`,
-		relativePath, filepath.Base(relativePath), suggested)
+	return fmt.Sprintf(`<img src="%s" alt="%s" class="media-compact-thumb" loading="lazy"> %s`,
+		pathutils.ToMediaURL(relativePath), filepath.Base(relativePath), suggested)
 }
 
 // RenderMetadataCSV generates CSV content for metadata export

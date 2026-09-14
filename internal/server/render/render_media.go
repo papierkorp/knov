@@ -4,6 +4,7 @@ package render
 import (
 	"fmt"
 	stdhtml "html"
+	"net/url"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -53,27 +54,27 @@ func RenderMediaPreview(mediaPath, contentType string) string {
 	// ensure media path is relative (remove media/ prefix if present)
 	relativePath := strings.TrimPrefix(mediaPath, "media/")
 
-	escPath := stdhtml.EscapeString(relativePath)
+	mediaURL := pathutils.ToMediaURL(relativePath)
 
 	switch {
 	case contentType == "":
 		return fmt.Sprintf(`<div class="media-preview">%s</div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "unknown file type"))
 	case contentType[:6] == "image/":
-		return fmt.Sprintf(`<div class="media-preview"><img src="/media/%s" alt="media preview" style="max-width: 300px; max-height: 300px;"></div>`, escPath)
+		return fmt.Sprintf(`<div class="media-preview"><img src="%s" alt="media preview" style="max-width: 300px; max-height: 300px;"></div>`, mediaURL)
 	case contentType[:6] == "video/":
-		return fmt.Sprintf(`<div class="media-preview"><video controls style="max-width: 300px; max-height: 300px;"><source src="/media/%s" type="%s"></video></div>`, escPath, stdhtml.EscapeString(contentType))
+		return fmt.Sprintf(`<div class="media-preview"><video controls style="max-width: 300px; max-height: 300px;"><source src="%s" type="%s"></video></div>`, mediaURL, stdhtml.EscapeString(contentType))
 	case contentType == "application/pdf":
-		return fmt.Sprintf(`<div class="media-preview"><iframe src="/media/%s" style="width: 300px; height: 400px;"></iframe></div>`, escPath)
+		return fmt.Sprintf(`<div class="media-preview"><iframe src="%s" style="width: 300px; height: 400px;"></iframe></div>`, mediaURL)
 	case contentType[:5] == "text/":
-		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/media/%s" target="_blank">%s</a></div>`,
+		return fmt.Sprintf(`<div class="media-preview">%s: <a href="%s" target="_blank">%s</a></div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "text file"),
-			escPath,
+			mediaURL,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "view"))
 	default:
-		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/media/%s" download>%s</a></div>`,
+		return fmt.Sprintf(`<div class="media-preview">%s: <a href="%s" download>%s</a></div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
-			escPath,
+			mediaURL,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
 	}
 }
@@ -95,10 +96,10 @@ func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
 		relativePath := strings.TrimPrefix(file.Path, "media/")
 		fileExt := strings.ToLower(filepath.Ext(relativePath))
 		filename := filepath.Base(relativePath)
-		escPath := stdhtml.EscapeString(relativePath)
+		mediaURL := pathutils.ToMediaURL(relativePath)
 		escFilename := stdhtml.EscapeString(filename)
 
-		href := "/media/" + escPath
+		href := mediaURL
 		if linkTarget == "detail" {
 			href += "?mode=detail"
 		}
@@ -106,7 +107,7 @@ func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
 		fmt.Fprintf(&html, `<a class="media-compact-item" href="%s">`, href)
 
 		if files.IsImageFile(fileExt) {
-			fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-compact-thumb" loading="lazy">`, escPath, escFilename)
+			fmt.Fprintf(&html, `<img src="%s" alt="%s" class="media-compact-thumb" loading="lazy">`, mediaURL, escFilename)
 		} else {
 			icon := files.GetFileTypeIcon(fileExt)
 			fmt.Fprintf(&html, `<span class="media-compact-icon"><i class="fas %s"></i></span>`, icon)
@@ -206,7 +207,7 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 		relativePath := strings.TrimPrefix(file.Path, "media/")
 		fileExt := strings.ToLower(filepath.Ext(relativePath))
 		filename := filepath.Base(relativePath)
-		escPath := stdhtml.EscapeString(relativePath)
+		mediaURL := pathutils.ToMediaURL(relativePath)
 		escFilename := stdhtml.EscapeString(filename)
 
 		orphanedClass := ""
@@ -226,11 +227,11 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 		// media preview/thumbnail
 		html.WriteString(`<div class="media-preview">`)
 		if files.IsImageFile(fileExt) {
-			fmt.Fprintf(&html, `<a href="/media/%s" target="_blank"><img src="/media/%s" alt="%s" loading="lazy" class="media-thumbnail"></a>`,
-				escPath, escPath, escFilename)
+			fmt.Fprintf(&html, `<a href="%s" target="_blank"><img src="%s" alt="%s" loading="lazy" class="media-thumbnail"></a>`,
+				mediaURL, mediaURL, escFilename)
 		} else if files.IsVideoFile(fileExt) {
-			fmt.Fprintf(&html, `<div class="media-video-preview"><video preload="none" class="media-thumbnail" poster=""><source src="/media/%s" type="video/%s"></video><div class="video-overlay"><i class="fas fa-play"></i></div></div>`,
-				escPath, strings.TrimPrefix(fileExt, "."))
+			fmt.Fprintf(&html, `<div class="media-video-preview"><video preload="none" class="media-thumbnail" poster=""><source src="%s" type="video/%s"></video><div class="video-overlay"><i class="fas fa-play"></i></div></div>`,
+				mediaURL, strings.TrimPrefix(fileExt, "."))
 		} else {
 			icon := files.GetFileTypeIcon(fileExt)
 			fmt.Fprintf(&html, `<div class="media-icon"><i class="fas %s"></i></div>`, icon)
@@ -250,12 +251,12 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 
 		// media actions
 		html.WriteString(`<div class="media-actions">`)
-		fmt.Fprintf(&html, `<a href="/media/%s?mode=detail" class="btn btn-sm btn-primary"><i class="fas fa-info-circle"></i> %s</a>`,
-			escPath, translation.SprintfForRequest(configmanager.GetLanguage(), "details"))
-		fmt.Fprintf(&html, `<a href="/media/%s" download class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> %s</a>`,
-			escPath, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
+		fmt.Fprintf(&html, `<a href="%s?mode=detail" class="btn btn-sm btn-primary"><i class="fas fa-info-circle"></i> %s</a>`,
+			mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "details"))
+		fmt.Fprintf(&html, `<a href="%s" download class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> %s</a>`,
+			mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
 		fmt.Fprintf(&html, `<button type="button" class="btn btn-sm btn-danger" hx-delete="/api/media/%s" hx-confirm="%s" hx-target="#component-media-content" hx-trigger="click"><i class="fas fa-trash"></i> %s</button>`,
-			escPath,
+			url.PathEscape(relativePath),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "are you sure you want to delete this file?"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "delete"))
 		html.WriteString(`</div>`)
@@ -328,6 +329,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	relativePath := strings.TrimPrefix(metadata.Path, "media/")
 	fileExt := strings.ToLower(filepath.Ext(relativePath))
 	filename := filepath.Base(relativePath)
+	mediaURL := pathutils.ToMediaURL(relativePath)
 	escPath := stdhtml.EscapeString(relativePath)
 
 	var html strings.Builder
@@ -336,19 +338,19 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	// media preview section
 	html.WriteString(`<div class="media-preview-large">`)
 	if files.IsImageFile(fileExt) {
-		fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-preview-image">`,
-			escPath, stdhtml.EscapeString(filename))
+		fmt.Fprintf(&html, `<img src="%s" alt="%s" class="media-preview-image">`,
+			mediaURL, stdhtml.EscapeString(filename))
 	} else if files.IsVideoFile(fileExt) {
 		fmt.Fprintf(&html, `<video controls class="media-preview-video">
-			<source src="/media/%s" type="video/%s">
+			<source src="%s" type="video/%s">
 			%s
-		</video>`, escPath, strings.TrimPrefix(fileExt, "."),
+		</video>`, mediaURL, strings.TrimPrefix(fileExt, "."),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support video playback"))
 	} else if files.IsAudioFile(fileExt) {
 		fmt.Fprintf(&html, `<audio controls class="media-preview-audio">
-			<source src="/media/%s" type="audio/%s">
+			<source src="%s" type="audio/%s">
 			%s
-		</audio>`, escPath, strings.TrimPrefix(fileExt, "."),
+		</audio>`, mediaURL, strings.TrimPrefix(fileExt, "."),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support audio playback"))
 	} else {
 		icon := files.GetFileTypeIcon(fileExt)
@@ -403,7 +405,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 		for _, link := range metadata.LinksToHere {
 			linkPath := pathutils.ToRelative(link)
 			displayText := GetLinkDisplayText(linkPath)
-			fmt.Fprintf(&html, `<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, displayText)
+			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(linkPath), linkPath, displayText)
 		}
 		html.WriteString(`</ul>`)
 	}
@@ -432,12 +434,12 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 
 	// actions
 	html.WriteString(`<div class="media-actions">`)
-	fmt.Fprintf(&html, `<a href="/media/%s" download class="btn btn-primary">
+	fmt.Fprintf(&html, `<a href="%s" download class="btn btn-primary">
 		<i class="fas fa-download"></i> %s
-	</a>`, escPath, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
-	fmt.Fprintf(&html, `<a href="/media/%s" target="_blank" class="btn btn-secondary">
+	</a>`, mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
+	fmt.Fprintf(&html, `<a href="%s" target="_blank" class="btn btn-secondary">
 		<i class="fas fa-external-link-alt"></i> %s
-	</a>`, escPath, translation.SprintfForRequest(configmanager.GetLanguage(), "open in new tab"))
+	</a>`, mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "open in new tab"))
 	mdPrefix := ""
 	if files.IsImageFile(fileExt) {
 		mdPrefix = "!"
@@ -485,8 +487,8 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	borderStyle := configmanager.GetBorderStyle()
 	showCaption := configmanager.GetShowCaption()
 	imageClickBehavior := configmanager.GetImageClickBehavior()
-	escPath := stdhtml.EscapeString(relativePath)
-	detailURL := fmt.Sprintf("/media/%s?mode=detail", escPath)
+	mediaURL := pathutils.ToMediaURL(relativePath)
+	detailURL := mediaURL + "?mode=detail"
 
 	// determine file type from extension
 	ext := strings.ToLower(filepath.Ext(relativePath))
@@ -504,20 +506,20 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	switch {
 	case configmanager.IsImageExtension(ext):
 		// for images, use CSS to constrain size
-		img := fmt.Sprintf(`<img src="/media/%s"
+		img := fmt.Sprintf(`<img src="%s"
 				     alt="%s"
 				     class="media-preview-image"
 				     style="max-width: %dpx; max-height: %dpx; width: auto; height: auto;"
 				     loading="lazy" />`,
-			escPath, stdhtml.EscapeString(filename), size, size)
+			mediaURL, stdhtml.EscapeString(filename), size, size)
 
 		var imgElement string
 		switch imageClickBehavior {
 		case "enlarge":
 			imgElement = fmt.Sprintf(`
-				<button type="button" class="preview-trigger" onclick="openMediaLightbox(this)" data-lightbox-src="/media/%s" data-lightbox-alt="%s">
+				<button type="button" class="preview-trigger" onclick="openMediaLightbox(this)" data-lightbox-src="%s" data-lightbox-alt="%s">
 					%s
-				</button>`, escPath, stdhtml.EscapeString(filename), img)
+				</button>`, mediaURL, stdhtml.EscapeString(filename), img)
 		case "detail":
 			imgElement = fmt.Sprintf(`
 				<a href="%s" target="_blank" class="preview-link">
@@ -541,8 +543,8 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 		// for videos, use CSS to constrain size
 		videoElement := fmt.Sprintf(`
 			<video controls style="max-width: %dpx; max-height: %dpx;">
-				<source src="/media/%s" type="%s">
-			</video>`, size, size, escPath, configmanager.MimeTypeByExtension(ext))
+				<source src="%s" type="%s">
+			</video>`, size, size, mediaURL, configmanager.MimeTypeByExtension(ext))
 
 		if showCaption {
 			content = fmt.Sprintf(`
@@ -557,8 +559,8 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	case configmanager.MimeTypeByExtension(ext) == "application/pdf":
 		// for PDFs, use fixed iframe size
 		pdfElement := fmt.Sprintf(`
-			<iframe src="/media/%s" style="width: %dpx; height: %dpx;"></iframe>`,
-			escPath, size, int(float64(size)*1.4)) // taller aspect ratio for PDFs
+			<iframe src="%s" style="width: %dpx; height: %dpx;"></iframe>`,
+			mediaURL, size, int(float64(size)*1.4)) // taller aspect ratio for PDFs
 
 		if showCaption {
 			content = fmt.Sprintf(`
@@ -611,8 +613,8 @@ func RenderMediaListSelect(mediaFiles []files.File) string {
 		// media icon/thumbnail
 		html.WriteString(`<div class="media-select-icon">`)
 		if files.IsImageFile(fileExt) {
-			fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-select-thumbnail">`,
-				escPath, escFilename)
+			fmt.Fprintf(&html, `<img src="%s" alt="%s" class="media-select-thumbnail">`,
+				pathutils.ToMediaURL(relativePath), escFilename)
 		} else {
 			icon := files.GetFileTypeIcon(fileExt)
 			fmt.Fprintf(&html, `<i class="fas %s"></i>`, icon)

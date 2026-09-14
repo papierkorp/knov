@@ -162,7 +162,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]string{
 		"filepath": filepath,
-		"link":     "/files/" + filepath,
+		"link":     pathutils.ToFileURL(filepath),
 	}
 
 	html := render.RenderFileHeader(filepath)

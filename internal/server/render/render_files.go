@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -82,7 +83,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
+	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="%s">→ %s</a></div>`, pathutils.ToFileURL(filepath), filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list.
@@ -176,11 +177,11 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 		for _, file := range filesInDir {
 			html.WriteString(fmt.Sprintf(`
 				<li class="file-item">
-					<a href="/files/%s">
+					<a href="%s">
 						() %s
 					</a>
 				</li>`,
-				file.Path, GetLinkDisplayText(file.Path)))
+				pathutils.ToFileURL(file.Path), GetLinkDisplayText(file.Path)))
 		}
 		html.WriteString(`</ul></div>`)
 	}
@@ -218,12 +219,12 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
 				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + child.Name + "?"
-				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="/files/%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
-					relPath, child.Path, GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, url.PathEscape(relPath), confirmMsg, deleteLabel)
+				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
+					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, url.PathEscape(relPath), confirmMsg, deleteLabel)
 			} else {
 				relPath := strings.TrimPrefix(child.Path, "docs/")
-				fmt.Fprintf(html, `<a class="fp-tree-file" draggable="true" data-path="%s" data-type="file" href="/files/%s">%s</a>`,
-					relPath, child.Path, GetLinkDisplayTextWithMetadata(child.Path, child.Metadata))
+				fmt.Fprintf(html, `<a class="fp-tree-file" draggable="true" data-path="%s" data-type="file" href="%s">%s</a>`,
+					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata))
 			}
 		}
 		html.WriteString(`</li>`)

@@ -11,6 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/kanban"
 	"knov/internal/kanbanStorage"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -56,7 +57,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
-	fmt.Fprintf(&html, `<a class="kanban-card-title" href="/files/%s" title="%s">%s</a>`, card.FilePath, displayTitle, displayTitle)
+	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, pathutils.ToFileURL(card.FilePath), displayTitle, displayTitle)
 	if len(visibleTags) > 0 {
 		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
@@ -225,7 +226,7 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 	fmt.Fprintf(&html, `<tr data-search="%s" data-tags="|%s|" data-title="%s" data-createdat="%s" data-lastedited="%s">`,
 		searchBlob, strings.Join(visibleTags, "|"), strings.ToLower(displayTitle), card.CreatedAt, card.LastEdited)
 
-	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="/files/%s" title="%s">%s</a></td>`, card.FilePath, displayTitle, displayTitle)
+	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, pathutils.ToFileURL(card.FilePath), displayTitle, displayTitle)
 
 	html.WriteString(`<td>`)
 	if len(visibleTags) > 0 {

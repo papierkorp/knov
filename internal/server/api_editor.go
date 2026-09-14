@@ -469,9 +469,9 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
-	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="/files/%s">%s</a></div>`,
+	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
-		filePath,
+		pathutils.ToFileURL(filePath),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
@@ -555,9 +555,9 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
-	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="/files/%s#%s">%s</a></div>`,
+	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
-		filePath,
+		pathutils.ToFileURL(filePath),
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 

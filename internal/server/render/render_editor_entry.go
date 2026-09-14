@@ -72,7 +72,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	isEdit := filePath != ""
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = fmt.Sprintf("/files/%s", filePath)
+		cancelURL = pathutils.ToFileURL(filePath)
 	}
 
 	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#entry-editor-status" hx-swap="innerHTML" id="entry-form">`, action)

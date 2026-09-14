@@ -10,6 +10,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/mapping"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 	"knov/internal/utils"
 )
@@ -75,7 +76,7 @@ func RenderFilterForm(opts FilterFormOpts) string {
 			translation.SprintfForRequest(configmanager.GetLanguage(), "preview results")))
 		cancelURL := "/"
 		if opts.IsEdit {
-			cancelURL = "/files/" + filter.FilterIndexPath(opts.FilterID)
+			cancelURL = pathutils.ToFileURL(filter.FilterIndexPath(opts.FilterID))
 		}
 		html.WriteString(fmt.Sprintf(`<button type="button" data-href="%s" onclick="window.location.href=this.dataset.href" class="btn-secondary">%s</button>`,
 			cancelURL,

@@ -427,7 +427,7 @@ func (r *knovNodeRenderer) renderImage(w util.BufWriter, source []byte, node ast
 	} else {
 		previewPath := resolveMediaPath(dest)
 		if previewPath != "" {
-			fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, previewPath, alt)
+			fmt.Fprintf(w, `<img src="%s" alt="%s" />`, pathutils.ToMediaURL(previewPath), alt)
 		} else {
 			fmt.Fprintf(w, `<img src="%s" alt="%s" />`, dest, alt)
 		}
@@ -622,8 +622,8 @@ func (r *knovNodeRenderer) headerButtons() string {
 		)
 	}
 	editBtn := fmt.Sprintf(
-		`<a href="/files/edit/%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
-		r.relPath, r.headingID,
+		`<a href="%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
+		pathutils.ToFileEditURL(r.relPath), url.QueryEscape(r.headingID),
 		translation.SprintfForRequest(lang, "edit section"),
 	)
 	return pdfBtn + editBtn
@@ -662,8 +662,8 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) strin
 			if relPath != PathlessRender {
 				if idParts := idRe.FindStringSubmatch(headerHTML); len(idParts) >= 2 {
 					editBtn = fmt.Sprintf(
-						`<a href="/files/edit/%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
-						relPath, idParts[1],
+						`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
+						pathutils.ToFileEditURL(relPath), url.QueryEscape(idParts[1]),
 						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 					)

@@ -24,9 +24,9 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, fr
 	b.WriteString("<ul>")
 	for _, file := range files {
 		linkPath := pathutils.ToRelative(file.Path)
-		fmt.Fprintf(&b, `<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
+		fmt.Fprintf(&b, `<li>%s - <a href="%s"><strong>%s</strong></a> (%s)</li>`,
 			configmanager.FormatDateTime(file.Date),
-			linkPath,
+			pathutils.ToFileURL(linkPath),
 			file.Name,
 			strings.TrimSpace(file.Message))
 	}
@@ -82,13 +82,13 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 
 			html.WriteString(fmt.Sprintf(`
 				<li class="%s">
-					<a href="/files/history/%s?commit=%s">
+					<a href="%s?commit=%s">
 						<span class="version-date">%s:</span>
 						<span class="version-message">%s</span>
 					</a>
 				</li>`,
 				cssClass,
-				pathutils.ToRelative(filePath),
+				pathutils.ToFileHistoryURL(pathutils.ToRelative(filePath)),
 				version.Commit,
 				configmanager.FormatDateTime(version.Date),
 				version.Message,
@@ -99,10 +99,10 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 
 		if len(versions) > 5 {
 			html.WriteString(fmt.Sprintf(`
-				<a href="/files/history/%s" class="view-all-versions">
+				<a href="%s" class="view-all-versions">
 					%s
 				</a>`,
-				pathutils.ToRelative(filePath),
+				pathutils.ToFileHistoryURL(pathutils.ToRelative(filePath)),
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
 			))
 		}
@@ -139,8 +139,8 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 			if showCompareForm {
 				html.WriteString(renderVersionCompareForm(versions, filePath))
 			} else {
-				fmt.Fprintf(&html, `<a href="/files/history/%s" class="action-link">%s</a>`,
-					pathutils.ToRelative(filePath),
+				fmt.Fprintf(&html, `<a href="%s" class="action-link">%s</a>`,
+					pathutils.ToFileHistoryURL(pathutils.ToRelative(filePath)),
 					translation.SprintfForRequest(configmanager.GetLanguage(), "compare versions"))
 			}
 		}
@@ -161,7 +161,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 						<span class="version-author">%s %s</span>
 					</div>
 					<div class="version-actions">
-						<a href="/files/history/%s?commit=%s" class="action-link">%s</a>
+						<a href="%s?commit=%s" class="action-link">%s</a>
 					</div>
 				</li>`,
 				cssClass,
@@ -169,7 +169,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				version.Message,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
 				version.Author,
-				pathutils.ToRelative(filePath),
+				pathutils.ToFileHistoryURL(pathutils.ToRelative(filePath)),
 				version.Commit,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
 			))
@@ -189,8 +189,8 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 // the narrow file info sidebar this also renders inside.
 func renderVersionCompareForm(versions []git.FileVersion, filePath string) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, `<form id="component-version-compare" method="get" action="/files/history/%s">`,
-		pathutils.ToRelative(filePath))
+	fmt.Fprintf(&b, `<form id="component-version-compare" method="get" action="%s">`,
+		pathutils.ToFileHistoryURL(pathutils.ToRelative(filePath)))
 	b.WriteString(renderVersionCompareSelect("from", versions, 1))
 	b.WriteString(`<span class="version-compare-arrow">&rarr;</span>`)
 	b.WriteString(renderVersionCompareSelect("to", versions, 0))

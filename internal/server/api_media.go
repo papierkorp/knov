@@ -206,7 +206,14 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "internal error"
 // @Router /api/media/{mediapath} [delete]
 func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
-	mediaPath := chi.URLParam(r, "*")
+	// read the raw request path instead of chi.URLParam(r, "*") - chi's wildcard
+	// capture returns the still-percent-encoded RawPath segment when one is set,
+	// so a caller that escapes "/" within a path (e.g. url.PathEscape on a nested
+	// media path) would otherwise arrive here as a literal "%2F" instead of a
+	// folder separator. r.URL.Path is always fully decoded. this assumes the
+	// route stays mounted at exactly "/api/media/" (see server.go) - if that
+	// prefix ever changes, update it here too.
+	mediaPath := strings.TrimPrefix(r.URL.Path, "/api/media/")
 	if mediaPath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"))
 		return
@@ -441,7 +448,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "media renamed: media/%s -> media/%s", currentRel, newRel)
 
 	// redirect to the new media detail page
-	w.Header().Set("HX-Redirect", "/media/"+newRel+"?mode=detail")
+	w.Header().Set("HX-Redirect", pathutils.ToMediaURL(newRel)+"?mode=detail")
 	writeResponse(w, r, nil, render.RenderMediaPathDisplay(newRel))
 }
 

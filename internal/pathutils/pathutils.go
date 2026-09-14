@@ -251,7 +251,8 @@ func PathContains(root, candidate string) bool {
 // escapeRelPath path-escapes each segment of a relative path and joins them with "/",
 // so spaces, Unicode, and special characters survive as a URL path.
 func escapeRelPath(rel string) string {
-	parts := strings.Split(filepath.ToSlash(rel), "/")
+	rel = strings.TrimPrefix(filepath.ToSlash(rel), "/")
+	parts := strings.Split(rel, "/")
 	for i, p := range parts {
 		parts[i] = url.PathEscape(p)
 	}
@@ -266,3 +267,9 @@ func ToFileEditURL(rel string) string { return "/files/edit/" + escapeRelPath(re
 
 // ToMediaURL returns a browser-safe URL for viewing a media file.
 func ToMediaURL(rel string) string { return "/media/" + escapeRelPath(rel) }
+
+// ToFileEditTableURL returns a browser-safe URL for editing a file's table.
+func ToFileEditTableURL(rel string) string { return "/files/edittable/" + escapeRelPath(rel) }
+
+// ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
+func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelPath(rel) }

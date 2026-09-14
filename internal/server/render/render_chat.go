@@ -7,6 +7,7 @@ import (
 
 	"knov/internal/chat"
 	"knov/internal/configmanager"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -301,8 +302,8 @@ func RenderChatBulkMoveForm(mode string) string {
 // RenderChatMoveSuccess renders a confirmation with a link to the target file
 func RenderChatMoveSuccess(filePath string) string {
 	return fmt.Sprintf(`<div class="chat-message chat-message-moved">
-	<span>%s</span> <a href="/files/%s">%s</a>
+	<span>%s</span> <a href="%s">%s</a>
 </div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "moved to"),
-		filePath, filePath)
+		pathutils.ToFileURL(filePath), filePath)
 }

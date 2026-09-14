@@ -1,6 +1,7 @@
 # unreleased
 
 ## changes
+- add settings menu to tableeditor
 - support per-column alignment in table editor
 
 ## features
