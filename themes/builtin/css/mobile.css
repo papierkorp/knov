@@ -124,7 +124,7 @@
   #mobile-menu-btn {
     display: flex;
     position: fixed;
-    top: calc(var(--motd-height, 0px) + 8px);
+    top: 8px;
     left: 8px;
     z-index: 101;
     width: 40px;
@@ -136,6 +136,11 @@
     background: var(--bg-secondary);
     color: var(--text-secondary);
     cursor: pointer;
+  }
+
+  /* static offset, not calc(var(--motd-height)) - see static/css/motd.css */
+  body[data-motd] #mobile-menu-btn {
+    top: 36px;
   }
 
   /* bump tap targets */

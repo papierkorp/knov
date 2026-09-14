@@ -27,7 +27,6 @@
     - lower priority, different risk shape: `parser_markdown.go` `sanitizeHTML` also regexes rendered HTML (strips `on*`/`javascript:`/`<script>`) - not "silently ugly", but regex-based HTML sanitizing is a known XSS-bypass vector, worth a dedicated look rather than bundling with the others
     - possible direction: move TOC extraction and section-wrapping into the goldmark render pass itself (the same `knovNodeRenderer` that now owns the todo `<li>`/date logic), so headings never round-trip through a regex-parsed string at all
 - chore
-  - i still have a problem with `body[data-motd] (--motd-height: 28px;)` where it only works if i disalbe and enable it in the developer console (or randomly click around the app and sometimes it works afterwards but i dont know when)
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
 

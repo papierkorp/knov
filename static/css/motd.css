@@ -25,7 +25,7 @@ body[data-motd] {
   left: 0;
   right: 0;
   z-index: 2000;
-  height: var(--motd-height);
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
