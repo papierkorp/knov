@@ -437,6 +437,14 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		el.style.height = Math.max(300, available) + 'px';
 	})();
 	%s
+	var fpInput = document.getElementById('filepath-input');
+	if (fpInput) {
+		fpInput.addEventListener('keydown', function(e) {
+			if (e.key !== 'Tab' || e.shiftKey) return;
+			e.preventDefault();
+			view.focus();
+		});
+	}
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
