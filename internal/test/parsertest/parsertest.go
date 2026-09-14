@@ -30,6 +30,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseImageEmbedUntouched,
 		caseWikiTargetExtraction,
 		caseWikiLinkPureAnchor,
+		caseTodoDateNoDuplication,
 	}
 
 	return test.RunCases("parser", cases), nil
