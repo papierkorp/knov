@@ -29,7 +29,6 @@
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - fix javascript console errors
   - dashboard no save message pop up, and in file is not displayed if not scrolled down
-  - `pathutils` has no test file at all, so the `escapeRelPath` leading-slash fix and the new URL helpers ship with zero unit coverage. Pre-existing gap, not introduced by this diff, but this is exactly the kind of small, pure-function package that's cheap to test and where a regression would be easy to miss otherwise.
 
 # every other time
 
