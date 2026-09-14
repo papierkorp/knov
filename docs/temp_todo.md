@@ -21,7 +21,6 @@
   - info slideout - open file with (another editor)
 - fixes
   - **more regex-over-rendered-HTML fragility (same class as the todo-date bug)** - a few other spots still regex the *already-rendered* HTML string instead of working off the AST/markdown source, same failure mode as the fixed `todoDateHTMLRe` (silently breaks if goldmark's output shape shifts, e.g. loose vs tight lists, nesting):
-    - `internal/files/files.go` `sectionEditBtnRe` strips `header-edit-btn` anchors from rendered HTML (for List/Todo/Tracker/Filter/Index/Book editors) by matching the literal anchor markup `headerButtons()` emits in a different package, linked only by a comment, not the compiler - also looks like it misses the sibling `section-edit-btn` anchor `wrapHeaderSections` appends at the bottom of every section, so those editors may still show a stray edit button there
     - lower priority, different risk shape: `parser_markdown.go` `sanitizeHTML` also regexes rendered HTML (strips `on*`/`javascript:`/`<script>`) - not "silently ugly", but regex-based HTML sanitizing is a known XSS-bypass vector, worth a dedicated look rather than bundling with the others
     - possible direction: move TOC extraction and section-wrapping into the goldmark render pass itself (the same `knovNodeRenderer` that now owns the todo `<li>`/date logic), so headings never round-trip through a regex-parsed string at all
 - chore

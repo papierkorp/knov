@@ -3,7 +3,6 @@ package files
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -114,10 +113,6 @@ func GetAllMediaFiles() ([]File, error) {
 	return files, nil
 }
 
-// sectionEditBtnRe matches the per-header "edit section" anchors the markdown renderer
-// injects; GetFileContent strips them for editors with no inline section editing.
-var sectionEditBtnRe = regexp.MustCompile(`<a href="/files/edit/[^"]*\?section=[^"]*" class="header-edit-btn"[^>]*>.*?</a>`)
-
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
 	handler := parser.GetParserRegistry().GetHandler(filePath)
@@ -151,16 +146,14 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, err
 	}
 
-	html, err := handler.Render(parsed, renderPath)
+	// editors with no inline section editing (a composed book renders pathless anyway,
+	// but keep it in the set for clarity) get no per-heading/per-section edit buttons
+	editableSections := !(editor == EditorTypeFilter || editor == EditorTypeTracker || editor == EditorTypeList ||
+		editor == EditorTypeTodo || editor == EditorTypeIndex || editor == EditorTypeBook)
+
+	html, err := handler.Render(parsed, renderPath, editableSections)
 	if err != nil {
 		return nil, err
-	}
-
-	// strip section edit buttons for editors with no inline section editing (a composed
-	// book emits none anyway, but keep it in the set for clarity)
-	if editor == EditorTypeFilter || editor == EditorTypeTracker || editor == EditorTypeList ||
-		editor == EditorTypeTodo || editor == EditorTypeIndex || editor == EditorTypeBook {
-		html = sectionEditBtnRe.ReplaceAll(html, nil)
 	}
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 

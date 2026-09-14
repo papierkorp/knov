@@ -610,7 +610,7 @@ func RenderRelease() (string, []parser.TOCItem) {
 	var out strings.Builder
 	var toc []parser.TOCItem
 	if data, err := docsFiles.ReadFile("docs/release.md"); err == nil {
-		if rendered, err := parser.NewMarkdownHandler().Render(data, parser.PathlessRender); err == nil {
+		if rendered, err := parser.NewMarkdownHandler().Render(data, parser.PathlessRender, false); err == nil {
 			out.Write(rendered)
 			toc = parser.TOCFromMarkdown(strings.Split(string(data), "\n"))
 		}
@@ -647,7 +647,7 @@ func renderDocsMarkdown(dir string, less func(a, b string) bool) (string, []pars
 			continue
 		}
 
-		rendered, err := mdHandler.Render(data, parser.PathlessRender)
+		rendered, err := mdHandler.Render(data, parser.PathlessRender, false)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to render %s/%s: %v", dir, name, err)
 			continue

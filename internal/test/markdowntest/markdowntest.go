@@ -31,6 +31,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseHeadingsWikiLinkAliasID,
 		caseHeadingScanMatchesRenderIDs,
 		caseWrapHeaderSectionsMatchesHeadingIDs,
+		caseEditableSectionsFalseSuppressesEditButtons,
 		caseHeadingsRequireSpaceAndLevel,
 		caseHeadingsSkipFrontMatter,
 		caseStripFencedBlocksBothMarkers,

@@ -138,7 +138,7 @@ func RenderTrackerFileView(relPath string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	rendered, err := parser.NewMarkdownHandler().Render([]byte(md), parser.PathlessRender)
+	rendered, err := parser.NewMarkdownHandler().Render([]byte(md), parser.PathlessRender, false)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to render tracker view for %s: %v", relPath, err)
 		return "", false

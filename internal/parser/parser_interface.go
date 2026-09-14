@@ -17,8 +17,10 @@ type Parser interface {
 	Parse(content []byte) ([]byte, error)
 
 	// Render converts content to HTML. filePath is the docs-relative path of the source
-	// file; pass PathlessRender when the content has no file on disk.
-	Render(content []byte, filePath string) ([]byte, error)
+	// file; pass PathlessRender when the content has no file on disk. editableSections
+	// controls whether per-heading/per-section edit affordances are emitted; pass false
+	// for editors with no inline section editing (list, todo, tracker, filter, index, book).
+	Render(content []byte, filePath string, editableSections bool) ([]byte, error)
 
 	// ExtractLinks extracts internal links from content
 	ExtractLinks(content []byte) []string

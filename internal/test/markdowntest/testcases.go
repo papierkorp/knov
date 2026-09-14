@@ -168,7 +168,7 @@ func caseHeadingScanMatchesRenderIDs() test.CaseResult {
 	if err != nil {
 		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
 	}
-	rendered, err := h.Render(parsed, "note.md")
+	rendered, err := h.Render(parsed, "note.md", true)
 	if err != nil {
 		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
 	}
@@ -200,7 +200,7 @@ func caseWrapHeaderSectionsMatchesHeadingIDs() test.CaseResult {
 	src := "# Intro\ntext\n## Notes\nmore\n## Notes\neven more\n"
 	want := "intro,notes,notes-1"
 
-	rendered, err := parser.NewMarkdownHandler().Render([]byte(src), "note.md")
+	rendered, err := parser.NewMarkdownHandler().Render([]byte(src), "note.md", true)
 	if err != nil {
 		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
 	}
@@ -221,6 +221,33 @@ func caseWrapHeaderSectionsMatchesHeadingIDs() test.CaseResult {
 	}
 	if !cr.Success {
 		cr.Error = "content-section count or section-edit-btn ids diverged from headings"
+	}
+	return cr
+}
+
+// caseEditableSectionsFalseSuppressesEditButtons covers Render(..., editableSections:
+// false): both the per-heading header-edit-btn and the per-section section-edit-btn must
+// be absent, since editors with no inline section editing (list, todo, tracker, filter,
+// index, book) get no edit affordances anywhere in the rendered HTML.
+func caseEditableSectionsFalseSuppressesEditButtons() test.CaseResult {
+	name := "editable-sections-false-suppresses-edit-buttons"
+	src := "# Intro\ntext\n## Notes\nmore\n"
+
+	rendered, err := parser.NewMarkdownHandler().Render([]byte(src), "note.md", false)
+	if err != nil {
+		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+	}
+	got := string(rendered)
+
+	success := !strings.Contains(got, "header-edit-btn") && !strings.Contains(got, "section-edit-btn")
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "no header-edit-btn or section-edit-btn in rendered HTML",
+		Actual:   got,
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "an edit button survived with editableSections=false"
 	}
 	return cr
 }
@@ -281,7 +308,7 @@ func caseCodeBlocksUnterminated() test.CaseResult {
 func caseRenderLongerRunFenceDoesNotSwallow() test.CaseResult {
 	name := "render-longer-run-fence-does-not-swallow"
 	in := "```\ncode\n````\n\n# Real Heading After\n"
-	out, err := parser.NewMarkdownHandler().Render([]byte(in), "note.md")
+	out, err := parser.NewMarkdownHandler().Render([]byte(in), "note.md", true)
 	if err != nil {
 		cr := test.CaseResult{Name: name, Success: false, Error: err.Error()}
 		return cr

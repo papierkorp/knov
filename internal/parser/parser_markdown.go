@@ -174,7 +174,7 @@ func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
 
 var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|header|footer|nav|main|aside|meta|script|style|link|table|form|iframe|p|ul|ol|li|h[1-6]|pre|blockquote)[\s>]`)
 
-func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
+func (h *MarkdownHandler) Render(content []byte, filePath string, editableSections bool) ([]byte, error) {
 	content, blocks := h.extractCodeBlocks(content)
 	content, detailsBlocks := h.extractHTMLBlocks(content, "details", "summary")
 	content = PreprocessTodoStates(content)
@@ -195,7 +195,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 			html.WithHardWraps(),
 			html.WithXHTML(),
 			renderer.WithNodeRenderers(
-				util.Prioritized(newKnovNodeRenderer(filePath, blocks), 1),
+				util.Prioritized(newKnovNodeRenderer(filePath, blocks, editableSections), 1),
 			),
 		),
 	)
@@ -210,7 +210,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result = h.restoreOrphanCodeBlocks(result, blocks)
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = sanitizeHTML(result)
-	result = h.wrapHeaderSections(result, filePath)
+	result = h.wrapHeaderSections(result, filePath, editableSections)
 	return []byte(result), nil
 }
 
@@ -259,22 +259,24 @@ func RenderHeadingInline(s string) string {
 // ---------------------------------------------------------------------------
 
 type knovNodeRenderer struct {
-	filePath  string
-	relPath   string // pathutils.ToRelative(filePath); PathlessRender when there is no source file
-	blocks    []codeBlock
-	tableIdx  int
-	usedIDs   map[string]int // heading-id collision counts for this document
-	headingID string         // id of the heading currently being rendered (set on enter, used on exit)
+	filePath         string
+	relPath          string // pathutils.ToRelative(filePath); PathlessRender when there is no source file
+	blocks           []codeBlock
+	tableIdx         int
+	usedIDs          map[string]int // heading-id collision counts for this document
+	headingID        string         // id of the heading currently being rendered (set on enter, used on exit)
+	editableSections bool           // false suppresses the per-heading/per-section edit buttons (list, todo, tracker, filter, index, book)
 	html.Config
 }
 
-func newKnovNodeRenderer(filePath string, blocks []codeBlock) renderer.NodeRenderer {
+func newKnovNodeRenderer(filePath string, blocks []codeBlock, editableSections bool) renderer.NodeRenderer {
 	return &knovNodeRenderer{
-		filePath: filePath,
-		relPath:  pathutils.ToRelative(filePath),
-		blocks:   blocks,
-		usedIDs:  make(map[string]int),
-		Config:   html.NewConfig(),
+		filePath:         filePath,
+		relPath:          pathutils.ToRelative(filePath),
+		blocks:           blocks,
+		usedIDs:          make(map[string]int),
+		editableSections: editableSections,
+		Config:           html.NewConfig(),
 	}
 }
 
@@ -631,6 +633,9 @@ func (r *knovNodeRenderer) headerButtons() string {
 			translation.SprintfForRequest(lang, "export section to pdf"),
 		)
 	}
+	if !r.editableSections {
+		return pdfBtn
+	}
 	editBtn := fmt.Sprintf(
 		`<a href="%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
 		pathutils.ToFileEditURL(r.relPath), url.QueryEscape(r.headingID),
@@ -641,7 +646,7 @@ func (r *knovNodeRenderer) headerButtons() string {
 
 // wrapHeaderSections wraps content between headers in <div class="content-section">
 // and appends a section-edit button at the bottom-right of each section.
-func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) string {
+func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string, editableSections bool) string {
 	headerRe := regexp.MustCompile(`<h([1-6])[^>]*>.*?</h[1-6]>`)
 	idRe := regexp.MustCompile(`id="([^"]+)"`)
 	relPath := pathutils.ToRelative(filePath)
@@ -669,7 +674,7 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) strin
 		section := strings.TrimSpace(htmlContent[start:end])
 		if section != "" {
 			editBtn := ""
-			if relPath != PathlessRender {
+			if relPath != PathlessRender && editableSections {
 				if idParts := idRe.FindStringSubmatch(headerHTML); len(idParts) >= 2 {
 					editBtn = fmt.Sprintf(
 						`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,

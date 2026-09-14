@@ -32,7 +32,7 @@ func caseTodoDateNoDuplication() test.CaseResult {
 
 	var failures []string
 	for _, c := range tcs {
-		out, err := parser.NewMarkdownHandler().Render([]byte(c.in), parser.PathlessRender)
+		out, err := parser.NewMarkdownHandler().Render([]byte(c.in), parser.PathlessRender, false)
 		if err != nil {
 			failures = append(failures, fmt.Sprintf("%s: Render error: %v", c.label, err))
 			continue
