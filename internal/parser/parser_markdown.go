@@ -20,6 +20,7 @@ import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
 	extast "github.com/yuin/goldmark/extension/ast"
+	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
@@ -184,6 +185,12 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 			extension.Typographer,
 		),
 
+		goldmark.WithParserOptions(
+			parser.WithASTTransformers(
+				util.Prioritized(todoStateTransformer{}, 100),
+			),
+		),
+
 		goldmark.WithRendererOptions(
 			html.WithHardWraps(),
 			html.WithXHTML(),
@@ -202,7 +209,6 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result := buf.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
-	result = h.postprocessTodoStates(result)
 	result = sanitizeHTML(result)
 	result = h.wrapHeaderSections(result, filePath)
 	return []byte(result), nil
@@ -277,7 +283,9 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 	reg.Register(ast.KindFencedCodeBlock, r.renderFencedCode)
 	reg.Register(ast.KindCodeBlock, r.renderCodeBlock)
 	reg.Register(ast.KindImage, r.renderImage)
+	reg.Register(ast.KindListItem, r.renderListItem)
 	reg.Register(extast.KindTaskCheckBox, r.renderTaskCheckBox)
+	reg.Register(kindTodoDate, r.renderTodoDate)
 
 	// renderTable emits the live, file-backed table editor; with no source file to load,
 	// leave KindTable to goldmark's default GFM renderer (a plain static <table>).

@@ -9,6 +9,9 @@ import (
 
 	"github.com/yuin/goldmark/ast"
 	extast "github.com/yuin/goldmark/extension/ast"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 
 	"knov/internal/configmanager"
@@ -30,19 +33,252 @@ func lineNumberForNode(n ast.Node, source []byte) int {
 	return -1
 }
 
+// todoStateIcons maps a todo state (stored on a ListItem node's todoStateAttr by
+// todoStateTransformer) to its fontawesome icon class.
+var todoStateIcons = map[string]string{
+	"open":      "fa-circle",
+	"done":      "fa-circle-check",
+	"cancelled": "fa-circle-xmark",
+	"waiting":   "fa-clock",
+}
+
+// todoStateAttr is the ListItem node attribute (set by todoStateTransformer, read by
+// renderListItem and renderTaskCheckBox) holding a todo item's resolved state.
+const todoStateAttr = "todoState"
+
+// todoStateOf returns the todo state todoStateTransformer stored on a ListItem node, and
+// whether it has one at all (i.e. whether it's a todo item).
+func todoStateOf(listItem ast.Node) (string, bool) {
+	if listItem == nil {
+		return "", false
+	}
+	v, ok := listItem.AttributeString(todoStateAttr)
+	if !ok {
+		return "", false
+	}
+	s, ok := v.(string)
+	return s, ok
+}
+
+// listItemOf walks up from a task checkbox to its enclosing ListItem.
+func listItemOf(n ast.Node) ast.Node {
+	for p := n.Parent(); p != nil; p = p.Parent() {
+		if p.Kind() == ast.KindListItem {
+			return p
+		}
+	}
+	return nil
+}
+
 // renderTaskCheckBox renders GFM [ ] / [x] checkboxes as styled, clickable todo-state icons.
 // data-line records the 0-indexed source line so the view can toggle state in place.
 func (r *knovNodeRenderer) renderTaskCheckBox(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	if !entering {
 		return ast.WalkContinue, nil
 	}
-	n := node.(*extast.TaskCheckBox)
 	line := lineNumberForNode(node, source)
-	if n.IsChecked {
-		fmt.Fprintf(w, `<span class="todo-state todo-state-done" data-line="%d"><i class="fa-solid fa-circle-check"></i></span> `, line)
-	} else {
-		fmt.Fprintf(w, `<span class="todo-state todo-state-open" data-line="%d"><i class="fa-solid fa-circle"></i></span> `, line)
+	state, _ := todoStateOf(listItemOf(node))
+	fmt.Fprintf(w, `<span class="todo-state todo-state-%s" data-line="%d"><i class="fa-solid %s"></i></span> `,
+		state, line, todoStateIcons[state])
+	return ast.WalkContinue, nil
+}
+
+// renderListItem writes the <li> for every list item, tagging todo items with their
+// state (already resolved by todoStateTransformer before rendering started) as a class.
+func (r *knovNodeRenderer) renderListItem(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	if !entering {
+		fmt.Fprintf(w, "</li>\n")
+		return ast.WalkContinue, nil
 	}
+
+	block := node.FirstChild()
+	if state, isTodo := todoStateOf(node); isTodo {
+		fmt.Fprintf(w, `<li class="todo-%s"`, state)
+	} else {
+		_, _ = w.WriteString("<li")
+	}
+	if node.Attributes() != nil {
+		html.RenderAttributes(w, node, html.ListItemAttributeFilter)
+	}
+	_ = w.WriteByte('>')
+	if _, ok := block.(*ast.TextBlock); !ok {
+		_, _ = w.WriteString("\n")
+	}
+	return ast.WalkContinue, nil
+}
+
+// todoStateTransformer resolves every todo list item's state (open/done/cancelled/waiting)
+// once, right after parsing and before any rendering: for each ListItem whose first block
+// starts with a task checkbox, it reads the checkbox's checked flag and any KNOVTODO:
+// placeholder left by PreprocessTodoStates, strips the placeholder, splits a trailing date
+// stamp into its own node, and stores the resolved state as an attribute on the ListItem.
+//
+// AST transformers such as this one always run after inline parsing finishes, so the
+// TaskCheckBox nodes goldmark's tasklist extension creates (via its own inline parser) are
+// already in place by the time this runs. Resolving state here - rather than in
+// renderListItem, with the result handed to renderTaskCheckBox through a field on the
+// renderer - means each render func reads state straight off the node it's given, with no
+// dependency on the order the renderer happens to visit nodes in.
+type todoStateTransformer struct{}
+
+func (todoStateTransformer) Transform(doc *ast.Document, reader text.Reader, _ parser.Context) {
+	source := reader.Source()
+	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering || n.Kind() != ast.KindListItem {
+			return ast.WalkContinue, nil
+		}
+		block := n.FirstChild()
+		checkbox, isTodo := firstChildTaskCheckBox(block)
+		if !isTodo {
+			return ast.WalkContinue, nil
+		}
+		n.SetAttributeString(todoStateAttr, todoItemState(checkbox, source))
+		stripTodoPlaceholder(checkbox, source)
+		wrapTrailingTodoDate(block, source)
+		return ast.WalkContinue, nil
+	})
+}
+
+// firstChildTaskCheckBox reports whether a list item's first block (block) opens with a
+// task checkbox, i.e. the item is a todo line.
+func firstChildTaskCheckBox(block ast.Node) (*extast.TaskCheckBox, bool) {
+	if block == nil {
+		return nil, false
+	}
+	cb, ok := block.FirstChild().(*extast.TaskCheckBox)
+	return cb, ok
+}
+
+// todoItemState resolves a checkbox's rendered state from its checked flag and the
+// KNOVTODO: placeholder (if any) PreprocessTodoStates left in the following text node.
+func todoItemState(checkbox *extast.TaskCheckBox, source []byte) string {
+	placeholder := ""
+	if t, ok := checkbox.NextSibling().(*ast.Text); ok {
+		placeholder = todoPlaceholderPrefix(t, source)
+	}
+	switch {
+	case checkbox.IsChecked && placeholder == TodoCancelledPlaceholder:
+		return "cancelled"
+	case !checkbox.IsChecked && placeholder == TodoWaitingPlaceholder:
+		return "waiting"
+	case checkbox.IsChecked:
+		return "done"
+	default:
+		return "open"
+	}
+}
+
+// todoPlaceholderPrefix returns the KNOVTODO placeholder t's text starts with, if any.
+func todoPlaceholderPrefix(t *ast.Text, source []byte) string {
+	val := t.Segment.Value(source)
+	for _, p := range [...]string{TodoCancelledPlaceholder, TodoWaitingPlaceholder} {
+		if bytes.HasPrefix(val, []byte(p)) {
+			return p
+		}
+	}
+	return ""
+}
+
+// stripTodoPlaceholder trims a leading KNOVTODO: placeholder off the text node right
+// after checkbox, so it never reaches the renderer.
+func stripTodoPlaceholder(checkbox *extast.TaskCheckBox, source []byte) {
+	t, ok := checkbox.NextSibling().(*ast.Text)
+	if !ok {
+		return
+	}
+	if p := todoPlaceholderPrefix(t, source); p != "" {
+		t.Segment = text.NewSegment(t.Segment.Start+len(p), t.Segment.Stop)
+	}
+}
+
+// wrapTrailingTodoDate splits a trailing " (YYYY-MM-DD)" stamp off block's raw source text
+// and appends a todoDateNode covering it, so renderTodoDate can wrap it in a styled span
+// instead of leaving it as plain text.
+//
+// It locates the date in block's raw source line rather than in block.LastChild()'s text
+// segment because goldmark's inline scanner breaks plain text into a new ast.Text node at
+// every inline-trigger byte it sees - including a plain "-" (checked, and discarded, by the
+// typographer extension's en/em-dash parser) - so "(2024-01-01)" alone commonly ends up
+// fragmented across three or four sibling Text nodes instead of one.
+func wrapTrailingTodoDate(block ast.Node, source []byte) {
+	lines := block.Lines()
+	if lines == nil || lines.Len() == 0 {
+		return
+	}
+	tail := lines.At(lines.Len() - 1)
+	// trailing whitespace left in the source after the date (easy for an editor to leave
+	// behind) would otherwise defeat TodoDateRe's end-of-line anchor
+	raw := strings.TrimRight(string(tail.Value(source)), " \t\r")
+	loc := TodoDateRe.FindStringSubmatchIndex(raw)
+	if loc == nil {
+		return
+	}
+	date := raw[loc[2]:loc[3]]
+	// loc[0] is the start of the \s* the regexp also swallows - keep that whitespace as
+	// plain text (matches the space rendered before the pre-AST regex version's span) and
+	// only replace from the opening paren on
+	dateStart := tail.Start + loc[0] + strings.IndexByte(raw[loc[0]:loc[1]], '(')
+
+	// plan first, mutate second: walk back read-only to find every trailing node covering
+	// [dateStart, end). If a non-text node is in the way, bail out untouched rather than
+	// leaving the date's original text in place *and* appending a second, styled copy of
+	// it - some node types (e.g. emphasis) don't expose a source Segment to check, so
+	// there's no way to safely resolve the overlap.
+	var toRemove []ast.Node
+	var truncate *ast.Text
+	for c := block.LastChild(); c != nil; c = c.PreviousSibling() {
+		t, ok := c.(*ast.Text)
+		if !ok {
+			return
+		}
+		if t.Segment.Stop <= dateStart {
+			break
+		}
+		if t.Segment.Start >= dateStart {
+			toRemove = append(toRemove, c)
+			continue
+		}
+		truncate = t
+		break
+	}
+
+	for _, c := range toRemove {
+		block.RemoveChild(block, c)
+	}
+	if truncate != nil {
+		truncate.Segment = text.NewSegment(truncate.Segment.Start, dateStart)
+	}
+	block.AppendChild(block, newTodoDateNode(date))
+}
+
+// kindTodoDate is the NodeKind for todoDateNode.
+var kindTodoDate = ast.NewNodeKind("KnovTodoDate")
+
+// todoDateNode is a custom inline node standing in for a todo item's trailing date stamp,
+// inserted by wrapTrailingTodoDate and rendered by renderTodoDate.
+type todoDateNode struct {
+	ast.BaseInline
+	Date string
+}
+
+func newTodoDateNode(date string) *todoDateNode {
+	return &todoDateNode{Date: date}
+}
+
+func (n *todoDateNode) Kind() ast.NodeKind { return kindTodoDate }
+
+func (n *todoDateNode) Dump(source []byte, level int) {
+	ast.DumpHelper(n, source, level, map[string]string{"Date": n.Date}, nil)
+}
+
+// renderTodoDate writes the de-emphasized date span and its clear button for a todo
+// item's date stamp (see wrapTrailingTodoDate).
+func (r *knovNodeRenderer) renderTodoDate(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	if !entering {
+		return ast.WalkContinue, nil
+	}
+	n := node.(*todoDateNode)
+	fmt.Fprintf(w, `<span class="todo-date">(%s)</span><button type="button" class="todo-date-clear">&times;</button>`, n.Date)
 	return ast.WalkContinue, nil
 }
 
@@ -57,24 +293,6 @@ var todoMarkerCycle = []byte{' ', 'X', '-', 'O'}
 // accumulating. Exported so the list/todo editor (render.ParseMarkdownToListItems)
 // shares the same format instead of keeping its own copy.
 var TodoDateRe = regexp.MustCompile(`\s*\((\d{4}-\d{2}-\d{2})\)\r?$`)
-
-// patterns used by postprocessTodoStates to resolve KNOVTODO placeholders and tag
-// <li> elements with todo-state classes in the rendered HTML. Compiled once at package
-// init instead of per-render.
-var (
-	todoCancelledHTMLRe = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-done" (data-line="\d+")><i class="fa-solid fa-circle-check"></i></span> KNOVTODO:cancelled ([^<]*)`,
-	)
-	todoWaitingHTMLRe = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-open" (data-line="\d+")><i class="fa-solid fa-circle"></i></span> KNOVTODO:waiting ([^<]*)`,
-	)
-	todoDoneHTMLRe = regexp.MustCompile(`<li><span class="todo-state todo-state-done" `)
-	todoOpenHTMLRe = regexp.MustCompile(`<li><span class="todo-state todo-state-open" `)
-	// wraps a trailing "(YYYY-MM-DD)" date stamp in a low-emphasis span for styling - scoped
-	// to <li> elements already tagged with a todo-state class above, so it can never mistake
-	// coincidental trailing text on a plain (non-todo) list item for a stamp
-	todoDateHTMLRe = regexp.MustCompile(`(<li class="todo-(?:open|done|cancelled|waiting)">.*?)(\(\d{4}-\d{2}-\d{2}\))(\s*(?:</li>|<ul))`)
-)
 
 // SplitTodoDate splits a trailing " (YYYY-MM-DD)" stamp off text, returning the
 // remaining text and the date (empty if none present).
@@ -188,8 +406,8 @@ const (
 
 // PreprocessTodoStates rewrites non-GFM todo states ([-] cancelled, [O] waiting)
 // into standard GFM task items with a placeholder so goldmark parses them as list items.
-// The placeholders are resolved in postprocessTodoStates (HTML) or detected directly
-// by other consumers walking the AST (e.g. pdfexport).
+// The placeholder is resolved back into the real state by renderListItem/renderTaskCheckBox
+// at render time, or detected directly by other consumers walking the AST (e.g. pdfexport).
 func PreprocessTodoStates(content []byte) []byte {
 	s := string(content)
 	// replace - [-] / * [-] / + [-] with <marker> [x] KNOVTODO:cancelled
@@ -197,26 +415,4 @@ func PreprocessTodoStates(content []byte) []byte {
 	// replace - [O] / - [o] (and *, +) with <marker> [ ] KNOVTODO:waiting
 	s = regexp.MustCompile(`(?mi)^([ \t]*)([-*+]) \[O\] `).ReplaceAllString(s, "$1$2 [ ] "+TodoWaitingPlaceholder)
 	return []byte(s)
-}
-
-// postprocessTodoStates replaces KNOVTODO placeholders in rendered HTML with
-// proper todo-state icons and adds state classes to their parent <li>. Every
-// replacement is <li>/<span>/<i> only, so it can never reintroduce a live
-// <h1-6> after the renderer has assigned heading ids.
-func (h *MarkdownHandler) postprocessTodoStates(html string) string {
-	// cancelled: was rendered as checked [x] with KNOVTODO:cancelled placeholder
-	html = todoCancelledHTMLRe.ReplaceAllString(html,
-		`<li class="todo-cancelled"><span class="todo-state todo-state-cancelled" $1><i class="fa-solid fa-circle-xmark"></i></span> $2`,
-	)
-	// waiting: was rendered as unchecked [ ] with KNOVTODO:waiting placeholder
-	html = todoWaitingHTMLRe.ReplaceAllString(html,
-		`<li class="todo-waiting"><span class="todo-state todo-state-waiting" $1><i class="fa-solid fa-clock"></i></span> $2`,
-	)
-	// add state classes to remaining open/done items
-	html = todoDoneHTMLRe.ReplaceAllString(html, `<li class="todo-done"><span class="todo-state todo-state-done" `)
-	html = todoOpenHTMLRe.ReplaceAllString(html, `<li class="todo-open"><span class="todo-state todo-state-open" `)
-	html = todoDateHTMLRe.ReplaceAllString(html,
-		`$1<span class="todo-date">$2</span><button type="button" class="todo-date-clear">&times;</button>$3`,
-	)
-	return html
 }
