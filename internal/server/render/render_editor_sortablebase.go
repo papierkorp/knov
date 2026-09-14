@@ -4,6 +4,8 @@ package render
 import (
 	"fmt"
 	"strings"
+
+	"knov/internal/parser"
 )
 
 // todo state constants
@@ -65,6 +67,7 @@ type ListItem struct {
 	ID       string     `json:"id"`
 	Content  string     `json:"content"`
 	State    string     `json:"state,omitempty"`
+	Date     string     `json:"date,omitempty"`
 	Type     string     `json:"type,omitempty"`
 	Level    int        `json:"level,omitempty"`
 	Children []ListItem `json:"children,omitempty"`
@@ -137,12 +140,15 @@ func ParseMarkdownToListItems(content string) []ListItem {
 
 		rest := strings.TrimPrefix(trimmed, "- ")
 
-		// extract state prefix if present (e.g. "[ ] ", "[X] ", "[-] ", "[O] ")
+		// extract state prefix if present (e.g. "[ ] ", "[X] ", "[-] ", "[O] "); only
+		// checkbox items can carry a date stamp, so plain bullets never have coincidental
+		// trailing "(...)" text mistaken for one
 		state := ""
+		date := ""
 		itemContent := rest
 		if len(rest) >= 4 && rest[0] == '[' && rest[2] == ']' && rest[3] == ' ' {
 			state = markdownToState(strings.ToUpper(rest[0:3]))
-			itemContent = rest[4:]
+			itemContent, date = parser.SplitTodoDate(rest[4:])
 		}
 
 		for len(indentLevels) > 1 && indent <= indentLevels[len(indentLevels)-1] {
@@ -154,6 +160,7 @@ func ParseMarkdownToListItems(content string) []ListItem {
 			ID:       fmt.Sprintf("%d", idCounter),
 			Content:  itemContent,
 			State:    state,
+			Date:     date,
 			Children: []ListItem{},
 		}
 		idCounter++
@@ -191,6 +198,9 @@ func ConvertListItemsToMarkdown(items []ListItem, indent int) string {
 			md.WriteString(stateToMarkdown(item.State))
 		}
 		md.WriteString(item.Content)
+		if item.State != "" && item.Date != "" {
+			fmt.Fprintf(&md, " (%s)", item.Date)
+		}
 		md.WriteString("\n")
 
 		if len(item.Children) > 0 {
@@ -202,8 +212,8 @@ func ConvertListItemsToMarkdown(items []ListItem, indent int) string {
 }
 
 // sortableBaseJS returns the shared JS fragment embedded by the list/todo editor.
-// Assumes createListItem(text, state, type, level) and changeHeaderLevel(li, delta) are
-// defined in the enclosing editor scope.
+// Assumes createListItem(text, state, type, level, date) and changeHeaderLevel(li, delta)
+// are defined in the enclosing editor scope.
 func sortableBaseJS() string {
 	return `
 			let itemCounter = 0;
@@ -446,6 +456,7 @@ func sortableBaseJS() string {
 						id: li.dataset.id,
 						content: input ? input.value : "",
 						state: li.dataset.state || "",
+						date: li.dataset.date || "",
 						type: li.dataset.type || "",
 						children: nestedList ? serializeList(nestedList) : []
 					};
@@ -459,7 +470,7 @@ func sortableBaseJS() string {
 
 			function deserializeList(items, parentUl) {
 				items.forEach(function(item) {
-					const li = createListItem(item.content, item.state || "", item.type || "", item.level || 1);
+					const li = createListItem(item.content, item.state || "", item.type || "", item.level || 1, item.date || "");
 					li.dataset.id = item.id;
 					itemCounter = Math.max(itemCounter, parseInt(item.id) + 1);
 					parentUl.appendChild(li);

@@ -279,6 +279,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/save", handleAPIFileSave)
 			r.Post("/save/", handleAPIFileSave)
 			r.Post("/todo-toggle", handleAPIToggleTodoState)
+			r.Post("/todo-cleardate", handleAPIClearTodoDate)
 			r.Post("/section/save", handleAPISaveSectionEditor)
 			r.Post("/convert-to-markdown", handleAPIConvertFileToMarkdown)
 			r.Get("/browse", handleAPIBrowseFiles)

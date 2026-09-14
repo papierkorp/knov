@@ -3583,6 +3583,37 @@ dl.media-info dd {
   font-style: italic;
 }
 
+.file-content .todo-date {
+  margin-left: 4px;
+  color: var(--text-secondary);
+  font-size: 0.75em;
+  font-style: normal;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.file-content .todo-date-clear {
+  margin-left: 2px;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75em;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.file-content .todo-date-clear:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+.file-content .todo-date:empty,
+.file-content .todo-date:empty + .todo-date-clear {
+  display: none;
+}
+
 /* export / import sections in dashboard form */
 .page-dashboard-editor .dashboard-export-section,
 .page-dashboard-editor .dashboard-export-section,

@@ -6,7 +6,6 @@
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
-  - todo editor add a date at the end for each click
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
   - upgrade path tool in /system/release which shows the changes from one speicific build to another
@@ -19,12 +18,15 @@
     - add tests
   - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
   - codemirror: add table button
+  - info slideout - open file with (another editor)
 - fixes
   - 
 - chore
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` where it only works if i disalbe and enable it in the developer console (or randomly click around the app and sometimes it works afterwards but i dont know when)
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
+  - **Fragility — HTML post-processing regex for the date span**
+  `todoDateHTMLRe` requires the date to be followed immediately (modulo whitespace) by `</li>` or `<ul`. For a "loose" markdown list (blank line between items, so goldmark wraps item text in `<p>...</p>`), the trailing sequence becomes `(date)</p></li>`, which doesn't match either alternative, so the span-wrapping silently no-ops — the date renders as plain unstyled text instead of the de-emphasized `.todo-date` span. Cosmetic only, no data loss, but it's another sharp edge in an already regex-heavy HTML-patching approach. This matches the pre-existing style of the file (it already did this for cancelled/waiting placeholders), so it's consistent with the codebase rather than a new pattern, but the brittleness compounds with each new regex added here.
 
 # every other time
 

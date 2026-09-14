@@ -410,7 +410,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Cycle a todo checkbox's state in place from the rendered file view
-// @Description Advances open -> done -> cancelled -> waiting -> open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save
+// @Description Advances open -> done -> cancelled -> waiting -> open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save. Returns the " (YYYY-MM-DD)" date stamp text applied (empty if date stamping is off), so the client never has to compute "today" itself
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Param filepath formData string true "file path"
@@ -449,9 +449,71 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated, err := parser.CycleTodoStateAtLine(content, line)
+	updated, date, err := parser.CycleTodoStateAtLine(content, line)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to cycle todo state for %s at line %d: %v", filePath, line, err)
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update todo state"))
+		return
+	}
+
+	if err := contentStorage.WriteFile(fullPath, updated, 0644); err != nil {
+		logging.LogError(logging.KeyApp, "failed to write file %s: %v", fullPath, err)
+		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
+		return
+	}
+	go git.CommitFile(fullPath)
+
+	// the date stamp (if any) is the authoritative source for the client to display -
+	// it applies the state change optimistically but only stamps the date once it has
+	// this, so it never has to guess "today" itself in the browser's own timezone
+	dateText := ""
+	if date != "" {
+		dateText = " (" + date + ")"
+	}
+	writeResponse(w, r, map[string]string{"filepath": filePath, "date": dateText}, dateText)
+}
+
+// @Summary Remove a todo checkbox's date stamp from the rendered file view
+// @Description Removes any trailing " (YYYY-MM-DD)" date stamp from the checkbox on the given line without changing its state
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param line formData int true "0-indexed source line of the checkbox"
+// @Produce json,html
+// @Router /api/files/todo-cleardate [post]
+func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
+	fail := func(status int, message string) {
+		writeAPIError(w, r, status, message)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
+		return
+	}
+
+	line, err := strconv.Atoi(r.FormValue("line"))
+	if err != nil {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid line"))
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+
+	content, err := contentStorage.ReadFile(fullPath)
+	if err != nil {
+		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
+		return
+	}
+
+	updated, err := parser.ClearTodoDateAtLine(content, line)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to clear todo date for %s at line %d: %v", filePath, line, err)
 		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update todo state"))
 		return
 	}

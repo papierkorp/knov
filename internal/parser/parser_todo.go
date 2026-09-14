@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/yuin/goldmark/ast"
 	extast "github.com/yuin/goldmark/extension/ast"
 	"github.com/yuin/goldmark/util"
+
+	"knov/internal/configmanager"
 )
 
 // lineNumberForNode walks up to the nearest ancestor block node and resolves its
@@ -49,6 +52,57 @@ var todoCheckboxLineRe = regexp.MustCompile(`^([ \t]*)[-*+] \[([ xX\-Oo])\] `)
 // todoMarkerCycle is the open -> done -> cancelled -> waiting -> open cycle order.
 var todoMarkerCycle = []byte{' ', 'X', '-', 'O'}
 
+// TodoDateRe matches a trailing " (YYYY-MM-DD)" date stamp on a todo line/item, as
+// appended by StampTodoDate, so it can be split back out or replaced instead of
+// accumulating. Exported so the list/todo editor (render.ParseMarkdownToListItems)
+// shares the same format instead of keeping its own copy.
+var TodoDateRe = regexp.MustCompile(`\s*\((\d{4}-\d{2}-\d{2})\)\r?$`)
+
+// patterns used by postprocessTodoStates to resolve KNOVTODO placeholders and tag
+// <li> elements with todo-state classes in the rendered HTML. Compiled once at package
+// init instead of per-render.
+var (
+	todoCancelledHTMLRe = regexp.MustCompile(
+		`<li><span class="todo-state todo-state-done" (data-line="\d+")><i class="fa-solid fa-circle-check"></i></span> KNOVTODO:cancelled ([^<]*)`,
+	)
+	todoWaitingHTMLRe = regexp.MustCompile(
+		`<li><span class="todo-state todo-state-open" (data-line="\d+")><i class="fa-solid fa-circle"></i></span> KNOVTODO:waiting ([^<]*)`,
+	)
+	todoDoneHTMLRe = regexp.MustCompile(`<li><span class="todo-state todo-state-done" `)
+	todoOpenHTMLRe = regexp.MustCompile(`<li><span class="todo-state todo-state-open" `)
+	// wraps a trailing "(YYYY-MM-DD)" date stamp in a low-emphasis span for styling - scoped
+	// to <li> elements already tagged with a todo-state class above, so it can never mistake
+	// coincidental trailing text on a plain (non-todo) list item for a stamp
+	todoDateHTMLRe = regexp.MustCompile(`(<li class="todo-(?:open|done|cancelled|waiting)">.*?)(\(\d{4}-\d{2}-\d{2}\))(\s*(?:</li>|<ul))`)
+)
+
+// SplitTodoDate splits a trailing " (YYYY-MM-DD)" stamp off text, returning the
+// remaining text and the date (empty if none present).
+func SplitTodoDate(text string) (string, string) {
+	loc := TodoDateRe.FindStringSubmatchIndex(text)
+	if loc == nil {
+		return text, ""
+	}
+	return text[:loc[0]], text[loc[2]:loc[3]]
+}
+
+// TodayStamp returns today's date in the app's configured timezone, formatted as the
+// canonical "YYYY-MM-DD" stamp used by StampTodoDate/TodoDateRe. This is the single
+// source of truth for "today" across every todo-editing surface (raw editor, rendered
+// file view, list/todo editor) so they can never disagree with each other or with the
+// browser's local clock/timezone.
+func TodayStamp() string {
+	return time.Now().In(configmanager.GetTimezone()).Format("2006-01-02")
+}
+
+// StampTodoDate replaces any trailing date stamp on text with today's date, so repeated
+// toggles never accumulate more than the latest one. Also returns the date applied.
+func StampTodoDate(text string) (string, string) {
+	text, _ = SplitTodoDate(text)
+	date := TodayStamp()
+	return text + " (" + date + ")", date
+}
+
 func todoMarkerIndex(marker byte) int {
 	switch marker {
 	case 'x', 'X':
@@ -65,22 +119,28 @@ func todoMarkerIndex(marker byte) int {
 // CycleTodoStateAtLine advances the checkbox state on the given 0-indexed line
 // (open -> done -> cancelled -> waiting -> open) and hands the new state down to all
 // nested descendant checkboxes, mirroring the todo editor's cascade behavior. Returns
-// the updated content.
-func CycleTodoStateAtLine(content []byte, line int) ([]byte, error) {
+// the updated content and the date stamp applied to the line (empty if the
+// "stamp date on toggle" setting is off).
+func CycleTodoStateAtLine(content []byte, line int) ([]byte, string, error) {
 	lines := strings.Split(string(content), "\n")
 	if line < 0 || line >= len(lines) {
-		return nil, fmt.Errorf("line %d out of range", line)
+		return nil, "", fmt.Errorf("line %d out of range", line)
 	}
 
 	loc := todoCheckboxLineRe.FindStringSubmatchIndex(lines[line])
 	if loc == nil {
-		return nil, fmt.Errorf("line %d is not a todo item", line)
+		return nil, "", fmt.Errorf("line %d is not a todo item", line)
 	}
 
 	indent := loc[3] - loc[2]
 	markerStart, markerEnd := loc[4], loc[5]
 	next := todoMarkerCycle[(todoMarkerIndex(lines[line][markerStart])+1)%len(todoMarkerCycle)]
 	lines[line] = lines[line][:markerStart] + string(next) + lines[line][markerEnd:]
+
+	date := ""
+	if configmanager.TodoStampDate.Get() {
+		lines[line], date = StampTodoDate(lines[line])
+	}
 
 	// cascade to nested descendants: deeper-indented checkbox lines immediately following,
 	// stopping at the first line back at or above the original indentation.
@@ -100,6 +160,20 @@ func CycleTodoStateAtLine(content []byte, line int) ([]byte, error) {
 		lines[i] = lines[i][:childMarkerStart] + string(next) + lines[i][childMarkerEnd:]
 	}
 
+	return []byte(strings.Join(lines, "\n")), date, nil
+}
+
+// ClearTodoDateAtLine removes any trailing date stamp from the checkbox on the given
+// 0-indexed line without changing its state. Returns the updated content.
+func ClearTodoDateAtLine(content []byte, line int) ([]byte, error) {
+	lines := strings.Split(string(content), "\n")
+	if line < 0 || line >= len(lines) {
+		return nil, fmt.Errorf("line %d out of range", line)
+	}
+	if todoCheckboxLineRe.FindStringSubmatchIndex(lines[line]) == nil {
+		return nil, fmt.Errorf("line %d is not a todo item", line)
+	}
+	lines[line], _ = SplitTodoDate(lines[line])
 	return []byte(strings.Join(lines, "\n")), nil
 }
 
@@ -131,27 +205,18 @@ func PreprocessTodoStates(content []byte) []byte {
 // <h1-6> after the renderer has assigned heading ids.
 func (h *MarkdownHandler) postprocessTodoStates(html string) string {
 	// cancelled: was rendered as checked [x] with KNOVTODO:cancelled placeholder
-	html = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-done" (data-line="\d+")><i class="fa-solid fa-circle-check"></i></span> KNOVTODO:cancelled ([^<]*)`,
-	).ReplaceAllString(html,
+	html = todoCancelledHTMLRe.ReplaceAllString(html,
 		`<li class="todo-cancelled"><span class="todo-state todo-state-cancelled" $1><i class="fa-solid fa-circle-xmark"></i></span> $2`,
 	)
 	// waiting: was rendered as unchecked [ ] with KNOVTODO:waiting placeholder
-	html = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-open" (data-line="\d+")><i class="fa-solid fa-circle"></i></span> KNOVTODO:waiting ([^<]*)`,
-	).ReplaceAllString(html,
+	html = todoWaitingHTMLRe.ReplaceAllString(html,
 		`<li class="todo-waiting"><span class="todo-state todo-state-waiting" $1><i class="fa-solid fa-clock"></i></span> $2`,
 	)
 	// add state classes to remaining open/done items
-	html = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-done" `,
-	).ReplaceAllString(html,
-		`<li class="todo-done"><span class="todo-state todo-state-done" `,
-	)
-	html = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-open" `,
-	).ReplaceAllString(html,
-		`<li class="todo-open"><span class="todo-state todo-state-open" `,
+	html = todoDoneHTMLRe.ReplaceAllString(html, `<li class="todo-done"><span class="todo-state todo-state-done" `)
+	html = todoOpenHTMLRe.ReplaceAllString(html, `<li class="todo-open"><span class="todo-state todo-state-open" `)
+	html = todoDateHTMLRe.ReplaceAllString(html,
+		`$1<span class="todo-date">$2</span><button type="button" class="todo-date-clear">&times;</button>$3`,
 	)
 	return html
 }

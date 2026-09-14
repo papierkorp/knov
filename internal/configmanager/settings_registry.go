@@ -124,15 +124,6 @@ var (
 	})
 
 	// ── Editor / All Editors ──────────────────────────────────────────────────
-	DefaultMarkdownEditor = register(&StringSetting{
-		key: "defaultMarkdownEditor", Default: "codemirror-editor",
-		Section: SectionEditor, Group: GroupAllEditors,
-		Label: "Default Markdown Editor",
-		Desc:  "which editor opens by default for new and unassigned markdown files",
-		Options: []SettingOption{
-			{"codemirror-editor", "CodeMirror"},
-		},
-	})
 	SpellCheck = register(&BoolSetting{
 		key: "spellCheck", Default: false,
 		Section: SectionEditor, Group: GroupAllEditors,
@@ -145,19 +136,32 @@ var (
 		Label: "Wiki Link Autocomplete: Jump Cursor Past ]]",
 		Desc:  "when off, the cursor lands before ]] after autocomplete (between the path and the closing brackets)",
 	})
-
-	// ── Editor / Section Editing ──────────────────────────────────────────────
 	SectionEditIncludeSubheaders = register(&BoolSetting{
 		key: "sectionEditIncludeSubheaders", Default: false,
-		Section: SectionEditor, Group: GroupSectionEditing,
+		Section: SectionEditor, Group: GroupAllEditors,
 		Label: "Include Sub-Headers When Editing Sections",
 		Desc:  "when enabled, editing a section also selects content from all nested sub-level headers",
 	})
 	CodeBlockWrap = register(&BoolSetting{
 		key: "codeBlockWrap", Default: false,
-		Section: SectionEditor, Group: GroupSectionEditing,
+		Section: SectionEditor, Group: GroupAllEditors,
 		Label: "Wrap Long Lines in Code Blocks",
 		Desc:  "when enabled, long lines in code blocks wrap instead of scrolling horizontally",
+	})
+	DefaultMarkdownEditor = register(&StringSetting{
+		key: "defaultMarkdownEditor", Default: "codemirror-editor",
+		Section: SectionEditor, Group: GroupAllEditors,
+		Label: "Default Markdown Editor",
+		Desc:  "which editor opens by default for new and unassigned markdown files",
+		Options: []SettingOption{
+			{"codemirror-editor", "CodeMirror"},
+		},
+	})
+	TodoStampDate = register(&BoolSetting{
+		key: "todoStampDate", Default: true,
+		Section: SectionEditor, Group: GroupTodoEditor,
+		Label: "Stamp Date on Todo Toggle",
+		Desc:  "append today's date to a todo item when its state is toggled, replacing any previous date",
 	})
 
 	// ── Editor / File Extensions ──────────────────────────────────────────────

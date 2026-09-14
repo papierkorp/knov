@@ -2219,9 +2219,42 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/todo-cleardate": {
+            "post": {
+                "description": "Removes any trailing \" (YYYY-MM-DD)\" date stamp from the checkbox on the given line without changing its state",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Remove a todo checkbox's date stamp from the rendered file view",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0-indexed source line of the checkbox",
+                        "name": "line",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/todo-toggle": {
             "post": {
-                "description": "Advances open -\u003e done -\u003e cancelled -\u003e waiting -\u003e open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save",
+                "description": "Advances open -\u003e done -\u003e cancelled -\u003e waiting -\u003e open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save. Returns the \" (YYYY-MM-DD)\" date stamp text applied (empty if date stamping is off), so the client never has to compute \"today\" itself",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

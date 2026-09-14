@@ -10,6 +10,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
@@ -38,6 +39,11 @@ func RenderListEditor(filepath string, todoMode bool) string {
 	}
 
 	lang := configmanager.GetLanguage()
+
+	todoDateToday := ""
+	if configmanager.TodoStampDate.Get() {
+		todoDateToday = parser.TodayStamp()
+	}
 
 	var listItems []ListItem
 	if content != "" {
@@ -130,6 +136,13 @@ func RenderListEditor(filepath string, todoMode bool) string {
 			const STATE_CYCLE = ["open", "done", "cancelled", "waiting"];
 			let cascadeStatus = true;
 			let todoMode = %t;
+			// server-computed "today" (app's configured timezone/format), empty when date
+			// stamping is off - never computed client-side so it can't disagree with the
+			// raw/CodeMirror editor's stamp (see parser.TodayStamp)
+			const todoDateToday = %s;
+			// tooltip for the per-item date-clear button, translated server-side like every
+			// other user-facing string in this editor
+			const removeDateTitle = %s;
 
 			function stateToGlyph(state) {
 				switch(state) {
@@ -161,6 +174,14 @@ func RenderListEditor(filepath string, todoMode bool) string {
 				}
 			}
 
+			// stamps li with a single date, replacing any previous one, so repeated
+			// clicks never accumulate more than the latest date
+			function setItemDate(li, date) {
+				li.dataset.date = date;
+				const dateSpan = li.querySelector(".item-date");
+				if (dateSpan) dateSpan.textContent = date;
+			}
+
 			// hands the given state down to all nested descendants of li
 			function cascadeStateToChildren(li, state) {
 				li.querySelectorAll(".list-item").forEach(function(child) {
@@ -177,7 +198,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 			// text/state/type/level: state defaults to the current todo-mode default when
 			// omitted (a brand-new item); pass "" explicitly to force a plain bullet.
 			// level (1-6) only applies to header items.
-			function createListItem(text = "", state = undefined, type = "", level = 1) {
+			function createListItem(text = "", state = undefined, type = "", level = 1, date = "") {
 				if (state === undefined) state = todoMode ? "open" : "";
 				const isHeader = type === "header";
 
@@ -185,6 +206,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 				li.className = "list-item" + (isHeader ? " list-item-header" : "");
 				li.dataset.id = itemCounter++;
 				li.dataset.state = state;
+				li.dataset.date = date;
 				li.dataset.type = type;
 				if (isHeader) li.dataset.level = level;
 
@@ -206,6 +228,9 @@ func RenderListEditor(filepath string, todoMode bool) string {
 						applyItemState(li, next);
 						if (cascadeStatus) {
 							cascadeStateToChildren(li, next);
+						}
+						if (todoDateToday) {
+							setItemDate(li, todoDateToday);
 						}
 					});
 					row.appendChild(stateBtn);
@@ -260,6 +285,24 @@ func RenderListEditor(filepath string, todoMode bool) string {
 				});
 
 				row.appendChild(input);
+
+				if (!isHeader) {
+					const dateSpan = document.createElement("span");
+					dateSpan.className = "item-date";
+					dateSpan.textContent = date;
+					row.appendChild(dateSpan);
+
+					const clearDateBtn = document.createElement("button");
+					clearDateBtn.type = "button";
+					clearDateBtn.className = "item-date-clear";
+					clearDateBtn.title = removeDateTitle;
+					clearDateBtn.textContent = "×";
+					clearDateBtn.addEventListener("click", function() {
+						setItemDate(li, "");
+					});
+					row.appendChild(clearDateBtn);
+				}
+
 				li.appendChild(row);
 
 				return li;
@@ -357,6 +400,8 @@ func RenderListEditor(filepath string, todoMode bool) string {
 		translation.SprintfForRequest(lang, "cancel"),
 		sortableBaseJS(),
 		todoMode,
+		jsEscapeString(todoDateToday),
+		jsEscapeString(translation.SprintfForRequest(lang, "remove date")),
 		translation.SprintfForRequest(lang, "heading..."),
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,

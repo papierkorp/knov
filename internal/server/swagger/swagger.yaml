@@ -1977,13 +1977,39 @@ paths:
       summary: Save section content
       tags:
       - editor
+  /api/files/todo-cleardate:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Removes any trailing " (YYYY-MM-DD)" date stamp from the checkbox
+        on the given line without changing its state
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: 0-indexed source line of the checkbox
+        in: formData
+        name: line
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Remove a todo checkbox's date stamp from the rendered file view
+      tags:
+      - files
   /api/files/todo-toggle:
     post:
       consumes:
       - application/x-www-form-urlencoded
       description: Advances open -> done -> cancelled -> waiting -> open for the checkbox
         on the given line and persists it; the client applies the state change itself
-        and only uses this to save
+        and only uses this to save. Returns the " (YYYY-MM-DD)" date stamp text applied
+        (empty if date stamping is off), so the client never has to compute "today"
+        itself
       parameters:
       - description: file path
         in: formData

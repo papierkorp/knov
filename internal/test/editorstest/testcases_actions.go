@@ -69,7 +69,7 @@ func caseTodoToggle() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	updated, err := parser.CycleTodoStateAtLine([]byte(content), 0)
+	updated, _, err := parser.CycleTodoStateAtLine([]byte(content), 0)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -91,6 +91,49 @@ func caseTodoToggle() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "checkbox state did not cycle from open to done"
+	}
+	return cr
+}
+
+// caseTodoClearDate mirrors handleAPIClearTodoDate: strip a stamped date via
+// parser.ClearTodoDateAtLine without touching the checkbox state.
+func caseTodoClearDate() test.CaseResult {
+	name := "todo-clear-date"
+	relPath := testPath("cleardate.md")
+
+	if err := writeFile(relPath, "- [X] task one (2026-01-01)\n"); err != nil {
+		return errCase(name, err)
+	}
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
+		return errCase(name, err)
+	}
+
+	content, err := readFile(relPath)
+	if err != nil {
+		return errCase(name, err)
+	}
+	updated, err := parser.ClearTodoDateAtLine([]byte(content), 0)
+	if err != nil {
+		return errCase(name, err)
+	}
+	if err := writeFile(relPath, string(updated)); err != nil {
+		return errCase(name, err)
+	}
+
+	got, err := readFile(relPath)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := strings.Contains(got, "[X] task one") && !strings.Contains(got, "2026-01-01")
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "- [X] task one",
+		Actual:   got,
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "date stamp was not removed"
 	}
 	return cr
 }

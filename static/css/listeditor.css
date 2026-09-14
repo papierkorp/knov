@@ -265,6 +265,38 @@
   font-style: italic;
 }
 
+.component-list-editor .item-date {
+  flex-shrink: 0;
+  margin-left: 8px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.component-list-editor .item-date:empty {
+  display: none;
+}
+
+.component-list-editor .item-date-clear {
+  flex-shrink: 0;
+  margin-left: 2px;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.component-list-editor .item-date-clear:hover {
+  color: var(--danger);
+}
+
+.component-list-editor .item-date:empty + .item-date-clear {
+  display: none;
+}
+
 /* header rows (section titles): no state badge, bolder/larger text */
 .component-list-editor .list-item-header .item-input {
   font-weight: 600;

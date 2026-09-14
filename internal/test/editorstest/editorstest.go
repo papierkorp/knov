@@ -34,6 +34,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseTableAlignRoundTrip,
 		caseSectionSave,
 		caseTodoToggle,
+		caseTodoClearDate,
 		caseConvertToMarkdown,
 		caseFileRename,
 		caseFileMove,

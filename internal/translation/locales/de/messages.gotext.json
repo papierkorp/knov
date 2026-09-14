@@ -267,6 +267,11 @@
       "translation": "Farbe"
     },
     {
+      "id": "Column Sorting",
+      "message": "Column Sorting",
+      "translation": ""
+    },
+    {
       "id": "Confirm",
       "message": "Confirm",
       "translation": ""
@@ -275,6 +280,11 @@
       "id": "Contents",
       "message": "Contents",
       "translation": "Inhalte"
+    },
+    {
+      "id": "Context Menus",
+      "message": "Context Menus",
+      "translation": ""
     },
     {
       "id": "Control which file types are visible in file listings and browsing",
@@ -415,6 +425,11 @@
       "id": "Edit Section",
       "message": "Edit Section",
       "translation": "Abschnitt bearbeiten"
+    },
+    {
+      "id": "Editable Columns",
+      "message": "Editable Columns",
+      "translation": ""
     },
     {
       "id": "Editor Settings",
@@ -977,6 +992,11 @@
       "translation": "Seitenformat"
     },
     {
+      "id": "Pagination",
+      "message": "Pagination",
+      "translation": ""
+    },
+    {
       "id": "Pause",
       "message": "Pause",
       "translation": "Pausieren"
@@ -1082,6 +1102,11 @@
       "translation": "Fortsetzen"
     },
     {
+      "id": "Row Numbers",
+      "message": "Row Numbers",
+      "translation": ""
+    },
+    {
       "id": "Rows Per Page",
       "message": "Rows Per Page",
       "translation": "Zeilen pro Seite"
@@ -1122,9 +1147,14 @@
       "translation": "Dateien durchsuchen..."
     },
     {
-      "id": "Section Editing \u0026 Display",
-      "message": "Section Editing \u0026 Display",
-      "translation": "Abschnittsbearbeitung \u0026 -anzeige"
+      "id": "Selectable Cell Range",
+      "message": "Selectable Cell Range",
+      "translation": ""
+    },
+    {
+      "id": "Selectable Rows",
+      "message": "Selectable Rows",
+      "translation": ""
     },
     {
       "id": "Settings",
@@ -1202,6 +1232,11 @@
       "translation": "Abschnitts-Export-Buttons anzeigen"
     },
     {
+      "id": "Show Settings Menu",
+      "message": "Show Settings Menu",
+      "translation": ""
+    },
+    {
       "id": "Show Toolbar",
       "message": "Show Toolbar",
       "translation": "Symbolleiste anzeigen"
@@ -1220,6 +1255,11 @@
       "id": "Spell Checking",
       "message": "Spell Checking",
       "translation": "Rechtschreibprüfung"
+    },
+    {
+      "id": "Stamp Date on Todo Toggle",
+      "message": "Stamp Date on Todo Toggle",
+      "translation": ""
     },
     {
       "id": "Started",
@@ -1250,6 +1290,11 @@
       "id": "System Actions",
       "message": "System Actions",
       "translation": "Systemaktionen"
+    },
+    {
+      "id": "Table Editor",
+      "message": "Table Editor",
+      "translation": ""
     },
     {
       "id": "Table Settings",
@@ -1315,6 +1360,11 @@
       "id": "Todo",
       "message": "Todo",
       "translation": "Todo"
+    },
+    {
+      "id": "Todo Editor",
+      "message": "Todo Editor",
+      "translation": ""
     },
     {
       "id": "Toggle raw / table view",
@@ -1577,6 +1627,21 @@
       "translation": "nach"
     },
     {
+      "id": "align center",
+      "message": "align center",
+      "translation": ""
+    },
+    {
+      "id": "align left",
+      "message": "align left",
+      "translation": ""
+    },
+    {
+      "id": "align right",
+      "message": "align right",
+      "translation": ""
+    },
+    {
       "id": "all",
       "message": "all",
       "translation": "alle"
@@ -1602,6 +1667,16 @@
       "translation": "alle Tags"
     },
     {
+      "id": "allow clicking column headers to sort rows",
+      "message": "allow clicking column headers to sort rows",
+      "translation": ""
+    },
+    {
+      "id": "allow double-clicking a cell to edit its value",
+      "message": "allow double-clicking a cell to edit its value",
+      "translation": ""
+    },
+    {
       "id": "alphabetical",
       "message": "alphabetical",
       "translation": "alphabetisch"
@@ -1625,6 +1700,11 @@
       "id": "append",
       "message": "append",
       "translation": "anhängen"
+    },
+    {
+      "id": "append today's date to a todo item when its state is toggled, replacing any previous date",
+      "message": "append today's date to a todo item when its state is toggled, replacing any previous date",
+      "translation": ""
     },
     {
       "id": "apply a metadata change to all files matching a filter",
@@ -2177,6 +2257,11 @@
       "translation": "Formatierungsleiste über dem Editor anzeigen"
     },
     {
+      "id": "display the gear-menu button for adjusting table editor behavior",
+      "message": "display the gear-menu button for adjusting table editor behavior",
+      "translation": ""
+    },
+    {
       "id": "display the pdf export button in the file actions panel",
       "message": "display the pdf export button in the file actions panel",
       "translation": "PDF-Export-Button im Datei-Aktionen-Panel anzeigen"
@@ -2257,9 +2342,19 @@
       "translation": "Editor aktualisiert"
     },
     {
+      "id": "enable click-and-drag range selection of cells for copy/paste, independent of row dragging",
+      "message": "enable click-and-drag range selection of cells for copy/paste, independent of row dragging",
+      "translation": ""
+    },
+    {
       "id": "enable dark theme appearance",
       "message": "enable dark theme appearance",
       "translation": "dunkles Erscheinungsbild aktivieren"
+    },
+    {
+      "id": "enable dragging rows by their row-number/handle column to reorder them",
+      "message": "enable dragging rows by their row-number/handle column to reorder them",
+      "translation": ""
     },
     {
       "id": "enable vim normal / insert / visual mode in the code editor",
@@ -4187,6 +4282,11 @@
       "translation": "Seitenausrichtung beim PDF-Export"
     },
     {
+      "id": "paginate rows instead of showing them all in a scrolling list",
+      "message": "paginate rows instead of showing them all in a scrolling list",
+      "translation": ""
+    },
+    {
       "id": "paper size used when exporting to pdf",
       "message": "paper size used when exporting to pdf",
       "translation": "Papierformat beim PDF-Export"
@@ -4315,6 +4415,11 @@
       "id": "remove custom favicon and revert to default?",
       "message": "remove custom favicon and revert to default?",
       "translation": "benutzerdefiniertes Favicon entfernen und zum Standard zurückkehren?"
+    },
+    {
+      "id": "remove date",
+      "message": "remove date",
+      "translation": ""
     },
     {
       "id": "remove row",
@@ -4625,6 +4730,16 @@
       "id": "show line numbers relative to the cursor — useful with vim mode",
       "message": "show line numbers relative to the cursor — useful with vim mode",
       "translation": "Zeilennummern relativ zum Cursor anzeigen — nützlich mit Vim-Modus"
+    },
+    {
+      "id": "show row numbers in the drag-handle column",
+      "message": "show row numbers in the drag-handle column",
+      "translation": ""
+    },
+    {
+      "id": "show the right-click menu for inserting/removing rows and columns",
+      "message": "show the right-click menu for inserting/removing rows and columns",
+      "translation": ""
     },
     {
       "id": "size",
