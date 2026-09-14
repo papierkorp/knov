@@ -2,12 +2,27 @@ package markdowntest
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"knov/internal/markdown"
 	"knov/internal/parser"
 	"knov/internal/test"
 )
+
+// renderedHeadingIDRe reads the id straight off each rendered <hN id="..."> tag,
+// independent of parser.Headings, so caseHeadingScanMatchesRenderIDs can catch the
+// pre-render scan and the renderer drifting apart. Mirrors the id format
+// knovNodeRenderer.renderHeading emits (see its "Emitted format contract" comment).
+var renderedHeadingIDRe = regexp.MustCompile(`<h[1-6] id="([^"]*)"`)
+
+func renderedHeadingIDs(htmlStr string) []string {
+	var ids []string
+	for _, m := range renderedHeadingIDRe.FindAllStringSubmatch(htmlStr, -1) {
+		ids = append(ids, m[1])
+	}
+	return ids
+}
 
 // headingsOf and codeBlocksOf adapt the []string-input scanner API to the
 // string literals the cases are written with. headingsOf goes through
@@ -124,11 +139,12 @@ func caseHeadingsWikiLinkAliasID() test.CaseResult {
 
 // caseHeadingScanMatchesRenderIDs is the end-to-end guard for the refactor's core
 // invariant: the ids parser.Headings computes from raw source (used by section
-// editing) must equal the ids the markdown renderer actually puts on the <hN>
-// tags (read back here via GenerateTOC, as the autocomplete endpoint does). The
-// two sides share SlugHeading but are fed differently resolved text, so this pins
-// that they still agree across links, wikilink aliases, unicode, dedupe order,
-// numbered headings, inline formatting and a trailing "##".
+// editing and parser.TOCFromMarkdown) must equal the ids the markdown renderer
+// actually puts on the <hN> tags (read back here via renderedHeadingIDs, straight
+// off the rendered HTML, independent of parser.Headings). The two sides share
+// SlugHeading but are fed differently resolved text, so this pins that they still
+// agree across links, wikilink aliases, unicode, dedupe order, numbered headings,
+// inline formatting and a trailing "##".
 func caseHeadingScanMatchesRenderIDs() test.CaseResult {
 	name := "heading-scan-matches-render-ids"
 	src := "# Intro\n" +
@@ -156,10 +172,7 @@ func caseHeadingScanMatchesRenderIDs() test.CaseResult {
 	if err != nil {
 		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
 	}
-	var renderIDs []string
-	for _, item := range parser.GenerateTOC(string(rendered)) {
-		renderIDs = append(renderIDs, item.ID)
-	}
+	renderIDs := renderedHeadingIDs(string(rendered))
 
 	scan, render := strings.Join(scanIDs, ","), strings.Join(renderIDs, ",")
 	got := fmt.Sprintf("scan=%s render=%s", scan, render)

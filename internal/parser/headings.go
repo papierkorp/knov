@@ -34,8 +34,20 @@ func Headings(lines []string) []Heading {
 // inline markdown, then SlugHeading. usedIDs carries the collision counts across
 // a document (pass one shared map).
 func HeadingID(text string, usedIDs map[string]int) string {
-	resolved := ProcessMarkdownLinks(ResolveWikiLinks(text))
-	return SlugHeading(RenderHeadingInline(resolved), usedIDs)
+	return SlugHeading(headingInlineHTML(text), usedIDs)
+}
+
+// HeadingDisplayText renders a heading's raw markdown text into its visible plain-text
+// form (links resolved, inline markdown rendered, tags stripped) - the TOC text for a
+// heading, computed from the same resolution HeadingID slugs so the two never drift.
+func HeadingDisplayText(text string) string {
+	return stripHTMLTags(headingInlineHTML(text))
+}
+
+// headingInlineHTML resolves [[wikilinks]]/internal links and renders the inline
+// markdown, shared by HeadingID (slugged) and HeadingDisplayText (tags stripped).
+func headingInlineHTML(text string) string {
+	return RenderHeadingInline(ProcessMarkdownLinks(ResolveWikiLinks(text)))
 }
 
 // SlugHeading turns a heading's rendered inline HTML into its anchor id: strip

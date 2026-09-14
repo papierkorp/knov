@@ -249,7 +249,8 @@ func handleAPIGetSystemVersion(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "changelog HTML"
 // @Router /api/system/changelog [get]
 func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, nil, render.RenderChangelog())
+	html, _ := render.RenderChangelog()
+	writeResponse(w, r, nil, html)
 }
 
 // @Summary Get release notes
@@ -259,7 +260,8 @@ func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "release HTML"
 // @Router /api/system/release [get]
 func handleAPIGetSystemRelease(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, nil, render.RenderRelease())
+	html, _ := render.RenderRelease()
+	writeResponse(w, r, nil, html)
 }
 
 // @Summary Get environment variables

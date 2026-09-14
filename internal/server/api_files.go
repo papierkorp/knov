@@ -1209,18 +1209,12 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 	items := make([]render.AutocompleteItem, 0)
 
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
-	if handler == nil {
+	if handler == nil || handler.Name() != "markdown" {
 		writeResponse(w, r, results, "")
 		return
 	}
 
-	rendered, err := handler.Render(content, fullPath)
-	if err != nil {
-		writeAPIError(w, r, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	for _, item := range parser.GenerateTOC(string(rendered)) {
+	for _, item := range parser.TOCFromMarkdown(strings.Split(string(content), "\n")) {
 		if q != "" && !strings.Contains(strings.ToLower(item.Text), q) && !strings.Contains(strings.ToLower(item.ID), q) {
 			continue
 		}

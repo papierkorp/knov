@@ -595,33 +595,38 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 // shared by the /system/changelog page and the rail "changelog" fragment. It has
 // no README or release-notes fallback; with no changelog files it returns a
 // placeholder.
-func RenderChangelog() string {
-	if html := renderDocsMarkdown("docs/changelogs", func(a, b string) bool { return a > b }); html != "" {
-		return html
+func RenderChangelog() (string, []parser.TOCItem) {
+	if html, toc := renderDocsMarkdown("docs/changelogs", func(a, b string) bool { return a > b }); html != "" {
+		return html, toc
 	}
-	return `<p class="no-changelog">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no changelog available") + `</p>`
+	return `<p class="no-changelog">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no changelog available") + `</p>`, nil
 }
 
 // RenderRelease renders the static release-information preamble (docs/release.md)
 // followed by the version/build info table and the curated end-user release
 // notes (docs/releases/*.md, newest first) - shared by the /system/release page
 // and the rail "release" fragment.
-func RenderRelease() string {
+func RenderRelease() (string, []parser.TOCItem) {
 	var out strings.Builder
+	var toc []parser.TOCItem
 	if data, err := docsFiles.ReadFile("docs/release.md"); err == nil {
 		if rendered, err := parser.NewMarkdownHandler().Render(data, parser.PathlessRender); err == nil {
 			out.Write(rendered)
+			toc = parser.TOCFromMarkdown(strings.Split(string(data), "\n"))
 		}
 	}
 	out.WriteString(RenderVersionInfo(false))
-	out.WriteString(renderDocsMarkdown("docs/releases", releaseBefore))
-	return out.String()
+	html, releasesTOC := renderDocsMarkdown("docs/releases", releaseBefore)
+	out.WriteString(html)
+	toc = append(toc, releasesTOC...)
+	return out.String(), toc
 }
 
 // renderDocsMarkdown reads every *.md directly inside the embedded dir, orders
 // the names with less, renders each as pathless markdown and concatenates the
-// resulting HTML.
-func renderDocsMarkdown(dir string, less func(a, b string) bool) string {
+// resulting HTML and TOC (each file keeps its own heading-id dedup scope, matching
+// the id each file's own Render call assigns its headings).
+func renderDocsMarkdown(dir string, less func(a, b string) bool) (string, []parser.TOCItem) {
 	var names []string
 	if entries, err := docsFiles.ReadDir(dir); err == nil {
 		for _, entry := range entries {
@@ -634,6 +639,7 @@ func renderDocsMarkdown(dir string, less func(a, b string) bool) string {
 
 	mdHandler := parser.NewMarkdownHandler()
 	var combined strings.Builder
+	var toc []parser.TOCItem
 	for _, name := range names {
 		data, err := docsFiles.ReadFile(dir + "/" + name)
 		if err != nil {
@@ -648,8 +654,9 @@ func renderDocsMarkdown(dir string, less func(a, b string) bool) string {
 		}
 
 		combined.Write(rendered)
+		toc = append(toc, parser.TOCFromMarkdown(strings.Split(string(data), "\n"))...)
 	}
-	return combined.String()
+	return combined.String(), toc
 }
 
 // releaseBefore orders release-notes filenames for display: "unreleased.md"
@@ -674,19 +681,21 @@ func semverKey(name string) int {
 }
 
 func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	renderSystemMarkdownPage(w, "Changelog", "system/changelog.md", RenderChangelog())
+	html, toc := RenderChangelog()
+	renderSystemMarkdownPage(w, "Changelog", "system/changelog.md", html, toc)
 }
 
 func HandleSystemRelease(w http.ResponseWriter, r *http.Request) {
-	renderSystemMarkdownPage(w, "Release", "system/release.md", RenderRelease())
+	html, toc := RenderRelease()
+	renderSystemMarkdownPage(w, "Release", "system/release.md", html, toc)
 }
 
 // renderSystemMarkdownPage wraps pre-rendered HTML in the fileview template so it
 // gets a table of contents and the system-page chrome. The TOC (and its rail
 // panel) is only attached when the page has more than one heading.
-func renderSystemMarkdownPage(w http.ResponseWriter, title, virtualPath, html string) {
+func renderSystemMarkdownPage(w http.ResponseWriter, title, virtualPath, html string, toc []parser.TOCItem) {
 	fileContent := &files.FileContent{HTML: html}
-	if toc := parser.GenerateTOC(html); len(toc) > 1 {
+	if len(toc) > 1 {
 		fileContent.TOC = toc
 	}
 

@@ -236,8 +236,8 @@ func caseFolderSuggestions() test.CaseResult {
 	return cr
 }
 
-// caseHeadersTOC covers the same GenerateTOC pass handleAPIFilesHeaders uses for wiki-link
-// anchor autocomplete, via files.GetFileContent (the shared render+TOC pipeline).
+// caseHeadersTOC covers the same TOCFromMarkdown pass handleAPIFilesHeaders uses for
+// wiki-link anchor autocomplete, via files.GetFileContent (the shared render+TOC pipeline).
 func caseHeadersTOC() test.CaseResult {
 	name := "headers-toc"
 
@@ -258,7 +258,7 @@ func caseHeadersTOC() test.CaseResult {
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "GenerateTOC did not extract the sample headers as expected"
+		cr.Error = "TOCFromMarkdown did not extract the sample headers as expected"
 	}
 	return cr
 }

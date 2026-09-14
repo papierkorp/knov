@@ -304,10 +304,12 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 // carry the id from the enter call to the exit call.
 //
 // Emitted format contract: `<hN id="slug">` - id is the first and only attribute
-// on the tag. GenerateTOC and wrapHeaderSections both read the id positionally
-// with a regex that expects it right after the level, so adding another attribute
-// here (or moving id) silently blanks the TOC and the section wrappers. Change
-// those regexes too if this format changes.
+// on the tag. wrapHeaderSections reads the id positionally with a regex that
+// expects it right after the level, so adding another attribute here (or moving
+// id) silently blanks the section wrappers. Change that regex too if this format
+// changes. (The TOC is built off the raw markdown via TOCFromMarkdown/Headings,
+// not off this HTML, so it isn't affected - but its ids must still agree with
+// this one, guarded by markdowntest's caseHeadingScanMatchesRenderIDs.)
 //
 // On exit it also emits the per-heading section buttons (see headerButtons),
 // keyed off r.headingID rather than the tag text. This is the only place heading

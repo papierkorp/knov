@@ -164,7 +164,10 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
-	toc := parser.GenerateTOC(processedContent)
+	var toc []parser.TOCItem
+	if handler.Name() == "markdown" {
+		toc = parser.TOCFromMarkdown(strings.Split(string(content), "\n"))
+	}
 
 	return &FileContent{
 		HTML:   processedContent,

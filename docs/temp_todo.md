@@ -21,7 +21,6 @@
   - info slideout - open file with (another editor)
 - fixes
   - **more regex-over-rendered-HTML fragility (same class as the todo-date bug)** - a few other spots still regex the *already-rendered* HTML string instead of working off the AST/markdown source, same failure mode as the fixed `todoDateHTMLRe` (silently breaks if goldmark's output shape shifts, e.g. loose vs tight lists, nesting):
-    - `internal/parser/toc.go` `GenerateTOC`'s `headerRegex` pulls `<hN id="...">...</hN>` out of rendered HTML positionally (id must be the first attribute right after the level) - already has a "keep in sync with renderHeading" comment admitting the coupling
     - `internal/parser/parser_markdown.go` `wrapHeaderSections` (`headerRe`/`idRe`) slices the rendered HTML into `.content-section` divs off that same `<hN id="...">` assumption - `renderHeading`'s doc comment already warns changing the heading format "silently blanks the TOC and section wrappers"
     - `internal/files/files.go` `sectionEditBtnRe` strips `header-edit-btn` anchors from rendered HTML (for List/Todo/Tracker/Filter/Index/Book editors) by matching the literal anchor markup `headerButtons()` emits in a different package, linked only by a comment, not the compiler - also looks like it misses the sibling `section-edit-btn` anchor `wrapHeaderSections` appends at the bottom of every section, so those editors may still show a stray edit button there
     - lower priority, different risk shape: `parser_markdown.go` `sanitizeHTML` also regexes rendered HTML (strips `on*`/`javascript:`/`<script>`) - not "silently ugly", but regex-based HTML sanitizing is a known XSS-bypass vector, worth a dedicated look rather than bundling with the others
@@ -29,6 +28,7 @@
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
+  - Cross-file heading-id collisions: `renderDocsMarkdown` now builds one TOC per file with independently-scoped dedup (`Headings` makes a fresh `usedIDs` map per call), then concatenates. If two changelog/release files each have a heading like `## Added`, both get id `added` and the combined page ends up with duplicate DOM ids and two TOC entries pointing at the same anchor. I confirmed this isn't a regression — the renderer already deduped ids per-file (`mdHandler.Render` per iteration, each with its own `usedIDs`) before this diff — but it's worth flagging since it's now made more visible/permanent by the accompanying comment ("each file keeps its own heading-id dedup scope"), which documents it as accepted rather than incidental. Not a blocker, just a known limitation now baked in as intentional.
 
 # every other time
 
