@@ -27,8 +27,6 @@
   - i still have a problem with `body[data-motd] (--motd-height: 28px;)` where it only works if i disalbe and enable it in the developer console (or randomly click around the app and sometimes it works afterwards but i dont know when)
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
-  - fix javascript console errors
-  - dashboard no save message pop up, and in file is not displayed if not scrolled down
 
 # every other time
 

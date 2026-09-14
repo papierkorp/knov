@@ -146,6 +146,7 @@ func RenderDashboardForm(dash *dashboard.Dashboard, isEdit bool) string {
 	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</form>`)
+	html.WriteString(`<div id="dashboard-result"></div>`)
 
 	// export + delete (edit mode only)
 	if isEdit {

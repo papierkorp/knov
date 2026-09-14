@@ -13,6 +13,7 @@ import (
 	"knov/internal/dashboard"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -164,6 +165,7 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard created")
+	notify.SetHeader(w, notify.LevelSuccess, data)
 	html := render.RenderDashboardCreated(dash.ID)
 	writeResponse(w, r, data, html)
 }
@@ -241,6 +243,7 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard updated successfully!"))
 	html := render.RenderDashboardUpdated(dash.ID)
 	writeResponse(w, r, dash, html)
 }
@@ -366,6 +369,7 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard deleted")
+	notify.SetHeader(w, notify.LevelSuccess, data)
 	html := render.RenderDashboardDeleted()
 	writeResponse(w, r, data, html)
 }
@@ -465,6 +469,7 @@ func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "dashboard renamed"
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard renamed successfully"))
 	html := render.RenderDashboardRenamed()
 	writeResponse(w, r, data, html)
 }
@@ -541,6 +546,7 @@ func handleAPIImportDashboard(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "imported dashboard: %s", dash.ID)
 	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard imported")
+	notify.SetHeader(w, notify.LevelSuccess, data)
 	html := render.RenderDashboardCreated(dash.ID)
 	writeResponse(w, r, data, html)
 }
