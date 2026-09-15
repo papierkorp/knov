@@ -21,8 +21,8 @@
   - info slideout - open file with (another editor)
 - fixes
   - **more regex-over-rendered-HTML fragility (same class as the todo-date bug)** - a few other spots still regex the *already-rendered* HTML string instead of working off the AST/markdown source, same failure mode as the fixed `todoDateHTMLRe` (silently breaks if goldmark's output shape shifts, e.g. loose vs tight lists, nesting):
-    - lower priority, different risk shape: `parser_markdown.go` `sanitizeHTML` also regexes rendered HTML (strips `on*`/`javascript:`/`<script>`) - not "silently ugly", but regex-based HTML sanitizing is a known XSS-bypass vector, worth a dedicated look rather than bundling with the others
     - possible direction: move TOC extraction and section-wrapping into the goldmark render pass itself (the same `knovNodeRenderer` that now owns the todo `<li>`/date logic), so headings never round-trip through a regex-parsed string at all
+  - **table component HTML bypasses `sanitizeHTML`** - `internal/parser/table.go`'s `RenderTableHTML` (served by the separate `/api/components/table` htmx endpoint) never goes through the new bluemonday-based `sanitizeHTML` in `parser_markdown.go`; it's a different code path from the markdown `Render()` pipeline. Not urgent now, but if this HTML ever gets routed through `sanitizeHTML`, the current allowlist would silently strip its `<select>`/`<option>` filter dropdowns (UGCPolicy disallows those elements) and its `hx-target`/`hx-include` attributes (not in the allowlist) - worth deciding then whether to extend the policy or keep it a deliberately separate trust boundary
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?

@@ -16,6 +16,7 @@ import (
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -860,15 +861,29 @@ func (h *MarkdownHandler) Name() string {
 	return "markdown"
 }
 
-// sanitizeHTML strips on* event attributes and javascript: hrefs from rendered HTML
-// to prevent content files from executing JavaScript in the browser.
+// htmlSanitizePolicy is the allowlist sanitizeHTML applies to rendered HTML, so
+// content files can't execute JavaScript in the browser via the
+// <details>/<summary> wrapper tags that bypass goldmark's own raw-HTML escaping
+// (see extractHTMLBlocks). bluemonday.UGCPolicy covers standard prose markup
+// (headings, lists, tables, details/summary, images); the rest allows the
+// app's own generated markup - todo/edit icons, htmx loaders, section ids -
+// that the node renderer emits inline alongside it.
+var htmlSanitizePolicy = newHTMLSanitizePolicy()
+
+func newHTMLSanitizePolicy() *bluemonday.Policy {
+	p := bluemonday.UGCPolicy()
+	p.RequireNoFollowOnLinks(false) // these are the user's own internal/external links, not UGC spam to discourage
+	p.AllowStyling()                // class="..." on every element
+	p.AllowAttrs("type").Matching(regexp.MustCompile(`(?i)^(button|submit|reset)$`)).OnElements("button")
+	p.AllowAttrs("aria-hidden").Matching(regexp.MustCompile(`(?i)^(true|false)$`)).OnElements("a")
+	p.AllowAttrs("hx-get", "hx-trigger", "hx-swap").OnElements("div", "span")
+	p.AllowAttrs("data-line").Matching(bluemonday.Integer).OnElements("span")
+	p.AllowAttrs("alt").OnElements("img") // UGCPolicy's alt regex is too strict for arbitrary alt text
+	// heading/section ids may be non-ASCII (e.g. a CJK-only heading slug), wider than UGCPolicy's default id regex
+	p.AllowAttrs("id").Matching(regexp.MustCompile(`^[\p{L}\p{N}:_.-]+$`)).Globally()
+	return p
+}
+
 func sanitizeHTML(html string) string {
-	// strip on* event handlers (onclick, onload, onerror, etc.)
-	html = regexp.MustCompile(`(?i)\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)`).ReplaceAllString(html, "")
-	// strip javascript: URLs
-	html = regexp.MustCompile(`(?i)(href|src|action)\s*=\s*"javascript:[^"]*"`).ReplaceAllString(html, `$1="#"`)
-	html = regexp.MustCompile(`(?i)(href|src|action)\s*=\s*'javascript:[^']*'`).ReplaceAllString(html, `$1="#"`)
-	// strip <script> tags and their content
-	html = regexp.MustCompile(`(?is)<script[^>]*>.*?</script>`).ReplaceAllString(html, "")
-	return html
+	return htmlSanitizePolicy.Sanitize(html)
 }
