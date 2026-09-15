@@ -10,3 +10,6 @@
 - new tracker editor
 - add KNOV_NOTIFY_MIN_LEVEL to mute notification toasts
 
+## fixes
+- match heading scan to AST by line number, dedupe ids across concatenated docs
+

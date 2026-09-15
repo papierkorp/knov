@@ -1179,6 +1179,19 @@ function insertHr(view) {
   view.focus();
 }
 
+function insertTable(view) {
+  const state = view.state;
+  const pos = state.selection.main.to;
+  const line = state.doc.lineAt(pos);
+  const table = "| Header | Header |\n| --- | --- |\n| Cell | Cell |\n";
+  const insert = (line.text.length ? "\n\n" : "\n") + table + "\n";
+  view.dispatch({
+    changes: { from: pos, insert },
+    selection: EditorSelection.cursor(pos + insert.length),
+  });
+  view.focus();
+}
+
 window.mdCommands = {
   bold: (view) => wrapSelection(view, "**"),
   italic: (view) => wrapSelection(view, "_"),
@@ -1191,6 +1204,7 @@ window.mdCommands = {
   codeBlock: (view) => insertCodeBlock(view),
   link: (view) => insertLink(view),
   hr: (view) => insertHr(view),
+  table: (view) => insertTable(view),
 };
 ```
 

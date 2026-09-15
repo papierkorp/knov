@@ -43,6 +43,7 @@ func codeMirrorToolbarGroups() [][]codeMirrorToolbarBtn {
 			{"link", "", "Link", "link"},
 			{"codeBlock", "", "{ }", "code block"},
 			{"hr", "", "&mdash;", "horizontal rule"},
+			{"table", "", `<i class="fa fa-table"></i>`, "insert table"},
 		},
 		{
 			{"uploadFile", "", `<i class="fa fa-upload"></i>`, "upload file"},

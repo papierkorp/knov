@@ -16,9 +16,9 @@
     - add 3 dots to the right of the "+" and move the "X" remove button into there
     - add a reset to 0 button (in red) to the 3 dots
     - add tests
-  - general solution for backwards compatibiliy scripts (similar to the db migration maybe?)
-  - codemirror: add table button
   - info slideout - open file with (another editor)
+  - table editor => paste in a table should create rows+columns if neccessary
+  - table editor => remove multiple selected rows/columns
 - fixes
   -
 - chore
