@@ -230,6 +230,14 @@ func parseDate(s string) int64 {
 	return 0
 }
 
+// RenderTableHTML is a deliberately separate trust boundary from sanitizeHTML
+// (parser_markdown.go): its <select>/<option> filter dropdowns and
+// hx-target/hx-include attributes aren't in that bluemonday allowlist, and
+// cell/header content never reaches this function raw - simpleToTableData
+// (api_tables.go) renders it through RenderInlineMarkdown first, which uses a
+// plain goldmark.New() with no html.WithUnsafe(), so raw HTML in table
+// content is escaped to text there. If that assumption ever changes, revisit
+// whether this output needs to go through sanitizeHTML too.
 func RenderTableHTML(data, fullData *types.TableData, filepath string, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string, activeFilters map[int]string) string {
 	var html string
 

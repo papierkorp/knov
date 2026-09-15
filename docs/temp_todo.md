@@ -20,7 +20,7 @@
   - codemirror: add table button
   - info slideout - open file with (another editor)
 - fixes
-  - **table component HTML bypasses `sanitizeHTML`** - `internal/parser/table.go`'s `RenderTableHTML` (served by the separate `/api/components/table` htmx endpoint) never goes through the new bluemonday-based `sanitizeHTML` in `parser_markdown.go`; it's a different code path from the markdown `Render()` pipeline. Not urgent now, but if this HTML ever gets routed through `sanitizeHTML`, the current allowlist would silently strip its `<select>`/`<option>` filter dropdowns (UGCPolicy disallows those elements) and its `hx-target`/`hx-include` attributes (not in the allowlist) - worth deciding then whether to extend the policy or keep it a deliberately separate trust boundary
+  -
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
