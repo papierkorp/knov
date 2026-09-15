@@ -1,6 +1,7 @@
 # unreleased
 
 ## changes
+- add table button to codemirror editor
 - add settings menu to tableeditor
 - support per-column alignment in table editor
 
@@ -9,7 +10,4 @@
 - change tableeditor from handsontable to MIT licensed tabulator
 - new tracker editor
 - add KNOV_NOTIFY_MIN_LEVEL to mute notification toasts
-
-## fixes
-- match heading scan to AST by line number, dedupe ids across concatenated docs
 
