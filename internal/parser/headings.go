@@ -19,8 +19,14 @@ type Heading struct {
 // renderer computes the same ids at render time through the shared SlugHeading,
 // so a rendered anchor and its scan entry always agree.
 func Headings(lines []string) []Heading {
+	return HeadingsWithIDs(lines, make(map[string]int))
+}
+
+// HeadingsWithIDs is Headings, but collision counts are read from and written
+// back to the caller's usedIDs map instead of a fresh one - see
+// MarkdownHandler.RenderWithUsedIDs for why a caller would share one.
+func HeadingsWithIDs(lines []string, usedIDs map[string]int) []Heading {
 	raw := markdown.ScanHeadings(lines)
-	usedIDs := make(map[string]int)
 	out := make([]Heading, len(raw))
 	for i, h := range raw {
 		out[i] = Heading{Level: h.Level, Text: h.Text, ID: HeadingID(h.Text, usedIDs), Line: h.Line}

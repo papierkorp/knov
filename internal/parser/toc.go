@@ -18,7 +18,14 @@ type TOCItem struct {
 // headings (see Headings), rather than re-parsing the renderer's HTML output - so it
 // can't drift from goldmark's rendered heading shape.
 func TOCFromMarkdown(lines []string) []TOCItem {
-	headings := Headings(lines)
+	return HeadingsToTOC(Headings(lines))
+}
+
+// HeadingsToTOC turns already-scanned headings into TOC entries. Callers that
+// already have a Heading slice from MarkdownHandler.RenderWithUsedIDs should
+// use this directly instead of TOCFromMarkdown, which would re-scan the
+// document and risk a second, independently-numbered id sequence.
+func HeadingsToTOC(headings []Heading) []TOCItem {
 	toc := make([]TOCItem, 0, len(headings))
 	for _, h := range headings {
 		toc = append(toc, TOCItem{

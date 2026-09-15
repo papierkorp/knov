@@ -45,3 +45,65 @@ func TestSanitizeHTMLKeepsAppMarkup(t *testing.T) {
 		})
 	}
 }
+
+// TestRenderHeadingSkipsPhantomScannedHeading covers the raw-line heading scan
+// finding a line goldmark's real CommonMark parsing doesn't treat as a heading
+// (a 4+-space-indented "# ..." is a code block per CommonMark, but ATXHeading
+// is a documented approximation that doesn't stop at 3 spaces - see its doc
+// comment). Without skipping that phantom scan entry by line number, the real
+// heading after it would consume the phantom's id slot and render as "real-1"
+// instead of "real".
+func TestRenderHeadingSkipsPhantomScannedHeading(t *testing.T) {
+	src := "text\n\n    # Indented\nmore text\n\n## Real\n"
+	rendered, err := NewMarkdownHandler().Render([]byte(src), PathlessRender, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(rendered), `id="real"`) {
+		t.Errorf("rendered html = %q, want it to contain %s", rendered, `id="real"`)
+	}
+}
+
+// TestSharedUsedIDsDedupeAcrossDocuments covers renderDocsMarkdown's use case
+// (internal/server/render/render_system.go): several documents concatenated onto
+// one page, rendered one after the other while sharing the same usedIDs map, with
+// the TOC built from each call's returned headings rather than a separate scan.
+// The middle document repeats "Added" within itself as well as against the other
+// documents, so this pins the accumulated dedup count staying aligned across more
+// than one heading per document and more than two documents - not just the single
+// cross-document repeat the original version of this test covered.
+func TestSharedUsedIDsDedupeAcrossDocuments(t *testing.T) {
+	docs := []string{
+		"## Added\nfirst doc",
+		"## Added\n### Added\nsecond doc",
+		"## Added\nthird doc",
+	}
+	wantIDs := [][]string{
+		{"added"},
+		{"added-1", "added-2"},
+		{"added-3"},
+	}
+
+	handler := NewMarkdownHandler()
+	usedIDs := make(map[string]int)
+
+	for i, doc := range docs {
+		rendered, headings, err := handler.RenderWithUsedIDs([]byte(doc), PathlessRender, false, usedIDs)
+		if err != nil {
+			t.Fatalf("doc %d: Render: %v", i, err)
+		}
+		toc := HeadingsToTOC(headings)
+		if len(toc) != len(wantIDs[i]) {
+			t.Fatalf("doc %d: got %d TOC entries, want %d", i, len(toc), len(wantIDs[i]))
+		}
+
+		for j, want := range wantIDs[i] {
+			if toc[j].ID != want {
+				t.Errorf("doc %d heading %d: TOC id = %q, want %q", i, j, toc[j].ID, want)
+			}
+			if wantAttr := `id="` + want + `"`; !strings.Contains(string(rendered), wantAttr) {
+				t.Errorf("doc %d heading %d: rendered html = %q, want it to contain %q", i, j, rendered, wantAttr)
+			}
+		}
+	}
+}

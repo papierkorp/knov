@@ -176,9 +176,30 @@ func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
 var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|header|footer|nav|main|aside|meta|script|style|link|table|form|iframe|p|ul|ol|li|h[1-6]|pre|blockquote)[\s>]`)
 
 func (h *MarkdownHandler) Render(content []byte, filePath string, editableSections bool) ([]byte, error) {
+	html, _, err := h.RenderWithUsedIDs(content, filePath, editableSections, make(map[string]int))
+	return html, err
+}
+
+// RenderWithUsedIDs is Render, but heading-id collision counts are read from and
+// written back to the caller's usedIDs map instead of a fresh one, and it also
+// returns the headings (with the exact ids it assigned them) it found in
+// content. Callers rendering several documents onto one page (e.g.
+// renderDocsMarkdown) pass the same map across calls so headings sharing text
+// across documents still dedupe (e.g. two changelog files each with "##
+// Added"), and build their TOC from the returned headings (see
+// parser.HeadingsToTOC) instead of re-scanning content themselves - so the TOC
+// ids can't drift from the ids this render actually used, even across several
+// calls sharing one map.
+func (h *MarkdownHandler) RenderWithUsedIDs(content []byte, filePath string, editableSections bool, usedIDs map[string]int) ([]byte, []Heading, error) {
 	content, blocks := h.extractCodeBlocks(content)
 	content, detailsBlocks := h.extractHTMLBlocks(content, "details", "summary")
 	content = PreprocessTodoStates(content)
+
+	// scanned after the extraction above, from the exact content goldmark converts
+	// below - so a heading-like line inside a <details> block (extracted to raw HTML,
+	// never reaching the AST as a real heading) can't desync this scan from the AST
+	// walk's heading count/order the way scanning the original content would.
+	headings := HeadingsWithIDs(strings.Split(string(content), "\n"), usedIDs)
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -196,7 +217,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string, editableSectio
 			html.WithHardWraps(),
 			html.WithXHTML(),
 			renderer.WithNodeRenderers(
-				util.Prioritized(newKnovNodeRenderer(filePath, blocks, editableSections), 1),
+				util.Prioritized(newKnovNodeRenderer(filePath, blocks, editableSections, headings, usedIDs), 1),
 			),
 		),
 	)
@@ -204,14 +225,14 @@ func (h *MarkdownHandler) Render(content []byte, filePath string, editableSectio
 	sw := newSectionWriter(filePath, editableSections)
 	source := []byte(content)
 	if err := md.Convert(source, sw); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	result := sw.out.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = sanitizeHTML(result)
-	return []byte(result), nil
+	return []byte(result), headings, nil
 }
 
 // inlineMD is the shared goldmark instance for RenderInlineMarkdown and
@@ -263,18 +284,21 @@ type knovNodeRenderer struct {
 	relPath          string // pathutils.ToRelative(filePath); PathlessRender when there is no source file
 	blocks           []codeBlock
 	tableIdx         int
-	usedIDs          map[string]int // heading-id collision counts for this document
+	headings         []Heading      // ids already assigned by the pre-render Headings scan (see RenderWithUsedIDs), matched to AST headings by line number
+	headingIdx       int            // headings[headingIdx] is the next unconsumed scanned heading, advanced past by line number as renderHeading runs
+	usedIDs          map[string]int // heading-id collision counts; only touched by the headings-exhausted fallback below, to stay consistent with the scan's counts
 	headingID        string         // id of the heading currently being rendered (set on enter, used on exit)
 	editableSections bool           // false suppresses the per-heading/per-section edit buttons (list, todo, tracker, filter, index, book)
 	html.Config
 }
 
-func newKnovNodeRenderer(filePath string, blocks []codeBlock, editableSections bool) renderer.NodeRenderer {
+func newKnovNodeRenderer(filePath string, blocks []codeBlock, editableSections bool, headings []Heading, usedIDs map[string]int) renderer.NodeRenderer {
 	return &knovNodeRenderer{
 		filePath:         filePath,
 		relPath:          pathutils.ToRelative(filePath),
 		blocks:           blocks,
-		usedIDs:          make(map[string]int),
+		headings:         headings,
+		usedIDs:          usedIDs,
 		editableSections: editableSections,
 		Config:           html.NewConfig(),
 	}
@@ -299,14 +323,23 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 // renderHeading writes the <hN id> wrapper and the trailing anchor link, but
 // lets goldmark render the heading's children itself (WalkContinue) so the
 // visible markup matches the rest of the document (typographer, hard wraps).
-// The id is slugged through the shared SlugHeading from the raw heading text so
-// it matches parser.Headings (section editing / autocomplete) without a second,
-// drift-prone computation. usedIDs lives on the renderer, so collisions dedupe
-// in document order; headings never nest, so one headingID field is enough to
-// carry the id from the enter call to the exit call. (The TOC is built off the
-// raw markdown via TOCFromMarkdown/Headings, not off this HTML, so it isn't
-// affected - but its ids must still agree with this one, guarded by
-// markdowntest's caseHeadingScanMatchesRenderIDs.)
+// The id comes off r.headings, the same pre-render Headings scan a caller uses
+// to build its TOC (see RenderWithUsedIDs and parser.HeadingsToTOC) - so a
+// rendered anchor and its TOC entry are the same id by construction, not by two
+// independent computations that happen to agree. headings never nest, so one
+// headingID field is enough to carry the id from the enter call to the exit
+// call.
+//
+// The scan and this walk are matched up by line number (Heading.Line), not
+// raw position: ATXHeading is a documented approximation of CommonMark (e.g.
+// it doesn't stop at 3 spaces of indentation), so the scan can find a
+// heading-like line goldmark's real parser doesn't treat as one. Skipping any
+// scanned heading whose line comes before the node being rendered keeps such
+// a phantom from being mistaken for - and shifting the id of - the next real
+// heading. If goldmark's walk still runs past the end of the scan, or never
+// finds a scanned heading at the node's line, that one falls back to slugging
+// on the spot against the same usedIDs the scan already advanced, so dedup
+// counts stay consistent either way.
 //
 // It also drives sectionWriter's section boundaries: startHeading before the
 // opening tag closes out the content-section for everything since the last
@@ -328,14 +361,27 @@ func (r *knovNodeRenderer) renderHeading(w util.BufWriter, source []byte, node a
 		return ast.WalkContinue, nil
 	}
 
-	var raw bytes.Buffer
 	lines := n.Lines()
-	for i := 0; i < lines.Len(); i++ {
-		seg := lines.At(i)
-		raw.Write(seg.Value(source))
+	var lineNo int
+	if lines.Len() > 0 {
+		lineNo = bytes.Count(source[:lines.At(0).Start], []byte("\n"))
+	}
+	for r.headingIdx < len(r.headings) && r.headings[r.headingIdx].Line < lineNo {
+		r.headingIdx++ // scanned heading the AST never produced - skip so it can't shift the next real one's id
 	}
 
-	r.headingID = SlugHeading(RenderHeadingInline(raw.String()), r.usedIDs)
+	if r.headingIdx < len(r.headings) && r.headings[r.headingIdx].Line == lineNo {
+		r.headingID = r.headings[r.headingIdx].ID
+		r.headingIdx++
+	} else {
+		var raw bytes.Buffer
+		for i := 0; i < lines.Len(); i++ {
+			seg := lines.At(i)
+			raw.Write(seg.Value(source))
+		}
+		r.headingID = SlugHeading(RenderHeadingInline(raw.String()), r.usedIDs)
+	}
+
 	if sw != nil {
 		sw.startHeading()
 	}

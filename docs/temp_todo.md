@@ -24,7 +24,7 @@
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
-  - Cross-file heading-id collisions: `renderDocsMarkdown` now builds one TOC per file with independently-scoped dedup (`Headings` makes a fresh `usedIDs` map per call), then concatenates. If two changelog/release files each have a heading like `## Added`, both get id `added` and the combined page ends up with duplicate DOM ids and two TOC entries pointing at the same anchor. I confirmed this isn't a regression — the renderer already deduped ids per-file (`mdHandler.Render` per iteration, each with its own `usedIDs`) before this diff — but it's worth flagging since it's now made more visible/permanent by the accompanying comment ("each file keeps its own heading-id dedup scope"), which documents it as accepted rather than incidental. Not a blocker, just a known limitation now baked in as intentional.
+  - remove all _test files and replace them with our test package and the `--start-tests` parameter
 
 # every other time
 

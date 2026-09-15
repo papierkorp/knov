@@ -596,7 +596,7 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 // no README or release-notes fallback; with no changelog files it returns a
 // placeholder.
 func RenderChangelog() (string, []parser.TOCItem) {
-	if html, toc := renderDocsMarkdown("docs/changelogs", func(a, b string) bool { return a > b }); html != "" {
+	if html, toc := renderDocsMarkdown("docs/changelogs", func(a, b string) bool { return a > b }, make(map[string]int)); html != "" {
 		return html, toc
 	}
 	return `<p class="no-changelog">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no changelog available") + `</p>`, nil
@@ -605,18 +605,22 @@ func RenderChangelog() (string, []parser.TOCItem) {
 // RenderRelease renders the static release-information preamble (docs/release.md)
 // followed by the version/build info table and the curated end-user release
 // notes (docs/releases/*.md, newest first) - shared by the /system/release page
-// and the rail "release" fragment.
+// and the rail "release" fragment. The preamble shares its heading-id dedup map
+// with the release notes that follow (see renderDocsMarkdown) so a heading
+// repeated between docs/release.md and a release note still gets a unique id.
 func RenderRelease() (string, []parser.TOCItem) {
+	usedIDs := make(map[string]int)
+
 	var out strings.Builder
 	var toc []parser.TOCItem
 	if data, err := docsFiles.ReadFile("docs/release.md"); err == nil {
-		if rendered, err := parser.NewMarkdownHandler().Render(data, parser.PathlessRender, false); err == nil {
+		if rendered, headings, err := parser.NewMarkdownHandler().RenderWithUsedIDs(data, parser.PathlessRender, false, usedIDs); err == nil {
 			out.Write(rendered)
-			toc = parser.TOCFromMarkdown(strings.Split(string(data), "\n"))
+			toc = parser.HeadingsToTOC(headings)
 		}
 	}
 	out.WriteString(RenderVersionInfo(false))
-	html, releasesTOC := renderDocsMarkdown("docs/releases", releaseBefore)
+	html, releasesTOC := renderDocsMarkdown("docs/releases", releaseBefore, usedIDs)
 	out.WriteString(html)
 	toc = append(toc, releasesTOC...)
 	return out.String(), toc
@@ -624,9 +628,13 @@ func RenderRelease() (string, []parser.TOCItem) {
 
 // renderDocsMarkdown reads every *.md directly inside the embedded dir, orders
 // the names with less, renders each as pathless markdown and concatenates the
-// resulting HTML and TOC (each file keeps its own heading-id dedup scope, matching
-// the id each file's own Render call assigns its headings).
-func renderDocsMarkdown(dir string, less func(a, b string) bool) (string, []parser.TOCItem) {
+// resulting HTML and TOC. usedIDs carries heading-id dedup across the whole
+// combined page (threaded across files and, for RenderRelease, across its
+// docs/release.md preamble too) so two headings sharing text like "## Added"
+// don't collide into the same id; the TOC is built from the headings each
+// render call actually used (see parser.HeadingsToTOC), not a second scan, so
+// it can't drift from the rendered anchors.
+func renderDocsMarkdown(dir string, less func(a, b string) bool, usedIDs map[string]int) (string, []parser.TOCItem) {
 	var names []string
 	if entries, err := docsFiles.ReadDir(dir); err == nil {
 		for _, entry := range entries {
@@ -647,14 +655,14 @@ func renderDocsMarkdown(dir string, less func(a, b string) bool) (string, []pars
 			continue
 		}
 
-		rendered, err := mdHandler.Render(data, parser.PathlessRender, false)
+		rendered, headings, err := mdHandler.RenderWithUsedIDs(data, parser.PathlessRender, false, usedIDs)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to render %s/%s: %v", dir, name, err)
 			continue
 		}
 
 		combined.Write(rendered)
-		toc = append(toc, parser.TOCFromMarkdown(strings.Split(string(data), "\n"))...)
+		toc = append(toc, parser.HeadingsToTOC(headings)...)
 	}
 	return combined.String(), toc
 }
