@@ -201,17 +201,16 @@ func (h *MarkdownHandler) Render(content []byte, filePath string, editableSectio
 		),
 	)
 
-	var buf bytes.Buffer
+	sw := newSectionWriter(filePath, editableSections)
 	source := []byte(content)
-	if err := md.Convert(source, &buf); err != nil {
+	if err := md.Convert(source, sw); err != nil {
 		return nil, err
 	}
 
-	result := buf.String()
+	result := sw.out.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
 	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = sanitizeHTML(result)
-	result = h.wrapHeaderSections(result, filePath, editableSections)
 	return []byte(result), nil
 }
 
@@ -304,15 +303,15 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 // it matches parser.Headings (section editing / autocomplete) without a second,
 // drift-prone computation. usedIDs lives on the renderer, so collisions dedupe
 // in document order; headings never nest, so one headingID field is enough to
-// carry the id from the enter call to the exit call.
+// carry the id from the enter call to the exit call. (The TOC is built off the
+// raw markdown via TOCFromMarkdown/Headings, not off this HTML, so it isn't
+// affected - but its ids must still agree with this one, guarded by
+// markdowntest's caseHeadingScanMatchesRenderIDs.)
 //
-// Emitted format contract: `<hN id="slug">` - id is the first and only attribute
-// on the tag. wrapHeaderSections reads the id positionally with a regex that
-// expects it right after the level, so adding another attribute here (or moving
-// id) silently blanks the section wrappers. Change that regex too if this format
-// changes. (The TOC is built off the raw markdown via TOCFromMarkdown/Headings,
-// not off this HTML, so it isn't affected - but its ids must still agree with
-// this one, guarded by markdowntest's caseHeadingScanMatchesRenderIDs.)
+// It also drives sectionWriter's section boundaries: startHeading before the
+// opening tag closes out the content-section for everything since the last
+// heading, endHeading after the closing tag reopens buffering for the next one.
+// w is always the *sectionWriter Render constructs, never a plain writer.
 //
 // On exit it also emits the per-heading section buttons (see headerButtons),
 // keyed off r.headingID rather than the tag text. This is the only place heading
@@ -320,8 +319,12 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 // no id and no buttons.
 func (r *knovNodeRenderer) renderHeading(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	n := node.(*ast.Heading)
+	sw, _ := w.(*sectionWriter)
 	if !entering {
 		fmt.Fprintf(w, `<a href="#%s" class="header-anchor" aria-hidden="true">#</a>%s</h%d>`, r.headingID, r.headerButtons(), n.Level)
+		if sw != nil {
+			sw.endHeading(r.headingID)
+		}
 		return ast.WalkContinue, nil
 	}
 
@@ -333,6 +336,9 @@ func (r *knovNodeRenderer) renderHeading(w util.BufWriter, source []byte, node a
 	}
 
 	r.headingID = SlugHeading(RenderHeadingInline(raw.String()), r.usedIDs)
+	if sw != nil {
+		sw.startHeading()
+	}
 	fmt.Fprintf(w, `<h%d id="%s">`, n.Level, r.headingID)
 	return ast.WalkContinue, nil
 }
@@ -645,50 +651,76 @@ func (r *knovNodeRenderer) headerButtons() string {
 	return pdfBtn + editBtn
 }
 
-// wrapHeaderSections wraps content between headers in <div class="content-section">
-// and appends a section-edit button at the bottom-right of each section.
-func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string, editableSections bool) string {
-	headerRe := regexp.MustCompile(`<h([1-6])[^>]*>.*?</h[1-6]>`)
-	idRe := regexp.MustCompile(`id="([^"]+)"`)
-	relPath := pathutils.ToRelative(filePath)
-	matches := headerRe.FindAllStringIndex(htmlContent, -1)
+// sectionWriter is the target Render hands to goldmark: it implements util.BufWriter
+// itself, so goldmark uses it directly as the render output instead of wrapping a
+// plain buffer in its own bufio.Writer (see renderer.Renderer.Render). That gives it
+// first look at every byte any node renderer writes, built-in or knov's own, so it can
+// wrap content between headings in <div class="content-section"> as the document
+// renders instead of re-parsing the finished HTML string for <hN> tags afterward.
+//
+// Content is buffered per section (in segment) and only committed to out - trimmed,
+// and dropped if empty - at the next heading boundary or at end of document (Flush,
+// which goldmark calls once after the walk completes). renderHeading calls
+// startHeading/endHeading around a heading's own tag and children so that markup lands
+// in out directly, outside the wrapping divs.
+type sectionWriter struct {
+	out              bytes.Buffer
+	segment          bytes.Buffer
+	passthrough      bool
+	editID           string // id of the most recently closed heading; keys the edit button for the section that follows ("" before the first heading)
+	relPath          string
+	editableSections bool
+}
 
-	if len(matches) == 0 {
-		return fmt.Sprintf(`<div class="content-section">%s</div>`, htmlContent)
-	}
+func newSectionWriter(filePath string, editableSections bool) *sectionWriter {
+	return &sectionWriter{relPath: pathutils.ToRelative(filePath), editableSections: editableSections}
+}
 
-	var out strings.Builder
-	if matches[0][0] > 0 {
-		before := strings.TrimSpace(htmlContent[:matches[0][0]])
-		if before != "" {
-			fmt.Fprintf(&out, `<div class="content-section">%s</div>`, before)
-		}
+func (s *sectionWriter) dst() *bytes.Buffer {
+	if s.passthrough {
+		return &s.out
 	}
-	for i, match := range matches {
-		headerHTML := htmlContent[match[0]:match[1]]
-		out.WriteString(headerHTML)
-		start := match[1]
-		end := len(htmlContent)
-		if i+1 < len(matches) {
-			end = matches[i+1][0]
-		}
-		section := strings.TrimSpace(htmlContent[start:end])
-		if section != "" {
-			editBtn := ""
-			if relPath != PathlessRender && editableSections {
-				if idParts := idRe.FindStringSubmatch(headerHTML); len(idParts) >= 2 {
-					editBtn = fmt.Sprintf(
-						`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
-						pathutils.ToFileEditURL(relPath), url.QueryEscape(idParts[1]),
-						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
-						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
-					)
-				}
-			}
-			fmt.Fprintf(&out, `<div class="content-section">%s%s</div>`, section, editBtn)
-		}
+	return &s.segment
+}
+
+func (s *sectionWriter) Write(p []byte) (int, error)         { return s.dst().Write(p) }
+func (s *sectionWriter) WriteByte(c byte) error              { return s.dst().WriteByte(c) }
+func (s *sectionWriter) WriteRune(r rune) (int, error)       { return s.dst().WriteRune(r) }
+func (s *sectionWriter) WriteString(str string) (int, error) { return s.dst().WriteString(str) }
+func (s *sectionWriter) Available() int                      { return 0 } // unused by goldmark; only here to satisfy util.BufWriter
+func (s *sectionWriter) Buffered() int                       { return s.segment.Len() }
+func (s *sectionWriter) Flush() error                        { s.closeSection(); return nil }
+
+// startHeading closes out the section preceding a heading and switches to passthrough
+// so the heading's own tag and children write straight to out.
+func (s *sectionWriter) startHeading() {
+	s.closeSection()
+	s.passthrough = true
+}
+
+// endHeading switches back to buffering into the next section, keyed to id for that
+// section's edit button.
+func (s *sectionWriter) endHeading(id string) {
+	s.passthrough = false
+	s.editID = id
+}
+
+func (s *sectionWriter) closeSection() {
+	section := strings.TrimSpace(s.segment.String())
+	s.segment.Reset()
+	if section == "" {
+		return
 	}
-	return out.String()
+	editBtn := ""
+	if s.editID != "" && s.relPath != PathlessRender && s.editableSections {
+		editBtn = fmt.Sprintf(
+			`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
+			pathutils.ToFileEditURL(s.relPath), url.QueryEscape(s.editID),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
+		)
+	}
+	fmt.Fprintf(&s.out, `<div class="content-section">%s%s</div>`, section, editBtn)
 }
 
 // ---------------------------------------------------------------------------

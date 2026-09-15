@@ -188,13 +188,12 @@ func caseHeadingScanMatchesRenderIDs() test.CaseResult {
 	return cr
 }
 
-// sectionEditIDRe reads the section id straight off each rendered section-edit-btn's
-// href, mirroring wrapHeaderSections' own idRe/headerRe scan of the rendered HTML.
+// sectionEditIDRe reads the section id straight off each rendered section-edit-btn's href.
 var sectionEditIDRe = regexp.MustCompile(`\?section=([^"]*)"[^>]*class="section-edit-btn"`)
 
-// caseWrapHeaderSectionsMatchesHeadingIDs guards wrapHeaderSections' regex scan of the
-// rendered HTML (see its doc comment on parser_markdown.go): it must produce exactly one
-// content-section per heading, each with a section-edit-btn keyed to that heading's id.
+// caseWrapHeaderSectionsMatchesHeadingIDs guards sectionWriter (see its doc comment on
+// parser_markdown.go): it must produce exactly one content-section per heading, each with
+// a section-edit-btn keyed to that heading's id.
 func caseWrapHeaderSectionsMatchesHeadingIDs() test.CaseResult {
 	name := "wrap-header-sections-matches-heading-ids"
 	src := "# Intro\ntext\n## Notes\nmore\n## Notes\neven more\n"
