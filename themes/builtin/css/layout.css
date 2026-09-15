@@ -18,12 +18,14 @@ body {
   overflow: hidden;
 }
 
-/* reserve MOTD space off the static attribute, not var(--motd-height) inside
-   calc() — Chrome intermittently leaves that calc stale until a manual style
-   recalc when its value comes from a custom property (see static/css/motd.css) */
+/* reserve MOTD space off the static attribute, not a height/margin subtraction from
+   100dvh — that requires 100dvh to resolve identically in two places (body's own
+   height and this calc/%), which some browsers get wrong by a few px. Anchoring via
+   inset instead pins directly to the real viewport edges, no dvh arithmetic involved. */
 body[data-motd] #wrapper {
-  margin-top: 28px;
-  height: calc(100dvh - 28px);
+  position: fixed;
+  inset: 28px 0 0 0;
+  height: auto;
 }
 
 #layout-rail {
