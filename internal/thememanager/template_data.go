@@ -338,10 +338,11 @@ func NewFileViewTemplateData(title, filePath string, fileContent *files.FileCont
 type FileEditData struct {
 	FilePath  string // relative path of the file being edited
 	SectionID string // optional section anchor to edit directly (list/todo files)
+	Editor    string // optional editor override (e.g. "open file with" a non-default editor)
 }
 
 // NewFileEditTemplateData creates file edit specific data
-func NewFileEditTemplateData(filePath, sectionID string) PageData[FileEditData] {
+func NewFileEditTemplateData(filePath, sectionID, editor string) PageData[FileEditData] {
 	title := "Edit File"
 	if filePath != "" {
 		title = "Edit: " + filePath
@@ -349,6 +350,7 @@ func NewFileEditTemplateData(filePath, sectionID string) PageData[FileEditData] 
 	return newPageData(title, FileEditData{
 		FilePath:  filePath,
 		SectionID: sectionID,
+		Editor:    editor,
 	})
 }
 

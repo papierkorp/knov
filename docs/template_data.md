@@ -59,6 +59,7 @@ See [docs/create_your_own_theme.md](create_your_own_theme.md) for how theme temp
 |---|---|---|
 | FilePath | `string` | relative path of the file being edited |
 | SectionID | `string` | optional section anchor to edit directly (list/todo files) |
+| Editor | `string` | optional editor override (e.g. "open file with" a non-default editor) |
 
 ## BrowseFilesData
 

@@ -147,6 +147,7 @@
                             <button type="button" class="fp-menu-item" popovertarget="rename-modal"><i class="fa fa-i-cursor"></i> {{T "rename"}}</button>
                             <button type="button" class="fp-menu-item" popovertarget="move-modal"><i class="fa fa-folder-tree"></i> {{T "move"}}</button>
                             <button type="button" class="fp-menu-item" id="fp-rebuild-btn"><i class="fa fa-rotate"></i> {{T "rebuild"}}</button>
+                            <button type="button" class="fp-menu-item" popovertarget="open-with-modal"><i class="fa fa-file-import"></i> {{T "open file with"}}</button>
                             {{if .ShowPDFFileButton}}<a class="fp-menu-item" id="fp-export-pdf-link" href="#" :href="$store.filePanel.filepath ? '/api/files/export/pdf?filepath=' + $store.filePanel.fp : '#'"><i class="fa fa-file-pdf"></i> {{T "export to pdf"}}</a>{{end}}
                             <a class="fp-menu-item" id="fp-convert-dokuwiki-link" href="#" hidden :hidden="!$store.filePanel.isDokuwiki" :href="$store.filePanel.isDokuwiki ? '/api/files/export/markdown?filepath=' + $store.filePanel.fp : '#'"><i class="fa fa-file-export"></i> {{T "convert to markdown"}}</a>
                             <button type="button" class="fp-menu-item fp-menu-item--danger" popovertarget="delete-modal"><i class="fa fa-trash"></i> {{T "delete"}}</button>
@@ -310,6 +311,22 @@
                 <button type="button" class="btn-secondary" popovertarget="move-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="open-with-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "open file with"}}</h3>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=codemirror-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-code"></i> {{T "CodeMirror"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=list-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-list-ul"></i> {{T "List"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=todo-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-list-check"></i> {{T "Todo"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=filter-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-filter"></i> {{T "Filter"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=tracker-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-chart-line"></i> {{T "Tracker"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=index-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-list-ol"></i> {{T "Index"}}</a>
+        <a class="fp-menu-item" href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath + '?editor=book-editor' : '#'" popovertarget="open-with-modal" popovertargetaction="hide"><i class="fa fa-book"></i> {{T "Book"}}</a>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" popovertarget="open-with-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+        </div>
     </div>
 </div>
 

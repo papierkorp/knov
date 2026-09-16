@@ -41,8 +41,10 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 	var html string
 
-	// if section is specified, use section editor with the editor type from metadata
-	if sectionID != "" && fp != "" {
+	// if section is specified, use section editor with the editor type from metadata -
+	// unless an explicit non-codemirror editor was requested (e.g. "open file with"),
+	// which should override the section view
+	if sectionID != "" && fp != "" && (editorParam == "" || editorParam == string(files.EditorTypeCodeMirror)) {
 		html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
 		writeResponse(w, r, map[string]string{"filepath": fp, "section": sectionID}, html)
 		return

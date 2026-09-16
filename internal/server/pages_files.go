@@ -72,9 +72,10 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 	filePath := pathutils.ToRelative(strings.TrimPrefix(r.URL.Path, "/files/edit/"))
 	sectionID := r.URL.Query().Get("section")
+	editorType := r.URL.Query().Get("editor")
 
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileEditTemplateData(filePath, sectionID)
+	data := thememanager.NewFileEditTemplateData(filePath, sectionID, editorType)
 
 	err := tm.Render(w, "fileedit", data)
 	if err != nil {

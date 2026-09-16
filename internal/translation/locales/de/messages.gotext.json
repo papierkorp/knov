@@ -4222,6 +4222,11 @@
       "translation": "nur hervorheben, wenn die Auswahl einer vollständigen Wortgrenze entspricht"
     },
     {
+      "id": "open file with",
+      "message": "open file with",
+      "translation": ""
+    },
+    {
       "id": "open full logs",
       "message": "open full logs",
       "translation": "vollständige Logs öffnen"

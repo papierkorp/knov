@@ -14,6 +14,7 @@
 - always search the project since you already have all the files
 - no need for backwards compability since the app is not released yet - you can remove functions/routes
 - no need to update the changelogs since they are auto generated per git commits
+- there is background automation on my machine that watches git commits and auto-commits changes to docs/changelogs/, docs/releases/unreleased.md and docs/temp_todo.md (and can auto-commit other pending working-tree changes along with them) - if you see commits you didn't make, or changes to those files you didn't write, that's this automation, not a bug
 
 ## Architecture
 
