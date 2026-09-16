@@ -24,7 +24,6 @@
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
-  - The new anchors build `href` by string-concatenating `$store.filePanel.filepath` un-encoded, same as the pre-existing "edit" button and PDF/dokuwiki export links a few lines above. Not a new pattern, not worse than what's already there — but worth knowing this diff doesn't fix that latent issue, it just adds three more instances of it.
 
 # every other time
 

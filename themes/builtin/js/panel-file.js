@@ -42,6 +42,13 @@ document.addEventListener("alpine:init", () => {
       return encodeURIComponent(this.filepath);
     },
 
+    // per-segment encoded, for building /files/edit/<path> links - unlike
+    // fp (whole-string encoded, for a ?filepath= query param) this must
+    // keep "/" as a separator rather than escaping it to %2F.
+    get editPath() {
+      return this.filepath.split("/").map(encodeURIComponent).join("/");
+    },
+
     // an empty/unparseable layout means "show every tab, markup order" -
     // same fallback as an unset railLayout falling back to no rail groups,
     // just inverted since these 7 tabs are always the same fixed set.
