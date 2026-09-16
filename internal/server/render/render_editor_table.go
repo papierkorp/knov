@@ -111,17 +111,38 @@ function headerContextMenuItems() {
 	];
 }
 
-function insertColumn(column, before) {
-	const field = 'col' + (nextColIndex++);
-	const title = %s;
-	table.addColumn({
+function columnDefinition(field, title) {
+	return {
 		title: title,
 		field: field,
 		editor: tableOptions.editableColumns ? 'input' : false,
 		headerSort: tableOptions.sorting,
 		titleFormatter: makeTitleFormatter(title),
 		headerContextMenu: tableOptions.contextMenus ? headerContextMenuItems() : undefined,
-	}, before, column.getField());
+	};
+}
+
+// creates a column from a definition - shared by insertColumn and by pasteIntoTable's
+// column-growing loop. redraw defaults to true; pasteIntoTable passes false to skip the
+// expensive full-table redraw on each column of a multi-column growth and do it once after
+// the whole batch instead.
+function createColumn(definition, before, anchorField, redraw) {
+	const anchorColumn = anchorField ? table.getColumn(anchorField) : null;
+	const wasLast = !before && anchorColumn && anchorColumn === dataColumns()[dataColumns().length - 1];
+	table.addColumn(definition, before, anchorField);
+	if (wasLast) {
+		// fitDataStretch permanently pins the old last column's width once it has been
+		// stretched, so appending after it would otherwise leave the new column squeezed
+		// off past the edge of the table - free it back up and let the layout recompute
+		anchorColumn.setWidth(true);
+		if (redraw !== false) table.redraw(true);
+	}
+}
+
+function insertColumn(column, before, redraw) {
+	const field = 'col' + (nextColIndex++);
+	const title = %s;
+	createColumn(columnDefinition(field, title), before, column.getField(), redraw);
 }`, insertLeft, insertRight, alignLeft, alignCenter, alignRight, removeColumn, newColumn)
 }
 
@@ -295,6 +316,96 @@ let tableOptions = %s;
 
 let table;
 
+// splits clipboard text into a raw grid instead of Tabulator's built-in 'table' parser,
+// which drops any pasted columns beyond the ones the table already has. Parses CSV/TSV
+// quoting rules (a field starting with '"' runs until the closing '"', "" is a literal
+// quote, and a tab/newline inside quotes is part of the value, not a delimiter) so cells
+// copied from a spreadsheet that contain embedded tabs or newlines survive intact.
+// An unterminated quote (malformed/truncated clipboard data) is not specially handled -
+// inQuotes just stays true for the rest of the text, silently folding every remaining
+// tab/newline into one field instead of erroring. Accepted as-is: well-formed clipboard
+// data is the overwhelmingly common case and there's no good place to surface a parse
+// error from a paste event.
+function pasteGrid(text) {
+	text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+	const grid = [];
+	let row = [];
+	let field = '';
+	let inQuotes = false;
+	for (let i = 0; i < text.length; i++) {
+		const c = text[i];
+		if (inQuotes) {
+			if (c === '"') {
+				if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
+			} else {
+				field += c;
+			}
+		} else if (c === '"' && field === '') {
+			inQuotes = true;
+		} else if (c === '\t') {
+			row.push(field);
+			field = '';
+		} else if (c === '\n') {
+			row.push(field);
+			grid.push(row);
+			row = [];
+			field = '';
+		} else {
+			field += c;
+		}
+	}
+	row.push(field);
+	grid.push(row);
+	if (grid.length > 1 && grid[grid.length - 1].length === 1 && grid[grid.length - 1][0] === '') grid.pop();
+	return grid;
+}
+
+// pastes starting at the active range's top-left cell, growing columns (via insertColumn)
+// and rows (via addRow) so the paste always fits instead of being clipped to the current size.
+// Row growth and cell writes run inside withGroupedHistory so undo restores them in one step;
+// column growth is not tracked in history (see registerCustomHistoryTypes), so undoing a paste
+// that added columns leaves the new, now-empty columns in place. Cells are written via
+// cell.setValue() rather than row.update() because row.update() bypasses the event Tabulator's
+// history module listens on and would otherwise leave pasted values completely untracked by
+// undo/redo; that same event is what the cellEdited handler below listens on, so it also keeps
+// a trailing spare row after a paste that fills the last row, same as for a manual edit.
+function pasteIntoTable(grid) {
+	if (!grid.length) return false;
+	const ranges = table.getRanges();
+	const range = ranges[ranges.length - 1];
+	// clamp rather than abort on a stale/unmatched range reference - paste falls back to
+	// the top-left cell instead of silently no-op-ing
+	const startCol = range ? Math.max(0, dataColumns().indexOf(range.getColumns()[0])) : 0;
+	const startRow = range ? Math.max(0, table.getRows().indexOf(range.getRows()[0])) : 0;
+	const width = Math.max.apply(null, grid.map(function(r) { return r.length; }));
+
+	withGroupedHistory(function() {
+		let cols = dataColumns();
+		const colsToAdd = startCol + width - cols.length;
+		// skip createColumn's per-column redraw while growing (would otherwise force a full
+		// table reflow once per new column) and do a single redraw after the whole batch
+		for (let i = 0; i < colsToAdd; i++) {
+			cols = dataColumns();
+			insertColumn(cols[cols.length - 1], false, false);
+		}
+		if (colsToAdd > 0) table.redraw(true);
+		cols = dataColumns();
+
+		for (let i = startRow + grid.length - table.getRows().length; i > 0; i--) {
+			table.addRow({});
+		}
+		const rows = table.getRows();
+
+		grid.forEach(function(gridRow, ri) {
+			gridRow.forEach(function(val, ci) {
+				const col = cols[startCol + ci];
+				if (col) rows[startRow + ri].getCell(col.getField()).setValue(val);
+			});
+		});
+	});
+	return true;
+}
+
 function createTable(data, columns) {
 	columns.forEach(function(c) {
 		c.headerContextMenu = tableOptions.contextMenus ? headerContextMenuItems() : undefined;
@@ -316,6 +427,8 @@ function createTable(data, columns) {
 		rowHeader: showRowHeader ? { headerSort: false, resizable: false, frozen: true, minWidth: 30, width: 30, hozAlign: 'center', formatter: tableOptions.rowNumbers ? 'rownum' : 'handle', editor: false, rowHandle: tableOptions.selectableRows } : undefined,
 		history: true,
 		clipboard: tableOptions.selectableCellRange,
+		clipboardPasteParser: pasteGrid,
+		clipboardPasteAction: pasteIntoTable,
 		selectableRange: tableOptions.selectableCellRange,
 		selectableRangeColumns: tableOptions.selectableCellRange,
 		selectableRangeRows: tableOptions.selectableCellRange,
@@ -326,7 +439,7 @@ function createTable(data, columns) {
 		paginationSize: %d,
 		rowContextMenu: tableOptions.contextMenus ? rowContextMenuItems() : undefined,
 	});
-	registerRangeClearHistory(table.modules.history);
+	registerCustomHistoryTypes(table.modules.history);
 	table.on('cellEdited', function(cell) {
 		// keep a trailing spare row, same as the previous editor's minSpareRows
 		if (cell.getRow().getPosition() === table.getDataCount()) {
@@ -335,30 +448,47 @@ function createTable(data, columns) {
 	});
 }
 
-// Tabulator's built-in range-clear writes each cell's value one at a time, so its
-// history module records one undo step per cell. Register a combined history type
-// once (shared across table rebuilds) so our keydown handler below can collapse a
-// whole selection's clear into a single entry - one undo restores every cell.
+// Tabulator's history module records one undo step per cell edit or row add, so a
+// multi-cell range-clear or paste would otherwise take many Ctrl+Z presses to undo.
+// Register a combined 'grouped' history type once (shared across table rebuilds) that
+// replays a batch of cellEdit/rowAdd entries through Tabulator's own per-type
+// undoers/redoers, so withGroupedHistory below can collapse a whole operation into a
+// single undo step. Column add/delete (insertColumn / column.delete()) is intentionally
+// not recorded to history, so undoing a paste that grew the table restores its rows and
+// cells but leaves the added columns in place.
 //
 // This reaches into undocumented Tabulator internals (history.constructor.undoers/redoers,
 // history.history, history.index) that aren't covered by any automated test - there's no JS
-// test harness in this repo. Re-verify range-clear undo/redo by hand after bumping the
-// vendored tabulator-*.min.js.
-function registerRangeClearHistory(history) {
+// test harness in this repo. Re-verify range-clear/paste undo/redo by hand after bumping
+// the vendored tabulator-*.min.js.
+function registerCustomHistoryTypes(history) {
 	var HistoryClass = history.constructor;
-	if (HistoryClass.undoers.rangeClear) return;
-	HistoryClass.undoers.rangeClear = function(e) {
-		e.data.forEach(function(entry) {
-			entry.component.setValueProcessData(entry.data.oldValue);
-			entry.component.cellRendered();
-		});
+	if (HistoryClass.undoers.grouped) return;
+
+	HistoryClass.undoers.grouped = function(e) {
+		for (var i = e.data.length - 1; i >= 0; i--) {
+			HistoryClass.undoers[e.data[i].type].call(this, e.data[i]);
+		}
 	};
-	HistoryClass.redoers.rangeClear = function(e) {
-		e.data.forEach(function(entry) {
-			entry.component.setValueProcessData(entry.data.newValue);
-			entry.component.cellRendered();
-		});
+	HistoryClass.redoers.grouped = function(e) {
+		for (var i = 0; i < e.data.length; i++) {
+			HistoryClass.redoers[e.data[i].type].call(this, e.data[i]);
+		}
 	};
+}
+
+// runs fn and collapses any history entries it produces into a single 'grouped' entry
+// (registered above), so multi-cell/multi-row operations like a range clear or a paste
+// undo in one step instead of one step per cell or row
+function withGroupedHistory(fn) {
+	var history = table.modules.history;
+	var beforeIndex = history.index;
+	fn();
+	if (history.index > beforeIndex) {
+		var entries = history.history.splice(beforeIndex + 1, history.index - beforeIndex);
+		history.index = beforeIndex;
+		history.action('grouped', entries[0].component, entries);
+	}
 }
 
 container.addEventListener('keydown', function(e) {
@@ -367,14 +497,9 @@ container.addEventListener('keydown', function(e) {
 	var ranges = table.getRanges().filter(function(r) { return r.getCells().length; });
 	if (!ranges.length) return;
 	e.preventDefault();
-	var history = table.modules.history;
-	var beforeIndex = history.index;
-	ranges.forEach(function(r) { r.clearValues(); });
-	if (history.index > beforeIndex) {
-		var entries = history.history.splice(beforeIndex + 1, history.index - beforeIndex);
-		history.index = beforeIndex;
-		history.action('rangeClear', entries[0].component, entries);
-	}
+	withGroupedHistory(function() {
+		ranges.forEach(function(r) { r.clearValues(); });
+	});
 });
 
 createTable(rowsToObjects(tableData.headers, tableData.rows).concat([{}]), buildColumns(tableData.headers, tableData.aligns));

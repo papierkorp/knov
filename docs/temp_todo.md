@@ -16,13 +16,14 @@
     - add 3 dots to the right of the "+" and move the "X" remove button into there
     - add a reset to 0 button (in red) to the 3 dots
     - add tests
-  - table editor => paste in a table should create rows+columns if neccessary
   - table editor => remove multiple selected rows/columns
+  - toc in codemirror edit all
 - fixes
   -
 - chore
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
+  - **Test coverage** — the comments are upfront that none of this has automated coverage, and per `docs/testing.md` this repo genuinely has no lane for it (not a pure-logic Go test, not a live-instance suite — it's a JS string baked into a Go template). That was already true for the old `registerRangeClearHistory`, but this diff meaningfully grows the amount of version-sensitive, private-API-dependent logic sitting in that untested zone (column undo/redo, mixed-type batch replay, cell rebinding). A future `tabulator-*.min.js` bump could silently break undo without anything failing in CI.
 
 # every other time
 
