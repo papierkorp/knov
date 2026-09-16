@@ -72,6 +72,12 @@ release:
 killdev:
 	-fuser -k 1324/tcp
 
+test:
+	rm -rf ./temp-knov
+	mkdir ./temp-knov
+	$(MAKE) prod && cp bin/$(APP_NAME)* temp-knov/ && cp .env.example temp-knov/.env
+	@echo "cd temp-knov"
+
 tempai:
 	@echo "Creating tempai folder for AI context (flat structure)..."
 	@rm -rf tempai
@@ -126,4 +132,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev devd swaggo-api-init translation prod mobile docker-build-dev docker-build-deployment docker-run-dev tree changelog release docs-templatedata env-example tempai killdev
+.PHONY: dev devd swaggo-api-init translation prod mobile docker-build-dev docker-build-deployment docker-run-dev tree changelog release docs-templatedata env-example tempai killdev test
