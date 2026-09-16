@@ -28,15 +28,14 @@ Alternative to running the binary directly:
 - Android only - iOS isn't feasible for a self-hosted Go binary
 - Install [Termux](https://termux.dev) from F-Droid or GitHub releases, not the Play Store version (outdated)
 - `make mobile` builds a Linux arm64 binary (`bin/knov-arm64`) - Termux runs it as a regular Linux binary, no Android-specific build needed
-- Copy the binary and your `.env` to the phone, run it like any other Linux binary, then open `http://localhost:1324` in the phone's browser
+- Copy the binary and optionally your `.env` to the phone, run it like any other Linux binary, then open `http://localhost:1324` in the phone's browser
 - Keep it running: `termux-wake-lock` stops Android from suspending the CPU while knov runs in the background; run knov inside `tmux` so it survives closing the Termux app; install the Termux:Boot add-on to auto-start it on device boot
 
 ## First Run
 
-1. Copy `.env.example` to `.env` and adjust the values
-2. Run the binary or .exe
-3. Open your browser at `http://localhost:1324` (or your configured port)
-4. Check `/system/environment` any time to see every recognized `KNOV_*` variable with its description, default and current value
+1. Run the binary or .exe - without a `.env` file it starts with defaults; to customize settings, copy `.env.example` to `.env` first and adjust the values
+2. Open your browser at `http://localhost:1324` (or your configured port)
+3. Check `/system/environment` any time to see every recognized `KNOV_*` variable with its description, default and current value
 
 Nothing else needs to be set up by hand. On the first start knov creates every folder it needs (see below), initialises a git repository if none is configured, and unpacks the builtin theme.
 
@@ -83,7 +82,7 @@ Back the data and storage folders up to keep everything safe.
 
 # Configuration
 
-All settings go in your `.env` file. Copy `.env.example` to get started — every option is listed there with a description, and `/system/environment` shows the full live list. For a per-system breakdown of every `KNOV_*` variable see [configuration.md](configuration.md).
+All settings go in an optional `.env` file - without one, defaults are used. Copy `.env.example` to `.env` to get started — every option is listed there with a description, and `/system/environment` shows the full live list. For a per-system breakdown of every `KNOV_*` variable see [configuration.md](configuration.md).
 
 ## Notes
 

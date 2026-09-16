@@ -1,7 +1,7 @@
 # Configuration
 
 A deeper look at each system. For the initial setup see `quickstart.md`.  
-All env variables go in your `.env` file, starting from `.env.example` - changes require a restart (exceptions noted below). See `/system/environment` for every recognized `KNOV_*` variable with its description, default and current value.
+All env variables go in an optional `.env` file, starting from `.env.example` - without one, every variable falls back to its default. Changes require a restart (exceptions noted below). See `/system/environment` for every recognized `KNOV_*` variable with its description, default and current value.
 
 ---
 
