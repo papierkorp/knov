@@ -18,7 +18,6 @@
     - add tests
   - table editor => paste in a table should create rows+columns if neccessary
   - table editor => remove multiple selected rows/columns
-  - add a commits since last release to the releasenotes (or show last build vs current build number)
 - fixes
   -
 - chore

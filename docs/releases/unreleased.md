@@ -1,5 +1,7 @@
 # unreleased
 
+_41 commits since last release_
+
 ## changes
 - add table button to codemirror editor
 - add settings menu to tableeditor

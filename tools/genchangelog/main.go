@@ -78,6 +78,7 @@ func (m *monthData) empty() bool {
 
 type releaseData struct {
 	version  string
+	commits  int
 	breaking []string
 	changes  []string
 	features []string
@@ -150,6 +151,7 @@ func main() {
 			releases[currentVersion] = rd
 			releaseOrder = append(releaseOrder, currentVersion)
 		}
+		rd.commits++
 		classifyRelease(rd, subject, c.Message)
 		return nil
 	})
@@ -232,6 +234,7 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 			}
 			buf.Write(readme)
 		} else {
+			fmt.Fprintf(&buf, "_%d commits since last release_\n\n", rd.commits)
 			writeSection(&buf, "##", "breaking changes", rd.breaking)
 			writeSection(&buf, "##", "changes", rd.changes)
 			writeSection(&buf, "##", "features", rd.features)
