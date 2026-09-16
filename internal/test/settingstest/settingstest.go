@@ -1,24 +1,19 @@
-// Package settingstest - Settings/themes/config suite: exercises configmanager's exported
-// settings registry (bulk + individual set, validation, partial-update semantics),
-// thememanager's theme list/switch/settings, and configmanager's language/favicon accessors
-// directly - every function involved here is exported (internal/server/api_settings.go,
-// api_themes.go and api_config.go are thin wrappers with no business logic to replicate,
-// except favicon upload/delete which inlines its file write in the handler).
+// Package settingstest - Themes suite: exercises thememanager's theme list/switch against the
+// real installed theme files on disk (configmanager.GetThemesPath()), which only exist against
+// a real app instance - not something a sandboxed go test can cheaply fake. Every other former
+// settingstest case (plain settings, favicon, hidePaths, languages, theme settings persistence)
+// only needed configStorage and has moved to internal/configmanager/configmanager_settings_test.go.
 //
-// Every case here mutates real persisted global settings (not sandboxed docs/test/ data),
-// same category as exporttest's caseSettingsExportImportRoundtrip - each case captures the
-// original value and restores it via defer.
-//
-// Git remote URL and data path are no longer settable in-app (admin UI removed, .env-only now,
-// see githistorytest's caseGitRemotePushPullTestAuth for the configmanager.SetGitRemoteForTest +
-// git.EnsureRemote() pair still exercised there, since UpdateEnvFile itself no longer exists).
+// Every case here mutates real persisted global state (not sandboxed docs/test/ data), same
+// category as exporttest's caseSettingsExportImportRoundtrip - each case captures the original
+// value and restores it via defer.
 package settingstest
 
 import (
 	"knov/internal/test"
 )
 
-// Suite runs the settings/themes/config test cases against the real settings store.
+// Suite runs the theme test cases against the real installed themes.
 type Suite struct{}
 
 func init() {
@@ -29,16 +24,8 @@ func (Suite) Name() string { return "settings" }
 
 func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
-		caseIndividualSetSetting,
-		caseBulkSetSettings,
-		caseBulkSetUnknownKeySkipped,
-		caseBulkSetValidationError,
 		caseThemeList,
 		caseThemeSwitch,
-		caseThemeSettingsRoundtrip,
-		caseLanguages,
-		caseFaviconUploadDelete,
-		caseHidePathsTagValidation,
 	}
 
 	return test.RunCases("settings", cases), nil

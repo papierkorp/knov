@@ -1,6 +1,9 @@
 # Testing
 
-In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real built binary: `knov --start-tests` runs every suite headless against an isolated `knov_temp_test` copy of the live data/storage directories (see `test.PrepareIsolatedStorage`/`test.RunAllTestsAndLog`, called from main.go), then exits - it's a separate process from any `knov` instance already running, so it never touches live data. Logging follows the same split: `logging.SetIsolatedLogsDir` (called from main.go before `configmanager.InitAppConfig`) redirects every log key except `KeyInAppTests` into `knov_temp_test/logs`, so the incidental logging from exercising every suite doesn't land in live log files - `KeyInAppTests` still writes to the real logs directory, giving a single persistent history of every test run, live or isolated. The filter suite (`internal/test/filtertest/`) is the model every other suite follows.
+Two kinds of tests live in this repo, split by whether a case needs a real running app instance:
+
+- **In-app runtime test suites** (`internal/test/<x>test`, run via `knov --start-tests`) - for anything that depends on live data/storage, real installed theme files on disk, or other state a sandboxed `go test` can't cheaply fake. Knov ships as a single binary with no go toolchain on the target machine, so these need to be runnable against a real built binary: `knov --start-tests` runs every suite headless against an isolated `knov_temp_test` copy of the live data/storage directories (see `test.PrepareIsolatedStorage`/`test.RunAllTestsAndLog`, called from main.go), then exits - it's a separate process from any `knov` instance already running, so it never touches live data. Logging follows the same split: `logging.SetIsolatedLogsDir` (called from main.go before `configmanager.InitAppConfig`) redirects every log key except `KeyInAppTests` into `knov_temp_test/logs`, so the incidental logging from exercising every suite doesn't land in live log files - `KeyInAppTests` still writes to the real logs directory, giving a single persistent history of every test run, live or isolated. The filter suite (`internal/test/filtertest/`) is the model every other suite follows.
+- **Plain `go test` files** colocated in the package they cover - for pure logic and anything that only needs a package-level backend (e.g. `configStorage`) that a `TestMain` can point at a throwaway `os.MkdirTemp` dir, with no dependency on real installed files or a live app instance. See "Plain `go test` packages" below.
 
 **Suite interface**
 - `internal/test` defines the shared shape every suite returns: `CaseResult` (name, free-form `Expected`/`Actual` strings, error, success, `Detail any` for suite-specific extras) and `SuiteResult` (suite name, totals, pass/fail, list of `CaseResult`), plus a `Suite` interface (`Name() string`, `Run() (*SuiteResult, error)`)
@@ -89,22 +92,21 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Both zip-export handlers are inline `filepath.Walk`+`archive/zip` logic with no exported wrapper, so the suite replicates the walk directly, round-tripping through a real `zip.Writer`/`zip.Reader`
 - Settings export/import round-trips a real setting (`HideTodo`) through `configmanager.ExportSettingsJSON`/`ImportSettingsJSON`, restored via `defer` since it's a real global setting, not sandboxed test data
 
-## Notification suite (`internal/test/notificationstest`)
-- Calls `internal/notificationStorage`'s exported API directly (`Add`/`ConsumePending`/`GetRecent`/`DeleteByID`/`Clear`) - everything here is already exported, no handler logic to replicate
-- Notifications are a real global sqlite log, not tied to `docs/test/`, so cases self-clean themselves rather than relying on the folder wipe
-- `Clear()` is the real "Clear all" admin action and has no undo - the case accepts that outcome, same as a user clicking the real button would
-
 ## Settings suite (`internal/test/settingstest`)
-- Calls `configmanager`'s settings registry (`BulkSetFromForm`, `GetSetting(key).SetFromString`) and `thememanager`'s theme list/switch/settings directly - almost everything here is exported, the one exception being favicon upload/delete's inline file write
-- Every case mutates a real persisted global setting (not sandboxed test data) and restores the original value via `defer`, same pattern as exporttest's settings round-trip
-- Config repo url isn't re-tested here - it's the same `UpdateEnvFile`+`git.EnsureRemote` pair githistorytest's remote case already exercises; data path change stays out of scope entirely (needs a process restart to take effect)
+- Only theme list/switch are left here (`thememanager.GetThemeManager` loads `themes/<name>/theme.json` off `configmanager.GetThemesPath()`, which only exists against a real app instance)
+- Everything else that used to be here (plain settings, favicon, hidePaths, languages, theme *settings* persistence) only ever needed `configStorage`, and has moved to `internal/configmanager/configmanager_settings_test.go` - see "Plain `go test` packages" below
 
 ## Logs suite (`internal/test/logstest`)
 - Calls `logging.GetRecentEntries` directly for the ring buffer, and replicates `handleAPIGetLogsFile`'s inline offset/limit slicing arithmetic for pagination/chunking, since there's no exported wrapper for it
 - Reuses `logging.KeyInAppTests` - already a real, shared log key `test.RunAllTestsAndLog` logs every `--start-tests` run's summary to - rather than inventing a synthetic key
 - Assertions check that probe lines appear in the expected region (substring containment) rather than exact byte/line-count equality, tolerating real interleaved log activity
 
-## Parser suite (`internal/test/parsertest`)
-- Calls `parser.ProcessMarkdownLinks` directly - pure string-in/string-out, no file IO and no global state, the only suite with no setup/teardown at all
-- Covers empty-link-text fallback labels, percent-encoded path/anchor segments decoded before the fallback label is built (the href's anchor fragment itself is left exactly as originally written), unicode header slug capitalization, and external links/image embeds left untouched
-- `humanizeSlug` stays unexported and is fully exercised through `ProcessMarkdownLinks`, so no replication was needed here, unlike every other suite
+## Plain `go test` packages
+Cases with no dependency on real installed files or a live app instance live as ordinary `_test.go` files in the package they cover, run with `go test ./...` like any Go project - no `--start-tests` involved.
+
+- `internal/parser/parser_links_test.go`, `parser_headings_test.go` - `ProcessMarkdownLinks`, wikilink target/anchor resolution, and the heading scanner (including the end-to-end guard that pre-render scan ids match the rendered `<hN id="...">` ids)
+- `internal/markdown/markdown_test.go` - the fence-aware scanning primitives (`FenceMask`, `CodeBlocks`, `StripFencedBlocks`)
+- `internal/notificationStorage/notificationStorage_test.go` - `Add`/`ConsumePending`/`GetRecent`/`DeleteByID`/`Clear`, against a `TestMain`-initialized sqlite db in an `os.MkdirTemp` dir instead of the real global notification log
+- `internal/configmanager/configmanager_settings_test.go` - the settings registry (`BulkSetFromForm`, `GetSetting(key).SetFromString`), languages, hidePaths validation, favicon upload/delete, and theme *settings* (`GetThemeSetting`/`SetThemeSetting`, `configStorage`-backed only, no real `theme.json` needed) - all against a `TestMain`-initialized `configStorage` in an `os.MkdirTemp` dir instead of the real live config
+
+When adding a new case: if it only needs a package-level backend a `TestMain` can point at a temp dir, add it here; if it needs real installed files (themes, live data) or the full app wired up, it belongs in an `internal/test/<x>test` suite instead.

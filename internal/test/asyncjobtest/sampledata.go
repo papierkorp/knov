@@ -87,7 +87,7 @@ func waitForTerminal(id string, timeout time.Duration) (*jobStorage.JobRecord, e
 // drainPending consumes and discards every currently pending notification, so a case starting
 // from a known-empty pending queue doesn't observe a stale item left over from real app usage or
 // a previous run. Destructive to any real pending flash message not yet displayed - accepted
-// tradeoff, same as notificationstest.drainPending.
+// tradeoff, same as notificationStorage_test.go's drainPending.
 func drainPending() error {
 	for {
 		n, err := notificationStorage.ConsumePending()

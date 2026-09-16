@@ -53,3 +53,7 @@
 
 - Use fmt.Fprintf(…) instead of WriteString(fmt.Sprintf(…)) (QF1012 default)
 - if possible use slices.Contains instead of loops
+
+## Testing
+
+- see docs/testing.md - pure logic / anything a `TestMain` can point at an `os.MkdirTemp` dir goes in a normal colocated `_test.go` file (`go test ./...`); anything needing real installed files or a live app instance goes in an `internal/test/<x>test` suite run via `knov --start-tests`

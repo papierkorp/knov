@@ -9,6 +9,13 @@ import (
 	"knov/internal/thememanager"
 )
 
+// caseThemeList and caseThemeSwitch are the two cases left in this suite: they depend on the
+// real installed theme files on disk (thememanager.GetThemeManager loads themes/<name>/theme.json
+// from configmanager.GetThemesPath()), which only exist against a real app instance - not
+// something a sandboxed go test can cheaply fake. Every other former settingstest/configtest
+// case (plain settings, favicon, hidePaths, languages, theme *settings* persistence, which only
+// needs configStorage) has moved to internal/configmanager/configmanager_settings_test.go.
+
 // caseThemeList covers handleAPIGetThemes' GetAvailableThemes - "builtin" (themes/builtin) is the
 // only theme guaranteed to ship, so it's the only one asserted here. Any other themes are
 // environment-specific (dev fixtures, user-installed) and not assumed present.
@@ -78,57 +85,6 @@ func caseThemeSwitch() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "SetCurrentTheme did not switch the active theme as expected"
-	}
-	return cr
-}
-
-// caseThemeSettingsRoundtrip covers handleAPIGetThemeSettings/handleAPISetThemeSetting's
-// SetThemeSetting/GetThemeSetting/GetCurrentThemeSettings path, using builtin's "colorScheme"
-// select setting (themes/builtin/theme.json) as a probe. Uses SetTheme rather than
-// SetCurrentTheme so the probe applies regardless of whichever theme is active when the suite
-// runs, without needing to switch the active theme.
-func caseThemeSettingsRoundtrip() test.CaseResult {
-	name := "theme-settings-roundtrip"
-
-	const probeKey = "colorScheme"
-	original := configmanager.GetThemeSetting("builtin", probeKey)
-	// origStr defaults to "" when no override was ever stored (GetThemeSetting returns nil) -
-	// restoreValue falls back to themes/builtin/theme.json's declared default ("green")
-	// instead, so a fresh install doesn't end up with a spurious explicit override.
-	origStr, existed := original.(string)
-	restoreValue := origStr
-	if !existed {
-		restoreValue = "green"
-	}
-	defer configmanager.SetThemeSetting("builtin", probeKey, restoreValue)
-
-	probe := "blue"
-	if restoreValue == "blue" {
-		probe = "red"
-	}
-	configmanager.SetThemeSetting("builtin", probeKey, probe)
-
-	got := configmanager.GetThemeSetting("builtin", probeKey)
-	current := configmanager.GetCurrentThemeSettings()
-
-	gotMatches := got == probe
-	inCurrentMap := false
-	if configmanager.GetTheme() == "builtin" {
-		v, ok := current[probeKey]
-		inCurrentMap = ok && v == probe
-	} else {
-		inCurrentMap = true // GetCurrentThemeSettings reflects the active theme, not builtin - not applicable here
-	}
-
-	success := gotMatches && inCurrentMap
-	cr := test.CaseResult{
-		Name:     name,
-		Expected: fmt.Sprintf("builtin.%s=%v after SetThemeSetting", probeKey, probe),
-		Actual:   fmt.Sprintf("GetThemeSetting=%v", got),
-		Success:  success,
-	}
-	if !success {
-		cr.Error = "theme setting did not round-trip through SetThemeSetting/GetThemeSetting as expected"
 	}
 	return cr
 }
