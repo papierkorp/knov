@@ -2,7 +2,9 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,6 +26,7 @@ import (
 // @Param title formData string false "Optional heading"
 // @Param counter_id[] formData array false "Counter ids (blank for a new counter), index-aligned with counter_title[]"
 // @Param counter_title[] formData array false "Counter titles, index-aligned with counter_id[]"
+// @Param counter_columns[] formData array false "Per-counter ColumnSet as JSON, index-aligned with counter_id[]"
 // @Produce json,html
 // @Success 200 {object} map[string]string "empty body; sets HX-Redirect to the tracker's edit page"
 // @Router /api/trackers/save [post]
@@ -40,7 +43,14 @@ func handleAPITrackerSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tracker.SetMeta(trackerID, r.FormValue("title"), trackerCounterRows(r)); err != nil {
+	rows, err := trackerCounterRows(r)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "malformed tracker counter rows: %v", err)
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "failed to parse form"))
+		return
+	}
+
+	if err := tracker.SetMeta(trackerID, r.FormValue("title"), rows); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save tracker config: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to save tracker"))
 		return
@@ -51,20 +61,34 @@ func handleAPITrackerSave(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"tracker": trackerID}, "")
 }
 
-// trackerCounterRows zips the parallel counter_id[]/counter_title[] form arrays
-// into editor rows for tracker.SetMeta.
-func trackerCounterRows(r *http.Request) []tracker.CounterInput {
+// trackerCounterRows zips the parallel counter_id[]/counter_title[]/counter_columns[]
+// form arrays into editor rows for tracker.SetMeta. counter_columns[] must be either
+// absent or exactly as long as counter_title[] - a partial submission signals a
+// malformed request rather than "no preference", so it's rejected instead of
+// silently defaulting some rows' columns.
+func trackerCounterRows(r *http.Request) ([]tracker.CounterInput, error) {
 	ids := r.Form["counter_id[]"]
 	titles := r.Form["counter_title[]"]
+	columns := r.Form["counter_columns[]"]
+	if len(columns) != 0 && len(columns) != len(titles) {
+		return nil, fmt.Errorf("counter_columns[] has %d entries, want 0 or %d", len(columns), len(titles))
+	}
+
 	rows := make([]tracker.CounterInput, 0, len(titles))
 	for i, title := range titles {
 		id := ""
 		if i < len(ids) {
 			id = ids[i]
 		}
-		rows = append(rows, tracker.CounterInput{ID: id, Title: title})
+		var cols tracker.ColumnSet
+		if i < len(columns) {
+			if err := json.Unmarshal([]byte(columns[i]), &cols); err != nil {
+				return nil, fmt.Errorf("counter_columns[%d]: %w", i, err)
+			}
+		}
+		rows = append(rows, tracker.CounterInput{ID: id, Title: title, Columns: cols})
 	}
-	return rows
+	return rows, nil
 }
 
 // @Summary Add tracker counter row
@@ -110,6 +134,40 @@ func handleAPITrackerTick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID, "delta": delta},
+		render.RenderTrackerCounterRow(trackerID, counter))
+}
+
+// @Summary Reset a tracker counter
+// @Description Zero a counter's recorded days back to 0, save, and return the updated counter row
+// @Tags tracker
+// @Accept application/x-www-form-urlencoded
+// @Param trackerid formData string true "Tracker identifier (name)"
+// @Param counterid formData string true "Counter id"
+// @Produce json,html
+// @Success 200 {string} string "updated tracker counter row html"
+// @Router /api/trackers/reset [post]
+func handleAPITrackerReset(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	if err := r.ParseForm(); err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "failed to parse form"))
+		return
+	}
+
+	trackerID := strings.TrimSpace(r.FormValue("trackerid"))
+	counterID := strings.TrimSpace(r.FormValue("counterid"))
+
+	counter, err := tracker.Reset(trackerID, counterID)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to reset tracker counter: %v", err)
+		status := http.StatusInternalServerError
+		if errors.Is(err, tracker.ErrNotFound) {
+			status = http.StatusBadRequest
+		}
+		writeAPIError(w, r, status, translation.SprintfForRequest(lang, "failed to reset counter"))
+		return
+	}
+
+	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID},
 		render.RenderTrackerCounterRow(trackerID, counter))
 }
 

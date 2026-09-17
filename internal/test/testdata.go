@@ -15,6 +15,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/tracker"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -69,6 +70,7 @@ func CleanTestData() error {
 	}
 
 	deleteTestFilter()
+	deleteTestTracker()
 
 	logging.LogInfo(logging.KeyApp, "test data cleaned")
 	return nil
@@ -88,6 +90,7 @@ func setupTestMetadata() error {
 	}
 
 	createTestFilter()
+	createTestTracker()
 
 	return files.MetaDataLinksRebuild(context.Background(), logging.KeyApp, nil)
 }
@@ -105,6 +108,58 @@ func createTestFilter() {
 	}
 	if err := filter.SaveFilterConfig(cfg, "test/example_filter"); err != nil {
 		logging.LogError(logging.KeyApp, "failed to create test filter: %v", err)
+	}
+}
+
+// createTestTracker seeds an example tracker under test/ with a couple of counters
+// backdated across three months, so the editor and its generated stats file have
+// something to show - including the trend sparkline, which needs more than one
+// month of data.
+func createTestTracker() {
+	id := "test/example_tracker"
+	if err := tracker.SetMeta(id, "Example Tracker", []tracker.CounterInput{
+		{Title: "coffees", Columns: tracker.AllColumns},
+		{Title: "pushups", Columns: tracker.AllColumns},
+	}); err != nil {
+		logging.LogError(logging.KeyApp, "failed to create test tracker: %v", err)
+		return
+	}
+
+	config, err := tracker.GetConfig(id)
+	if err != nil || config == nil {
+		logging.LogError(logging.KeyApp, "failed to load test tracker after create: %v", err)
+		return
+	}
+
+	now := time.Now()
+	monthlyDeltas := []int{3, 7, 5} // 2 months ago, last month, this month
+	for _, c := range config.Counters {
+		for i, delta := range monthlyDeltas {
+			monthsAgo := len(monthlyDeltas) - 1 - i
+			day := now.AddDate(0, -monthsAgo, 0)
+			if _, err := tracker.TickDay(id, c.ID, day, delta); err != nil {
+				logging.LogError(logging.KeyApp, "failed to seed test tracker counter %s: %v", c.Title, err)
+			}
+		}
+	}
+}
+
+// deleteTestTracker removes every tracker config under the test/ prefix - the
+// example_tracker seeded by createTestTracker plus any left behind by the test
+// suites, so cleaning test data leaves nothing test-related.
+func deleteTestTracker() {
+	ids, err := tracker.GetAllTrackers()
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to list trackers for cleanup: %v", err)
+		return
+	}
+	for _, id := range ids {
+		if !strings.HasPrefix(id, "test/") {
+			continue
+		}
+		if err := tracker.DeleteConfig(id); err != nil {
+			logging.LogError(logging.KeyApp, "failed to delete test tracker %s: %v", id, err)
+		}
 	}
 }
 

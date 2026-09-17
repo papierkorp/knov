@@ -3351,19 +3351,75 @@ dl.media-info dd {
   color: var(--text);
 }
 
-#component-tracker-editor .tracker-remove-btn {
-  padding: 6px 9px;
-  line-height: 1;
+#component-tracker-editor .tracker-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#component-tracker-editor .tracker-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-secondary);
+  padding: 6px 9px;
+  line-height: 1;
   cursor: pointer;
 }
 
-#component-tracker-editor .tracker-remove-btn:hover {
-  border-color: var(--danger);
-  color: var(--danger);
+#component-tracker-editor .tracker-menu-btn:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+#component-tracker-editor .tracker-menu {
+  position: fixed;
+  z-index: 30;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+}
+
+#component-tracker-editor .tracker-menu[hidden] {
+  display: none;
+}
+
+#component-tracker-editor .tracker-menu .btn-small {
+  width: 100%;
+  text-align: left;
+}
+
+/* .btn-small's background otherwise wins over .btn-danger's - same class-selector
+   specificity, declared later - so restate it here at higher specificity. */
+#component-tracker-editor .tracker-menu .btn-small.btn-danger {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+#component-tracker-editor .tracker-menu hr {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2px 0;
+}
+
+#component-tracker-editor .tracker-col-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  font-size: 0.85em;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 #component-tracker-editor .tracker-hint {

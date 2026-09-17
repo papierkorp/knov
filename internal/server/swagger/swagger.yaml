@@ -4781,6 +4781,34 @@ paths:
       summary: Delete tracker
       tags:
       - tracker
+  /api/trackers/reset:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Zero a counter's recorded days back to 0, save, and return the
+        updated counter row
+      parameters:
+      - description: Tracker identifier (name)
+        in: formData
+        name: trackerid
+        required: true
+        type: string
+      - description: Counter id
+        in: formData
+        name: counterid
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: updated tracker counter row html
+          schema:
+            type: string
+      summary: Reset a tracker counter
+      tags:
+      - tracker
   /api/trackers/save:
     post:
       consumes:
@@ -4804,6 +4832,10 @@ paths:
       - description: Counter titles, index-aligned with counter_id[]
         in: formData
         name: counter_title[]
+        type: array
+      - description: Per-counter ColumnSet as JSON, index-aligned with counter_id[]
+        in: formData
+        name: counter_columns[]
         type: array
       produces:
       - application/json

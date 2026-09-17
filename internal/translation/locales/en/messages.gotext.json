@@ -52,6 +52,21 @@
       "translation": ""
     },
     {
+      "id": "24h",
+      "message": "24h",
+      "translation": ""
+    },
+    {
+      "id": "30d",
+      "message": "30d",
+      "translation": ""
+    },
+    {
+      "id": "7d",
+      "message": "7d",
+      "translation": ""
+    },
+    {
       "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "translation": ""
@@ -399,11 +414,6 @@
     {
       "id": "Duration",
       "message": "Duration",
-      "translation": ""
-    },
-    {
-      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
-      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
       "translation": ""
     },
     {
@@ -849,6 +859,11 @@
     {
       "id": "Lock",
       "message": "Lock",
+      "translation": ""
+    },
+    {
+      "id": "Lock a set below to keep it regardless of rotation.",
+      "message": "Lock a set below to keep it regardless of rotation.",
       "translation": ""
     },
     {
@@ -1667,6 +1682,11 @@
       "translation": ""
     },
     {
+      "id": "all-time",
+      "message": "all-time",
+      "translation": ""
+    },
+    {
       "id": "allow clicking column headers to sort rows",
       "message": "allow clicking column headers to sort rows",
       "translation": ""
@@ -1814,6 +1834,21 @@
     {
       "id": "by",
       "message": "by",
+      "translation": ""
+    },
+    {
+      "id": "by day",
+      "message": "by day",
+      "translation": ""
+    },
+    {
+      "id": "by month",
+      "message": "by month",
+      "translation": ""
+    },
+    {
+      "id": "by week",
+      "message": "by week",
       "translation": ""
     },
     {
@@ -2849,6 +2884,11 @@
     {
       "id": "failed to render widget",
       "message": "failed to render widget",
+      "translation": ""
+    },
+    {
+      "id": "failed to reset counter",
+      "message": "failed to reset counter",
       "translation": ""
     },
     {
@@ -4444,6 +4484,16 @@
     {
       "id": "rename",
       "message": "rename",
+      "translation": ""
+    },
+    {
+      "id": "reset this counter to 0?",
+      "message": "reset this counter to 0?",
+      "translation": ""
+    },
+    {
+      "id": "reset to 0",
+      "message": "reset to 0",
       "translation": ""
     },
     {

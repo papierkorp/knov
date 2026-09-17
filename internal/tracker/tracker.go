@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -31,13 +32,49 @@ var (
 	ErrNotFound     = errors.New("tracker not found")
 )
 
+// ColumnSet controls which figures a counter's generated markdown shows: the
+// 24h/7d/30d/all-time totals and the by-day/by-week/by-month breakdowns, each
+// independently.
+type ColumnSet struct {
+	Day24h  bool `json:"day24h"`
+	Day7d   bool `json:"day7d"`
+	Day30d  bool `json:"day30d"`
+	AllTime bool `json:"allTime"`
+	Daily   bool `json:"daily"`
+	Weekly  bool `json:"weekly"`
+	Monthly bool `json:"monthly"`
+}
+
+// AllColumns is the ColumnSet with every figure enabled - a counter's effective
+// display before it's ever been explicitly configured, and a brand new row's
+// starting checkbox state.
+var AllColumns = ColumnSet{Day24h: true, Day7d: true, Day30d: true, AllTime: true, Daily: true, Weekly: true, Monthly: true}
+
 // Counter is one named tally inside a tracker. Days maps a calendar day
 // ("2006-01-02") to the net delta accumulated that day. The id is stable so a
 // counter can be renamed without losing its recorded days.
+//
+// Columns only takes effect once ColumnsConfigured is true; SetMeta sets both
+// together on every save, so a counter saved before ColumnSet existed - or never
+// saved through the editor at all - keeps showing everything (AllColumns) rather
+// than a zero-value Columns being misread as "hide everything". Once configured,
+// Columns is authoritative even when every field is false: that's how a user
+// deliberately hides all figures for a counter.
 type Counter struct {
-	ID    string         `json:"id"`
-	Title string         `json:"title"`
-	Days  map[string]int `json:"days"`
+	ID                string         `json:"id"`
+	Title             string         `json:"title"`
+	Days              map[string]int `json:"days"`
+	Columns           ColumnSet      `json:"columns"`
+	ColumnsConfigured bool           `json:"columnsConfigured"`
+}
+
+// EffectiveColumns returns c.Columns if it's been explicitly set (ColumnsConfigured),
+// otherwise AllColumns.
+func (c *Counter) EffectiveColumns() ColumnSet {
+	if !c.ColumnsConfigured {
+		return AllColumns
+	}
+	return c.Columns
 }
 
 // Config is a tracker's stored configuration.
@@ -49,8 +86,9 @@ type Config struct {
 // CounterInput is one editor row submitted on save: an existing counter (ID set)
 // to keep and retitle, or a new counter (ID empty) to create.
 type CounterInput struct {
-	ID    string
-	Title string
+	ID      string
+	Title   string
+	Columns ColumnSet
 }
 
 // store is the shared persistence + paired-file descriptor for the tracker editor.
@@ -145,25 +183,27 @@ func SetMeta(id, title string, rows []CounterInput) error {
 		if name == "" {
 			continue
 		}
+		// The editor always submits every row's checkbox state (see
+		// RenderTrackerCounterRow), so any save marks Columns authoritative -
+		// including a deliberate all-false selection.
 		if c, ok := prev[row.ID]; ok && !seen[row.ID] {
 			c.Title = name
+			c.Columns = row.Columns
+			c.ColumnsConfigured = true
 			next = append(next, c)
 			seen[row.ID] = true
 			continue
 		}
-		next = append(next, Counter{ID: newCounterID(), Title: name, Days: map[string]int{}})
+		next = append(next, Counter{ID: newCounterID(), Title: name, Days: map[string]int{}, Columns: row.Columns, ColumnsConfigured: true})
 	}
 	config.Counters = next
 	return saveLocked(config, id)
 }
 
-// Tick adds delta (+1 or -1) to counterID's bucket for today, then saves and
-// regenerates. Returns the updated counter.
-func Tick(id, counterID string, delta int) (*Counter, error) {
-	if delta != 1 && delta != -1 {
-		return nil, fmt.Errorf("%w: delta must be +1 or -1", ErrInvalidInput)
-	}
-
+// mutateCounter loads id's config, applies mutate to counterID's counter, then
+// saves and regenerates - the common load/find/save skeleton shared by Tick and
+// Reset. The caller must not hold mu; mutateCounter takes it itself.
+func mutateCounter(id, counterID string, mutate func(*Counter)) (*Counter, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -178,15 +218,46 @@ func Tick(id, counterID string, delta int) (*Counter, error) {
 	if counter == nil {
 		return nil, fmt.Errorf("%w: counter %q", ErrNotFound, counterID)
 	}
-	if counter.Days == nil {
-		counter.Days = map[string]int{}
-	}
-	counter.Days[time.Now().Format(dayKey)] += delta
+	mutate(counter)
 
 	if err := saveLocked(config, id); err != nil {
 		return nil, err
 	}
 	return counter, nil
+}
+
+// Tick adds delta (+1 or -1) to counterID's bucket for today, then saves and
+// regenerates. Returns the updated counter.
+func Tick(id, counterID string, delta int) (*Counter, error) {
+	if delta != 1 && delta != -1 {
+		return nil, fmt.Errorf("%w: delta must be +1 or -1", ErrInvalidInput)
+	}
+	return mutateCounter(id, counterID, func(c *Counter) {
+		if c.Days == nil {
+			c.Days = map[string]int{}
+		}
+		c.Days[time.Now().Format(dayKey)] += delta
+	})
+}
+
+// TickDay adds delta to counterID's bucket for an arbitrary day instead of today,
+// then saves and regenerates. Unlike Tick, delta isn't restricted to +1/-1: this is
+// for backdating sample/test data, not the live +/- editor buttons.
+func TickDay(id, counterID string, day time.Time, delta int) (*Counter, error) {
+	return mutateCounter(id, counterID, func(c *Counter) {
+		if c.Days == nil {
+			c.Days = map[string]int{}
+		}
+		c.Days[day.Format(dayKey)] += delta
+	})
+}
+
+// Reset zeroes counterID's recorded days back to 0, then saves and regenerates.
+// Returns the updated counter.
+func Reset(id, counterID string) (*Counter, error) {
+	return mutateCounter(id, counterID, func(c *Counter) {
+		c.Days = map[string]int{}
+	})
 }
 
 // Total returns the counter's net count on or after the day of since; pass the
@@ -230,8 +301,10 @@ func generateIndex(id string, config *Config) error {
 	return store.WritePaired(id, []byte(buildStatsMarkdown(config)))
 }
 
-// buildStatsMarkdown renders a summary table (net count per counter over the last
-// 1/7/30 days and all-time) plus a by-month breakdown.
+// buildStatsMarkdown renders one section per counter - a heading, a small table
+// with only the totals its ColumnSet has enabled, and its own by-day/by-week/
+// by-month breakdowns when enabled - since counters can each show a different
+// set of figures.
 func buildStatsMarkdown(config *Config) string {
 	now := time.Now()
 
@@ -240,36 +313,59 @@ func buildStatsMarkdown(config *Config) string {
 		fmt.Fprintf(&sb, "# %s\n\n", mdCell(config.Title))
 	}
 
-	sb.WriteString("| counter | 24h | 7d | 30d | all-time |\n|---|--:|--:|--:|--:|\n")
 	for i := range config.Counters {
 		c := &config.Counters[i]
-		fmt.Fprintf(&sb, "| %s | %d | %d | %d | %d |\n", mdCell(c.Title),
-			Total(c, now.AddDate(0, 0, -1)),
-			Total(c, now.AddDate(0, 0, -7)),
-			Total(c, now.AddDate(0, 0, -30)),
-			Total(c, time.Time{}))
-	}
+		cols := c.EffectiveColumns()
+		fmt.Fprintf(&sb, "## %s\n\n", mdCell(c.Title))
 
-	if months := monthlyTotals(config); len(months) > 0 {
-		sb.WriteString("\n## by month\n\n| month")
-		for i := range config.Counters {
-			fmt.Fprintf(&sb, " | %s", mdCell(config.Counters[i].Title))
+		var headers, cells, aligns []string
+		addCol := func(header, cell, align string) {
+			headers = append(headers, header)
+			cells = append(cells, cell)
+			aligns = append(aligns, align)
 		}
-		sb.WriteString(" |\n|---")
-		for range config.Counters {
-			sb.WriteString("|--:")
+		if cols.Day24h {
+			addCol("24h", strconv.Itoa(Total(c, now.AddDate(0, 0, -1))), "--:")
 		}
-		sb.WriteString("|\n")
-		for _, m := range months {
-			fmt.Fprintf(&sb, "| %s", m.key)
-			for i := range config.Counters {
-				fmt.Fprintf(&sb, " | %d", m.byCounter[config.Counters[i].ID])
+		if cols.Day7d {
+			addCol("7d", strconv.Itoa(Total(c, now.AddDate(0, 0, -7))), "--:")
+		}
+		if cols.Day30d {
+			addCol("30d", strconv.Itoa(Total(c, now.AddDate(0, 0, -30))), "--:")
+		}
+		if cols.AllTime {
+			addCol("all-time", strconv.Itoa(Total(c, time.Time{})), "--:")
+		}
+
+		var months []periodRow
+		if cols.Monthly {
+			months = counterMonthlyTotals(c)
+			if len(months) > 1 {
+				totals := make([]int, len(months))
+				for i, m := range months {
+					totals[i] = m.total
+				}
+				addCol("trend", sparkline(totals), "---")
 			}
-			sb.WriteString(" |\n")
+		}
+
+		if len(headers) > 0 {
+			fmt.Fprintf(&sb, "| %s |\n|%s|\n| %s |\n\n",
+				strings.Join(headers, " | "), strings.Join(aligns, "|"), strings.Join(cells, " | "))
+		}
+
+		if cols.Daily {
+			writeBreakdownTable(&sb, "day", counterDailyTotals(c))
+		}
+		if cols.Weekly {
+			writeBreakdownTable(&sb, "week", counterWeeklyTotals(c))
+		}
+		if cols.Monthly {
+			writeBreakdownTable(&sb, "month", months)
 		}
 	}
 
-	fmt.Fprintf(&sb, "\n_updated: %s_\n", now.Format("2006-01-02 15:04"))
+	fmt.Fprintf(&sb, "_updated: %s_\n", now.Format("2006-01-02 15:04"))
 	return sb.String()
 }
 
@@ -278,34 +374,100 @@ func mdCell(s string) string {
 	return strings.NewReplacer("|", "\\|", "\n", " ", "\r", "").Replace(s)
 }
 
-type monthRow struct {
-	key       string
-	byCounter map[string]int // counter id -> net total that month
+type periodRow struct {
+	key   string
+	total int
 }
 
-func monthlyTotals(config *Config) []monthRow {
-	idx := map[string]map[string]int{}
-	for i := range config.Counters {
-		c := &config.Counters[i]
-		for day, n := range c.Days {
-			if len(day) < 7 {
-				continue
-			}
-			m := day[:7] // "2006-01"
-			if idx[m] == nil {
-				idx[m] = map[string]int{}
-			}
-			idx[m][c.ID] += n
+// writeBreakdownTable appends a "<label> | total" table for rows, or nothing when
+// rows is empty.
+func writeBreakdownTable(sb *strings.Builder, label string, rows []periodRow) {
+	if len(rows) == 0 {
+		return
+	}
+	fmt.Fprintf(sb, "| %s | total |\n|---|--:|\n", label)
+	for _, r := range rows {
+		fmt.Fprintf(sb, "| %s | %d |\n", r.key, r.total)
+	}
+	sb.WriteString("\n")
+}
+
+// counterPeriodTotals sums c's recorded days into periodRows keyed by keyFn(day),
+// oldest first. A day keyFn maps to "" is skipped rather than grouped under one
+// no-key bucket.
+func counterPeriodTotals(c *Counter, keyFn func(day string) string) []periodRow {
+	idx := map[string]int{}
+	for day, n := range c.Days {
+		key := keyFn(day)
+		if key == "" {
+			continue
 		}
+		idx[key] += n
 	}
 	keys := make([]string, 0, len(idx))
 	for k := range idx {
 		keys = append(keys, k)
 	}
 	slices.Sort(keys)
-	rows := make([]monthRow, len(keys))
+	rows := make([]periodRow, len(keys))
 	for i, k := range keys {
-		rows[i] = monthRow{key: k, byCounter: idx[k]}
+		rows[i] = periodRow{key: k, total: idx[k]}
 	}
 	return rows
+}
+
+// counterDailyTotals returns c's recorded days as-is, oldest first - each day is
+// already its own net-delta bucket, so no grouping is needed.
+func counterDailyTotals(c *Counter) []periodRow {
+	return counterPeriodTotals(c, func(day string) string { return day })
+}
+
+// counterWeeklyTotals sums c's recorded days by ISO year-week ("2006-W02"), oldest
+// first.
+func counterWeeklyTotals(c *Counter) []periodRow {
+	return counterPeriodTotals(c, func(day string) string {
+		t, err := time.Parse(dayKey, day)
+		if err != nil {
+			return ""
+		}
+		year, week := t.ISOWeek()
+		return fmt.Sprintf("%d-W%02d", year, week)
+	})
+}
+
+// counterMonthlyTotals sums c's recorded days by calendar month ("2006-01"), oldest
+// first.
+func counterMonthlyTotals(c *Counter) []periodRow {
+	return counterPeriodTotals(c, func(day string) string {
+		if len(day) < 7 {
+			return ""
+		}
+		return day[:7]
+	})
+}
+
+// sparklineBars are the unicode block levels sparkline scales values into, lowest
+// to highest.
+var sparklineBars = []rune("▁▂▃▄▅▆▇█")
+
+// sparkline renders values (oldest first) as one block character per value, scaled
+// between the lowest and highest value. All-equal values (including a single
+// value) render at the middle bar, since there's no range to scale against.
+func sparkline(values []int) string {
+	lo, hi := values[0], values[0]
+	for _, v := range values[1:] {
+		lo = min(lo, v)
+		hi = max(hi, v)
+	}
+
+	bars := make([]rune, len(values))
+	span := hi - lo
+	for i, v := range values {
+		if span == 0 {
+			bars[i] = sparklineBars[len(sparklineBars)/2]
+			continue
+		}
+		bars[i] = sparklineBars[(v-lo)*(len(sparklineBars)-1)/span]
+	}
+	return string(bars)
 }

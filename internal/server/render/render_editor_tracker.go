@@ -69,6 +69,9 @@ func RenderTrackerEditor(filePath string) (string, error) {
 	h.WriteString(`<div class="form-actions">`)
 	fmt.Fprintf(&h, `<button type="submit" class="btn-primary">%s</button>`, t("save tracker"))
 	fmt.Fprintf(&h, `<button type="button" hx-post="/api/trackers/add-counter" hx-target="#tracker-counters" hx-swap="beforeend" class="btn-secondary">%s</button>`, t("add counter"))
+	if filePath != "" {
+		fmt.Fprintf(&h, `<a href="%s" target="_blank" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(pathutils.ToFileURL(filePath)), t("view file"))
+	}
 	fmt.Fprintf(&h, `<a href="%s" role="button" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(cancelURL), t("cancel"))
 	h.WriteString(`</div>`)
 
@@ -90,22 +93,26 @@ func RenderTrackerEditor(filePath string) (string, error) {
 }
 
 // RenderTrackerCounterRow renders one counter editor row. Pass a persisted
-// *tracker.Counter for a row with a running total and live -/+ buttons; pass nil
-// for a blank new-counter row that the next save will create. The title is always
-// an editable input and a hidden counter_id[] (empty for a new row) rides along so
-// save can match rows by id.
+// *tracker.Counter for a row with a running total, live -/+ buttons, and its own
+// saved column choices; pass nil for a blank new-counter row that the next save
+// will create, which starts with every column checked (tracker.AllColumns). The
+// title is always an editable input and a hidden counter_id[] (empty for a new
+// row) rides along so save can match rows by id.
 func RenderTrackerCounterRow(trackerID string, c *tracker.Counter) string {
 	lang := configmanager.GetLanguage()
 	t := func(k string, a ...any) string { return translation.SprintfForRequest(lang, k, a...) }
 
 	cid, title := "", ""
+	cols := tracker.AllColumns
 	if c != nil {
 		cid, title = c.ID, c.Title
+		cols = c.EffectiveColumns()
 	}
 
 	var h strings.Builder
-	h.WriteString(`<div class="tracker-counter-row">`)
+	fmt.Fprintf(&h, `<div class="tracker-counter-row" x-data='{cols: %s}'>`, columnSetAttr(cols))
 	fmt.Fprintf(&h, `<input type="hidden" name="counter_id[]" value="%s"/>`, htmlpkg.EscapeString(cid))
+	h.WriteString(`<input type="hidden" name="counter_columns[]" :value="JSON.stringify(cols)"/>`)
 	fmt.Fprintf(&h, `<input type="text" name="counter_title[]" value="%s" class="form-input tracker-counter-input" placeholder="%s" required/>`,
 		htmlpkg.EscapeString(title), t("counter name"))
 
@@ -125,9 +132,48 @@ func RenderTrackerCounterRow(trackerID string, c *tracker.Counter) string {
 		h.WriteString(`</span>`)
 	}
 
-	fmt.Fprintf(&h, `<button type="button" onclick="this.closest('.tracker-counter-row').remove()" class="tracker-remove-btn" title="%s"><i class="fa fa-times"></i></button>`, t("remove"))
+	h.WriteString(`<div class="tracker-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
+	fmt.Fprintf(&h, `<button type="button" class="tracker-menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-ellipsis-vertical"></i></button>`, t("actions"))
+	h.WriteString(`<div class="tracker-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">`)
+	h.WriteString(columnCheckboxesHTML(t))
+	h.WriteString(`<hr/>`)
+	if c != nil {
+		resetVals, _ := json.Marshal(map[string]string{"trackerid": trackerID, "counterid": c.ID})
+		fmt.Fprintf(&h, `<button type="button" class="btn-small btn-danger" hx-post="/api/trackers/reset" hx-vals='%s' hx-target="closest .tracker-counter-row" hx-swap="outerHTML" hx-confirm="%s">%s</button>`,
+			htmlpkg.EscapeString(string(resetVals)), t("reset this counter to 0?"), t("reset to 0"))
+	}
+	fmt.Fprintf(&h, `<button type="button" onclick="this.closest('.tracker-counter-row').remove()" class="btn-small btn-secondary">%s</button>`, t("remove"))
+	h.WriteString(`</div></div>`)
 	h.WriteString(`</div>`)
 	return h.String()
+}
+
+// columnSetAttr renders cs as a JSON object literal, HTML-escaped for embedding in
+// an Alpine x-data='{cols: ...}' attribute (the browser un-escapes attribute values
+// before Alpine reads them, so this round-trips safely). ColumnSet is bool-only
+// today, so escaping is currently a no-op - kept anyway so this stays safe if a
+// string field is ever added to ColumnSet without this call site being revisited.
+func columnSetAttr(cs tracker.ColumnSet) string {
+	b, _ := json.Marshal(cs)
+	return htmlpkg.EscapeString(string(b))
+}
+
+// columnCheckboxesHTML renders the 7 ColumnSet toggles, bound via Alpine to the
+// enclosing element's x-data='{cols: ...}' scope (RenderTrackerCounterRow's
+// per-row scope).
+func columnCheckboxesHTML(t func(string, ...any) string) string {
+	// @click.stop keeps a checkbox click from bubbling to the enclosing
+	// .tracker-menu's own @click="close()" (meant for the one-shot reset/remove
+	// buttons below), which would otherwise close the menu after the first toggle.
+	var b strings.Builder
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.day24h"/> ` + t("24h") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.day7d"/> ` + t("7d") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.day30d"/> ` + t("30d") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.allTime"/> ` + t("all-time") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.daily"/> ` + t("by day") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.weekly"/> ` + t("by week") + `</label>`)
+	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.monthly"/> ` + t("by month") + `</label>`)
+	return b.String()
 }
 
 // RenderTrackerFileView re-renders a saved tracker's stats table as of now, so the

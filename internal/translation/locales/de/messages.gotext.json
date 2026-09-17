@@ -52,6 +52,21 @@
       "translation": "(Standard)"
     },
     {
+      "id": "24h",
+      "message": "24h",
+      "translation": "24h"
+    },
+    {
+      "id": "30d",
+      "message": "30d",
+      "translation": "30d"
+    },
+    {
+      "id": "7d",
+      "message": "7d",
+      "translation": "7d"
+    },
+    {
       "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "translation": "\u003ch3\u003eWillkommen!\u003c/h3\u003e\u003cp\u003eDein statischer Inhalt hier\u003c/p\u003e"
@@ -400,11 +415,6 @@
       "id": "Duration",
       "message": "Duration",
       "translation": "Dauer"
-    },
-    {
-      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
-      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
-      "translation": "Jeder Backup-Satz sichert standardmäßig StoragePath (Metadaten, Chat, Kanban, Benachrichtigungen, Konfiguration, Suche) – nicht den Cache, der nur Daten enthält, die bei Bedarf aus Dateien/Git neu aufgebaut werden. Die docs/media-Ordner von DataPath sind optional: wähle sie unten aus, um sie einzubeziehen, da sie bereits durch Git abgedeckt sind und ein Backup deutlich größer machen können. Speicher werden nacheinander gesichert, nicht als eine einzige Transaktion zu einem bestimmten Zeitpunkt. Automatische Backup-Profile werden über KNOV_BACKUP_AUTO_PROFILES konfiguriert, die Rotation über KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (siehe .env.example). Sperre einen Satz, um ihn unabhängig von der Rotation zu behalten."
     },
     {
       "id": "Edit",
@@ -850,6 +860,11 @@
       "id": "Lock",
       "message": "Lock",
       "translation": "Sperren"
+    },
+    {
+      "id": "Lock a set below to keep it regardless of rotation.",
+      "message": "Lock a set below to keep it regardless of rotation.",
+      "translation": ""
     },
     {
       "id": "Logs",
@@ -1667,6 +1682,11 @@
       "translation": "alle Tags"
     },
     {
+      "id": "all-time",
+      "message": "all-time",
+      "translation": "gesamt"
+    },
+    {
       "id": "allow clicking column headers to sort rows",
       "message": "allow clicking column headers to sort rows",
       "translation": ""
@@ -1815,6 +1835,21 @@
       "id": "by",
       "message": "by",
       "translation": "von"
+    },
+    {
+      "id": "by day",
+      "message": "by day",
+      "translation": ""
+    },
+    {
+      "id": "by month",
+      "message": "by month",
+      "translation": "pro Monat"
+    },
+    {
+      "id": "by week",
+      "message": "by week",
+      "translation": ""
     },
     {
       "id": "cache invalidated",
@@ -2850,6 +2885,11 @@
       "id": "failed to render widget",
       "message": "failed to render widget",
       "translation": "Fehler beim Rendern des Widgets"
+    },
+    {
+      "id": "failed to reset counter",
+      "message": "failed to reset counter",
+      "translation": "Fehler beim Zurücksetzen des Zählers"
     },
     {
       "id": "failed to restart",
@@ -4445,6 +4485,16 @@
       "id": "rename",
       "message": "rename",
       "translation": "umbenennen"
+    },
+    {
+      "id": "reset this counter to 0?",
+      "message": "reset this counter to 0?",
+      "translation": "Diesen Zähler auf 0 zurücksetzen?"
+    },
+    {
+      "id": "reset to 0",
+      "message": "reset to 0",
+      "translation": "Auf 0 zurücksetzen"
     },
     {
       "id": "reset to default",

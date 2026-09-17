@@ -6270,6 +6270,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/trackers/reset": {
+            "post": {
+                "description": "Zero a counter's recorded days back to 0, save, and return the updated counter row",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "tracker"
+                ],
+                "summary": "Reset a tracker counter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tracker identifier (name)",
+                        "name": "trackerid",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Counter id",
+                        "name": "counterid",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated tracker counter row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/trackers/save": {
             "post": {
                 "description": "Save a tracker's title and reconcile its counters by id (removed counters lose their recorded counts); regenerates the paired markdown table",
@@ -6308,6 +6348,12 @@ const docTemplate = `{
                         "type": "array",
                         "description": "Counter titles, index-aligned with counter_id[]",
                         "name": "counter_title[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Per-counter ColumnSet as JSON, index-aligned with counter_id[]",
+                        "name": "counter_columns[]",
                         "in": "formData"
                     }
                 ],

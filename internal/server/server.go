@@ -158,6 +158,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/save", handleAPITrackerSave)
 			r.Post("/add-counter", handleAPIAddTrackerCounter)
 			r.Post("/tick", handleAPITrackerTick)
+			r.Post("/reset", handleAPITrackerReset)
 			r.Delete("/delete/*", handleAPITrackerDelete)
 		})
 

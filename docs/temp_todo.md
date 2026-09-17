@@ -10,18 +10,11 @@
   - multiview in theme
   - upgrade path tool in /system/release which shows the changes from one speicific build to another
   - a collection/library for books so i can download multiple books with one click
-  - tracker editor
-    - give me options to define the output file
-    - are entries removed from the json if we remove them from the editor?
-    - add 3 dots to the right of the "+" and move the "X" remove button into there
-    - add a reset to 0 button (in red) to the 3 dots
-    - add tests
-  - table editor => remove multiple selected rows/columns
   - toc in codemirror edit all
 - fixes
   - table editor selecting one column always selects the first column
 - chore
-  - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
+  - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins, add dokuwiki convertion to the features in the docs file as a single header
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - add the github link to knov somewhere (/system/version?)
 
