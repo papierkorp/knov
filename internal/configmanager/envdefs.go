@@ -115,6 +115,15 @@ func getRaw(_ AppConfig, key string) string {
 	return os.Getenv(key)
 }
 
+// EnvCategoryDescriptions documents a handful of categories (the Category argument shared by
+// every entry in EnvVarDefs below) with a short blurb introducing the category as a whole,
+// rather than any one var - shown above the category's section header in .env.example
+// (tools/genenv) and reusable anywhere that wants the same intro (e.g. the "backup" entry on
+// the /system/backup page). Not every category needs one; missing = no blurb.
+var EnvCategoryDescriptions = map[string]string{
+	"backup": "Backups snapshot metadata, chat, kanban, notifications, config and search by default. Docs and media are optional - select them individually since they're already tracked by git, and including them can make a backup much larger. Each storage is backed up one at a time, not as a single point-in-time transaction. Backups can also run automatically on a schedule (KNOV_BACKUP_AUTO_PROFILES), on top of the manual backups triggered on /system/backup. Each profile is due-tracked off its own newest backup's timestamp rather than a \"ran today\" flag, so a device that isn't running 24/7 (e.g. a USB stick) still catches up reliably instead of missing a scheduled slot entirely.\n\n Rotation is tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS (days of backups always kept) and KNOV_BACKUP_ROTATION_KEEP_DEFAULT (minimum number of default backups always kept, regardless of age). See .env.example for details.",
+}
+
 // EnvVarDefs lists every recognized KNOV_* environment variable, grouped and ordered the same
 // way .env.example presents them. KNOV_KANBAN_FOLDERSYNC must stay after KNOV_KANBAN_BOARDS:
 // its apply flags an already-parsed board by folder path, so KanbanBoards needs to exist first.
@@ -129,8 +138,8 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── server ──
 	stringDef("KNOV_SERVER_PORT", "server", "port the app listens on", "1324", func(c *AppConfig) *string { return &c.ServerPort }),
-	stringDef("KNOV_SERVER_HOST", "server", "interface the app listens on; empty = all interfaces, use 127.0.0.1 to only\nallow local access", "", func(c *AppConfig) *string { return &c.ServerHost }),
-	stringDef("KNOV_MOTD", "server", "message shown in a banner at the top of every page (e.g. to label a test/copy\nenvironment); empty = hidden", "", func(c *AppConfig) *string { return &c.MOTD }),
+	stringDef("KNOV_SERVER_HOST", "server", "interface the app listens on; empty = all interfaces, use 127.0.0.1 to only allow local access", "", func(c *AppConfig) *string { return &c.ServerHost }),
+	stringDef("KNOV_MOTD", "server", "message shown in a banner at the top of every page (e.g. to label a test/copy environment); empty = hidden", "", func(c *AppConfig) *string { return &c.MOTD }),
 
 	// ── logging ── KNOV_LOG_LEVEL and KNOV_LOG_FILE_LEVEL have no AppConfig field: they're read
 	// directly via os.Getenv in internal/logging on every log call (their get below just reuses
@@ -146,14 +155,14 @@ var EnvVarDefs = []EnvVarDef{
 	intDef("KNOV_LOG_MAX_FILES", "logging", "number of rotated files to keep", 5, func(c *AppConfig) *int { return &c.LogMaxFiles }),
 
 	// ── git ──
-	stringDef("KNOV_GIT_REMOTE", "git", "remote sync URL (leave empty for local-only mode); if set and no local\nrepo exists yet, knov will clone it on first start", "", func(c *AppConfig) *string { return &c.GitRemote }),
+	stringDef("KNOV_GIT_REMOTE", "git", "remote sync URL (leave empty for local-only mode); if set and no local repo exists yet, knov will clone it on first start", "", func(c *AppConfig) *string { return &c.GitRemote }),
 	stringDef("KNOV_GIT_REMOTE_BRANCH", "git", "remote branch to sync with", "main", func(c *AppConfig) *string { return &c.GitRemoteBranch }),
 	boolDef("KNOV_GIT_AUTO_PUSH", "git", "automatically push after every commit", true, func(c *AppConfig) *bool { return &c.GitAutoPush }),
 	stringDef("KNOV_GIT_PUSH_TIMEOUT", "git", "timeout for push/pull operations", "10s", func(c *AppConfig) *string { return &c.GitPushTimeout }),
 	stringDef("KNOV_GIT_USER", "git", "HTTPS username (leave empty for SSH or local repo)", "", func(c *AppConfig) *string { return &c.GitUser }),
 	stringDef("KNOV_GIT_PASSWORD", "git", "HTTPS password (leave empty for SSH or local repo)", "", func(c *AppConfig) *string { return &c.GitPassword }, withSensitive()),
 	stringDef("KNOV_GIT_TOKEN", "git", "HTTPS access token, takes priority over KNOV_GIT_PASSWORD (leave empty for SSH or local repo)", "", func(c *AppConfig) *string { return &c.GitToken }, withSensitive()),
-	stringDef("KNOV_GIT_SSH_KEY", "git", "SSH private key path (leave empty to use ssh-agent or ~/.ssh/id_rsa, id_ed25519, id_ecdsa);\nset this if you use a non-default key file, e.g. ~/.ssh/id_rsa_privat", "", func(c *AppConfig) *string { return &c.GitSSHKey }),
+	stringDef("KNOV_GIT_SSH_KEY", "git", "SSH private key path (leave empty to use ssh-agent or ~/.ssh/id_rsa, id_ed25519, id_ecdsa); set this if you use a non-default key file, e.g. ~/.ssh/id_rsa_privat", "", func(c *AppConfig) *string { return &c.GitSSHKey }),
 
 	// ── storage providers ──
 	stringDef("KNOV_CONFIG_STORAGE_PROVIDER", "storage providers", "app settings storage", "json", func(c *AppConfig) *string { return &c.ConfigStorageProvider }, withOptions("json")),
@@ -182,38 +191,43 @@ var EnvVarDefs = []EnvVarDef{
 	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox)`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }),
 	listDef("KNOV_KANBAN_STATUS", "kanban", "all possible kanban statuses (comma-separated, defines all valid tag values)", []string{"inbox", "inprogress", "blocked", "archive"}, func(c *AppConfig) *[]string { return &c.KanbanStatuses }),
 	listDef("KNOV_KANBAN_COLUMNS", "kanban", "visible columns on the board (subset of KNOV_KANBAN_STATUS)", []string{"inbox", "inprogress", "blocked"}, func(c *AppConfig) *[]string { return &c.KanbanColumns }),
-	compositeDef("KNOV_AUTOCREATE_TAGS", "kanban", "tags automatically added to newly created files (comma-separated, empty = disabled).\na bare tag (no \":\") applies to every new file everywhere; a \"folder/path:tag\" entry only\napplies to files created under that folder (recursive - also covers subfolders)\ne.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox", "",
+	compositeDef("KNOV_AUTOCREATE_TAGS", "kanban", "tags automatically added to newly created files (comma-separated, empty = disabled); a bare tag (no \":\") applies to every new file everywhere; a \"folder/path:tag\" entry only applies to files created under that folder (recursive - also covers subfolders); e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox", "",
 		func(cfg *AppConfig, key string) { cfg.AutoCreateTags = getAutoCreateTagsEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatAutoCreateTags(cfg.AutoCreateTags) },
 	),
-	compositeDef("KNOV_KANBAN_TAG_COLORS", "kanban", "custom css colors for specific tags on the kanban board (tag:csscolor, comma-separated)\ne.g. username:green,urgent:red,blocked:orange", "",
+	compositeDef("KNOV_KANBAN_TAG_COLORS", "kanban", "custom css colors for specific tags on the kanban board (tag:csscolor, comma-separated); e.g. username:green,urgent:red,blocked:orange", "",
 		func(cfg *AppConfig, key string) { cfg.KanbanTagColors = getStringMapEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatStringMap(cfg.KanbanTagColors) },
 	),
-	compositeDef("KNOV_KANBAN_CARD_STYLES", "kanban", "card style per kanban status (status:style, comma-separated); styles: normal, italic, highlighted, deleted\ne.g. blocked:italic,waiting:italic,urgent:highlighted,done:deleted,archive:deleted", "",
+	compositeDef("KNOV_KANBAN_CARD_STYLES", "kanban", "card style per kanban status (status:style, comma-separated); styles: normal, italic, highlighted, deleted; e.g. blocked:italic,waiting:italic,urgent:highlighted,done:deleted,archive:deleted", "",
 		func(cfg *AppConfig, key string) { cfg.KanbanCardStyles = getStringMapEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatStringMap(cfg.KanbanCardStyles) },
 	),
 	stringDef("KNOV_KANBAN_ARCHIVE_STATUS", "kanban", "status used for the archive drop zone shown while dragging (empty = disable the archive zone)", "archive", func(c *AppConfig) *string { return &c.KanbanArchiveStatus }),
-	listDef("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", "kanban", "statuses a descendant card must have for its ancestor to appear in the ancestor filter\n(comma-separated, subset of KNOV_KANBAN_STATUS; empty = no restriction, all ancestors shown)\ne.g. inbox,inprogress,blocked", nil, func(c *AppConfig) *[]string { return &c.KanbanAncestorAllowedStatus }),
-	compositeDef("KNOV_KANBAN_BOARDS", "kanban", "kanban boards (folder/path:Display Name, comma-separated); each board covers that folder and\nits subfolders. The URL slug is derived from the folder path automatically.\ne.g. projects/work:Work Board,personal/todo:Personal Todo", "",
+	listDef("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", "kanban", "statuses a descendant card must have for its ancestor to appear in the ancestor filter (comma-separated, subset of KNOV_KANBAN_STATUS; empty = no restriction, all ancestors shown); e.g. inbox,inprogress,blocked", nil, func(c *AppConfig) *[]string { return &c.KanbanAncestorAllowedStatus }),
+	compositeDef("KNOV_KANBAN_BOARDS", "kanban", "kanban boards (folder/path:Display Name, comma-separated); each board covers that folder and its subfolders. The URL slug is derived from the folder path automatically; e.g. projects/work:Work Board,personal/todo:Personal Todo", "",
 		func(cfg *AppConfig, key string) { cfg.KanbanBoards = getKanbanBoardsEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatKanbanBoards(cfg.KanbanBoards) },
 	),
-	compositeDef("KNOV_KANBAN_FOLDERSYNC", "kanban", "board folder paths (comma-separated, subset of KNOV_KANBAN_BOARDS) that enable foldersync:\nmoving a card physically moves the file into folder/path/<status>/, and moving the file on disk\ninto an existing folder/path/<status>/ folder sets the tag (picked up by the file-sync cronjob).\nif you move files by hand outside the app, trigger a manual file-sync run before dragging cards\nfor those files in the UI - the board doesn't know about an external move until the cronjob has\nrun, so a drag against a file that was already moved on disk will fail against its stale path.\ne.g. projects/work", "",
+	compositeDef("KNOV_KANBAN_FOLDERSYNC", "kanban", "board folder paths (comma-separated, subset of KNOV_KANBAN_BOARDS) that enable foldersync: moving a card physically moves the file into folder/path/<status>/, and moving the file on disk into an existing folder/path/<status>/ folder sets the tag (picked up by the file-sync cronjob); if you move files by hand outside the app, trigger a manual file-sync run before dragging cards for those files in the UI - the board doesn't know about an external move until the cronjob has run, so a drag against a file that was already moved on disk will fail against its stale path; e.g. projects/work", "",
 		func(cfg *AppConfig, key string) { cfg.KanbanBoards = applyKanbanFolderSyncEnv(cfg.KanbanBoards, key) },
 		getRaw,
 	),
 
 	// ── backup ──
-	compositeDef("KNOV_BACKUP_AUTO_PROFILES", "backup", "automatic backup profiles (semicolon-separated; name:cron:storages per profile, on top of manually\ntriggered backups on /system/backup); cron is a standard 5-field expression (minute hour\nday-of-month month day-of-week, e.g. \"0 18 * * *\" for daily at 18:00); storages is comma-separated\nand may be empty for the default backup set. Empty = automatic backups disabled entirely. Each\nprofile is due-tracked off its own newest backup's timestamp, not a \"ran today\" flag, so a device\nthat isn't running 24/7 (e.g. a USB stick) still catches up reliably: it backs up as soon as it's\nnext on past a missed occurrence, instead of a slot that only ever lands outside its usage window\ngetting skipped entirely\ne.g. daily:0 0 * * *:metadata,chat,kanban,notifications,config;weekly-docs:0 0 * * 0:docs,media", "",
+	compositeDef("KNOV_BACKUP_AUTO_PROFILES", "backup", `automatic backup profiles: semicolon-separated "<name>:<cron>:<storages>,<name>:<cron>:<storages>" and comma separated for multiple entries. name is freely chooseable; cron is a standard 5-field expression; storages is comma-separated and may be empty for the default backup set. Empty = automatic backups disabled entirely.
+
+Examples:
+    daily:0 0 * * *:                                     nightly backup of the default storage set
+    weekly-docs:0 0 * * 0:docs,media                     weekly backup of docs and media, every Sunday at midnight
+    daily:0 0 * * *:;weekly-docs:0 0 * * 0:docs,media    both combined into one profile list`, "",
 		func(cfg *AppConfig, key string) { cfg.BackupAutoProfiles = getBackupProfilesEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatBackupProfiles(cfg.BackupAutoProfiles) },
 	),
 	intDef("KNOV_BACKUP_ROTATION_KEEP_DAYS", "backup", "how many days of backup sets (default or partial) to always keep, regardless of count", 7, func(c *AppConfig) *int { return &c.BackupRotationKeepDays }),
-	intDef("KNOV_BACKUP_ROTATION_KEEP_DEFAULT", "backup", "on top of that, the minimum number of default backups to always keep regardless of age - a floor\nso coming back after months away still leaves something restorable. A backup set can also be\nlocked individually on /system/backup to always be kept, ignoring both settings above, until unlocked", 10, func(c *AppConfig) *int { return &c.BackupRotationKeepDefault }),
-	stringDef("KNOV_BACKUP_S3_BUCKET", "backup", "S3 bucket backup sets are written to and restored from. Non-empty switches backup storage from the\nlocal filesystem (KNOV_BACKUPS_PATH) to S3 (or any S3-compatible service: MinIO, Cloudflare R2,\nBackblaze B2, DigitalOcean Spaces). Leave empty for local-filesystem backups", "", func(c *AppConfig) *string { return &c.BackupS3Bucket }),
-	stringDef("KNOV_BACKUP_S3_ENDPOINT", "backup", "S3 endpoint host, no scheme (e.g. s3.amazonaws.com, nyc3.digitaloceanspaces.com, localhost:9000).\nRequired when KNOV_BACKUP_S3_BUCKET is set", "", func(c *AppConfig) *string { return &c.BackupS3Endpoint }),
+	intDef("KNOV_BACKUP_ROTATION_KEEP_DEFAULT", "backup", "on top of that, the minimum number of default backups to always keep regardless of age - a floor so coming back after months away still leaves something restorable. A backup set can also be locked individually on /system/backup to always be kept, ignoring both settings above, until unlocked", 10, func(c *AppConfig) *int { return &c.BackupRotationKeepDefault }),
+	stringDef("KNOV_BACKUP_S3_BUCKET", "backup", "S3 bucket backup sets are written to and restored from. Non-empty switches backup storage from the local filesystem (KNOV_BACKUPS_PATH) to S3 (or any S3-compatible service: MinIO, Cloudflare R2, Backblaze B2, DigitalOcean Spaces). Leave empty for local-filesystem backups", "", func(c *AppConfig) *string { return &c.BackupS3Bucket }),
+	stringDef("KNOV_BACKUP_S3_ENDPOINT", "backup", "S3 endpoint host, no scheme (e.g. s3.amazonaws.com, nyc3.digitaloceanspaces.com, localhost:9000). Required when KNOV_BACKUP_S3_BUCKET is set", "", func(c *AppConfig) *string { return &c.BackupS3Endpoint }),
 	stringDef("KNOV_BACKUP_S3_REGION", "backup", "S3 region for backup storage (e.g. us-east-1); may be left empty for providers that don't need it", "", func(c *AppConfig) *string { return &c.BackupS3Region }),
 	stringDef("KNOV_BACKUP_S3_PREFIX", "backup", "key prefix applied to every backup object in the bucket (e.g. knov/backups/); empty = bucket root", "", func(c *AppConfig) *string { return &c.BackupS3Prefix }),
 	stringDef("KNOV_BACKUP_S3_ACCESS_KEY", "backup", "S3 access key id", "", func(c *AppConfig) *string { return &c.BackupS3AccessKey }, withSensitive()),
@@ -238,6 +252,18 @@ func envVarDefault(key string) string {
 	for _, def := range EnvVarDefs {
 		if def.Key == key {
 			return def.Default
+		}
+	}
+	return ""
+}
+
+// EnvVarDescription looks up a KNOV_* key's documented description in EnvVarDefs, for callers
+// (e.g. the /system/backup page) that want to show it inline instead of duplicating the text.
+// Returns "" if undocumented.
+func EnvVarDescription(key string) string {
+	for _, def := range EnvVarDefs {
+		if def.Key == key {
+			return def.Description
 		}
 	}
 	return ""

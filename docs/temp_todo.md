@@ -26,9 +26,7 @@
   - add the github link to knov somewhere (/system/version?)
   - dont change/touch old releasenotes once they are created
   - look at breaking changes in the releasenotes to see if anything relevant change before upgrading
-  - update the KNOV_BACKUP_AUTO_PROFILES comment with a example in a codeblock
-  - update the text in /system/backups and make it more readable and add examples for different use cases (maybe reuse the KNOV_BACKUP_AUTO_PROFILES comment)
-
+  - add descriptions to the env header
 
 
 # every other time

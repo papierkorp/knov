@@ -254,7 +254,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .backup-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); }
 .backup-table td { padding: .28rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: middle; }
-.backup-note { color: var(--text-secondary); font-size: .8rem; margin-bottom: .75rem; }
+.backup-note { color: var(--text-secondary); font-size: .8rem; margin-bottom: .75rem; white-space: pre-line; }
 .backup-auto-status { font-size: .8rem; margin: 0 0 .5rem; }
 .backup-storage { font-size: .8rem; margin: 0 0 .5rem; color: var(--text-secondary); }
 .backup-create-form { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
@@ -264,7 +264,8 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 .backup-unavailable { color: var(--text-secondary); font-style: italic; }
 </style>` +
-		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.")) +
+		fmt.Sprintf(`<p class="backup-note">%s</p>`, t(configmanager.EnvCategoryDescriptions["backup"])) +
+		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Lock a set below to keep it regardless of rotation.")) +
 		`<form class="backup-create-form" hx-post="/api/system/backups" hx-target="#backup-list" hx-swap="innerHTML" hx-indicator="#backup-status">` +
 		fmt.Sprintf(`<div class="backup-storage-select">%s</div>`, renderBackupStorageCheckboxes()) +
 		`<div class="backup-toolbar">` +

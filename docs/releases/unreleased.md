@@ -1,6 +1,6 @@
 # unreleased
 
-_43 commits since last release_
+_44 commits since last release_
 
 ## changes
 - paste in tabulator now creates columns/rows

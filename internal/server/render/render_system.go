@@ -839,6 +839,7 @@ func RenderEnvironmentTable() string {
 	sb.WriteString(`<style>
 .env-table-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
 .env-table-wrap h3 { margin: 0 0 .35rem; font-size: .95rem; text-transform: capitalize; }
+.env-category-desc { color: var(--text-secondary); font-size: .8rem; margin: 0 0 .5rem; white-space: pre-line; }
 .env-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .env-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
 .env-table td { padding: .3rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; }
@@ -857,8 +858,12 @@ func RenderEnvironmentTable() string {
 				sb.WriteString(`</tbody></table></div>`)
 			}
 			category = info.Category
-			fmt.Fprintf(&sb, `<div><h3>%s</h3><table class="env-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
-				template.HTMLEscapeString(t(category)), t("Variable"), t("Description"), t("Options"), t("Current Value"), t("Default"))
+			fmt.Fprintf(&sb, `<div><h3>%s</h3>`, template.HTMLEscapeString(t(category)))
+			if desc := configmanager.EnvCategoryDescriptions[category]; desc != "" {
+				fmt.Fprintf(&sb, `<p class="env-category-desc">%s</p>`, template.HTMLEscapeString(t(desc)))
+			}
+			fmt.Fprintf(&sb, `<table class="env-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+				t("Variable"), t("Description"), t("Options"), t("Current Value"), t("Default"))
 		}
 
 		current := fmt.Sprintf(`<span class="env-current-unset">%s</span>`, t("(default)"))
