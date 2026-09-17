@@ -24,9 +24,6 @@
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - add the github link to knov somewhere (/system/version?)
-  - dont change/touch old releasenotes once they are created
-  - look at breaking changes in the releasenotes to see if anything relevant change before upgrading
-  - add descriptions to the env header
 
 
 # every other time

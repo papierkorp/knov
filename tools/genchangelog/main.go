@@ -16,7 +16,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -202,10 +201,10 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 	if err := os.MkdirAll("docs/releases", 0755); err != nil {
 		fatal(err)
 	}
-	old, _ := filepath.Glob("docs/releases/*.md")
-	for _, p := range old {
-		os.Remove(p)
-	}
+	// unreleased.md is a draft and is always regenerated; every tagged
+	// release's notes are frozen the moment the file is written so later
+	// runs (e.g. a README.md edit) never rewrite already-published notes.
+	os.Remove("docs/releases/unreleased.md")
 
 	// the oldest release spans back to the repo root and has no previous tag to
 	// diff against, so its huge commit list is useless - use README.md instead.
@@ -225,6 +224,12 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 		if v != initial && rd.empty() {
 			continue
 		}
+		path := "docs/releases/" + v + ".md"
+		if v != "unreleased" {
+			if _, err := os.Stat(path); err == nil {
+				continue
+			}
+		}
 		var buf strings.Builder
 		fmt.Fprintf(&buf, "# %s\n\n", v)
 		if v == initial {
@@ -241,7 +246,6 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 			writeSection(&buf, "##", "fixes", rd.fixes)
 		}
 
-		path := "docs/releases/" + v + ".md"
 		if err := os.WriteFile(path, []byte(buf.String()), 0644); err != nil {
 			fatal(err)
 		}

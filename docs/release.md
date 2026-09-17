@@ -10,6 +10,8 @@ If there are no version entries yet, no official release has been published so f
 
 Stop the app, replace the program file with the new version, and start it again. Your notes and settings stay where they are and are not touched. It is still a good idea to make a backup first on the **/system/backup** page.
 
+Look at the breaking changes in the release notes below to see if anything relevant changed before upgrading.
+
 ## What the details mean
 
 - **Version** - the release name, like `1.0.0`. `dev` means you are running an unreleased build.
