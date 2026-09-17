@@ -1,8 +1,9 @@
 # unreleased
 
-_42 commits since last release_
+_43 commits since last release_
 
 ## changes
+- paste in tabulator now creates columns/rows
 - add table button to codemirror editor
 - add settings menu to tableeditor
 - support per-column alignment in table editor

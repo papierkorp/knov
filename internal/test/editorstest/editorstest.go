@@ -41,6 +41,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseBulkDeleteFiles,
 		caseBulkMetadataPatch,
 		caseBulkChatMoveDelete,
+		caseTablePasteUndoRedo,
+		caseCodeMirrorToolbarBold,
 	}
 
 	return test.RunCases("editors", cases), nil

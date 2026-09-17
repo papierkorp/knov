@@ -1,8 +1,7 @@
 // Package kanbantest - Kanban suite: exercises internal/kanban's exported board-build,
-// card-move, order-persistence and helper functions directly. The one genuinely
-// browser-only piece - native HTML5 drag-and-drop - can't be verified by an in-app runtime
-// suite (see docs/temp_todo.md's testing note), so this covers the API/state it drives
-// instead: BuildBoard, MoveCard, SaveOrder/GetOrder/ApplyOrder.
+// card-move, order-persistence and helper functions directly (BuildBoard, MoveCard,
+// SaveOrder/GetOrder/ApplyOrder), plus one testkit-driven case covering the native HTML5
+// drag-and-drop wiring itself in a real headless browser (see testcases_browser.go).
 package kanbantest
 
 import (
@@ -35,6 +34,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseTagsAndFilesForFolder,
 		caseExcerpt,
 		caseKanbanHelpers,
+		caseDragCardBetweenColumns,
 	}
 
 	return test.RunCases("kanban", cases), nil
