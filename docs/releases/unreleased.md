@@ -1,8 +1,9 @@
 # unreleased
 
-_46 commits since last release_
+_47 commits since last release_
 
 ## changes
+- add configurable columns and reset action to tracker counters
 - paste in tabulator now creates columns/rows
 - add table button to codemirror editor
 - add settings menu to tableeditor

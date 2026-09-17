@@ -8,7 +8,6 @@
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
-  - upgrade path tool in /system/release which shows the changes from one speicific build to another
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
 - fixes
@@ -17,7 +16,7 @@
   - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins, add dokuwiki convertion to the features in the docs file as a single header
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - add the github link to knov somewhere (/system/version?)
-
+  - in the info slideout we have a "same tags" which shows files with the same tag - we need a setting which allows to add exceptions or tags which shouldnt be show - and the default value should be "kb-status" or whatever the env is
 
 # every other time
 

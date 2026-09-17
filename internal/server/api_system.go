@@ -260,7 +260,7 @@ func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "release HTML"
 // @Router /api/system/release [get]
 func handleAPIGetSystemRelease(w http.ResponseWriter, r *http.Request) {
-	html, _ := render.RenderRelease()
+	html, _ := render.RenderRelease("", "")
 	writeResponse(w, r, nil, html)
 }
 

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"runtime"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -608,7 +609,12 @@ func RenderChangelog() (string, []parser.TOCItem) {
 // and the rail "release" fragment. The preamble shares its heading-id dedup map
 // with the release notes that follow (see renderDocsMarkdown) so a heading
 // repeated between docs/release.md and a release note still gets a unique id.
-func RenderRelease() (string, []parser.TOCItem) {
+//
+// from and to select the "upgrade path" tool's version range: when both are
+// set to known versions (see ReleaseVersions) only the release notes between
+// them (inclusive) are rendered; otherwise the full history is rendered, same
+// as before the tool existed.
+func RenderRelease(from, to string) (string, []parser.TOCItem) {
 	usedIDs := make(map[string]int)
 
 	var out strings.Builder
@@ -620,10 +626,104 @@ func RenderRelease() (string, []parser.TOCItem) {
 		}
 	}
 	out.WriteString(RenderVersionInfo(false))
-	html, releasesTOC := renderDocsMarkdown("docs/releases", releaseBefore, usedIDs)
+	versions := ReleaseVersions()
+	if len(versions) > 1 {
+		from, to = normalizeReleaseRange(versions, from, to)
+		out.WriteString(renderReleaseRangeForm(versions, from, to))
+	}
+	html, releasesTOC := renderDocsMarkdownFiltered("docs/releases", releaseBefore, releaseRangeFilter(versions, from, to), usedIDs)
 	out.WriteString(html)
 	toc = append(toc, releasesTOC...)
 	return out.String(), toc
+}
+
+// ReleaseVersions returns every version with a curated release-notes file
+// (docs/releases/vX.Y.Z.md), ascending - the options for the /system/release
+// "upgrade path" tool's from/to selects. "unreleased" is excluded since it
+// isn't a cut version yet.
+func ReleaseVersions() []string {
+	var names []string
+	if entries, err := docsFiles.ReadDir("docs/releases"); err == nil {
+		for _, entry := range entries {
+			name := entry.Name()
+			if entry.IsDir() || name == "unreleased.md" || !strings.HasSuffix(name, ".md") {
+				continue
+			}
+			names = append(names, strings.TrimSuffix(strings.TrimPrefix(name, "v"), ".md"))
+		}
+	}
+	sort.Slice(names, func(i, j int) bool { return semverKey("v"+names[i]+".md") < semverKey("v"+names[j]+".md") })
+	return names
+}
+
+// normalizeReleaseRange reorders from/to ascending by version so the
+// rendered picker always agrees with releaseRangeFilter's range, even if the
+// request had them swapped. Values that aren't both known versions are
+// returned unchanged (releaseRangeFilter then falls back to full history).
+func normalizeReleaseRange(versions []string, from, to string) (string, string) {
+	if !slices.Contains(versions, from) || !slices.Contains(versions, to) {
+		return from, to
+	}
+	if semverKey("v"+from+".md") > semverKey("v"+to+".md") {
+		return to, from
+	}
+	return from, to
+}
+
+// releaseRangeFilter returns a renderDocsMarkdownFiltered predicate keeping
+// only release-notes files between from and to (inclusive). It keeps
+// everything when from or to is empty or unknown, so an absent/bad range
+// falls back to the full history instead of rendering nothing.
+func releaseRangeFilter(versions []string, from, to string) func(name string) bool {
+	if from == "" || to == "" || !slices.Contains(versions, from) || !slices.Contains(versions, to) {
+		return nil
+	}
+	lo, hi := semverKey("v"+from+".md"), semverKey("v"+to+".md")
+	return func(name string) bool {
+		if name == "unreleased.md" {
+			return false
+		}
+		k := semverKey(name)
+		return k >= lo && k <= hi
+	}
+}
+
+// renderReleaseRangeForm renders the "upgrade path" from/to version picker.
+// It's a plain GET form back to /system/release (like the file
+// version-compare picker in render_git.go) rather than htmx, since a full
+// page navigation is simplest for a page that's also embedded in the narrow
+// rail panel. Styling lives in #release-range-form (themes/builtin/css/panels.css),
+// matching the #component-version-compare picker in render_git.go.
+func renderReleaseRangeForm(versions []string, from, to string) string {
+	lang := configmanager.GetLanguage()
+	var b strings.Builder
+	b.WriteString(`<form id="release-range-form" method="get" action="/system/release">`)
+	fmt.Fprintf(&b, `<span>%s</span>`, translation.SprintfForRequest(lang, "show changes from"))
+	b.WriteString(releaseVersionSelect("from", versions, from, versions[0]))
+	fmt.Fprintf(&b, `<span>%s</span>`, translation.SprintfForRequest(lang, "to"))
+	b.WriteString(releaseVersionSelect("to", versions, to, versions[len(versions)-1]))
+	fmt.Fprintf(&b, `<button type="submit">%s</button></form>`, translation.SprintfForRequest(lang, "show"))
+	return b.String()
+}
+
+// releaseVersionSelect renders a <select name=name> of every version,
+// pre-selecting selected (falling back to fallback when selected is empty or
+// unknown).
+func releaseVersionSelect(name string, versions []string, selected, fallback string) string {
+	if !slices.Contains(versions, selected) {
+		selected = fallback
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, `<select name="%s">`, name)
+	for _, v := range versions {
+		sel := ""
+		if v == selected {
+			sel = " selected"
+		}
+		fmt.Fprintf(&b, `<option value="%s"%s>v%s</option>`, v, sel, v)
+	}
+	b.WriteString(`</select>`)
+	return b.String()
 }
 
 // renderDocsMarkdown reads every *.md directly inside the embedded dir, orders
@@ -635,10 +735,17 @@ func RenderRelease() (string, []parser.TOCItem) {
 // render call actually used (see parser.HeadingsToTOC), not a second scan, so
 // it can't drift from the rendered anchors.
 func renderDocsMarkdown(dir string, less func(a, b string) bool, usedIDs map[string]int) (string, []parser.TOCItem) {
+	return renderDocsMarkdownFiltered(dir, less, nil, usedIDs)
+}
+
+// renderDocsMarkdownFiltered is renderDocsMarkdown with an optional keep
+// predicate (nil keeps every file) - used by RenderRelease to restrict the
+// "upgrade path" tool's output to a version range.
+func renderDocsMarkdownFiltered(dir string, less func(a, b string) bool, keep func(name string) bool, usedIDs map[string]int) (string, []parser.TOCItem) {
 	var names []string
 	if entries, err := docsFiles.ReadDir(dir); err == nil {
 		for _, entry := range entries {
-			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".md") {
+			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".md") && (keep == nil || keep(entry.Name())) {
 				names = append(names, entry.Name())
 			}
 		}
@@ -694,7 +801,7 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSystemRelease(w http.ResponseWriter, r *http.Request) {
-	html, toc := RenderRelease()
+	html, toc := RenderRelease(r.URL.Query().Get("from"), r.URL.Query().Get("to"))
 	renderSystemMarkdownPage(w, "Release", "system/release.md", html, toc)
 }
 
