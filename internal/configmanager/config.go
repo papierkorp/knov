@@ -817,6 +817,8 @@ func ValidateHideTags(entries []string) error {
 // HideTagsPatterns compiles the HideTags entries that apply to scope into matchers for
 // IsTagHidden. Recompiles on every call rather than caching, same as IsPathHidden/
 // pathSegmentsMatch above - HideTags is normally a handful of entries, so this is cheap.
+// Callers that need it in a per-card/per-row loop (e.g. kanban board rendering) should call
+// this once and pass the result down rather than calling it per iteration.
 func HideTagsPatterns(scope string) []*regexp.Regexp {
 	entries := HideTags.Get()
 	compiled := make([]*regexp.Regexp, 0, len(entries))

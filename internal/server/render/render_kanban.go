@@ -4,6 +4,7 @@ package render
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -15,8 +16,10 @@ import (
 	"knov/internal/translation"
 )
 
-// RenderKanbanCard renders a single draggable card
-func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string {
+// RenderKanbanCard renders a single draggable card. hiddenTags is the compiled result of
+// configmanager.HideTagsPatterns(TagScopeKanban) - callers loop over many cards, so it's
+// compiled once by the caller rather than per card.
+func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard, hiddenTags []*regexp.Regexp) string {
 	var html strings.Builder
 	prefix := configmanager.GetKanbanPrefix()
 
@@ -35,7 +38,6 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 	}
 
 	// filter out kanban tags and hidden tags from visible tags
-	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
 	var visibleTags []string
 	for _, t := range card.Tags {
 		if !configmanager.IsKanbanTag(t) && !configmanager.IsTagHidden(hiddenTags, t) {
@@ -102,6 +104,8 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 
 // RenderKanbanColumn renders a single column with its cards
 func RenderKanbanColumn(status, label string, cards []kanban.Card, board configmanager.KanbanBoard) string {
+	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
+
 	var html strings.Builder
 
 	fmt.Fprintf(&html, `<div class="kanban-column" id="kanban-col-%s"
@@ -115,7 +119,7 @@ func RenderKanbanColumn(status, label string, cards []kanban.Card, board configm
 
 	html.WriteString(`<div class="kanban-cards">`)
 	for _, card := range cards {
-		html.WriteString(RenderKanbanCard(card, board))
+		html.WriteString(RenderKanbanCard(card, board, hiddenTags))
 	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
@@ -190,7 +194,7 @@ func RenderKanbanArchive(cards []kanban.Card, board configmanager.KanbanBoard) s
 
 	html.WriteString(`<tbody id="kanban-archive-rows">`)
 	for _, card := range cards {
-		html.WriteString(renderKanbanArchiveRow(card, board))
+		html.WriteString(renderKanbanArchiveRow(card, board, hiddenTags))
 	}
 	html.WriteString(`</tbody>`)
 	html.WriteString(`</table>`)
@@ -203,7 +207,7 @@ func RenderKanbanArchive(cards []kanban.Card, board configmanager.KanbanBoard) s
 // data-tags carry the values applyKanbanArchiveFilters matches against; data-title,
 // data-createdat and data-lastedited back sortKanbanArchive — filtering and sorting never
 // need to re-fetch or re-render anything.
-func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) string {
+func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard, hiddenTags []*regexp.Regexp) string {
 	var html strings.Builder
 
 	displayTitle := card.Title
@@ -216,7 +220,6 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
 	}
 
-	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
 	var visibleTags []string
 	for _, t := range card.Tags {
 		if !configmanager.IsKanbanTag(t) && !configmanager.IsTagHidden(hiddenTags, t) {
