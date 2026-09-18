@@ -123,10 +123,22 @@ A book is an ordered list of whole files and individual sections that composes i
 
 ## Import / Export
 
-- Per-file DokuWiki -> Markdown conversion on download
-- Export all files as a zip, optionally converting DokuWiki files to Markdown in the process
+- Export all files as a zip
 - Export metadata as JSON or CSV
 - Export/import the settings file (JSON) for backup or migrating between instances
+
+## DokuWiki Conversion
+
+- Per-file DokuWiki -> Markdown conversion on download
+- Full DokuWiki -> Markdown conversion of all files at once, from the admin page
+- Supports the following DokuWiki plugin syntaxes:
+  - [catlist](https://www.dokuwiki.org/plugin:catlist)
+  - [datatables](https://www.dokuwiki.org/plugin:datatables)
+  - [folded](https://www.dokuwiki.org/plugin:folded)
+  - [include](https://www.dokuwiki.org/plugin:include)
+  - [syntaxhighlighter4](https://www.dokuwiki.org/plugin:syntaxhighlighter4)
+  - [codify](https://www.dokuwiki.org/plugin:codify)
+  - [tablelayout](https://www.dokuwiki.org/plugin:tablelayout)
 
 ## Backup & Restore
 

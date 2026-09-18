@@ -13,7 +13,6 @@
 - fixes
   - table editor selecting one column always selects the first column
 - chore
-  - dokuwiki example file add all plugins which can be converted as a list with links to the dokuwiki plugins, add dokuwiki convertion to the features in the docs file as a single header
   - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - add the github link to knov somewhere (/system/version?)
   - in the info slideout we have a "same tags" which shows files with the same tag - we need a setting which allows to add exceptions or tags which shouldnt be show - and the default value should be "kb-status" or whatever the env is

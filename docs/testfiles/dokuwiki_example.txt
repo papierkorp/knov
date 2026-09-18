@@ -4,6 +4,16 @@
 
 This file demonstrates the DokuWiki syntax elements supported by the converter. It is not real content - just a syntax showcase.
 
+Supported DokuWiki plugins:
+
+  * [[https://www.dokuwiki.org/plugin:catlist|catlist plugin]]
+  * [[https://www.dokuwiki.org/plugin:datatables|datatables plugin]]
+  * [[https://www.dokuwiki.org/plugin:folded|folded plugin]]
+  * [[https://www.dokuwiki.org/plugin:include|include plugin]]
+  * [[https://www.dokuwiki.org/plugin:syntaxhighlighter4|syntaxhighlighter4 plugin]]
+  * [[https://www.dokuwiki.org/plugin:codify|codify plugin]]
+  * [[https://www.dokuwiki.org/plugin:tablelayout|tablelayout plugin]]
+
 ===== Text formatting =====
 
 **bold**, //italic//, __underline__, ''monospace'' and <del>deleted</del> text can be combined: **__//''all at once''//__**.
