@@ -3,7 +3,7 @@
 _50 commits since last release_
 
 ## breaking changes
-- existing tracker counter history embedded in each tracker's
+- existing tracker counter history embedded in each tracker's config file is imported automatically into the new storage the first time that tracker is opened after upgrading (see importLegacyDays). Back up your storage/config directory before upgrading, and open each existing tracker at least once post-upgrade to confirm the migration ran before relying on any automated backup rotation to expire the pre-upgrade one.
 
 ## changes
 - add version range picker to release notes page

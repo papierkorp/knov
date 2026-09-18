@@ -396,8 +396,16 @@ var (
 		Default: []string{},
 		Section: SectionFileTypes, Group: GroupFolders,
 		Label:    "Hide Paths",
-		Desc:     "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+		Desc:     "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
 		Validate: ValidateHidePaths,
+	})
+	HideTags = register(&StringSliceSetting{
+		key: "hideTags",
+		// Default is overwritten in applyDynamicDefaults (settings.go) to KNOV_KANBAN_PREFIX + "-status*".
+		Section: SectionFileTypes, Group: GroupTags,
+		Label:    "Hide Tags",
+		Desc:     `comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. "kb-status*" hides every kb-status-* tag, while "kb-status" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere`,
+		Validate: ValidateHideTags,
 	})
 
 	// ── General ───────────────────────────────────────────────────────────────

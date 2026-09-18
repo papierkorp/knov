@@ -14,8 +14,11 @@
   - 
 - chore
   - add the github link to knov somewhere (/system/version?)
-  - in the info slideout we have a "same tags" which shows files with the same tag - we need a setting which allows to add exceptions or tags which shouldnt be show - and the default value should be "kb-status" or whatever the env is
   - example filter deletion no immediate feedback
+  - remove the one-time migration for the tracker editor (legacyConfig..)
+  - kb-status-inbox is not shown in info slideout as a tag
+  - Performance — This is the one place I’d push back. HideTagsPatterns calls HideTags.Get() and recompiles every pattern into a regexp.Regexp on every call, and it’s now called inside RenderKanbanCard (once per card) and inside renderKanbanArchiveRow (once per archived row), in addition to once inside RenderKanbanArchive itself for the tag-cloud pass. For a board with many cards, that’s the same small set of patterns being re-parsed and re-compiled dozens or hundreds of times per render, when it could be computed once by the caller (RenderKanbanBoard/RenderKanbanArchive) and threaded down as a parameter. The code comment justifies this by analogy to IsPathHidden/pathSegmentsMatch (“a handful of entries, so this is cheap”), but that analogy doesn’t quite hold — IsPathHidden is called once per file, not once per row of an already-rendered list where the pattern set is constant across the whole render. It’s not O(n²) and won’t be noticeable on a small board, but it’s needless repeated work in a hot render path and will scale worse than it needs to on large kanban boards.
+
 
 # every other time
 

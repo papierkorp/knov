@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"knov/internal/cacheStorage"
+	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/utils"
@@ -917,6 +918,9 @@ func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
 		return nil, err
 	}
 	folder := strings.Join(meta.Folders, "/")
+	if configmanager.IsPathHidden(folder, configmanager.HideScopeDetail) {
+		return nil, nil
+	}
 
 	allFiles, err := GetAllFilesCached()
 	if err != nil {
@@ -956,6 +960,8 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 		return nil, err
 	}
 
+	hiddenPatterns := configmanager.HideTagsPatterns(configmanager.TagScopeDetail)
+
 	type scored struct {
 		path  string
 		score int
@@ -967,6 +973,9 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 		}
 		score := 0
 		for _, tag := range f.Metadata.Tags {
+			if configmanager.IsTagHidden(hiddenPatterns, tag) {
+				continue
+			}
 			if slices.Contains(meta.Tags, tag) {
 				score++
 			}

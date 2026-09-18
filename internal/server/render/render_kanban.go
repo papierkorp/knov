@@ -34,10 +34,11 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
 	}
 
-	// filter out kanban tags from visible tags
+	// filter out kanban tags and hidden tags from visible tags
+	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
 	var visibleTags []string
 	for _, t := range card.Tags {
-		if !configmanager.IsKanbanTag(t) {
+		if !configmanager.IsKanbanTag(t) && !configmanager.IsTagHidden(hiddenTags, t) {
 			visibleTags = append(visibleTags, t)
 		}
 	}
@@ -137,10 +138,11 @@ func RenderKanbanBoard(columns []kanban.Column, board configmanager.KanbanBoard)
 // all operate client-side over the already-rendered rows (applyKanbanArchiveFilters /
 // sortKanbanArchive in kanban.js), so no extra fetch/JSON round trip is needed.
 func RenderKanbanArchive(cards []kanban.Card, board configmanager.KanbanBoard) string {
+	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
 	tagSet := make(map[string]struct{})
 	for _, c := range cards {
 		for _, t := range c.Tags {
-			if !configmanager.IsKanbanTag(t) {
+			if !configmanager.IsKanbanTag(t) && !configmanager.IsTagHidden(hiddenTags, t) {
 				tagSet[t] = struct{}{}
 			}
 		}
@@ -214,9 +216,10 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
 	}
 
+	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeKanban)
 	var visibleTags []string
 	for _, t := range card.Tags {
-		if !configmanager.IsKanbanTag(t) {
+		if !configmanager.IsKanbanTag(t) && !configmanager.IsTagHidden(hiddenTags, t) {
 			visibleTags = append(visibleTags, t)
 		}
 	}

@@ -254,10 +254,10 @@ func RenderFileMetadataSimple(metadata *files.Metadata) string {
 	fmt.Fprintf(&html, `<p>%s: %s</p>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "editor"), metadata.Editor)
 
-	if len(metadata.Tags) > 0 {
+	if tags := visibleTags(metadata.Tags); len(tags) > 0 {
 		fmt.Fprintf(&html, `<p>%s: %s</p>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "tags"),
-			strings.Join(metadata.Tags, ", "))
+			strings.Join(tags, ", "))
 	}
 	html.WriteString(`</div>`)
 
@@ -288,6 +288,20 @@ func renderSidebarCancelBtn(filePath, field string) string {
 		field, filePath)
 }
 
+// visibleTags strips tags hidden (configmanager.HideTags, TagScopeDetail) from a read-only
+// display. Never used on an editable tags input - filtering there would silently drop a hidden
+// tag from the file when the edited value is saved.
+func visibleTags(tags []string) []string {
+	hidden := configmanager.HideTagsPatterns(configmanager.TagScopeDetail)
+	var visible []string
+	for _, t := range tags {
+		if !configmanager.IsTagHidden(hidden, t) {
+			visible = append(visible, t)
+		}
+	}
+	return visible
+}
+
 // RenderSidebarFieldDisplay renders the read-only display row for an editable sidebar field.
 // Returned HTML is the full .meta-inline-wrap so hx-swap="outerHTML" replaces it cleanly.
 func RenderSidebarFieldDisplay(field, filePath string, metadata *files.Metadata) string {
@@ -295,7 +309,7 @@ func RenderSidebarFieldDisplay(field, filePath string, metadata *files.Metadata)
 	switch field {
 	case "tags":
 		if metadata != nil {
-			value = RenderMetadataLinksHTML(metadata.Tags, "tags")
+			value = RenderMetadataLinksHTML(visibleTags(metadata.Tags), "tags")
 		} else {
 			value = `<span class="meta-empty">-</span>`
 		}

@@ -25,6 +25,7 @@
 - never hand-build /files/, /files/edit/, /media/, /files/edittable/, or /files/history/ URLs with string concat or fmt.Sprintf - use pathutils.ToFileURL / ToFileEditURL / ToMediaURL / ToFileEditTableURL / ToFileHistoryURL instead
 - if working with paths - we have to take care of both linux and windows os paths
 - we updated to htmx 4.0 so the syntax is different to htmx 2.0 be careful of this
+- env vars (configmanager/envdefs.go, KNOV_* prefix) are for deployment/admin-level config only - things set once before startup and needing a restart to change (ports, paths, storage providers, credentials, sync intervals). runtime-editable, user-facing preferences (toggles, exclusion lists, display options shown on the /settings page) belong in configmanager's settings registry (settings_registry.go, StringSetting/BoolSetting/IntSetting/StringSliceSetting) instead - persisted via configStorage and editable without a restart. when in doubt: if it should show up on the settings page, it's a setting, not an env var
 
 ## API
 

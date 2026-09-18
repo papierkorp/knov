@@ -684,10 +684,39 @@ const (
 	HideScopeSearch   = "search"
 	HideScopeFilter   = "filter"
 	HideScopeKanban   = "kanban"
+	// HideScopeDetail covers the single-file detail data served by GetFilesWithSameTags /
+	// GetFilesInSameFolder via the /api/files/overview, /files/same-tags and /files/same-folder
+	// routes (see api_files.go, api_links.go). Those routes and their render.RenderSidebarField*
+	// helpers are theme-agnostic API surface - it's up to each theme's own templates/JS whether
+	// that data ends up in a slide-out panel (as the builtin theme does), a modal, or elsewhere.
+	// Despite the route name, this is unrelated to HideScopeOverview below, which gates the
+	// unrelated files-listing "overview" view (see FilterByVisibility).
+	HideScopeDetail = "detail"
 )
 
 // hideScopes lists every recognized HidePaths scope tag.
-var hideScopes = []string{HideScopeTree, HideScopeBrowse, HideScopeOverview, HideScopeSearch, HideScopeFilter, HideScopeKanban}
+var hideScopes = []string{HideScopeTree, HideScopeBrowse, HideScopeOverview, HideScopeSearch, HideScopeFilter, HideScopeKanban, HideScopeDetail}
+
+// Tag-hide scopes: feature areas that can be targeted by a HideTags entry's "::tag1|tag2"
+// suffix (see HideTagsPatterns). These are deliberately separate constants from the
+// HideScope* ones above, even where the underlying string is the same word (e.g. "kanban",
+// "detail") - HidePaths and HideTags are validated against different scope lists
+// (hideScopes vs. tagHideScopes) for different reasons (hiding a whole file by folder vs.
+// hiding one tag chip), so a call site should always read as unambiguously HidePaths or
+// HideTags without having to check which list a shared constant happens to belong to.
+const (
+	TagScopeKanban = "kanban"
+	TagScopeDetail = "detail"
+	// TagScopeDashboard is HideTags-only: the tag cloud widget on dashboards, which has no
+	// folder equivalent, so there's no matching HideScope* constant for it.
+	TagScopeDashboard = "dashboard"
+)
+
+// tagHideScopes lists every recognized HideTags scope tag - the subset of places a tag is
+// actually rendered on its own (kanban card chips, the file detail view, the dashboard
+// tag cloud), unlike hideScopes/HidePaths which hides whole files by folder across many more
+// listing views.
+var tagHideScopes = []string{TagScopeKanban, TagScopeDetail, TagScopeDashboard}
 
 // ValidateHidePaths rejects a HidePaths entry whose "::tag1|tag2" suffix contains an
 // unrecognized scope name, so a typo (e.g. "::serach") fails on save instead of silently
@@ -745,8 +774,11 @@ func IsPathHidden(relDirPath, scope string) bool {
 	return false
 }
 
-// splitHidePathEntry splits a HidePaths entry into its pattern and optional scope tags,
-// e.g. "projects/archive::search|filter" -> ("projects/archive", ["search", "filter"]).
+// splitHidePathEntry splits a "pattern::tag1|tag2" entry into its pattern and optional
+// scope tags, e.g. "projects/archive::search|filter" -> ("projects/archive", ["search",
+// "filter"]). Despite the name, this parses both HidePaths and HideTags entries - the two
+// settings share the same "pattern::scope1|scope2" syntax, just with a different pattern
+// dialect and a different set of valid scope names (hideScopes vs. tagHideScopes).
 func splitHidePathEntry(entry string) (pattern string, tags []string) {
 	pattern, tagStr, ok := strings.Cut(entry, "::")
 	if !ok || tagStr == "" {
@@ -766,6 +798,59 @@ func pathSegmentsMatch(patternSegs, candidateSegs []string) bool {
 		}
 	}
 	return true
+}
+
+// ValidateHideTags rejects a HideTags entry whose "::tag1|tag2" suffix contains an
+// unrecognized scope name, mirroring ValidateHidePaths.
+func ValidateHideTags(entries []string) error {
+	for _, entry := range entries {
+		_, tags := splitHidePathEntry(entry)
+		for _, tag := range tags {
+			if !slices.Contains(tagHideScopes, tag) {
+				return fmt.Errorf("hide tags: unknown scope %q in %q (known scopes: %s)", tag, entry, strings.Join(tagHideScopes, ", "))
+			}
+		}
+	}
+	return nil
+}
+
+// HideTagsPatterns compiles the HideTags entries that apply to scope into matchers for
+// IsTagHidden. Recompiles on every call rather than caching, same as IsPathHidden/
+// pathSegmentsMatch above - HideTags is normally a handful of entries, so this is cheap.
+func HideTagsPatterns(scope string) []*regexp.Regexp {
+	entries := HideTags.Get()
+	compiled := make([]*regexp.Regexp, 0, len(entries))
+	for _, entry := range entries {
+		pattern, tags := splitHidePathEntry(entry)
+		if len(tags) > 0 && !slices.Contains(tags, scope) {
+			continue
+		}
+		if pattern == "" {
+			continue
+		}
+		parts := strings.Split(pattern, "*")
+		for i, p := range parts {
+			parts[i] = regexp.QuoteMeta(p)
+		}
+		if re, err := regexp.Compile("(?i)^" + strings.Join(parts, ".*") + "$"); err == nil {
+			compiled = append(compiled, re)
+		}
+	}
+	return compiled
+}
+
+// IsTagHidden reports whether tag matches one of patterns (from HideTagsPatterns). Unlike
+// HidePaths, whose pattern segments are raw regex (see pathSegmentsMatch), a HideTags pattern
+// is matched literally except for "*", which matches any run of characters anywhere in the
+// pattern, e.g. "kb-status*" matches "kb-status-inbox", while "kb-status" without a "*" only
+// matches that tag exactly (case-insensitive).
+func IsTagHidden(patterns []*regexp.Regexp, tag string) bool {
+	for _, re := range patterns {
+		if re.MatchString(tag) {
+			return true
+		}
+	}
+	return false
 }
 
 // InitGitRepository initializes git repository based on configuration

@@ -164,6 +164,47 @@ func TestHidePathsTagValidation(t *testing.T) {
 	}
 }
 
+// IsTagHidden: "*" is a wildcard for any run of characters, case-insensitive; without
+// a "*" a pattern only matches that exact tag. A "::scope" suffix limits the pattern to
+// that scope, same as HidePaths.
+func TestIsTagHidden(t *testing.T) {
+	prev := HideTags.Get()
+	defer HideTags.SetFromString(strings.Join(prev, ","))
+
+	HideTags.SetFromString("kb-status*")
+	patterns := HideTagsPatterns(HideScopeKanban)
+	if !IsTagHidden(patterns, "kb-status-inbox") {
+		t.Error(`"kb-status*" should hide "kb-status-inbox"`)
+	}
+	if !IsTagHidden(patterns, "KB-STATUS-INBOX") {
+		t.Error(`"kb-status*" should hide "KB-STATUS-INBOX" (case-insensitive)`)
+	}
+	if IsTagHidden(patterns, "other-tag") {
+		t.Error(`"kb-status*" should not hide "other-tag"`)
+	}
+
+	HideTags.SetFromString("kb-status")
+	patterns = HideTagsPatterns(HideScopeKanban)
+	if IsTagHidden(patterns, "kb-status-inbox") {
+		t.Error(`"kb-status" without a wildcard should not hide "kb-status-inbox"`)
+	}
+	if !IsTagHidden(patterns, "kb-status") {
+		t.Error(`"kb-status" should hide the exact tag "kb-status"`)
+	}
+
+	HideTags.SetFromString("kb-status*::kanban")
+	if !IsTagHidden(HideTagsPatterns(HideScopeKanban), "kb-status-inbox") {
+		t.Error(`"kb-status*::kanban" should hide "kb-status-inbox" in the kanban scope`)
+	}
+	if IsTagHidden(HideTagsPatterns(HideScopeDetail), "kb-status-inbox") {
+		t.Error(`"kb-status*::kanban" should not hide "kb-status-inbox" in the detail scope`)
+	}
+
+	if err := HideTags.SetFromString("kb-status*::bogus"); err == nil {
+		t.Error(`SetFromString("kb-status*::bogus") did not return an error`)
+	}
+}
+
 // replicates handleAPIUploadFavicon/handleAPIDeleteFavicon's file write/validate/delete
 // sequence directly - both are inline handler logic with no exported wrapper beyond the
 // GetCustomFaviconExt/SetCustomFaviconExt/GetCustomFaviconPath accessors.

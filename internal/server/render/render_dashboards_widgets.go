@@ -92,7 +92,15 @@ func renderTagsWidget() (string, error) {
 		}
 	}
 
-	return RenderBrowseHTML(map[string]int(tagCount), "/browse/"+mapping.DatabaseToURL("tags"), false, ""), nil
+	hiddenTags := configmanager.HideTagsPatterns(configmanager.TagScopeDashboard)
+	visibleTagCount := make(map[string]int, len(tagCount))
+	for tag, count := range tagCount {
+		if !configmanager.IsTagHidden(hiddenTags, tag) {
+			visibleTagCount[tag] = count
+		}
+	}
+
+	return RenderBrowseHTML(visibleTagCount, "/browse/"+mapping.DatabaseToURL("tags"), false, ""), nil
 }
 
 func renderCollectionsWidget() (string, error) {
