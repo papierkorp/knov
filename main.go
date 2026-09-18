@@ -31,6 +31,7 @@ import (
 	"knov/internal/pdfexport"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
+	"knov/internal/trackerStorage"
 
 	"knov/internal/test"
 	// every in-app test suite self-registers with test.Register in its own init() -
@@ -150,6 +151,11 @@ func main() {
 
 	if err := searchStorage.Init(appConfig.SearchStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize search storage: %v", err)
+		os.Exit(1)
+	}
+
+	if err := trackerStorage.Init(appConfig.TrackerEnabled, appConfig.TrackerStorageProvider, appConfig.StoragePath); err != nil {
+		logging.LogError(logging.KeyApp, "failed to initialize tracker storage: %v", err)
 		os.Exit(1)
 	}
 

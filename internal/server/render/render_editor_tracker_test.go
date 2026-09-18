@@ -11,8 +11,8 @@ import (
 // tick API, so it must stay separate from the row's own remove/reset actions - this
 // guards the row markup that the kebab-menu-in-the-3-dots change touches.
 func TestRenderTrackerCounterRowExistingCounter(t *testing.T) {
-	c := &tracker.Counter{ID: "abc123", Title: "pushups", Days: map[string]int{"2026-01-01": 3}}
-	html := RenderTrackerCounterRow("mytracker", c)
+	c := &tracker.Counter{ID: "abc123", Title: "pushups"}
+	html := RenderTrackerCounterRow("mytracker", c, 3)
 
 	if !strings.Contains(html, `value="pushups"`) {
 		t.Errorf("row missing counter title input: %s", html)
@@ -49,7 +49,7 @@ func TestRenderTrackerCounterRowExistingCounter(t *testing.T) {
 // actually shows.
 func TestRenderTrackerCounterRowUnconfiguredRendersAsEverythingChecked(t *testing.T) {
 	c := &tracker.Counter{ID: "legacy1", Title: "old counter"}
-	html := RenderTrackerCounterRow("mytracker", c)
+	html := RenderTrackerCounterRow("mytracker", c, 0)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:true,&#34;day7d&#34;:true,&#34;day30d&#34;:true,&#34;allTime&#34;:true,&#34;daily&#34;:true,&#34;weekly&#34;:true,&#34;monthly&#34;:true}`) {
 		t.Errorf("an unconfigured counter should render as all-checked in the Alpine seed, got: %s", html)
@@ -61,7 +61,7 @@ func TestRenderTrackerCounterRowUnconfiguredRendersAsEverythingChecked(t *testin
 // stored, not a default.
 func TestRenderTrackerCounterRowRespectsExplicitColumns(t *testing.T) {
 	c := &tracker.Counter{ID: "abc123", Title: "pushups", Columns: tracker.ColumnSet{Day24h: true}, ColumnsConfigured: true}
-	html := RenderTrackerCounterRow("mytracker", c)
+	html := RenderTrackerCounterRow("mytracker", c, 0)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:true,&#34;day7d&#34;:false,&#34;day30d&#34;:false,&#34;allTime&#34;:false,&#34;daily&#34;:false,&#34;weekly&#34;:false,&#34;monthly&#34;:false}`) {
 		t.Errorf("explicit Columns should ride through unchanged, got: %s", html)
@@ -80,7 +80,7 @@ func TestRenderTrackerCounterRowRespectsExplicitColumns(t *testing.T) {
 // indistinguishable from "never configured".
 func TestRenderTrackerCounterRowRespectsExplicitAllFalse(t *testing.T) {
 	c := &tracker.Counter{ID: "abc123", Title: "silent", Columns: tracker.ColumnSet{}, ColumnsConfigured: true}
-	html := RenderTrackerCounterRow("mytracker", c)
+	html := RenderTrackerCounterRow("mytracker", c, 0)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:false,&#34;day7d&#34;:false,&#34;day30d&#34;:false,&#34;allTime&#34;:false,&#34;daily&#34;:false,&#34;weekly&#34;:false,&#34;monthly&#34;:false}`) {
 		t.Errorf("explicit all-false Columns should render as all-unchecked, got: %s", html)
@@ -90,7 +90,7 @@ func TestRenderTrackerCounterRowRespectsExplicitAllFalse(t *testing.T) {
 // A blank new-counter row (nil counter) has no id to reset or tick yet, so only the
 // remove action belongs in its menu.
 func TestRenderTrackerCounterRowNewCounter(t *testing.T) {
-	html := RenderTrackerCounterRow("mytracker", nil)
+	html := RenderTrackerCounterRow("mytracker", nil, 0)
 
 	if strings.Contains(html, `hx-post="/api/trackers/tick"`) {
 		t.Errorf("blank row should have no tick buttons: %s", html)

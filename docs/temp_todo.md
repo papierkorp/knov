@@ -11,11 +11,11 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
 - fixes
-  - table editor selecting one column always selects the first column
+  - 
 - chore
-  - storageinterface for the editors (filter and tracker) or keep them in the config storage?
   - add the github link to knov somewhere (/system/version?)
   - in the info slideout we have a "same tags" which shows files with the same tag - we need a setting which allows to add exceptions or tags which shouldnt be show - and the default value should be "kb-status" or whatever the env is
+  - example filter deletion no immediate feedback
 
 # every other time
 

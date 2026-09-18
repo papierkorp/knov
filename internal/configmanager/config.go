@@ -49,6 +49,7 @@ type AppConfig struct {
 	MetadataStorageProvider     string
 	CacheStorageProvider        string
 	SearchStorageProvider       string
+	TrackerStorageProvider      string
 	KanbanEventsEnabled         bool
 	KanbanEventsProvider        string
 	SearchEngine                string
@@ -65,6 +66,7 @@ type AppConfig struct {
 	KanbanArchiveStatus         string
 	KanbanAncestorAllowedStatus []string
 	KanbanBoards                []KanbanBoard
+	TrackerEnabled              bool
 	NotifyDuration              int
 	NotifyMinLevel              string
 	DefaultEditor               string
@@ -634,6 +636,11 @@ func GetKanbanEventsProvider() string {
 	return appConfig.KanbanEventsProvider
 }
 
+// GetTrackerEnabled returns whether the tracker editor is enabled
+func GetTrackerEnabled() bool {
+	return appConfig.TrackerEnabled
+}
+
 // GetCacheStorageProvider returns cache storage provider
 func GetCacheStorageProvider() string {
 	return appConfig.CacheStorageProvider
@@ -656,7 +663,7 @@ func IsFileTypeHidden(editorType string) bool {
 	case "filter-editor":
 		return HideFilter.Get()
 	case "tracker-editor":
-		return HideTracker.Get()
+		return !appConfig.TrackerEnabled || HideTracker.Get()
 	case "index-editor":
 		return HideIndex.Get()
 	case "book-editor":

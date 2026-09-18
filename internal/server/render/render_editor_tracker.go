@@ -78,7 +78,12 @@ func RenderTrackerEditor(filePath string) (string, error) {
 	h.WriteString(`<div id="tracker-counters">`)
 	if config != nil {
 		for i := range config.Counters {
-			h.WriteString(RenderTrackerCounterRow(id, &config.Counters[i]))
+			c := &config.Counters[i]
+			total, err := tracker.Total(id, c.ID, time.Time{})
+			if err != nil {
+				logging.LogWarning(logging.KeyApp, "failed to load tracker counter total for %s/%s: %v", id, c.ID, err)
+			}
+			h.WriteString(RenderTrackerCounterRow(id, c, total))
 		}
 	}
 	h.WriteString(`</div>`)
@@ -93,12 +98,13 @@ func RenderTrackerEditor(filePath string) (string, error) {
 }
 
 // RenderTrackerCounterRow renders one counter editor row. Pass a persisted
-// *tracker.Counter for a row with a running total, live -/+ buttons, and its own
-// saved column choices; pass nil for a blank new-counter row that the next save
-// will create, which starts with every column checked (tracker.AllColumns). The
-// title is always an editable input and a hidden counter_id[] (empty for a new
-// row) rides along so save can match rows by id.
-func RenderTrackerCounterRow(trackerID string, c *tracker.Counter) string {
+// *tracker.Counter and its current all-time total for a row with a running
+// total, live -/+ buttons, and its own saved column choices; pass nil (total
+// ignored) for a blank new-counter row that the next save will create, which
+// starts with every column checked (tracker.AllColumns). The title is always an
+// editable input and a hidden counter_id[] (empty for a new row) rides along so
+// save can match rows by id.
+func RenderTrackerCounterRow(trackerID string, c *tracker.Counter, total int) string {
 	lang := configmanager.GetLanguage()
 	t := func(k string, a ...any) string { return translation.SprintfForRequest(lang, k, a...) }
 
@@ -127,7 +133,7 @@ func RenderTrackerCounterRow(trackerID string, c *tracker.Counter) string {
 		}
 		h.WriteString(`<span class="tracker-stepper">`)
 		fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-counter-row" hx-swap="outerHTML">&minus;</button>`, vals(-1))
-		fmt.Fprintf(&h, `<span class="tracker-counter-total">%d</span>`, tracker.Total(c, time.Time{}))
+		fmt.Fprintf(&h, `<span class="tracker-counter-total">%d</span>`, total)
 		fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-counter-row" hx-swap="outerHTML">+</button>`, vals(1))
 		h.WriteString(`</span>`)
 	}

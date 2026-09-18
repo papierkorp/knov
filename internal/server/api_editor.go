@@ -76,6 +76,10 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	case files.EditorTypeTracker:
+		if !configmanager.GetTrackerEnabled() {
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+			break
+		}
 		var renderErr error
 		if html, renderErr = render.RenderTrackerEditor(fp); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render tracker editor: %v", renderErr)

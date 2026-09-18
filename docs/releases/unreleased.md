@@ -1,8 +1,12 @@
 # unreleased
 
-_47 commits since last release_
+_50 commits since last release_
+
+## breaking changes
+- existing tracker counter history embedded in each tracker's
 
 ## changes
+- add version range picker to release notes page
 - add configurable columns and reset action to tracker counters
 - paste in tabulator now creates columns/rows
 - add table button to codemirror editor

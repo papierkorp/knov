@@ -13,6 +13,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/metadataStorage"
 	"knov/internal/parser"
+	"knov/internal/trackerStorage"
 )
 
 func TestMain(m *testing.M) {
@@ -34,6 +35,9 @@ func TestMain(m *testing.M) {
 	if err := cacheStorage.Init("json", dir); err != nil {
 		panic(err)
 	}
+	if err := trackerStorage.Init(true, "sqlite", dir); err != nil {
+		panic(err)
+	}
 	code := m.Run()
 	os.RemoveAll(dir)
 	os.Exit(code)
@@ -50,40 +54,38 @@ func TestResetZeroesDaysAndKeepsCounter(t *testing.T) {
 	}
 	counterID := config.Counters[0].ID
 
-	if _, err := Tick(id, counterID, 1); err != nil {
+	if _, _, err := Tick(id, counterID, 1); err != nil {
 		t.Fatalf("Tick: %v", err)
 	}
-	if _, err := Tick(id, counterID, 1); err != nil {
+	if _, _, err := Tick(id, counterID, 1); err != nil {
 		t.Fatalf("Tick: %v", err)
 	}
 
-	config, _ = GetConfig(id)
-	if total := Total(config.GetCounter(counterID), time.Time{}); total != 2 {
-		t.Fatalf("sanity: total before reset = %d, want 2", total)
+	if total, err := Total(id, counterID, time.Time{}); err != nil || total != 2 {
+		t.Fatalf("sanity: total before reset = %d, err = %v, want 2", total, err)
 	}
 
-	counter, err := Reset(id, counterID)
+	counter, total, err := Reset(id, counterID)
 	if err != nil {
 		t.Fatalf("Reset: %v", err)
 	}
 	if counter.ID != counterID || counter.Title != "pushups" {
 		t.Errorf("Reset returned counter %+v, want id=%s title=pushups", counter, counterID)
 	}
-	if len(counter.Days) != 0 {
-		t.Errorf("Reset left Days = %v, want empty", counter.Days)
+	if total != 0 {
+		t.Errorf("Reset returned total = %d, want 0", total)
+	}
+	if days, err := trackerStorage.GetDays(id, counterID); err != nil || len(days) != 0 {
+		t.Errorf("Reset left days = %v (err %v), want empty", days, err)
 	}
 
-	config, err = GetConfig(id)
-	if err != nil {
-		t.Fatalf("GetConfig after reset: %v", err)
-	}
-	if got := Total(config.GetCounter(counterID), time.Time{}); got != 0 {
-		t.Errorf("Total after reset = %d, want 0", got)
+	if got, err := Total(id, counterID, time.Time{}); err != nil || got != 0 {
+		t.Errorf("Total after reset = %d, err = %v, want 0", got, err)
 	}
 }
 
 func TestResetUnknownTracker(t *testing.T) {
-	if _, err := Reset("does-not-exist", "whatever"); !errors.Is(err, ErrNotFound) {
+	if _, _, err := Reset("does-not-exist", "whatever"); !errors.Is(err, ErrNotFound) {
 		t.Errorf("Reset on unknown tracker: err = %v, want ErrNotFound", err)
 	}
 }
@@ -93,7 +95,7 @@ func TestResetUnknownCounter(t *testing.T) {
 	if err := SetMeta(id, "", []CounterInput{{Title: "sit-ups"}}); err != nil {
 		t.Fatalf("SetMeta: %v", err)
 	}
-	if _, err := Reset(id, "not-a-real-counter-id"); !errors.Is(err, ErrNotFound) {
+	if _, _, err := Reset(id, "not-a-real-counter-id"); !errors.Is(err, ErrNotFound) {
 		t.Errorf("Reset on unknown counter: err = %v, want ErrNotFound", err)
 	}
 }
@@ -149,7 +151,7 @@ func TestSetMetaMarksColumnsConfiguredEvenWhenAllFalse(t *testing.T) {
 		t.Errorf("EffectiveColumns() after an explicit all-false save = %+v, want all false", got)
 	}
 
-	md := buildStatsMarkdown(config)
+	md := buildStatsMarkdown(id, config)
 	for _, unwanted := range []string{"24h", "7d", "30d", "all-time", "month"} {
 		if strings.Contains(md, unwanted) {
 			t.Errorf("markdown should show nothing for an explicitly all-false counter, found %q:\n%s", unwanted, md)
@@ -174,11 +176,15 @@ func TestBuildStatsMarkdownRendersPerCounterColumns(t *testing.T) {
 	}
 
 	todayOnly := config.GetCounter(config.Counters[0].ID)
-	todayOnly.Days = map[string]int{time.Now().Format(dayKey): 5}
+	if _, _, err := TickDay(id, todayOnly.ID, time.Now(), 5); err != nil {
+		t.Fatalf("TickDay: %v", err)
+	}
 	fullStats := config.GetCounter(config.Counters[1].ID)
-	fullStats.Days = map[string]int{time.Now().Format(dayKey): 7}
+	if _, _, err := TickDay(id, fullStats.ID, time.Now(), 7); err != nil {
+		t.Fatalf("TickDay: %v", err)
+	}
 
-	md := buildStatsMarkdown(config)
+	md := buildStatsMarkdown(id, config)
 
 	if !strings.Contains(md, "## today-only") || !strings.Contains(md, "## full-stats") {
 		t.Fatalf("expected one heading per counter, got:\n%s", md)
@@ -206,10 +212,12 @@ func TestBuildStatsMarkdownRendersPerCounterColumns(t *testing.T) {
 // still render the full table - EffectiveColumns' AllColumns fallback keeps
 // pre-existing trackers' output from silently going blank.
 func TestBuildStatsMarkdownUnconfiguredCounterShowsEverything(t *testing.T) {
-	config := &Config{Counters: []Counter{
-		{ID: "c1", Title: "legacy", Days: map[string]int{time.Now().Format(dayKey): 3}},
-	}}
-	md := buildStatsMarkdown(config)
+	id := "legacy-tracker"
+	config := &Config{Counters: []Counter{{ID: "c1", Title: "legacy"}}}
+	if err := trackerStorage.AddDelta(id, "c1", time.Now().Format(dayKey), 3); err != nil {
+		t.Fatalf("AddDelta: %v", err)
+	}
+	md := buildStatsMarkdown(id, config)
 	for _, want := range []string{"24h", "7d", "30d", "all-time"} {
 		if !strings.Contains(md, want) {
 			t.Errorf("zero-value Columns should default to showing everything, missing %q:\n%s", want, md)

@@ -26,6 +26,7 @@ import (
 	"knov/internal/notificationStorage"
 	"knov/internal/searchStorage"
 	"knov/internal/test"
+	"knov/internal/trackerStorage"
 )
 
 // setNameLayout mirrors backup package's own unexported nameLayout - needed here to fabricate
@@ -291,7 +292,7 @@ func reinitStorages() error {
 	if err := searchStorage.Init(cfg.SearchStorageProvider, cfg.StoragePath); err != nil {
 		return err
 	}
-	return nil
+	return trackerStorage.Init(cfg.TrackerEnabled, cfg.TrackerStorageProvider, cfg.StoragePath)
 }
 
 // restoreAndReinit wraps backup.Restore with the reinitStorages call above, as this suite's

@@ -98,7 +98,7 @@ func trackerCounterRows(r *http.Request) ([]tracker.CounterInput, error) {
 // @Success 200 {string} string "tracker counter row html"
 // @Router /api/trackers/add-counter [post]
 func handleAPIAddTrackerCounter(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, map[string]string{}, render.RenderTrackerCounterRow("", nil))
+	writeResponse(w, r, map[string]string{}, render.RenderTrackerCounterRow("", nil, 0))
 }
 
 // @Summary Record a tracker change
@@ -122,7 +122,7 @@ func handleAPITrackerTick(w http.ResponseWriter, r *http.Request) {
 	counterID := strings.TrimSpace(r.FormValue("counterid"))
 	delta, _ := strconv.Atoi(r.FormValue("delta"))
 
-	counter, err := tracker.Tick(trackerID, counterID, delta)
+	counter, total, err := tracker.Tick(trackerID, counterID, delta)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to record tracker change: %v", err)
 		status := http.StatusInternalServerError
@@ -134,7 +134,7 @@ func handleAPITrackerTick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID, "delta": delta},
-		render.RenderTrackerCounterRow(trackerID, counter))
+		render.RenderTrackerCounterRow(trackerID, counter, total))
 }
 
 // @Summary Reset a tracker counter
@@ -156,7 +156,7 @@ func handleAPITrackerReset(w http.ResponseWriter, r *http.Request) {
 	trackerID := strings.TrimSpace(r.FormValue("trackerid"))
 	counterID := strings.TrimSpace(r.FormValue("counterid"))
 
-	counter, err := tracker.Reset(trackerID, counterID)
+	counter, total, err := tracker.Reset(trackerID, counterID)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to reset tracker counter: %v", err)
 		status := http.StatusInternalServerError
@@ -168,7 +168,7 @@ func handleAPITrackerReset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID},
-		render.RenderTrackerCounterRow(trackerID, counter))
+		render.RenderTrackerCounterRow(trackerID, counter, total))
 }
 
 // @Summary Delete tracker

@@ -123,6 +123,16 @@ Filters are saved queries that produce a live list of matching files.
 
 ---
 
+## Trackers
+
+Trackers are named counters (e.g. habit or hit-count tracking) with +/- buttons and a generated markdown stats table.
+
+- Create a tracker via **New File => Tracker**
+- `KNOV_TRACKER_ENABLED=true` (default) - set to `false` to disable the tracker editor entirely (hidden from **New File**, no storage is created)
+- disabling it doesn't delete existing counter history - the day-deltas stay on disk untouched, but read as empty while disabled, so an existing tracker's stats markdown regenerates to all-zero until it's turned back on
+
+---
+
 ## File Auto-Tagging
 
 Useful for kanban setups where every new file in a given folder should land in a default column.
@@ -140,10 +150,11 @@ Knov's own internal data (not your files - `docs/`/`media/` are plain files on d
 
 | Variable | Options | Default | Backs |
 |---|---|---|---|
-| `KNOV_CONFIG_STORAGE_PROVIDER` | `json` | `json` | app settings and filter configs |
+| `KNOV_CONFIG_STORAGE_PROVIDER` | `json` | `json` | app settings, filter configs and tracker titles/columns |
 | `KNOV_METADATA_STORAGE_PROVIDER` | `json`, `yaml`, `sqlite` | `sqlite` | tags, dates, relationships per file |
 | `KNOV_CACHE_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | rendered-content cache |
 | `KNOV_SEARCH_STORAGE_PROVIDER` | `sqlite` | `sqlite` | full-text search index |
+| `KNOV_TRACKER_STORAGE_PROVIDER` | `sqlite` | `sqlite` | tracker counter day-deltas |
 | `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | kanban card move history |
 
 - `yaml` for metadata stores each file's tags/dates/etc. as front matter inside the file itself instead of a separate database - the only provider whose data is already covered by git rather than a backup (see Backup & Restore)

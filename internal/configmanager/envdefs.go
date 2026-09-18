@@ -121,7 +121,8 @@ func getRaw(_ AppConfig, key string) string {
 // (tools/genenv) and reusable anywhere that wants the same intro (e.g. the "backup" entry on
 // the /system/backup page). Not every category needs one; missing = no blurb.
 var EnvCategoryDescriptions = map[string]string{
-	"backup": "Backups snapshot metadata, chat, kanban, notifications, config and search by default. Docs and media are optional - select them individually since they're already tracked by git, and including them can make a backup much larger. Each storage is backed up one at a time, not as a single point-in-time transaction. Backups can also run automatically on a schedule (KNOV_BACKUP_AUTO_PROFILES), on top of the manual backups triggered on /system/backup. Each profile is due-tracked off its own newest backup's timestamp rather than a \"ran today\" flag, so a device that isn't running 24/7 (e.g. a USB stick) still catches up reliably instead of missing a scheduled slot entirely.\n\n Rotation is tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS (days of backups always kept) and KNOV_BACKUP_ROTATION_KEEP_DEFAULT (minimum number of default backups always kept, regardless of age). See .env.example for details.",
+	"backup":  "Backups snapshot metadata, chat, kanban, notifications, config and search by default. Docs and media are optional - select them individually since they're already tracked by git, and including them can make a backup much larger. Each storage is backed up one at a time, not as a single point-in-time transaction. Backups can also run automatically on a schedule (KNOV_BACKUP_AUTO_PROFILES), on top of the manual backups triggered on /system/backup. Each profile is due-tracked off its own newest backup's timestamp rather than a \"ran today\" flag, so a device that isn't running 24/7 (e.g. a USB stick) still catches up reliably instead of missing a scheduled slot entirely.\n\n Rotation is tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS (days of backups always kept) and KNOV_BACKUP_ROTATION_KEEP_DEFAULT (minimum number of default backups always kept, regardless of age). See .env.example for details.",
+	"tracker": "Trackers are named counters (e.g. habit or hit-count tracking) with +/- buttons and a generated markdown stats table. Turning off KNOV_TRACKER_ENABLED hides the tracker editor and switches its day-delta storage to a noop backend - any existing tracker.db is left on disk untouched but reads as empty, so every tracker's stats markdown regenerates to all-zero (not deleted, just invisible) until it's turned back on.",
 }
 
 // EnvVarDefs lists every recognized KNOV_* environment variable, grouped and ordered the same
@@ -169,6 +170,7 @@ var EnvVarDefs = []EnvVarDef{
 	stringDef("KNOV_METADATA_STORAGE_PROVIDER", "storage providers", "metadata storage", "sqlite", func(c *AppConfig) *string { return &c.MetadataStorageProvider }, withOptions("json", "yaml", "sqlite")),
 	stringDef("KNOV_CACHE_STORAGE_PROVIDER", "storage providers", "cache storage", "sqlite", func(c *AppConfig) *string { return &c.CacheStorageProvider }, withOptions("json", "sqlite")),
 	stringDef("KNOV_SEARCH_STORAGE_PROVIDER", "storage providers", "search index storage", "sqlite", func(c *AppConfig) *string { return &c.SearchStorageProvider }, withOptions("sqlite")),
+	stringDef("KNOV_TRACKER_STORAGE_PROVIDER", "storage providers", "tracker counter day-delta storage", "sqlite", func(c *AppConfig) *string { return &c.TrackerStorageProvider }, withOptions("sqlite")),
 	stringDef("KNOV_KANBAN_EVENTS_STORAGE_PROVIDER", "storage providers", "kanban event log storage", "sqlite", func(c *AppConfig) *string { return &c.KanbanEventsProvider }, withOptions("json", "sqlite")),
 
 	// ── search ──
@@ -213,6 +215,9 @@ var EnvVarDefs = []EnvVarDef{
 		func(cfg *AppConfig, key string) { cfg.KanbanBoards = applyKanbanFolderSyncEnv(cfg.KanbanBoards, key) },
 		getRaw,
 	),
+
+	// ── tracker ──
+	boolDef("KNOV_TRACKER_ENABLED", "tracker", "set to false to disable the tracker editor entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.TrackerEnabled }),
 
 	// ── backup ──
 	compositeDef("KNOV_BACKUP_AUTO_PROFILES", "backup", `automatic backup profiles: semicolon-separated "<name>:<cron>:<storages>,<name>:<cron>:<storages>" and comma separated for multiple entries. name is freely chooseable; cron is a standard 5-field expression; storages is comma-separated and may be empty for the default backup set. Empty = automatic backups disabled entirely.
