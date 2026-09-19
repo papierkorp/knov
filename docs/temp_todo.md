@@ -14,7 +14,6 @@
   - 
 - chore
   - add the github link to knov somewhere (/system/version?)
-  - example filter deletion no immediate feedback
   - remove the one-time migration for the tracker editor (legacyConfig..)
   - kb-status-inbox is not shown in info slideout as a tag
 

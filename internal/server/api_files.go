@@ -1053,7 +1053,15 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "successfully deleted file: %s", filePath)
 
-	// redirect to browse or home page
+	// browse-list rows delete themselves in place (hx-target="closest li") and pass
+	// inline=true for an immediate toast; the file panel's delete-form has no such
+	// target and needs the HX-Redirect since the page it's on no longer exists.
+	if r.URL.Query().Get("inline") == "true" {
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file deleted"))
+		writeResponse(w, r, map[string]string{"status": "deleted"}, "")
+		return
+	}
+
 	w.Header().Set("HX-Redirect", "/browse")
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file deleted"))
 	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
