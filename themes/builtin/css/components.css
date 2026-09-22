@@ -3624,18 +3624,31 @@ dl.media-info dd {
 .file-content li.todo-open {
   font-style: normal;
 }
-.file-content li.todo-done {
+
+/* every done/cancelled/waiting style (color, opacity, strikethrough, italics) is put on
+   the item's own label - its first-child <p> for a loose list item (one with nested
+   content, e.g. a code block, so goldmark wraps the label in its own <p>), or the <li>
+   itself for a tight one with nothing else inside it - rather than on the <li>
+   unconditionally. Some of these (opacity, text-decoration) can't be reset back to
+   normal on a descendant once an ancestor sets them - text-decoration: none on nested
+   content can't stop an ancestor's line-through from painting through it, and opacity
+   composites the whole subtree at once - so scoping at the source is the only fix;
+   color/font-style would otherwise just be silently inherited by nested content too. */
+.file-content li.todo-done > p:first-child,
+.file-content li.todo-done:not(:has(> p:first-child)) {
   color: var(--text-secondary);
   text-decoration: line-through;
   font-style: normal;
 }
-.file-content li.todo-cancelled {
+.file-content li.todo-cancelled > p:first-child,
+.file-content li.todo-cancelled:not(:has(> p:first-child)) {
   color: var(--text-secondary);
   opacity: 0.55;
   text-decoration: line-through;
   font-style: normal;
 }
-.file-content li.todo-waiting {
+.file-content li.todo-waiting > p:first-child,
+.file-content li.todo-waiting:not(:has(> p:first-child)) {
   font-style: italic;
 }
 

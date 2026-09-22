@@ -1,6 +1,6 @@
 # unreleased
 
-_53 commits since last release_
+_54 commits since last release_
 
 ## breaking changes
 - existing tracker counter history embedded in each tracker's config file is imported automatically into the new storage the first time that tracker is opened after upgrading (see importLegacyDays). Back up your storage/config directory before upgrading, and open each existing tracker at least once post-upgrade to confirm the migration ran before relying on any automated backup rotation to expire the pre-upgrade one.
@@ -15,6 +15,7 @@ _53 commits since last release_
 - support per-column alignment in table editor
 
 ## features
+- add Android wrapper app (apk build)
 - add hide tags besides hide paths
 - add a open with another editor button to the built in theme info slideout
 - add a date stamps setting for todo lists

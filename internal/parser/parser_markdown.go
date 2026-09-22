@@ -394,15 +394,18 @@ func (r *knovNodeRenderer) renderFencedCode(w util.BufWriter, source []byte, nod
 		return ast.WalkSkipChildren, nil
 	}
 	n := node.(*ast.FencedCodeBlock)
+	info := ""
+	if n.Info != nil {
+		info = strings.TrimSpace(string(n.Info.Segment.Value(source)))
+	}
 	lang := "text"
-	if info := n.Info; info != nil {
-		tag := strings.TrimSpace(string(info.Segment.Value(source)))
-		if tag != "" {
-			lang = tag
-		}
+	if info != "" {
+		lang = info
 	}
 
-	// check if this is a placeholder — restore from blocks slice
+	// check if this is a placeholder — restore from blocks slice. Usually the marker
+	// is its own content line, but a too-short block (see placeholderLines) has none,
+	// so it rides in the info string instead.
 	var content string
 	var buf bytes.Buffer
 	lines := n.Lines()
@@ -413,6 +416,9 @@ func (r *knovNodeRenderer) renderFencedCode(w util.BufWriter, source []byte, nod
 	raw := buf.String()
 
 	placeholder := strings.TrimSpace(raw)
+	if placeholder == "" {
+		placeholder = info
+	}
 	if strings.HasPrefix(placeholder, "KNOVCODEBLOCK") {
 		idx := 0
 		fmt.Sscanf(placeholder[len("KNOVCODEBLOCK"):], "%d", &idx)
@@ -511,8 +517,8 @@ type codeBlock struct {
 }
 
 // extractCodeBlocks replaces every ``` / ~~~ fenced block with a KNOVCODEBLOCK<n>
-// placeholder (kept in a clean, blank-line-padded fence so goldmark still parses
-// it as one) so chroma handles highlighting and goldmark never sees the raw code.
+// placeholder (kept in a clean fence so goldmark still parses it as one) so
+// chroma handles highlighting and goldmark never sees the raw code.
 func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock) {
 	lines := strings.Split(string(content), "\n")
 	found := markdown.CodeBlocks(lines)
@@ -532,12 +538,56 @@ func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock
 		}
 		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(blocks))
 		blocks = append(blocks, codeBlock{lang: lang, content: cb.Body + "\n"})
-		result = append(result, "", cb.Indent+"```", cb.Indent+placeholder, cb.Indent+"```", "")
+		result = append(result, placeholderLines(cb, placeholder)...)
 
 		prev = cb.End + 1 // cb.End is always in range, so prev is at most len(lines)
 	}
 	result = append(result, lines[prev:]...)
 	return []byte(strings.Join(result, "\n")), blocks
+}
+
+// placeholderLines builds the lines that replace a fenced block, always spanning
+// exactly as many lines as cb did in the original (blank padding around the fence,
+// same as before, then inside it once that's used up). Anything else desyncs every
+// line number computed from here on (e.g. a todo checkbox's data-line) from the raw
+// file's real line numbers.
+//
+// A marker on its own content line needs 3 lines minimum (open fence, marker,
+// close fence), which is already more than an empty block (```` ``` ```` / ```` ``` ````,
+// 2 lines) or an unterminated one-line fence spans. Padding those up would desync
+// just the same, so instead the marker rides in the opening fence's info string
+// (renderFencedCode checks there too), needing no line of its own.
+func placeholderLines(cb markdown.CodeBlock, placeholder string) []string {
+	want := cb.End - cb.Start + 1
+	if want < 3 {
+		block := []string{cb.Indent + "```" + placeholder}
+		for i := 1; i < want; i++ {
+			block = append(block, cb.Indent+"```")
+		}
+		return block
+	}
+	extra := want - 3
+	lead, trail := 0, 0
+	if extra > 0 {
+		lead, extra = 1, extra-1
+	}
+	if extra > 0 {
+		trail, extra = 1, extra-1
+	}
+
+	block := make([]string, 0, want)
+	for i := 0; i < lead; i++ {
+		block = append(block, "")
+	}
+	block = append(block, cb.Indent+"```", cb.Indent+placeholder)
+	for i := 0; i < extra; i++ {
+		block = append(block, "")
+	}
+	block = append(block, cb.Indent+"```")
+	for i := 0; i < trail; i++ {
+		block = append(block, "")
+	}
+	return block
 }
 
 // restoreOrphanCodeBlocks replaces any KNOVCODEBLOCK placeholder that the node renderer

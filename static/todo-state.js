@@ -33,13 +33,25 @@ function applyTodoState(el, state) {
     if (icon) icon.className = state.icon;
 }
 
+// resolves the element actually holding a todo item's own checkbox and label text: its
+// first-child <p> for a loose list item (one with extra nested blocks - a code block, a
+// second paragraph - so goldmark wraps the label in its own <p>), or the <li> itself for
+// a tight one with nothing else inside it. Callers that assumed the label always sits
+// directly on the <li> would otherwise target/insert into the wrong place once an item
+// has nested content, landing a date stamp after it (looking like it belongs to the next
+// item) or failing to find the checkbox at all.
+function todoLabelOf(li) {
+    return li.querySelector(':scope > p:first-child') || li;
+}
+
 // sets li's date-stamp text, creating the span (and its clear button) on first stamp.
 // the date always comes from the server response (see the todo-toggle request below),
 // never computed client-side, so it's never off from what CycleTodoStateAtLine actually
 // persisted (server timezone, not the visitor's browser timezone).
 function setTodoDate(li, text) {
     if (!li) return;
-    var dateSpan = li.querySelector(':scope > .todo-date');
+    var label = todoLabelOf(li);
+    var dateSpan = label.querySelector(':scope > .todo-date');
     if (!dateSpan) {
         dateSpan = document.createElement('span');
         dateSpan.className = 'todo-date';
@@ -47,10 +59,11 @@ function setTodoDate(li, text) {
         clearBtn.type = 'button';
         clearBtn.className = 'todo-date-clear';
         clearBtn.textContent = '×';
-        var nestedList = li.querySelector(':scope > ul');
-        var before = nestedList || null;
-        li.insertBefore(dateSpan, before);
-        li.insertBefore(clearBtn, before);
+        // only a tight item's own <li> can have a nested sub-checklist as a direct child;
+        // a loose item's label <p> never does, so there's nothing to insert the stamp before.
+        var before = label === li ? li.querySelector(':scope > ul') : null;
+        label.insertBefore(dateSpan, before);
+        label.insertBefore(clearBtn, before);
     }
     dateSpan.textContent = text;
 }
@@ -109,10 +122,10 @@ document.addEventListener('click', function (e) {
     var li = clearBtn.closest('li');
     var container = clearBtn.closest('.file-content');
     var filepath = container && container.dataset.filepath;
-    var stateEl = li && li.querySelector(':scope > .todo-state[data-line]');
+    var stateEl = li && todoLabelOf(li).querySelector(':scope > .todo-state[data-line]');
     if (!filepath || !stateEl) return;
 
-    var dateSpan = li.querySelector(':scope > .todo-date');
+    var dateSpan = todoLabelOf(li).querySelector(':scope > .todo-date');
     var prevText = dateSpan ? dateSpan.textContent : '';
     setTodoDate(li, '');
 

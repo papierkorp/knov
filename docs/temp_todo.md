@@ -11,7 +11,7 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
 - fixes
-  - todos can only be checked if editor = todo-editor
+  - 
 - chore
   - add the github link to knov somewhere (/system/version?)
   - remove the one-time migration for the tracker editor (legacyConfig..)

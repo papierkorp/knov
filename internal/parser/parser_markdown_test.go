@@ -64,6 +64,43 @@ func TestRenderHeadingSkipsPhantomScannedHeading(t *testing.T) {
 	}
 }
 
+// TestTodoCheckboxLineSurvivesShortCodeBlock covers a fenced code block whose
+// span isn't exactly 5 lines (extractCodeBlocks's placeholder used to always
+// emit 5 lines regardless of the block it replaced, so any differently-sized
+// block desynced every later todo checkbox's rendered data-line from its real
+// line number in the raw file - see CycleTodoStateAtLine).
+func TestTodoCheckboxLineSurvivesShortCodeBlock(t *testing.T) {
+	src := "- [ ] before\n\n```\none line\n```\n\n- [ ] after\n"
+	rendered, err := NewMarkdownHandler().Render([]byte(src), PathlessRender, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(rendered), `data-line="6"`) {
+		t.Errorf("rendered html = %q, want the second checkbox's data-line to be 6 (its real line in src)", rendered)
+	}
+	if _, _, err := CycleTodoStateAtLine([]byte(src), 6); err != nil {
+		t.Errorf("CycleTodoStateAtLine(src, 6) = %v, want it to find the checkbox rendered at line 6", err)
+	}
+}
+
+// TestTodoCheckboxLineSurvivesEmptyCodeBlock covers an empty fenced block (```` ``` ````
+// immediately followed by ```` ``` ````, 2 lines): shorter than the 3 lines a placeholder
+// marker needs as its own content line, so it used to get padded up to 3 anyway and
+// desync every later line the same way as TestTodoCheckboxLineSurvivesShortCodeBlock.
+func TestTodoCheckboxLineSurvivesEmptyCodeBlock(t *testing.T) {
+	src := "- [ ] before\n\n```\n```\n\n- [ ] after\n"
+	rendered, err := NewMarkdownHandler().Render([]byte(src), PathlessRender, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(rendered), `data-line="5"`) {
+		t.Errorf("rendered html = %q, want the second checkbox's data-line to be 5 (its real line in src)", rendered)
+	}
+	if _, _, err := CycleTodoStateAtLine([]byte(src), 5); err != nil {
+		t.Errorf("CycleTodoStateAtLine(src, 5) = %v, want it to find the checkbox rendered at line 5", err)
+	}
+}
+
 // TestSharedUsedIDsDedupeAcrossDocuments covers renderDocsMarkdown's use case
 // (internal/server/render/render_system.go): several documents concatenated onto
 // one page, rendered one after the other while sharing the same usedIDs map, with
