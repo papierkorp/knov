@@ -29,6 +29,7 @@ prod: swaggo-api-init translation changelog docs-templatedata env-example
 mobile-apk: swaggo-api-init translation
 	CGO_ENABLED=0 GOOS=android GOARCH=arm64 go build $(LDFLAGS) -o android/app/src/main/jniLibs/arm64-v8a/libknovserver.so ./
 	@test -n "$(ANDROID_JAVA_HOME)" || { echo "no JDK found - set ANDROID_JAVA_HOME (see docs/developer.md)"; exit 1; }
+	@test -n "$(GRADLE_VERSION)" || { echo "couldn't parse gradle version from android/gradle/wrapper/gradle-wrapper.properties"; exit 1; }
 	@ls $${GRADLE_USER_HOME:-$$HOME/.gradle}/wrapper/dists/gradle-$(GRADLE_VERSION)-bin/*/gradle-$(GRADLE_VERSION) >/dev/null 2>&1 || test -n "$(ALLOW_GRADLE_DOWNLOAD)" || { \
 		echo "gradle $(GRADLE_VERSION) isn't installed locally - this would download it (~150MB) now."; \
 		echo "use 'make docker-build-apk' instead, or rerun with ALLOW_GRADLE_DOWNLOAD=1 to download it here anyway."; \

@@ -16,7 +16,6 @@
   - add the github link to knov somewhere (/system/version?)
   - remove the one-time migration for the tracker editor (legacyConfig..)
   - kb-status-inbox is not shown in info slideout as a tag
-  - The gradle-version sed extraction in the Makefile has no fallback/validation if gradle-wrapper.properties is ever reformatted or the regex doesn’t match — GRADLE_VERSION would just become empty, and the subsequent ls .../gradle--bin/*/gradle- would (correctly) fail closed and force the download-confirmation path rather than silently misbehaving. Acceptable failure mode.
 - test
   - remote git in mobile
 
