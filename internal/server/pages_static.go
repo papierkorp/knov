@@ -50,6 +50,10 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		basePath = "themes"
 		filePath = strings.TrimPrefix(r.URL.Path, "/themes/")
 		fullPath = filepath.Join(configmanager.GetThemesPath(), filePath)
+		if !pathutils.PathContains(configmanager.GetThemesPath(), fullPath) {
+			http.NotFound(w, r)
+			return
+		}
 	} else {
 		http.NotFound(w, r)
 		return
