@@ -24,6 +24,9 @@ import (
 	"knov/internal/version"
 )
 
+// knovRepoURL is linked from the version/build-info table.
+const knovRepoURL = "https://github.com/papierkorp/knov"
+
 // logSessionTimeRe matches both session-separator shapes and captures the
 // timestamp: the per-key files' "=== session started <ts> ===" and app.log's
 // banner middle line "session started <ts>". logRuleLineRe drops app.log's
@@ -877,6 +880,8 @@ func RenderVersionInfo(withChangelogLink bool) string {
 		row(t("Go version"), runtime.Version()) +
 		row(t("OS / Arch"), runtime.GOOS+"/"+runtime.GOARCH) +
 		row(t("Last commit"), version.LastCommitMessage) +
+		fmt.Sprintf(`<tr><td class="version-label">%s</td><td class="version-value"><a href="%s">%s</a></td></tr>`,
+			template.HTMLEscapeString(t("Repository")), knovRepoURL, knovRepoURL) +
 		`</tbody></table>`
 	if withChangelogLink {
 		out += fmt.Sprintf(`<a class="version-changelog-link" href="/system/changelog">%s &rarr;</a>`, t("Changelog"))

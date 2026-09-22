@@ -13,8 +13,6 @@
 - fixes
   - 
 - chore
-  - add the github link to knov somewhere (/system/version?)
-  - remove the one-time migration for the tracker editor (legacyConfig..)
   - kb-status-inbox is not shown in info slideout as a tag
 - test
   - remote git in mobile

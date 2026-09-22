@@ -108,56 +108,17 @@ func TrackerIndexPath(id string) string { return store.PairedPath(id) }
 // IDFromPath recovers a tracker id from its paired file's docs-relative path.
 func IDFromPath(relPath string) string { return store.IDFromPath(relPath) }
 
-// legacyConfig mirrors the pre-trackerStorage on-disk shape, where each
-// counter's day deltas were embedded directly in the config blob. Kept only so
-// GetConfig can import an existing tracker's history into trackerStorage the
-// first time it's loaded after upgrading; every save from here on writes the
-// current, days-less shape.
-type legacyConfig struct {
-	Title    string          `json:"title"`
-	Counters []legacyCounter `json:"counters"`
-}
-
-type legacyCounter struct {
-	Counter
-	Days map[string]int `json:"days"`
-}
-
 // GetConfig loads a tracker configuration from configStorage, or nil when absent.
 func GetConfig(id string) (*Config, error) {
 	data, err := store.Get(id)
 	if err != nil || data == nil {
 		return nil, err
 	}
-	var legacy legacyConfig
-	if err := json.Unmarshal(data, &legacy); err != nil {
+	var c Config
+	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal tracker config: %w", err)
 	}
-	c := &Config{Title: legacy.Title, Counters: make([]Counter, len(legacy.Counters))}
-	for i, lc := range legacy.Counters {
-		c.Counters[i] = lc.Counter
-		if len(lc.Days) > 0 {
-			importLegacyDays(id, lc.Counter.ID, lc.Days)
-		}
-	}
-	return c, nil
-}
-
-// importLegacyDays seeds trackerStorage from a counter's pre-trackerStorage
-// "days" blob, but only if trackerStorage has no rows for it yet - so a config
-// blob that still carries a stale "days" field (left behind until its next
-// save rewrites it without one) doesn't re-import and double-count on every load.
-func importLegacyDays(trackerID, counterID string, days map[string]int) {
-	existing, err := trackerStorage.GetDays(trackerID, counterID)
-	if err != nil || len(existing) > 0 {
-		return
-	}
-	for day, delta := range days {
-		if err := trackerStorage.AddDelta(trackerID, counterID, day, delta); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to import legacy tracker days for %s/%s: %v", trackerID, counterID, err)
-			return
-		}
-	}
+	return &c, nil
 }
 
 // GetCounter returns a pointer to the counter with the given id, or nil.
