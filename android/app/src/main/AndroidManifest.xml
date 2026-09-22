@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- optional, requested once at first launch (see MainActivity) so the data/storage/
+         themes/logs/backups folders can live in shared storage instead of the app's private
+         sandbox, reachable from a normal file manager or over USB/MTP. this app is sideload-only
+         (no Play Store distribution), so the "all files access" review restrictions don't apply.
+         chosen deliberately over the narrower Storage Access Framework: the knov binary is spawned
+         as a plain OS subprocess doing regular os.Open/filesystem-path I/O, not going through
+         Android's content:// URI APIs - SAF only hands back DocumentFile/URI access, which a plain
+         Go binary can't consume without a FUSE-style bridge. MANAGE_EXTERNAL_STORAGE is the only
+         permission that gets a real filesystem path in shared storage, hence the broad scope here -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Knov"
+        android:networkSecurityConfig="@xml/network_security_config">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".EnvEditorActivity"
+            android:exported="false"
+            android:label="@string/edit_env"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- "specialUse" (not "dataSync") since this service runs an indefinitely-long-lived
+             local server, not a bounded data-transfer task - dataSync is meant for short jobs
+             and is subject to OS duration limits that specialUse isn't -->
+        <service
+            android:name=".ServerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Runs the local knov web server in the background" />
+        </service>
+
+    </application>
+</manifest>

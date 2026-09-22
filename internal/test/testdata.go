@@ -14,6 +14,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
+	knovgit "knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/tracker"
 
@@ -203,8 +204,7 @@ func commitGitChanges(commitMessage string) error {
 		return fmt.Errorf("failed to init git repository: %w", err)
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
-	repo, err := git.PlainOpen(dataDir)
+	repo, err := knovgit.OpenRepository()
 	if err != nil {
 		return fmt.Errorf("failed to open git repository: %w", err)
 	}

@@ -2,8 +2,8 @@ FROM golang:1.26.4
 
 WORKDIR /app
 
-RUN go install github.com/swaggo/swag/cmd/swag@latest && \
-    go install golang.org/x/text/cmd/gotext@latest
+COPY Makefile ./
+RUN make install-tools
 
 COPY go.mod go.sum ./
 RUN go mod download

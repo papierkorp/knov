@@ -717,6 +717,11 @@
       "translation": "Skripte ausblenden"
     },
     {
+      "id": "Hide Tags",
+      "message": "Hide Tags",
+      "translation": ""
+    },
+    {
       "id": "Hide Todo Files",
       "message": "Hide Todo Files",
       "translation": "Todo-Dateien ausblenden"
@@ -1962,9 +1967,14 @@
       "translation": "kommagetrennte MIME-Typen, die für den Upload akzeptiert werden (z. B. image/*, application/pdf)"
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
-      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
-      "translation": "kommagetrennte Ordnerpfad-Muster, die aus Dateilisten, Durchsuchen, Suche, Filter und Kanban ausgeschlossen werden. verwende / zum Trennen von Segmenten und * als Platzhalter für ein einzelnes Segment, z. B. verbirgt */todo jeden todo-Ordner, während test/todo nur den todo-Ordner innerhalb von test verbirgt. standardmäßig verbirgt ein Muster überall; hänge ::tree, ::browse, ::overview, ::search, ::filter und/oder ::kanban (kombinierbar mit |, z. B. ::search|filter) an ein Muster an, um es nur in diesen Bereichen zu verbergen und ansonsten überall sichtbar zu lassen"
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. \"kb-status*\" hides every kb-status-* tag, while \"kb-status\" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere",
+      "message": "comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. \"kb-status*\" hides every kb-status-* tag, while \"kb-status\" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere",
+      "translation": ""
     },
     {
       "id": "compare",
@@ -4755,6 +4765,11 @@
       "id": "show archive",
       "message": "show archive",
       "translation": "Archiv anzeigen"
+    },
+    {
+      "id": "show changes from",
+      "message": "show changes from",
+      "translation": ""
     },
     {
       "id": "show events",

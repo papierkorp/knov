@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.keystore
+*.jks
+# except the checked-in, well-known debug keystore (password "android") used to keep
+# the sideloaded APK's signature stable across releases - never add a real release key here
+!app/debug.keystore
+
+# go server binary dropped in here by `make mobile-apk`, not source
+app/src/main/jniLibs/

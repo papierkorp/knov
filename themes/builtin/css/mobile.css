@@ -73,17 +73,13 @@
     flex-wrap: wrap;
   }
 
-  /* system pages (jobs/logs/backups/version/environment): these tables
-     use nowrap cells and are wider than a mobile viewport with no
-     scroll wrapper of their own - let the table scroll itself instead
-     of getting clipped by main's overflow-x: hidden backstop */
-  .jobs-table,
-  .backup-table,
-  .backup-summary-table,
-  .log-table,
-  .log-summary-table,
-  .version-table,
-  .env-table {
+  /* system pages (jobs/logs/backups/version/environment): their tables use nowrap
+     cells and grow wider than a mobile viewport - a table's own box always grows to
+     fit that content instead of clipping it, so overflow-x on the table itself does
+     nothing. the overflow shows up one level up instead, where it was getting clipped
+     by main's overflow-x: hidden backstop with no way to scroll to it. fix belongs on
+     .system-page-content, the one wrapper shared by every /system/* page's content */
+  .system-page-content {
     overflow-x: auto;
   }
 

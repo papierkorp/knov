@@ -21,17 +21,21 @@ import (
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
 	"knov/internal/searchStorage"
+	"knov/internal/utils"
 
 	"sync"
 
+	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	gitcfg "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/go-git/go-git/v5/storage/filesystem"
 )
 
 // GitHistoryFile represents a file in git history
@@ -65,7 +69,21 @@ type FileMove struct {
 // openRepo opens the git repository
 func openRepo() (*git.Repository, error) {
 	dataDir := configmanager.GetAppConfig().DataPath
-	return git.PlainOpen(dataDir)
+	wt := osfs.New(dataDir)
+	dot, err := utils.DotGitFilesystem(wt)
+	if err != nil {
+		return nil, err
+	}
+	repoStorage := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
+	return git.Open(repoStorage, wt)
+}
+
+// OpenRepository opens the on-disk git repository, applying the same Android
+// read+write-capability workaround (see utils.DotGitFilesystem) as every other git
+// operation in this package. Exported for internal/test's SetupTestData, which needs
+// to commit directly rather than through this package's own Commit*/queue helpers.
+func OpenRepository() (*git.Repository, error) {
+	return openRepo()
 }
 
 // gitWriteMu serializes operations that stage/commit changes to the repo

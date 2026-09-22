@@ -7,6 +7,7 @@ require github.com/go-chi/chi/v5 v5.2.2
 require (
 	github.com/alecthomas/chroma/v2 v2.24.1
 	github.com/chromedp/chromedp v0.16.0
+	github.com/go-git/go-billy/v5 v5.6.2
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/go-pdf/fpdf v0.8.0
 	github.com/microcosm-cc/bluemonday v1.0.27
@@ -36,7 +37,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.6.2 // indirect
 	github.com/go-json-experiment/json v0.0.0-20260623181947-01eb4420fa68 // indirect
 	github.com/go-openapi/jsonpointer v0.21.2 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect

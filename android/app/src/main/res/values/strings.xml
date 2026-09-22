@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Knov</string>
+    <string name="server_notification_title">Knov server running</string>
+    <string name="stop_server">Stop</string>
+    <string name="edit_env">.env</string>
+    <string name="save_and_restart">Save &amp; restart server</string>
+    <string name="starting_server">Starting server…</string>
+    <string name="server_start_failed">Still trying to start the server…</string>
+    <string name="storage_access_explanation">Grant "all files access" so your notes/storage/backups live in a folder you can browse from a normal file manager or over USB, instead of being locked inside the app\'s private storage.</string>
+    <string name="grant_storage_access">Grant folder access</string>
+    <string name="skip_storage_access">Skip, use app-private storage</string>
+</resources>

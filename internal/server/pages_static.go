@@ -44,9 +44,12 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		filePath = strings.TrimPrefix(r.URL.Path, "/static/")
 		fullPath = pathutils.ToSlash(filepath.Join(basePath, filePath))
 	} else if strings.HasPrefix(r.URL.Path, "/themes/") {
+		// basePath is just a discriminator here (see the "themes" checks below), not part
+		// of fullPath - the themes dir is configurable, so fullPath is built from
+		// configmanager.GetThemesPath() instead of basePath itself
 		basePath = "themes"
 		filePath = strings.TrimPrefix(r.URL.Path, "/themes/")
-		fullPath = filepath.Join(basePath, filePath)
+		fullPath = filepath.Join(configmanager.GetThemesPath(), filePath)
 	} else {
 		http.NotFound(w, r)
 		return

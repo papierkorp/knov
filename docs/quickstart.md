@@ -23,11 +23,21 @@ Alternative to running the binary directly:
 - use `docker compose up` to locally build and run a production image (at the moment there is no prebuild image)
 - Data, themes, storage, logs and backups are mounted as volumes so they persist outside the container
 
+## Mobile (Android App)
+
+- Android only - iOS isn't feasible for a self-hosted Go binary
+- A native wrapper app runs the same knov binary as a background service with an app icon - no terminal, no Termux
+- Download `knov-android.apk` from the [latest release](https://github.com/papierkorp/knov/releases/latest) and sideload it (enable "install unknown apps" first; not published to the Play Store). To build it yourself instead, see `android/README.md`
+- On first launch it optionally asks for "all files access" so your data/storage/logs land in a `knov/` folder under shared storage, browsable from a normal file manager or over USB - decline to keep it in the app's private storage instead (adb-only access). Changeable later too, from Android's own Settings => Apps => Knov => Permissions, then "Save & restart" in the `.env` editor to apply it - just note existing data doesn't move itself between the two locations
+- A ".env" button in the app lets you edit config on-device, no adb needed
+- Known gap: behavior under aggressive battery optimization on some OEMs isn't verified yet
+
 ## Mobile (Termux)
 
 - Android only - iOS isn't feasible for a self-hosted Go binary
+- A manual alternative to the app above, for anyone who prefers running it themselves in a terminal
 - Install [Termux](https://termux.dev) from F-Droid or GitHub releases, not the Play Store version (outdated)
-- `make mobile` builds a Linux arm64 binary (`bin/knov-arm64`) - Termux runs it as a regular Linux binary, no Android-specific build needed
+- `make prod` builds a Linux arm64 binary (`bin/knov-arm64`) among its outputs - Termux runs it as a regular Linux binary, no Android-specific build needed
 - Copy the binary and optionally your `.env` to the phone, run it like any other Linux binary, then open `http://localhost:1324` in the phone's browser
 - Keep it running: `termux-wake-lock` stops Android from suspending the CPU while knov runs in the background; run knov inside `tmux` so it survives closing the Termux app; install the Termux:Boot add-on to auto-start it on device boot
 

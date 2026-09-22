@@ -271,7 +271,7 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	}
 
 	// todo: make config
-	overwritePath := filepath.Join("themes", "overwrite", templateName+".gohtml")
+	overwritePath := filepath.Join(configmanager.GetThemesPath(), "overwrite", templateName+".gohtml")
 	err = validateTemplateFile(overwritePath)
 	if err == nil {
 		overwriteTemplate, parseErr := template.ParseFiles(overwritePath)
@@ -386,7 +386,7 @@ func SetBuiltinFiles(files embed.FS) {
 }
 
 func initBuiltInTheme(builtinTheme embed.FS) error {
-	builtinDir := "themes/builtin"
+	builtinDir := filepath.Join(configmanager.GetThemesPath(), "builtin")
 
 	err := os.MkdirAll(builtinDir, 0755)
 	if err != nil {

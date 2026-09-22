@@ -14,9 +14,12 @@ import (
 	"knov/internal/logging"
 	"knov/internal/utils"
 
+	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/go-git/go-git/v5/storage/filesystem"
 )
 
 // -----------------------------------------------------------------------------
@@ -875,18 +878,43 @@ func InitGitRepository() error {
 				return err
 			}
 		}
-		_, err := git.PlainClone(dataPath, false, &git.CloneOptions{
+		wt := osfs.New(dataPath)
+		dot, err := utils.DotGitFilesystem(wt)
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to clone repository: %v", err)
+			return err
+		}
+		storer := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
+		if _, err := git.Clone(storer, wt, &git.CloneOptions{
 			URL:  appConfig.GitRemote,
 			Auth: auth,
-		})
-		if err != nil {
+		}); err != nil {
+			// git.Init (called by git.Clone before it fetches) already wrote a real .git dir to
+			// disk, so a fetch/auth failure here would otherwise leave one behind - and the
+			// early "already exists" check above would then treat that half-cloned repo as done
+			// forever, blocking any retry. git.PlainClone avoids this itself (it deletes the
+			// whole target dir on failure if it started empty); removing just gitDir is enough
+			// here and, unlike PlainClone's approach, never risks deleting dataPath's other
+			// existing content.
+			if rmErr := os.RemoveAll(gitDir); rmErr != nil {
+				// if this fails, the stat check above will keep treating the half-cloned
+				// repo as done on every future call - surface it loudly rather than leaving
+				// a silently stuck retry
+				logging.LogError(logging.KeyApp, "failed to remove half-cloned repository at %s: %v", gitDir, rmErr)
+			}
 			logging.LogError(logging.KeyApp, "failed to clone repository: %v", err)
 			return err
 		}
 		logging.LogInfo(logging.KeyApp, "git repository cloned from %s to %s", appConfig.GitRemote, dataPath)
 	} else {
-		_, err := git.PlainInit(dataPath, false)
+		wt := osfs.New(dataPath)
+		dot, err := utils.DotGitFilesystem(wt)
 		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to initialize git repository: %v", err)
+			return err
+		}
+		storer := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
+		if _, err := git.Init(storer, wt); err != nil {
 			logging.LogError(logging.KeyApp, "failed to initialize git repository: %v", err)
 			return err
 		}

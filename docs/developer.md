@@ -5,8 +5,23 @@
 - Go 1.21 or later
 - Git
 - Make
-- Swag CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
-- gotext: `go install golang.org/x/text/cmd/gotext@latest`
+- Swag CLI + gotext: `make install-tools` (versions pinned in the root `Makefile`, matching what's already in `go.mod`)
+
+**Extra prerequisites for the Android wrapper (`android/`)**
+
+- Android Studio (bundles JDK, Gradle, and the Android SDK), or a standalone JDK 17 + Android SDK + Gradle install
+- Android SDK Platform 34 and Build-Tools (installed via Android Studio's SDK Manager)
+- A device/emulator with "install unknown apps" enabled for sideloading (this isn't published to the Play Store)
+- `make mobile-apk` needs `ANDROID_JAVA_HOME` pointed at a JDK Gradle/this AGP version understands - the system `JAVA_HOME` may be too new. If using Android Studio, its bundled JBR works: find it under Android Studio's install dir (e.g. `.../android-studio/jbr`, or `.../extra/jbr` for a Flatpak install) and `export ANDROID_JAVA_HOME=/path/to/jbr`. Falls back to `JAVA_HOME` if `ANDROID_JAVA_HOME` isn't set - not a concern for `make docker-build-apk`/CI, which build inside `tools/docker_android/Dockerfile` and don't use `mobile-apk`'s JDK detection at all, that image pins its own `JAVA_HOME`
+- See `android/README.md` for build steps
+- Can't install the SDK locally? `make docker-build-apk` builds `android/app/build/outputs/apk/debug/app-debug.apk` inside a container instead (see `tools/docker_android/Dockerfile`) - it builds the `docker-prepare-android-image` image first if it isn't already there. Run `make docker-prepare-android-image` on its own if you only want to (re)build the image, e.g. after a Dockerfile change
+
+**Git on Android**
+
+- Android's app-sandbox rejects the `flock(2)` syscall with `ENOSYS` ("function not implemented"). go-git calls it on every ref write (`HEAD` on init, the branch ref on every commit), so on Android, plain `git.PlainInit`/`PlainOpen`/`PlainClone` crash git init immediately, and every commit after it
+- Fixed by building the same filesystem/storage go-git builds internally by hand - via `git.Init`/`git.Open`/`git.Clone`, the lower-level functions `PlainInit`/`PlainOpen`/`PlainClone` wrap - and, only when `runtime.GOOS == "android"`, wrapping the `.git` filesystem in a type that reports no read+write capability. That makes go-git's own dotgit package take its existing lock-free ref-write path (`setRefNorwfs`) instead of the locking one (`setRefRwfs`, which calls `flock`) - not a hack, go-git ships and tests this path itself for filesystems that can't lock
+- The wrapper (`dotGitFilesystem` + `noRWFilesystem`) is duplicated in `internal/configmanager/config.go`'s `InitGitRepository` (both the local-init and remote-clone branches) and `internal/git/git.go`'s `openRepo` (used by every commit) - can't be shared between them since `internal/git` already imports `configmanager`, so the reverse import would cycle. `internal/test/testdata.go`'s test-data-seeding commit reuses the fix instead via `internal/git`'s exported `OpenRepository()`, since no cycle blocks that one
+- Gated by `runtime.GOOS`, not applied everywhere: skipping the OS lock trades away protection against a *different* process (a manual `git commit`, another git GUI) racing the same repo at the same time - a real, if narrow, risk that Linux/Windows don't need to take on since `flock` works fine there
 
 ## Updating the Go Version
 
@@ -58,8 +73,7 @@ go mod download
 Install required tools:
 
 ```bash
-go install github.com/swaggo/swag/cmd/swag@latest
-go install golang.org/x/text/cmd/gotext@latest
+make install-tools
 ```
 
 Start development server:
