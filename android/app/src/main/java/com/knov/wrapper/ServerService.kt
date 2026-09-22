@@ -134,14 +134,18 @@ class ServerService : Service() {
         // don't count it as a crash or apply crash backoff to it. checked again after the
         // backoff sleep below too, in case a restart was requested mid crash-loop - otherwise
         // it'd sit unconsumed and get wrongly attributed to whatever unrelated crash exits next
+        var wasRestarting: Boolean
         synchronized(processLock) {
-            if (restarting) {
+            wasRestarting = restarting
+            if (wasRestarting) {
                 restarting = false
                 consecutiveFailures = 0
-                Log.i(TAG, "server process restarted")
-                process = startServerProcess()
-                return
             }
+        }
+        if (wasRestarting) {
+            Log.i(TAG, "server process restarted")
+            publishProcess(startServerProcess())
+            return
         }
         consecutiveFailures++
         val backoff = min(BASE_BACKOFF_MS * (1L shl (consecutiveFailures - 1)), MAX_BACKOFF_MS)
@@ -157,7 +161,21 @@ class ServerService : Service() {
                 consecutiveFailures = 0
                 Log.i(TAG, "server process restarted")
             }
-            process = startServerProcess()
+        }
+        publishProcess(startServerProcess())
+    }
+
+    // startServerProcess() runs unlocked (see onProcessExit), so by the time it returns, the
+    // service may have been torn down or another restart may have been requested - re-check
+    // under the lock and kill the just-spawned process instead of publishing it in that case
+    private fun publishProcess(proc: Process?) {
+        synchronized(processLock) {
+            if (stopping) {
+                proc?.destroy()
+            } else {
+                process = proc
+                if (restarting) proc?.destroy()
+            }
         }
     }
 
