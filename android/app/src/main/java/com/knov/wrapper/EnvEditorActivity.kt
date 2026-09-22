@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.io.File
 
@@ -31,7 +32,15 @@ class EnvEditorActivity : AppCompatActivity() {
         val saveButton = Button(this).apply {
             text = getString(R.string.save_and_restart)
             setOnClickListener {
-                envFile.writeText(editText.text.toString())
+                val text = editText.text.toString()
+                val badLines = text.lines().mapIndexedNotNull { i, line ->
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.contains("=")) null else i + 1
+                }
+                if (badLines.isNotEmpty()) {
+                    Toast.makeText(this@EnvEditorActivity, getString(R.string.env_bad_lines, badLines.joinToString(", ")), Toast.LENGTH_LONG).show()
+                }
+                envFile.writeText(text)
                 startService(Intent(this@EnvEditorActivity, ServerService::class.java).setAction(ServerService.ACTION_RESTART))
                 setResult(RESULT_OK)
                 finish()

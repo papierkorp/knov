@@ -16,7 +16,6 @@
   - add the github link to knov somewhere (/system/version?)
   - remove the one-time migration for the tracker editor (legacyConfig..)
   - kb-status-inbox is not shown in info slideout as a tag
-  - currentPort()’s manual .env parser only special-cases empty lines and # comments; anything else on a malformed line (no =) is silently ignored rather than logged — fine for a best-effort UI convenience read, but a typo in .env will silently fall back to the default port with no feedback to the user editing it in EnvEditorActivity.
   - The gradle-version sed extraction in the Makefile has no fallback/validation if gradle-wrapper.properties is ever reformatted or the regex doesn’t match — GRADLE_VERSION would just become empty, and the subsequent ls .../gradle--bin/*/gradle- would (correctly) fail closed and force the download-confirmation path rather than silently misbehaving. Acceptable failure mode.
 - test
   - remote git in mobile

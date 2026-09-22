@@ -4,6 +4,7 @@
     <string name="stop_server">Stop</string>
     <string name="edit_env">.env</string>
     <string name="save_and_restart">Save &amp; restart server</string>
+    <string name="env_bad_lines">Ignored line(s) without \'=\': %1$s</string>
     <string name="starting_server">Starting server…</string>
     <string name="server_start_failed">Still trying to start the server…</string>
     <string name="storage_access_explanation">Grant "all files access" so your notes/storage/backups live in a folder you can browse from a normal file manager or over USB, instead of being locked inside the app\'s private storage.</string>
