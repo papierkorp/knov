@@ -8,6 +8,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/pathutils"
+	"knov/internal/server/render"
 	"knov/internal/test"
 )
 
@@ -93,6 +94,47 @@ func caseHideScopeKanban() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "BuildBoard did not apply configmanager.HideScopeKanban"
+	}
+	return cr
+}
+
+// caseHiddenByTag checks that a HideFilesByTag pattern matching a status tag empties that
+// column and that the rendered board shows the hidden warning only on that column.
+func caseHiddenByTag() test.CaseResult {
+	name := "hidden-by-tag"
+
+	prev := configmanager.HideFilesByTag.Get()
+	defer configmanager.HideFilesByTag.SetFromString(strings.Join(prev, ","))
+	if err := configmanager.HideFilesByTag.SetFromString(configmanager.KanbanStatusTag("inbox") + "::" + configmanager.HideScopeKanban); err != nil {
+		return errCase(name, err)
+	}
+
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	board := configmanager.KanbanBoard{FolderPath: testFolder}
+	var inboxHidden, inprogressHidden bool
+	for _, c := range cols {
+		warned := strings.Contains(render.RenderKanbanBoard([]kanban.Column{c}, board), "kanban-hidden-warning")
+		switch c.Status {
+		case "inbox":
+			inboxHidden = warned
+		case "inprogress":
+			inprogressHidden = warned
+		}
+	}
+	inbox := columnPaths(cols, "inbox")
+	success := inboxHidden && !inprogressHidden && len(inbox) == 0
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "inbox shows the hidden warning and is empty, inprogress shows no warning",
+		Actual:   fmt.Sprintf("inboxHidden=%v inprogressHidden=%v inbox=%d", inboxHidden, inprogressHidden, len(inbox)),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "RenderKanbanBoard did not warn on the column whose status tag is hidden by HideFilesByTag"
 	}
 	return cr
 }

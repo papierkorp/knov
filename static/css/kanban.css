@@ -45,6 +45,12 @@
   z-index: 1;
 }
 
+#kanban-board .kanban-hidden-warning {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--warning);
+}
+
 .kanban-column-count {
   font-weight: 400;
   color: var(--text-secondary);

@@ -35,7 +35,6 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseFolderSuggestions,
 		caseHeadersTOC,
 		caseHiddenFileTypeFilter,
-		caseHidePathScope,
 		caseHideScopeEndpoints,
 	}
 

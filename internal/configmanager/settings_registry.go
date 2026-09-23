@@ -305,43 +305,43 @@ var (
 	// ── File Types / Editor Types ─────────────────────────────────────────────
 	HideMarkdown = register(&BoolSetting{
 		key: "hideMarkdown", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Markdown Files",
 		Desc:  "exclude markdown files from file listings and browse views",
 	})
 	HideList = register(&BoolSetting{
 		key: "hideList", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide List Files",
 		Desc:  "exclude list files from file listings and browse views",
 	})
 	HideTodo = register(&BoolSetting{
 		key: "hideTodo", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Todo Files",
 		Desc:  "exclude todo files from file listings and browse views",
 	})
 	HideFilter = register(&BoolSetting{
 		key: "hideFilter", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Filter Files",
 		Desc:  "exclude filter files from file listings and browse views",
 	})
 	HideTracker = register(&BoolSetting{
 		key: "hideTracker", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Tracker Files",
 		Desc:  "exclude tracker files from file listings and browse views",
 	})
 	HideIndex = register(&BoolSetting{
 		key: "hideIndex", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Index Files",
 		Desc:  "exclude index files from file listings and browse views",
 	})
 	HideBook = register(&BoolSetting{
 		key: "hideBook", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Section: SectionFileTypes, Group: GroupEditorTypes, RefreshFileCaches: true,
 		Label: "Hide Book Files",
 		Desc:  "exclude book files from file listings and browse views",
 	})
@@ -349,43 +349,43 @@ var (
 	// ── File Types / Media Types ──────────────────────────────────────────────
 	HideImage = register(&BoolSetting{
 		key: "hideImage", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Image Files",
 		Desc:  "exclude image files from file listings and browse views",
 	})
 	HideVideo = register(&BoolSetting{
 		key: "hideVideo", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Video Files",
 		Desc:  "exclude video files from file listings and browse views",
 	})
 	HidePDF = register(&BoolSetting{
 		key: "hidePDF", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide PDF Files",
 		Desc:  "exclude PDF files from file listings and browse views",
 	})
 	HideOfficeDocuments = register(&BoolSetting{
 		key: "hideOfficeDocuments", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Office Documents",
 		Desc:  "exclude .docx, .xlsx, .pptx, .ods and similar files from listings",
 	})
 	HideArchives = register(&BoolSetting{
 		key: "hideArchives", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Archives",
 		Desc:  "exclude .zip, .rar, .7z and similar archives from file listings",
 	})
 	HideExecutables = register(&BoolSetting{
 		key: "hideExecutables", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Executables",
 		Desc:  "exclude .exe, .jar, .pfx and similar executable files from listings",
 	})
 	HideScripts = register(&BoolSetting{
 		key: "hideScripts", Default: false,
-		Section: SectionFileTypes, Group: GroupMediaTypes,
+		Section: SectionFileTypes, Group: GroupMediaTypes, RefreshFileCaches: true,
 		Label: "Hide Scripts",
 		Desc:  "exclude .sh, .bat and similar script files from file listings",
 	})
@@ -394,18 +394,18 @@ var (
 	HidePaths = register(&StringSliceSetting{
 		key:     "hidePaths",
 		Default: []string{},
-		Section: SectionFileTypes, Group: GroupFolders,
+		Section: SectionFileTypes, Group: GroupFolders, RefreshFileCaches: true,
 		Label:    "Hide Paths",
-		Desc:     "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+		Desc:     "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
 		Validate: ValidateHidePaths,
 	})
-	HideTags = register(&StringSliceSetting{
-		key: "hideTags",
-		// Default is overwritten in applyDynamicDefaults (settings.go) to KNOV_KANBAN_PREFIX + "-status*".
-		Section: SectionFileTypes, Group: GroupTags,
-		Label:    "Hide Tags",
-		Desc:     `comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. "kb-status*" hides every kb-status-* tag, while "kb-status" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere`,
-		Validate: ValidateHideTags,
+	HideFilesByTag = register(&StringSliceSetting{
+		key:     "hideFilesByTag",
+		Default: []string{},
+		Section: SectionFileTypes, Group: GroupTags, RefreshFileCaches: true,
+		Label:    "Hide Files By Tag",
+		Desc:     `comma-separated tag patterns - files carrying a matching tag are hidden, like Hide Paths but by tag. case-insensitive, * is a wildcard, e.g. "private*" hides every file tagged private or private-anything. by default a pattern hides everywhere; append scopes to hide only there, same as Hide Paths`,
+		Validate: ValidateHideScopes,
 	})
 
 	// ── General ───────────────────────────────────────────────────────────────

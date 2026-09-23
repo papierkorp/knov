@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -123,6 +124,12 @@ func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", strings.Join(msgs, "; ")))
 		return
 	}
+	for key := range r.Form {
+		if configmanager.RefreshesFileCaches(key) {
+			files.RefreshCaches()
+			break
+		}
+	}
 	writeResponse(w, r, "saved", "")
 }
 
@@ -151,6 +158,9 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 	if err := configmanager.SaveSettings(); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
 		return
+	}
+	if configmanager.RefreshesFileCaches(key) {
+		files.RefreshCaches()
 	}
 	if rs, ok := s.(configmanager.RenderableSetting); ok && rs.GetMeta().Refresh {
 		w.Header().Set("HX-Refresh", "true")

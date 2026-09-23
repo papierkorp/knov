@@ -25,6 +25,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseBoardLoadColumns,
 		caseHideScopeKanban,
+		caseHiddenByTag,
 		caseBoardSearchQuery,
 		caseBoardSorting,
 		caseMoveCard,

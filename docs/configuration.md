@@ -103,9 +103,15 @@ Configured under **Settings => File Types / Folders**.
 **Hide Paths** - comma-separated folder path patterns to exclude from file listings, browse, search, filter and the kanban board.
 - Patterns are `/`-separated; `*` matches any single segment, e.g. `*/todo` hides every folder named `todo`, while `test/todo` only hides the `todo` folder inside `test`
 - By default a pattern hides its folder everywhere
-- Append `::tree`, `::browse`, `::overview`, `::search`, `::filter` and/or `::kanban` to a pattern (combine with `|`, e.g. `::search|filter`) to hide it in only those scopes, leaving it visible everywhere else, e.g. `projects/archive::search|filter` is hidden from search results and saved filters but still shows up in the file tree, browse, overview and kanban
+- Append `::tree`, `::browse`, `::overview`, `::search`, `::filter`, `::kanban`, `::detail` and/or `::dashboard` to a pattern (combine with `|`, e.g. `::search|filter`) to hide it in only those scopes, leaving it visible everywhere else, e.g. `projects/archive::search|filter` is hidden from search results and saved filters but still shows up in the file tree, browse, overview and kanban
 - An unrecognized scope in a pattern (e.g. a typo like `::serach`) is rejected on save rather than silently doing nothing
+- An invalid regular expression in a pattern segment (e.g. `[unclosed`) is rejected on save as well
 - Media has no per-scope override - a `::tag` suffix never hides a path from `/media`; only a pattern with no suffix does
+
+**Hide Files By Tag** - comma-separated tag patterns; every file carrying a matching tag is hidden, like Hide Paths but by tag.
+- Case-insensitive; `*` matches any run of characters, e.g. `private*` hides files tagged `private` or `private-notes`, while `private` without a `*` only matches that exact tag
+- Uses the same scopes as Hide Paths - append e.g. `::search|filter` to hide the files only there
+- Careful with the kanban status tags (e.g. `kb-status*`): every kanban card carries one, so such a pattern hides all cards of the affected columns - the kanban board shows a warning in each column hidden this way
 
 ---
 

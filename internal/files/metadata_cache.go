@@ -264,22 +264,21 @@ func sortedCountKeys(counts map[string]int) []string {
 	return keys
 }
 
-// GetAllTags returns all unique tags with their counts
-func GetAllTags() (TagCount, error) {
-	allFiles, err := GetAllFiles()
+// GetAllTags returns all unique tags with their counts, leaving out files hidden for scope (see FilterByVisibility).
+func GetAllTags(scope string) (TagCount, error) {
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
-	allFiles = FilterByVisibility(allFiles, "")
+	allFiles = FilterByVisibility(allFiles, scope)
 
 	tagCount := make(TagCount)
 	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
+		if file.Metadata == nil {
 			continue
 		}
-		for _, tag := range metadata.Tags {
-			if tag != "" {
+		for _, tag := range file.Metadata.Tags {
+			if tag != "" && !configmanager.IsKanbanTag(tag) {
 				tagCount[tag]++
 			}
 		}
@@ -288,43 +287,38 @@ func GetAllTags() (TagCount, error) {
 	return tagCount, nil
 }
 
-// GetAllCollections returns all unique collections with their counts
-func GetAllCollections() (CollectionCount, error) {
-	allFiles, err := GetAllFiles()
+// GetAllCollections returns all unique collections with their counts, leaving out files hidden for scope (see FilterByVisibility).
+func GetAllCollections(scope string) (CollectionCount, error) {
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
-	allFiles = FilterByVisibility(allFiles, "")
+	allFiles = FilterByVisibility(allFiles, scope)
 
 	collectionCount := make(CollectionCount)
 	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		if metadata.Collection != "" {
-			collectionCount[metadata.Collection]++
+		if file.Metadata != nil && file.Metadata.Collection != "" {
+			collectionCount[file.Metadata.Collection]++
 		}
 	}
 
 	return collectionCount, nil
 }
 
-// GetAllFolders returns all unique folders with their counts
-func GetAllFolders() (FolderCount, error) {
-	allFiles, err := GetAllFiles()
+// GetAllFolders returns all unique folders with their counts, leaving out files hidden for scope (see FilterByVisibility).
+func GetAllFolders(scope string) (FolderCount, error) {
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
-	allFiles = FilterByVisibility(allFiles, "")
+	allFiles = FilterByVisibility(allFiles, scope)
 
 	folderCount := make(FolderCount)
 	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
+		if file.Metadata == nil {
 			continue
 		}
-		for _, f := range metadata.Folders {
+		for _, f := range file.Metadata.Folders {
 			if f != "" {
 				folderCount[f]++
 			}
@@ -336,7 +330,7 @@ func GetAllFolders() (FolderCount, error) {
 
 // GetAllEditors returns all unique filetypes with their counts
 func GetAllEditors() (EditorTypeCount, error) {
-	allFiles, err := GetAllFiles()
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
@@ -344,12 +338,8 @@ func GetAllEditors() (EditorTypeCount, error) {
 
 	editorTypeCount := make(EditorTypeCount)
 	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		if metadata.Editor != "" {
-			editorTypeCount[string(metadata.Editor)]++
+		if file.Metadata != nil && file.Metadata.Editor != "" {
+			editorTypeCount[string(file.Metadata.Editor)]++
 		}
 	}
 
@@ -358,7 +348,7 @@ func GetAllEditors() (EditorTypeCount, error) {
 
 // SaveAllTagsToCache saves all unique tags, and their counts, to cache storage
 func SaveAllTagsToCache() error {
-	allTags, err := GetAllTags()
+	allTags, err := GetAllTags("")
 	if err != nil {
 		return err
 	}
@@ -386,7 +376,7 @@ func GetAllTagsCountFromCache() (TagCount, error) {
 
 // SaveAllCollectionsToCache saves all unique collections, and their counts, to cache storage
 func SaveAllCollectionsToCache() error {
-	allCollections, err := GetAllCollections()
+	allCollections, err := GetAllCollections("")
 	if err != nil {
 		return err
 	}
@@ -414,7 +404,7 @@ func GetAllCollectionsCountFromCache() (CollectionCount, error) {
 
 // SaveAllFoldersToCache saves all unique folders, and their counts, to cache storage
 func SaveAllFoldersToCache() error {
-	allFolders, err := GetAllFolders()
+	allFolders, err := GetAllFolders("")
 	if err != nil {
 		return err
 	}
@@ -487,7 +477,7 @@ func GetAllTitlesFromCache() ([]string, error) {
 
 // GetAllTitles returns all unique non-empty titles, reading from file content if the DB title is empty
 func GetAllTitles() ([]string, error) {
-	allFiles, err := GetAllFiles()
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
@@ -504,8 +494,9 @@ func GetAllTitles() ([]string, error) {
 		}
 		title := meta.Title
 		if title == "" {
-			updateTitle(meta)
-			title = meta.Title
+			m := *meta // copy - meta is shared with the cached file list
+			updateTitle(&m)
+			title = m.Title
 		}
 		logging.LogDebug(logging.KeyApp, "getAllTitles: %s -> %q", file.Path, title)
 		if title != "" && !seen[title] {
@@ -553,7 +544,7 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 
 	// collect tags
 	for _, tag := range metadata.Tags {
-		if tag != "" {
+		if tag != "" && !configmanager.IsKanbanTag(tag) {
 			mc.Tags[tag]++
 		}
 	}
@@ -918,14 +909,12 @@ func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
 		return nil, err
 	}
 	folder := strings.Join(meta.Folders, "/")
-	if configmanager.IsPathHidden(folder, configmanager.HideScopeDetail) {
-		return nil, nil
-	}
 
 	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, configmanager.HideScopeDetail)
 
 	var result []string
 	for _, f := range allFiles {
@@ -959,8 +948,7 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	hiddenPatterns := configmanager.HideTagsPatterns(configmanager.TagScopeDetail)
+	allFiles = FilterByVisibility(allFiles, configmanager.HideScopeDetail)
 
 	type scored struct {
 		path  string
@@ -973,10 +961,7 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 		}
 		score := 0
 		for _, tag := range f.Metadata.Tags {
-			if configmanager.IsTagHidden(hiddenPatterns, tag) {
-				continue
-			}
-			if slices.Contains(meta.Tags, tag) {
+			if !configmanager.IsKanbanTag(tag) && slices.Contains(meta.Tags, tag) {
 				score++
 			}
 		}

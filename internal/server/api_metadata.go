@@ -792,7 +792,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				logging.LogError(logging.KeyApp, "failed to get cached tags, fallback to live data: %v", err)
 			}
-			tags, err := files.GetAllTags()
+			tags, err := files.GetAllTags("")
 			if err != nil {
 				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
 				return
@@ -817,7 +817,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get cached tag counts, fallback to live data: %v", err)
 		}
-		tags, err = files.GetAllTags()
+		tags, err = files.GetAllTags("")
 		if err != nil {
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
 			return
@@ -849,7 +849,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				logging.LogError(logging.KeyApp, "failed to get cached collections, fallback to live data: %v", err)
 			}
-			collections, err := files.GetAllCollections()
+			collections, err := files.GetAllCollections("")
 			if err != nil {
 				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
 				return
@@ -874,7 +874,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get cached collection counts, fallback to live data: %v", err)
 		}
-		collections, err = files.GetAllCollections()
+		collections, err = files.GetAllCollections("")
 		if err != nil {
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
 			return
@@ -906,7 +906,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				logging.LogError(logging.KeyApp, "failed to get cached folders, fallback to live data: %v", err)
 			}
-			folders, err := files.GetAllFolders()
+			folders, err := files.GetAllFolders("")
 			if err != nil {
 				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
 				return
@@ -931,7 +931,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get cached folder counts, fallback to live data: %v", err)
 		}
-		folders, err = files.GetAllFolders()
+		folders, err = files.GetAllFolders("")
 		if err != nil {
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
 			return

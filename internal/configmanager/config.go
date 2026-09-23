@@ -676,8 +676,8 @@ func IsFileTypeHidden(editorType string) bool {
 	}
 }
 
-// Hide-path scopes: feature areas that can be targeted by a HidePaths entry's
-// "::tag1|tag2" suffix (see IsPathHidden). Callers with no per-scope override
+// Hide scopes: feature areas that can be targeted by a HidePaths or HideFilesByTag entry's
+// "::tag1|tag2" suffix (see NewHideMatcher). Callers with no per-scope override
 // (media) pass "" instead, which never matches a tag - an entry with tags can
 // never hide a path from such a caller, only an entry with no suffix can.
 const (
@@ -695,77 +695,87 @@ const (
 	// Despite the route name, this is unrelated to HideScopeOverview below, which gates the
 	// unrelated files-listing "overview" view (see FilterByVisibility).
 	HideScopeDetail = "detail"
+	// HideScopeDashboard is the dashboard tag, collection and folder widgets.
+	HideScopeDashboard = "dashboard"
 )
 
-// hideScopes lists every recognized HidePaths scope tag.
-var hideScopes = []string{HideScopeTree, HideScopeBrowse, HideScopeOverview, HideScopeSearch, HideScopeFilter, HideScopeKanban, HideScopeDetail}
+// hideScopes lists every recognized hide scope tag.
+var hideScopes = []string{HideScopeTree, HideScopeBrowse, HideScopeOverview, HideScopeSearch, HideScopeFilter, HideScopeKanban, HideScopeDetail, HideScopeDashboard}
 
-// Tag-hide scopes: feature areas that can be targeted by a HideTags entry's "::tag1|tag2"
-// suffix (see HideTagsPatterns). These are deliberately separate constants from the
-// HideScope* ones above, even where the underlying string is the same word (e.g. "kanban",
-// "detail") - HidePaths and HideTags are validated against different scope lists
-// (hideScopes vs. tagHideScopes) for different reasons (hiding a whole file by folder vs.
-// hiding one tag chip), so a call site should always read as unambiguously HidePaths or
-// HideTags without having to check which list a shared constant happens to belong to.
-const (
-	TagScopeKanban = "kanban"
-	TagScopeDetail = "detail"
-	// TagScopeDashboard is HideTags-only: the tag cloud widget on dashboards, which has no
-	// folder equivalent, so there's no matching HideScope* constant for it.
-	TagScopeDashboard = "dashboard"
-)
-
-// tagHideScopes lists every recognized HideTags scope tag - the subset of places a tag is
-// actually rendered on its own (kanban card chips, the file detail view, the dashboard
-// tag cloud), unlike hideScopes/HidePaths which hides whole files by folder across many more
-// listing views.
-var tagHideScopes = []string{TagScopeKanban, TagScopeDetail, TagScopeDashboard}
-
-// ValidateHidePaths rejects a HidePaths entry whose "::tag1|tag2" suffix contains an
-// unrecognized scope name, so a typo (e.g. "::serach") fails on save instead of silently
-// leaving the path hidden everywhere.
-func ValidateHidePaths(entries []string) error {
+// ValidateHideScopes rejects a HidePaths/HideFilesByTag entry whose "::tag1|tag2" suffix
+// contains an unrecognized scope name, so a typo (e.g. "::serach") fails on save instead of
+// silently leaving the file hidden everywhere.
+func ValidateHideScopes(entries []string) error {
 	for _, entry := range entries {
-		_, tags := splitHidePathEntry(entry)
+		_, tags := splitHideEntry(entry)
 		for _, tag := range tags {
 			if !slices.Contains(hideScopes, tag) {
-				return fmt.Errorf("hide paths: unknown scope %q in %q (known scopes: %s)", tag, entry, strings.Join(hideScopes, ", "))
+				return fmt.Errorf("unknown scope %q in %q (known scopes: %s)", tag, entry, strings.Join(hideScopes, ", "))
 			}
 		}
 	}
 	return nil
 }
 
-// IsPathHidden checks if a relative folder path ("/"-separated, no leading/trailing slash)
-// matches any of the configured hide-path patterns for the given scope.
-//
-// Each HidePaths entry is a pattern, optionally suffixed with "::tag1|tag2" (e.g.
-// "projects/archive::search|filter"). An entry without a suffix always matches, keeping
-// the path hidden everywhere. An entry with a suffix only matches (hides) when scope is
-// listed in its tags - this is how a path can stay visible everywhere by default while
-// being hidden in just the scopes it's tagged for, e.g. tagging it "filter" means it's
-// hidden from filter results but stays visible everywhere else. Callers with no
-// per-scope override (media, see FilterByVisibility) query with scope="", which never
-// appears in a tag list - such a caller is never affected by a tagged entry, only by
-// an entry with no suffix.
-//
-// Each pattern is itself "/"-separated; a pattern segment of "*" matches any single path
-// segment, while any other segment is a case-insensitive regular expression that must fully
-// match one segment. A pattern matches if its segments align with any contiguous run of the
-// path's segments, e.g. "*/todo" hides every folder named "todo", while "test/todo" only
-// hides the "todo" folder inside "test".
-func IsPathHidden(relDirPath, scope string) bool {
+// ValidateHidePaths is ValidateHideScopes plus rejecting a pattern segment that isn't a valid
+// regexp, so a typo fails on save instead of silently never matching.
+func ValidateHidePaths(entries []string) error {
+	if err := ValidateHideScopes(entries); err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		pattern, _ := splitHideEntry(entry)
+		if _, err := compileHidePath(pattern); err != nil {
+			return fmt.Errorf("invalid pattern %q: %w", entry, err)
+		}
+	}
+	return nil
+}
+
+// HideMatcher holds the HidePaths and HideFilesByTag entries that apply to one scope, compiled
+// once - build it once per loop via NewHideMatcher, not per iteration.
+type HideMatcher struct {
+	paths [][]*regexp.Regexp
+	tags  []*regexp.Regexp
+}
+
+// NewHideMatcher compiles the hide entries that apply to scope. Each entry is a pattern,
+// optionally suffixed with "::tag1|tag2" (e.g. "projects/archive::search|filter"). An entry
+// without a suffix applies to every scope, one with a suffix only to the listed scopes - scope ""
+// (callers without a per-scope override) therefore only gets unsuffixed entries.
+func NewHideMatcher(scope string) *HideMatcher {
+	m := &HideMatcher{}
+	for _, pattern := range hidePatternsForScope(HidePaths.Get(), scope) {
+		if segs, err := compileHidePath(pattern); err == nil {
+			m.paths = append(m.paths, segs)
+		}
+	}
+	for _, pattern := range hidePatternsForScope(HideFilesByTag.Get(), scope) {
+		if pattern == "" {
+			continue
+		}
+		parts := strings.Split(pattern, "*")
+		for i, p := range parts {
+			parts[i] = regexp.QuoteMeta(p)
+		}
+		m.tags = append(m.tags, regexp.MustCompile("(?i)^"+strings.Join(parts, ".*")+"$"))
+	}
+	return m
+}
+
+// PathHidden checks if a relative folder path ("/"-separated, no leading/trailing slash) matches
+// a HidePaths pattern. A pattern is "/"-separated; a segment of "*" matches any single path
+// segment, any other segment is a case-insensitive regular expression that must fully match one
+// segment. A pattern matches if its segments align with any contiguous run of the path's
+// segments, e.g. "*/todo" hides every folder named "todo", while "test/todo" only hides the
+// "todo" folder inside "test".
+func (m *HideMatcher) PathHidden(relDirPath string) bool {
 	if relDirPath == "" {
 		return false
 	}
 	pathSegs := strings.Split(relDirPath, "/")
-	for _, entry := range HidePaths.Get() {
-		pattern, tags := splitHidePathEntry(entry)
-		if len(tags) > 0 && !slices.Contains(tags, scope) {
-			continue
-		}
-		patternSegs := strings.Split(strings.Trim(pattern, "/"), "/")
-		if len(patternSegs) == 0 || len(patternSegs) > len(pathSegs) {
+	for _, patternSegs := range m.paths {
+		if len(patternSegs) > len(pathSegs) {
 			continue
 		}
 		for start := 0; start+len(patternSegs) <= len(pathSegs); start++ {
@@ -777,12 +787,52 @@ func IsPathHidden(relDirPath, scope string) bool {
 	return false
 }
 
-// splitHidePathEntry splits a "pattern::tag1|tag2" entry into its pattern and optional
+// TagHidden reports whether tag matches a HideFilesByTag pattern. Patterns are literal and
+// case-insensitive except for "*", which matches any run of characters.
+func (m *HideMatcher) TagHidden(tag string) bool {
+	for _, re := range m.tags {
+		if re.MatchString(tag) {
+			return true
+		}
+	}
+	return false
+}
+
+// compileHidePath compiles a HidePaths pattern into one regexp per segment (nil for "*").
+func compileHidePath(pattern string) ([]*regexp.Regexp, error) {
+	segs := strings.Split(strings.Trim(pattern, "/"), "/")
+	res := make([]*regexp.Regexp, len(segs))
+	for i, seg := range segs {
+		if seg == "*" {
+			continue
+		}
+		re, err := regexp.Compile("(?i)^" + seg + "$")
+		if err != nil {
+			return nil, err
+		}
+		res[i] = re
+	}
+	return res, nil
+}
+
+// hidePatternsForScope returns the patterns of the hide entries that apply to scope: entries
+// without a "::" suffix apply everywhere, suffixed ones only to the listed scopes. Every hide-by-x
+// setting shares this "pattern::scope1|scope2" syntax, only the pattern dialect differs.
+func hidePatternsForScope(entries []string, scope string) []string {
+	var patterns []string
+	for _, entry := range entries {
+		pattern, tags := splitHideEntry(entry)
+		if len(tags) == 0 || slices.Contains(tags, scope) {
+			patterns = append(patterns, pattern)
+		}
+	}
+	return patterns
+}
+
+// splitHideEntry splits a "pattern::tag1|tag2" entry into its pattern and optional
 // scope tags, e.g. "projects/archive::search|filter" -> ("projects/archive", ["search",
-// "filter"]). Despite the name, this parses both HidePaths and HideTags entries - the two
-// settings share the same "pattern::scope1|scope2" syntax, just with a different pattern
-// dialect and a different set of valid scope names (hideScopes vs. tagHideScopes).
-func splitHidePathEntry(entry string) (pattern string, tags []string) {
+// "filter"]).
+func splitHideEntry(entry string) (pattern string, tags []string) {
 	pattern, tagStr, ok := strings.Cut(entry, "::")
 	if !ok || tagStr == "" {
 		return pattern, nil
@@ -790,72 +840,13 @@ func splitHidePathEntry(entry string) (pattern string, tags []string) {
 	return pattern, strings.Split(tagStr, "|")
 }
 
-func pathSegmentsMatch(patternSegs, candidateSegs []string) bool {
-	for i, seg := range patternSegs {
-		if seg == "*" {
-			continue
-		}
-		re, err := regexp.Compile("(?i)^" + seg + "$")
-		if err != nil || !re.MatchString(candidateSegs[i]) {
+func pathSegmentsMatch(patternSegs []*regexp.Regexp, candidateSegs []string) bool {
+	for i, re := range patternSegs {
+		if re != nil && !re.MatchString(candidateSegs[i]) {
 			return false
 		}
 	}
 	return true
-}
-
-// ValidateHideTags rejects a HideTags entry whose "::tag1|tag2" suffix contains an
-// unrecognized scope name, mirroring ValidateHidePaths.
-func ValidateHideTags(entries []string) error {
-	for _, entry := range entries {
-		_, tags := splitHidePathEntry(entry)
-		for _, tag := range tags {
-			if !slices.Contains(tagHideScopes, tag) {
-				return fmt.Errorf("hide tags: unknown scope %q in %q (known scopes: %s)", tag, entry, strings.Join(tagHideScopes, ", "))
-			}
-		}
-	}
-	return nil
-}
-
-// HideTagsPatterns compiles the HideTags entries that apply to scope into matchers for
-// IsTagHidden. Recompiles on every call rather than caching, same as IsPathHidden/
-// pathSegmentsMatch above - HideTags is normally a handful of entries, so this is cheap.
-// Callers that need it in a per-card/per-row loop (e.g. kanban board rendering) should call
-// this once and pass the result down rather than calling it per iteration.
-func HideTagsPatterns(scope string) []*regexp.Regexp {
-	entries := HideTags.Get()
-	compiled := make([]*regexp.Regexp, 0, len(entries))
-	for _, entry := range entries {
-		pattern, tags := splitHidePathEntry(entry)
-		if len(tags) > 0 && !slices.Contains(tags, scope) {
-			continue
-		}
-		if pattern == "" {
-			continue
-		}
-		parts := strings.Split(pattern, "*")
-		for i, p := range parts {
-			parts[i] = regexp.QuoteMeta(p)
-		}
-		if re, err := regexp.Compile("(?i)^" + strings.Join(parts, ".*") + "$"); err == nil {
-			compiled = append(compiled, re)
-		}
-	}
-	return compiled
-}
-
-// IsTagHidden reports whether tag matches one of patterns (from HideTagsPatterns). Unlike
-// HidePaths, whose pattern segments are raw regex (see pathSegmentsMatch), a HideTags pattern
-// is matched literally except for "*", which matches any run of characters anywhere in the
-// pattern, e.g. "kb-status*" matches "kb-status-inbox", while "kb-status" without a "*" only
-// matches that tag exactly (case-insensitive).
-func IsTagHidden(patterns []*regexp.Regexp, tag string) bool {
-	for _, re := range patterns {
-		if re.MatchString(tag) {
-			return true
-		}
-	}
-	return false
 }
 
 // InitGitRepository initializes git repository based on configuration

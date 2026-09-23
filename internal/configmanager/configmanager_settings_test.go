@@ -164,43 +164,95 @@ func TestHidePathsTagValidation(t *testing.T) {
 	}
 }
 
-// IsTagHidden: "*" is a wildcard for any run of characters, case-insensitive; without
+// ValidateHidePaths accepts every hide scope (incl. the dashboard one shared with HideFilesByTag)
+// and rejects a pattern segment that isn't a valid regexp.
+func TestHidePathsValidation(t *testing.T) {
+	prev := HidePaths.Get()
+	defer HidePaths.SetFromString(strings.Join(prev, ","))
+
+	if err := HidePaths.SetFromString("archive::dashboard"); err != nil {
+		t.Errorf(`SetFromString("archive::dashboard") returned %v, want nil`, err)
+	}
+	if err := HidePaths.SetFromString("archive/[unclosed"); err == nil {
+		t.Error(`SetFromString("archive/[unclosed") did not return an error`)
+	}
+}
+
+// PathHidden: a "::tag1|tag2" suffix keeps the path visible by default while hiding it only in
+// the tagged scopes; "*" matches any single segment.
+func TestPathHidden(t *testing.T) {
+	prev := HidePaths.Get()
+	defer HidePaths.SetFromString(strings.Join(prev, ","))
+
+	if err := HidePaths.SetFromString("archive::search|filter"); err != nil {
+		t.Fatalf("failed to set HidePaths: %v", err)
+	}
+	for _, scope := range []string{"", HideScopeBrowse, HideScopeKanban} {
+		if NewHideMatcher(scope).PathHidden("archive") {
+			t.Errorf(`"archive::search|filter" should not hide "archive" in scope %q`, scope)
+		}
+	}
+	for _, scope := range []string{HideScopeSearch, HideScopeFilter} {
+		if !NewHideMatcher(scope).PathHidden("archive") {
+			t.Errorf(`"archive::search|filter" should hide "archive" in scope %q`, scope)
+		}
+	}
+
+	if err := HidePaths.SetFromString("*/todo"); err != nil {
+		t.Fatalf("failed to set HidePaths: %v", err)
+	}
+	hide := NewHideMatcher("")
+	if !hide.PathHidden("a/b/todo") {
+		t.Error(`"*/todo" should hide "a/b/todo"`)
+	}
+	if hide.PathHidden("todo") {
+		t.Error(`"*/todo" should not hide a top-level "todo"`)
+	}
+}
+
+// TagHidden: "*" is a wildcard for any run of characters, case-insensitive; without
 // a "*" a pattern only matches that exact tag. A "::scope" suffix limits the pattern to
 // that scope, same as HidePaths.
-func TestIsTagHidden(t *testing.T) {
-	prev := HideTags.Get()
-	defer HideTags.SetFromString(strings.Join(prev, ","))
+func TestTagHidden(t *testing.T) {
+	prev := HideFilesByTag.Get()
+	defer HideFilesByTag.SetFromString(strings.Join(prev, ","))
 
-	HideTags.SetFromString("kb-status*")
-	patterns := HideTagsPatterns(HideScopeKanban)
-	if !IsTagHidden(patterns, "kb-status-inbox") {
+	if err := HideFilesByTag.SetFromString("kb-status*"); err != nil {
+		t.Fatalf("failed to set HideFilesByTag: %v", err)
+	}
+	hide := NewHideMatcher(HideScopeKanban)
+	if !hide.TagHidden("kb-status-inbox") {
 		t.Error(`"kb-status*" should hide "kb-status-inbox"`)
 	}
-	if !IsTagHidden(patterns, "KB-STATUS-INBOX") {
+	if !hide.TagHidden("KB-STATUS-INBOX") {
 		t.Error(`"kb-status*" should hide "KB-STATUS-INBOX" (case-insensitive)`)
 	}
-	if IsTagHidden(patterns, "other-tag") {
+	if hide.TagHidden("other-tag") {
 		t.Error(`"kb-status*" should not hide "other-tag"`)
 	}
 
-	HideTags.SetFromString("kb-status")
-	patterns = HideTagsPatterns(HideScopeKanban)
-	if IsTagHidden(patterns, "kb-status-inbox") {
+	if err := HideFilesByTag.SetFromString("kb-status"); err != nil {
+		t.Fatalf("failed to set HideFilesByTag: %v", err)
+	}
+	hide = NewHideMatcher(HideScopeKanban)
+	if hide.TagHidden("kb-status-inbox") {
 		t.Error(`"kb-status" without a wildcard should not hide "kb-status-inbox"`)
 	}
-	if !IsTagHidden(patterns, "kb-status") {
+	if !hide.TagHidden("kb-status") {
 		t.Error(`"kb-status" should hide the exact tag "kb-status"`)
 	}
 
-	HideTags.SetFromString("kb-status*::kanban")
-	if !IsTagHidden(HideTagsPatterns(HideScopeKanban), "kb-status-inbox") {
+	if err := HideFilesByTag.SetFromString("kb-status*::kanban"); err != nil {
+		t.Fatalf("failed to set HideFilesByTag: %v", err)
+	}
+	if !NewHideMatcher(HideScopeKanban).TagHidden("kb-status-inbox") {
 		t.Error(`"kb-status*::kanban" should hide "kb-status-inbox" in the kanban scope`)
 	}
-	if IsTagHidden(HideTagsPatterns(HideScopeDetail), "kb-status-inbox") {
+	if NewHideMatcher(HideScopeDetail).TagHidden("kb-status-inbox") {
 		t.Error(`"kb-status*::kanban" should not hide "kb-status-inbox" in the detail scope`)
 	}
 
-	if err := HideTags.SetFromString("kb-status*::bogus"); err == nil {
+	if err := HideFilesByTag.SetFromString("kb-status*::bogus"); err == nil {
 		t.Error(`SetFromString("kb-status*::bogus") did not return an error`)
 	}
 }

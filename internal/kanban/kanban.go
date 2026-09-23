@@ -92,9 +92,9 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	}
 	var matched []files.File
 	if cfg != nil {
-		matched = filter.FilterFileList(files.FilterByVisibility(candidates, configmanager.HideScopeKanban), cfg.Criteria, cfg.Logic)
+		matched = filter.FilterFileList(candidates, cfg.Criteria, cfg.Logic)
 	} else {
-		matched = files.FilterByVisibility(candidates, configmanager.HideScopeKanban)
+		matched = candidates
 	}
 
 	cardsByStatus := make(map[string][]Card, len(columns))
@@ -465,6 +465,7 @@ func Archived(folderPath string) ([]Card, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeKanban)
 
 	var cards []Card
 	for _, file := range allFiles {
@@ -521,7 +522,7 @@ func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]st
 }
 
 // cardFilesInFolder returns all cached files that are kanban cards (have a kanban status tag)
-// scoped to folderPath (and its subfolders).
+// scoped to folderPath (and its subfolders), leaving out files hidden for the kanban scope.
 func cardFilesInFolder(folderPath string) ([]files.File, error) {
 	prefix := configmanager.GetKanbanPrefix()
 	allFiles, err := files.GetAllFilesCached()
@@ -539,7 +540,7 @@ func cardFilesInFolder(folderPath string) ([]files.File, error) {
 		}
 		cards = append(cards, file)
 	}
-	return cards, nil
+	return files.FilterByVisibility(cards, configmanager.HideScopeKanban), nil
 }
 
 // TagsForFolder returns all unique non-kanban tags present on kanban cards in the folder (and its subfolders).

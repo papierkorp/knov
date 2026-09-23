@@ -401,7 +401,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	collectionsBefore, err := files.GetAllCollections()
+	collectionsBefore, err := files.GetAllCollections("")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -419,11 +419,11 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	tags, err := files.GetAllTags()
+	tags, err := files.GetAllTags("")
 	if err != nil {
 		return errCase(name, err)
 	}
-	folders, err := files.GetAllFolders()
+	folders, err := files.GetAllFolders("")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -431,7 +431,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	collectionsAfter, err := files.GetAllCollections()
+	collectionsAfter, err := files.GetAllCollections("")
 	if err != nil {
 		return errCase(name, err)
 	}

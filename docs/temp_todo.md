@@ -10,10 +10,14 @@
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
+  - kb-status tags silently disappear from tag suggestions and filters. GetAllTags and CollectFromMetadata now always drop kanban tags via IsKanbanTag. Three places read that tag list through /api/metadata/tags?format=options:
+    - add a setting to hide the kb-status tags in kanban cards (bool)
 - fixes
-  - 
 - chore
   - kb-status-inbox is not shown in info slideout as a tag
+  - unify tag counts on one way: the dashboard tag widget computes live (GetAllTagsExcludingHiddenFiles), while /api/metadata/tags reads the tag-count cache (CacheKeyTagCounts, unscoped only). simplest: drop the cache read in the tags handler and compute live (cheap now - one pass over the cached file list). not done yet since other code still reads that cache, incl. the dashboardtest and metadatatest suites
+  - OnHideSettingsChange overwrites OnChange on 16 settings, and the list of 14 bools is maintained by hand. A new Hide* toggle would silently miss the cache refresh. None of them had an OnChange before, so nothing breaks today.
+  - Old path-traversal risk in browse (not introduced here). filepath.Join(dataPath, folderPath) in handleAPIGetFolder takes path straight from the query and doesn’t reject ... This diff didn’t cause it, but you touched this handler, so it’s worth knowing.
 - test
   - remote git in mobile
 
@@ -130,6 +134,10 @@ Constraints:
 - Do not output any code. Do not suggest code blocks, patches, or refactored versions of the provided diff.
 - Verdict: If the changes are completely safe, logically sound, and meet standard best practices, explicitly state: "VERDICT: APPROVED" in your response.
 - Problems: If you find any issues, do not fix them. Instead, explain why they are problematic, the potential impact (e.g., runtime error, security hole, performance bottleneck, unreadability), and optionally, the strategy to fix them (without writing the actual code).
+- Review the changes from two angles:
+  1. As an unreleased app that does not need backwards compatibility: breaking changes, simpler designs, removed compatibility shims, and cleanup of legacy paths may be acceptable if they improve the final product.
+  2. As an app with backwards-compatibility requirements: existing APIs, data formats, contracts, configuration, persisted state, integrations, and user behavior must continue to work unless a migration or deprecation path is clearly justified.
+- If the two angles lead to different conclusions, state that explicitly. If the verdict differs by angle, say so.
 
 Areas to scrutinize (your opinion must cover these):
 - Correctness: Are there off-by-one errors, incorrect variable reassignments, or logical flaws?
@@ -138,8 +146,8 @@ Areas to scrutinize (your opinion must cover these):
 - Performance: Are there O(n²) loops hiding in the changes, or unnecessary database queries?
 - Maintainability: Is the naming clear? Is it adding accidental complexity or tight coupling?
 - Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
-- Architecture: are the changes in line with the rest of the codebase?
-- Ignore the i18n translations since they are unrelated
-- Ignore the temp_todo.md file this is just a summary for me
+- Architecture: Are the changes in line with the rest of the codebase?
+- Ignore the i18n translations since they are unrelated.
+- Ignore the temp_todo.md file; this is just a summary for me.
 
-Also give your opinion about the changes, is the current solution overengineered and can be simplified?
+Also give your opinion about the changes: is the current solution overengineered and can it be simplified?

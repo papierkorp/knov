@@ -3,6 +3,7 @@ package files
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -169,15 +170,22 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}, nil
 }
 
-// FilterByVisibility returns only files that should be visible based on the current hide
-// settings. Checks mime type, extension, and editor type in that order, then folder path
-// for the given scope - pass "" for feature areas without a per-scope override (see
-// configmanager.IsPathHidden), or one of configmanager.HideScopeTree/Browse/Overview/
-// Search/Filter/Kanban.
+// IsHidden reports whether file is hidden by hide - built for one scope via
+// configmanager.NewHideMatcher. This is the single place every hide setting (type, HidePaths,
+// HideFilesByTag) is applied; a new hide-by-x setting only needs to be added here.
+func IsHidden(file File, hide *configmanager.HideMatcher) bool {
+	return isHiddenByType(file) ||
+		isInHiddenFolder(file, hide) ||
+		(file.Metadata != nil && slices.ContainsFunc(file.Metadata.Tags, hide.TagHidden))
+}
+
+// FilterByVisibility returns only files not hidden for scope - pass "" for feature areas without a
+// per-scope override, or one of configmanager.HideScope* (see IsHidden).
 func FilterByVisibility(files []File, scope string) []File {
+	hide := configmanager.NewHideMatcher(scope)
 	var filtered []File
 	for _, file := range files {
-		if !isHiddenByType(file) && !isInHiddenFolder(file, scope) {
+		if !IsHidden(file, hide) {
 			filtered = append(filtered, file)
 		}
 	}
@@ -210,14 +218,14 @@ func isHiddenByType(file File) bool {
 }
 
 // isInHiddenFolder returns true if the file's containing folder path matches a configured
-// hide-path pattern for scope.
-func isInHiddenFolder(file File, scope string) bool {
+// hide-path pattern.
+func isInHiddenFolder(file File, hide *configmanager.HideMatcher) bool {
 	rel := pathutils.ToRelative(file.Path)
 	parts := strings.Split(rel, "/")
 	if len(parts) < 2 {
 		return false
 	}
-	return configmanager.IsPathHidden(strings.Join(parts[:len(parts)-1], "/"), scope)
+	return hide.PathHidden(strings.Join(parts[:len(parts)-1], "/"))
 }
 
 // TreeNode represents a node in the file tree (either a directory or a file)

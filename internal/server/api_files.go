@@ -94,6 +94,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 
 	var folders []render.FolderEntry
 	var filesInDir []render.FolderEntry
+	hide := configmanager.NewHideMatcher(configmanager.HideScopeBrowse)
 
 	for _, entry := range entries {
 		// skip hidden files/folders (dot-prefixed) unless configured to show them
@@ -108,15 +109,14 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if entry.IsDir() {
-			if configmanager.IsPathHidden(pathutils.ToSlash(entryPath), configmanager.HideScopeBrowse) {
+			if hide.PathHidden(pathutils.ToSlash(entryPath)) {
 				continue // skip this folder if its path matches a configured hide-path pattern
 			}
 			folders = append(folders, item)
 		} else {
-			// check if file type should be hidden
 			metadata, _ := files.MetaDataGet(entryPath)
-			if metadata != nil && configmanager.IsFileTypeHidden(string(metadata.Editor)) {
-				continue // skip this file if its type is hidden
+			if files.IsHidden(files.File{Path: pathutils.ToSlash(entryPath), Metadata: metadata}, hide) {
+				continue
 			}
 			filesInDir = append(filesInDir, item)
 		}

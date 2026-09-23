@@ -35,6 +35,9 @@ type Meta struct {
 	DynURL   string
 	Min, Max *int
 	Refresh  bool // when true, the POST handler responds with HX-Refresh: true
+	// RefreshFileCaches marks a setting that changes file visibility, so the cached
+	// file list and tag/folder counts (built via files.FilterByVisibility) are rebuilt on save.
+	RefreshFileCaches bool
 }
 
 // ── registry ──────────────────────────────────────────────────────────────────
@@ -66,6 +69,12 @@ func AllSettings() []StorableSetting { return allSettings }
 // GetSetting returns a setting by key, or nil if not found.
 func GetSetting(key string) StorableSetting { return settingsByKey[key] }
 
+// RefreshesFileCaches reports whether the setting with key has RefreshFileCaches set.
+func RefreshesFileCaches(key string) bool {
+	rs, ok := GetSetting(key).(RenderableSetting)
+	return ok && rs.GetMeta().RefreshFileCaches
+}
+
 // intPtr is a helper for Min/Max fields.
 func intPtr(n int) *int { return &n }
 
@@ -83,6 +92,8 @@ type BoolSetting struct {
 	Target   string
 	Refresh  bool
 	OnChange func(interface{})
+
+	RefreshFileCaches bool
 }
 
 func (s *BoolSetting) Get() bool {
@@ -95,7 +106,7 @@ func (s *BoolSetting) Key() string           { return s.key }
 func (s *BoolSetting) Type() string          { return "boolean" }
 func (s *BoolSetting) GetValue() interface{} { return s.Get() }
 func (s *BoolSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh, RefreshFileCaches: s.RefreshFileCaches}
 }
 func (s *BoolSetting) setFromJSON(v interface{}) error {
 	if b, ok := v.(bool); ok {
@@ -288,6 +299,8 @@ type StringSliceSetting struct {
 	Target   string
 	OnChange func(interface{})
 	Validate func([]string) error
+
+	RefreshFileCaches bool
 }
 
 func (s *StringSliceSetting) Get() []string {
@@ -300,7 +313,7 @@ func (s *StringSliceSetting) Key() string           { return s.key }
 func (s *StringSliceSetting) Type() string          { return "textarea" }
 func (s *StringSliceSetting) GetValue() interface{} { return s.Get() }
 func (s *StringSliceSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, RefreshFileCaches: s.RefreshFileCaches}
 }
 func (s *StringSliceSetting) setFromJSON(v interface{}) error {
 	var result []string

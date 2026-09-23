@@ -19,8 +19,6 @@ import (
 // value that fails its setting's validation is logged and skipped, keeping
 // that one setting at its default rather than blocking startup.
 func InitSettings() error {
-	applyDynamicDefaults()
-
 	data, err := configStorage.Get("settings")
 	if err != nil {
 		return fmt.Errorf("failed to read user settings: %w", err)
@@ -57,13 +55,6 @@ func InitSettings() error {
 
 func applyLanguage(lang string) {
 	translation.SetLanguage(CheckLanguage(lang))
-}
-
-// applyDynamicDefaults sets defaults that depend on env config (only known once InitAppConfig
-// has run) rather than a fixed literal. Called before stored values are applied, so a setting
-// left at its default still reflects the current env config instead of a stale literal.
-func applyDynamicDefaults() {
-	HideTags.Default = []string{GetKanbanPrefix() + "-status*"}
 }
 
 // SaveSettings persists all registry values to storage.
