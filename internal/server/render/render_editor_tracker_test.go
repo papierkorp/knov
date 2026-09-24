@@ -7,18 +7,17 @@ import (
 	"knov/internal/tracker"
 )
 
-// RenderTrackerCounterRow's -/+ stepper only round-trips a real counter through the
-// tick API, so it must stay separate from the row's own remove/reset actions - this
-// guards the row markup that the kebab-menu-in-the-3-dots change touches.
+// RenderTrackerCounterRow is config-only: the -/+ stepper lives in the counters view
+// (RenderTrackerClickRow) - this guards the row markup that the kebab-menu-in-the-3-dots change touches.
 func TestRenderTrackerCounterRowExistingCounter(t *testing.T) {
 	c := &tracker.Counter{ID: "abc123", Title: "pushups"}
-	html := RenderTrackerCounterRow("mytracker", c, 3)
+	html := RenderTrackerCounterRow("mytracker", c)
 
 	if !strings.Contains(html, `value="pushups"`) {
 		t.Errorf("row missing counter title input: %s", html)
 	}
-	if !strings.Contains(html, `hx-post="/api/trackers/tick"`) {
-		t.Errorf("row missing tick buttons: %s", html)
+	if strings.Contains(html, `hx-post="/api/trackers/tick"`) {
+		t.Errorf("editor row should have no tick buttons: %s", html)
 	}
 	if !strings.Contains(html, "tracker-menu-wrap") || !strings.Contains(html, "tracker-menu-btn") {
 		t.Errorf("row missing 3-dot menu wrapper/button: %s", html)
@@ -49,7 +48,7 @@ func TestRenderTrackerCounterRowExistingCounter(t *testing.T) {
 // actually shows.
 func TestRenderTrackerCounterRowUnconfiguredRendersAsEverythingChecked(t *testing.T) {
 	c := &tracker.Counter{ID: "legacy1", Title: "old counter"}
-	html := RenderTrackerCounterRow("mytracker", c, 0)
+	html := RenderTrackerCounterRow("mytracker", c)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:true,&#34;day7d&#34;:true,&#34;day30d&#34;:true,&#34;allTime&#34;:true,&#34;daily&#34;:true,&#34;weekly&#34;:true,&#34;monthly&#34;:true}`) {
 		t.Errorf("an unconfigured counter should render as all-checked in the Alpine seed, got: %s", html)
@@ -61,7 +60,7 @@ func TestRenderTrackerCounterRowUnconfiguredRendersAsEverythingChecked(t *testin
 // stored, not a default.
 func TestRenderTrackerCounterRowRespectsExplicitColumns(t *testing.T) {
 	c := &tracker.Counter{ID: "abc123", Title: "pushups", Columns: tracker.ColumnSet{Day24h: true}, ColumnsConfigured: true}
-	html := RenderTrackerCounterRow("mytracker", c, 0)
+	html := RenderTrackerCounterRow("mytracker", c)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:true,&#34;day7d&#34;:false,&#34;day30d&#34;:false,&#34;allTime&#34;:false,&#34;daily&#34;:false,&#34;weekly&#34;:false,&#34;monthly&#34;:false}`) {
 		t.Errorf("explicit Columns should ride through unchanged, got: %s", html)
@@ -80,7 +79,7 @@ func TestRenderTrackerCounterRowRespectsExplicitColumns(t *testing.T) {
 // indistinguishable from "never configured".
 func TestRenderTrackerCounterRowRespectsExplicitAllFalse(t *testing.T) {
 	c := &tracker.Counter{ID: "abc123", Title: "silent", Columns: tracker.ColumnSet{}, ColumnsConfigured: true}
-	html := RenderTrackerCounterRow("mytracker", c, 0)
+	html := RenderTrackerCounterRow("mytracker", c)
 
 	if !strings.Contains(html, `cols: {&#34;day24h&#34;:false,&#34;day7d&#34;:false,&#34;day30d&#34;:false,&#34;allTime&#34;:false,&#34;daily&#34;:false,&#34;weekly&#34;:false,&#34;monthly&#34;:false}`) {
 		t.Errorf("explicit all-false Columns should render as all-unchecked, got: %s", html)
@@ -90,7 +89,7 @@ func TestRenderTrackerCounterRowRespectsExplicitAllFalse(t *testing.T) {
 // A blank new-counter row (nil counter) has no id to reset or tick yet, so only the
 // remove action belongs in its menu.
 func TestRenderTrackerCounterRowNewCounter(t *testing.T) {
-	html := RenderTrackerCounterRow("mytracker", nil, 0)
+	html := RenderTrackerCounterRow("mytracker", nil)
 
 	if strings.Contains(html, `hx-post="/api/trackers/tick"`) {
 		t.Errorf("blank row should have no tick buttons: %s", html)
@@ -103,5 +102,20 @@ func TestRenderTrackerCounterRowNewCounter(t *testing.T) {
 	}
 	if !strings.Contains(html, "this.closest('.tracker-counter-row').remove()") {
 		t.Errorf("blank row missing remove button: %s", html)
+	}
+}
+
+// the counters-view row ticks itself via the tick API, which swaps the same row back in.
+func TestRenderTrackerClickRow(t *testing.T) {
+	html := RenderTrackerClickRow("mytracker", &tracker.Counter{ID: "abc123", Title: "<b>pushups</b>"}, 3)
+
+	if !strings.Contains(html, `hx-post="/api/trackers/tick"`) || !strings.Contains(html, `hx-target="closest .tracker-click-row"`) {
+		t.Errorf("row missing tick buttons targeting itself: %s", html)
+	}
+	if !strings.Contains(html, "&lt;b&gt;pushups&lt;/b&gt;") {
+		t.Errorf("counter title must be escaped: %s", html)
+	}
+	if !strings.Contains(html, `<span class="tracker-counter-total">3</span>`) {
+		t.Errorf("row missing total: %s", html)
 	}
 }

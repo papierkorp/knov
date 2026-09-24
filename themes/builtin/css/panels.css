@@ -177,6 +177,19 @@
   text-align: center;
 }
 
+#fp-views-menu:not(:empty) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+#fp-views-menu .fp-menu-item.active {
+  color: var(--primary);
+}
+
 .fp-menu-item--danger {
   color: var(--danger);
 }

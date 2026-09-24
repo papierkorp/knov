@@ -138,7 +138,7 @@ func createTestTracker() {
 		for i, delta := range monthlyDeltas {
 			monthsAgo := len(monthlyDeltas) - 1 - i
 			day := now.AddDate(0, -monthsAgo, 0)
-			if _, _, err := tracker.TickDay(id, c.ID, day, delta); err != nil {
+			if _, err := tracker.TickDay(id, c.ID, day, delta); err != nil {
 				logging.LogError(logging.KeyApp, "failed to seed test tracker counter %s: %v", c.Title, err)
 			}
 		}

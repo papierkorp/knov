@@ -276,6 +276,7 @@ func NewRouter() *chi.Mux {
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Post("/filter", handleAPIFilterFiles)
 			r.Get("/header", handleAPIGetFileHeader)
+			r.Get("/views", handleAPIGetFileViews)
 			r.Get("/raw", handleAPIGetRawContent)
 			r.Post("/save", handleAPIFileSave)
 			r.Post("/save/", handleAPIFileSave)

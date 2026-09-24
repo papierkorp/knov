@@ -41,17 +41,8 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		fileContent.HTML = render.RenderBookViewPrefix(filePath) + fileContent.HTML
 	}
 
-	// a saved filter/tracker re-renders live (filter results honoring the configured
-	// display, or the tracker's rolling-window stats) instead of the static markdown
-	// paired with it. tracker is gated on its editor tag; filter falls back to a
-	// path->config probe so a paired file with missing/stale metadata still renders live.
-	if fileContent.Editor == files.EditorTypeTracker {
-		if html, ok := render.RenderTrackerFileView(pathutils.ToRelative(filePath)); ok {
-			fileContent.HTML = html
-		}
-	} else if html, ok := render.RenderFilterFileView(pathutils.ToRelative(filePath)); ok {
-		fileContent.HTML = html
-	}
+	// show the requested view (?view=) of the file, e.g. a tracker's live stats or the raw source
+	fileContent.HTML = render.RenderFileView(pathutils.ToRelative(filePath), r.URL.Query().Get("view"), fileContent.HTML)
 
 	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("Content-Type", "text/html")

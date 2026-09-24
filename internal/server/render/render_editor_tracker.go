@@ -78,12 +78,7 @@ func RenderTrackerEditor(filePath string) (string, error) {
 	h.WriteString(`<div id="tracker-counters">`)
 	if config != nil {
 		for i := range config.Counters {
-			c := &config.Counters[i]
-			total, err := tracker.Total(id, c.ID, time.Time{})
-			if err != nil {
-				logging.LogWarning(logging.KeyApp, "failed to load tracker counter total for %s/%s: %v", id, c.ID, err)
-			}
-			h.WriteString(RenderTrackerCounterRow(id, c, total))
+			h.WriteString(RenderTrackerCounterRow(id, &config.Counters[i]))
 		}
 	}
 	h.WriteString(`</div>`)
@@ -98,13 +93,13 @@ func RenderTrackerEditor(filePath string) (string, error) {
 }
 
 // RenderTrackerCounterRow renders one counter editor row. Pass a persisted
-// *tracker.Counter and its current all-time total for a row with a running
-// total, live -/+ buttons, and its own saved column choices; pass nil (total
-// ignored) for a blank new-counter row that the next save will create, which
+// *tracker.Counter for a row with its own saved column choices and a reset action;
+// pass nil for a blank new-counter row that the next save will create, which
 // starts with every column checked (tracker.AllColumns). The title is always an
 // editable input and a hidden counter_id[] (empty for a new row) rides along so
-// save can match rows by id.
-func RenderTrackerCounterRow(trackerID string, c *tracker.Counter, total int) string {
+// save can match rows by id. The -/+ buttons live in the file's counters view
+// (RenderTrackerClickView), not here.
+func RenderTrackerCounterRow(trackerID string, c *tracker.Counter) string {
 	lang := configmanager.GetLanguage()
 	t := func(k string, a ...any) string { return translation.SprintfForRequest(lang, k, a...) }
 
@@ -121,22 +116,6 @@ func RenderTrackerCounterRow(trackerID string, c *tracker.Counter, total int) st
 	h.WriteString(`<input type="hidden" name="counter_columns[]" :value="JSON.stringify(cols)"/>`)
 	fmt.Fprintf(&h, `<input type="text" name="counter_title[]" value="%s" class="form-input tracker-counter-input" placeholder="%s" required/>`,
 		htmlpkg.EscapeString(title), t("counter name"))
-
-	if c != nil {
-		vals := func(d int) string {
-			b, _ := json.Marshal(map[string]string{
-				"trackerid": trackerID,
-				"counterid": c.ID,
-				"delta":     strconv.Itoa(d),
-			})
-			return htmlpkg.EscapeString(string(b))
-		}
-		h.WriteString(`<span class="tracker-stepper">`)
-		fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-counter-row" hx-swap="outerHTML">&minus;</button>`, vals(-1))
-		fmt.Fprintf(&h, `<span class="tracker-counter-total">%d</span>`, total)
-		fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-counter-row" hx-swap="outerHTML">+</button>`, vals(1))
-		h.WriteString(`</span>`)
-	}
 
 	h.WriteString(`<div class="tracker-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
 	fmt.Fprintf(&h, `<button type="button" class="tracker-menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-ellipsis-vertical"></i></button>`, t("actions"))
@@ -180,6 +159,54 @@ func columnCheckboxesHTML(t func(string, ...any) string) string {
 	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.weekly"/> ` + t("by week") + `</label>`)
 	b.WriteString(`<label class="tracker-col-toggle" @click.stop><input type="checkbox" x-model="cols.monthly"/> ` + t("by month") + `</label>`)
 	return b.String()
+}
+
+// RenderTrackerClickRow renders one counter of the counters view: its title and
+// -/+ buttons around its current all-time total. The tick API returns this row.
+func RenderTrackerClickRow(trackerID string, c *tracker.Counter, total int) string {
+	vals := func(d int) string {
+		b, _ := json.Marshal(map[string]string{
+			"trackerid": trackerID,
+			"counterid": c.ID,
+			"delta":     strconv.Itoa(d),
+		})
+		return htmlpkg.EscapeString(string(b))
+	}
+	var h strings.Builder
+	h.WriteString(`<div class="tracker-click-row">`)
+	fmt.Fprintf(&h, `<span class="tracker-click-title">%s</span>`, htmlpkg.EscapeString(c.Title))
+	h.WriteString(`<span class="tracker-stepper">`)
+	fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-click-row" hx-swap="outerHTML">&minus;</button>`, vals(-1))
+	fmt.Fprintf(&h, `<span class="tracker-counter-total">%d</span>`, total)
+	fmt.Fprintf(&h, `<button type="button" class="btn-secondary" hx-post="/api/trackers/tick" hx-vals='%s' hx-target="closest .tracker-click-row" hx-swap="outerHTML">+</button>`, vals(1))
+	h.WriteString(`</span></div>`)
+	return h.String()
+}
+
+// RenderTrackerClickView renders a saved tracker's counters with -/+ buttons for
+// its file view. Returns ok=false when relPath is not a saved tracker's paired file.
+func RenderTrackerClickView(relPath string) (string, bool) {
+	id := tracker.IDFromPath(relPath)
+	config, err := tracker.GetConfig(id)
+	if err != nil || config == nil {
+		return "", false
+	}
+	if len(config.Counters) == 0 {
+		return RenderStatusMessage(StatusInfo, translation.SprintfForRequest(configmanager.GetLanguage(),
+			"this tracker has no counters yet - add one in the editor.")), true
+	}
+	var h strings.Builder
+	h.WriteString(`<div id="component-tracker-click">`)
+	for i := range config.Counters {
+		c := &config.Counters[i]
+		total, err := tracker.Total(id, c.ID, time.Time{})
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to load tracker counter total for %s/%s: %v", id, c.ID, err)
+		}
+		h.WriteString(RenderTrackerClickRow(id, c, total))
+	}
+	h.WriteString(`</div>`)
+	return h.String(), true
 }
 
 // RenderTrackerFileView re-renders a saved tracker's stats table as of now, so the

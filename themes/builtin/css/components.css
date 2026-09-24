@@ -3278,6 +3278,37 @@ dl.media-info dd {
   font-size: 0.85em;
 }
 
+#component-file-view-raw {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* =============================================
+   tracker counters view
+   ============================================= */
+
+#component-tracker-click {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+}
+
+#component-tracker-click .tracker-click-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#component-tracker-click .tracker-click-title {
+  flex: 1;
+  min-width: 0;
+}
+
 /* =============================================
    tracker editor
    ============================================= */
@@ -3330,20 +3361,20 @@ dl.media-info dd {
   font-size: 0.88rem;
 }
 
-#component-tracker-editor .tracker-stepper {
+#component-tracker-click .tracker-stepper {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-#component-tracker-editor .tracker-stepper .btn-secondary {
+#component-tracker-click .tracker-stepper .btn-secondary {
   min-width: 32px;
   padding: 6px 0;
   font-weight: 600;
   text-align: center;
 }
 
-#component-tracker-editor .tracker-counter-total {
+#component-tracker-click .tracker-counter-total {
   min-width: 2ch;
   text-align: center;
   font-variant-numeric: tabular-nums;

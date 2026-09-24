@@ -144,6 +144,7 @@
                     <div class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
                         <button type="button" class="fp-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
                         <div class="fp-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
+                            <div id="fp-views-menu"></div>
                             <button type="button" class="fp-menu-item" popovertarget="rename-modal"><i class="fa fa-i-cursor"></i> {{T "rename"}}</button>
                             <button type="button" class="fp-menu-item" popovertarget="move-modal"><i class="fa fa-folder-tree"></i> {{T "move"}}</button>
                             <button type="button" class="fp-menu-item" id="fp-rebuild-btn"><i class="fa fa-rotate"></i> {{T "rebuild"}}</button>

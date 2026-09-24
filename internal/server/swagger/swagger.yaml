@@ -402,6 +402,19 @@ definitions:
       sensitive:
         type: boolean
     type: object
+  render.FileViewLink:
+    properties:
+      active:
+        type: boolean
+      icon:
+        type: string
+      id:
+        type: string
+      label:
+        type: string
+      url:
+        type: string
+    type: object
   render.VersionInfo:
     properties:
       arch:
@@ -2120,6 +2133,33 @@ paths:
         "200":
           description: File restored successfully
       summary: Restore file version
+      tags:
+      - files
+  /api/files/views:
+    get:
+      description: Returns a link per view of the file (e.g. rendered/raw, or a tracker's
+        statistics/counters), marking the active one
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      - description: 'Active view id (default: the file type''s first view)'
+        in: query
+        name: view
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/render.FileViewLink'
+            type: array
+      summary: Get file view links
       tags:
       - files
   /api/filters:
@@ -4855,7 +4895,7 @@ paths:
       consumes:
       - application/x-www-form-urlencoded
       description: Add +1/-1 to a counter's day bucket, save, and return the updated
-        counter row
+        counters-view row
       parameters:
       - description: Tracker identifier (name)
         in: formData

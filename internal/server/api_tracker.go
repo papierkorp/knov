@@ -98,11 +98,11 @@ func trackerCounterRows(r *http.Request) ([]tracker.CounterInput, error) {
 // @Success 200 {string} string "tracker counter row html"
 // @Router /api/trackers/add-counter [post]
 func handleAPIAddTrackerCounter(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, map[string]string{}, render.RenderTrackerCounterRow("", nil, 0))
+	writeResponse(w, r, map[string]string{}, render.RenderTrackerCounterRow("", nil))
 }
 
 // @Summary Record a tracker change
-// @Description Add +1/-1 to a counter's day bucket, save, and return the updated counter row
+// @Description Add +1/-1 to a counter's day bucket, save, and return the updated counters-view row
 // @Tags tracker
 // @Accept application/x-www-form-urlencoded
 // @Param trackerid formData string true "Tracker identifier (name)"
@@ -134,7 +134,7 @@ func handleAPITrackerTick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID, "delta": delta},
-		render.RenderTrackerCounterRow(trackerID, counter, total))
+		render.RenderTrackerClickRow(trackerID, counter, total))
 }
 
 // @Summary Reset a tracker counter
@@ -156,7 +156,7 @@ func handleAPITrackerReset(w http.ResponseWriter, r *http.Request) {
 	trackerID := strings.TrimSpace(r.FormValue("trackerid"))
 	counterID := strings.TrimSpace(r.FormValue("counterid"))
 
-	counter, total, err := tracker.Reset(trackerID, counterID)
+	counter, err := tracker.Reset(trackerID, counterID)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to reset tracker counter: %v", err)
 		status := http.StatusInternalServerError
@@ -168,7 +168,7 @@ func handleAPITrackerReset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, map[string]any{"tracker": trackerID, "counter": counter.ID},
-		render.RenderTrackerCounterRow(trackerID, counter, total))
+		render.RenderTrackerCounterRow(trackerID, counter))
 }
 
 // @Summary Delete tracker

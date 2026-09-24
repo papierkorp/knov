@@ -2422,6 +2422,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/views": {
+            "get": {
+                "description": "Returns a link per view of the file (e.g. rendered/raw, or a tracker's statistics/counters), marking the active one",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file view links",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Active view id (default: the file type's first view)",
+                        "name": "view",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/render.FileViewLink"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/filters": {
             "post": {
                 "description": "Filter files based on metadata criteria with configurable logic and display",
@@ -6372,7 +6411,7 @@ const docTemplate = `{
         },
         "/api/trackers/tick": {
             "post": {
-                "description": "Add +1/-1 to a counter's day bucket, save, and return the updated counter row",
+                "description": "Add +1/-1 to a counter's day bucket, save, and return the updated counters-view row",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -6995,6 +7034,26 @@ const docTemplate = `{
                 },
                 "sensitive": {
                     "type": "boolean"
+                }
+            }
+        },
+        "render.FileViewLink": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

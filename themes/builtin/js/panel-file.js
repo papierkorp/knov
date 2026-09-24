@@ -287,6 +287,15 @@ function setupFilePage() {
     "fp-parents": "parents",
   });
 
+  // view links (e.g. rendered/raw) for the 3-dots menu
+  const view = new URLSearchParams(location.search).get("view") || "";
+  htmx.ajax("GET", "/api/files/views?filepath=" + fp + "&view=" + encodeURIComponent(view), {
+    source: document.getElementById("fp-views-menu"),
+    target: document.getElementById("fp-views-menu"),
+    swap: "innerHTML",
+    headers: { Accept: "text/html" },
+  });
+
   htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
     source: document.getElementById("fp-versions"),
     target: document.getElementById("fp-versions"),

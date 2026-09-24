@@ -6,17 +6,15 @@
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
-  - implement a 2 view system (e.g. todo list in raw markdown/vs rendered todolist, or the new tracker editor => clicker vs statistics)
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
+  - detect all images not in the media folder but in the data folder (e.g. someone copied it) and move it to the media folder and update all links to it
+  - book-editor add files based on filter (new add filter button)
 - fixes
 - chore
-  - kb-status-inbox is not shown in info slideout as a tag
 - test
   - remote git in mobile
-
-
 
 # every other time
 
@@ -25,32 +23,6 @@
 - pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
 - check the whole codebase for hardcoded colors and replace theme with the vars provided by the defaults.css file
 - add all missing german translations
-
-# mobile wrapper
-
-description: replace the termux-based mobile setup with a proper installable android app. instead of running the go server through termux, wrap it as a native android shell app so it runs as a real background app with an icon, no terminal needed. considered gomobile bind (compiling go as a jni library) but decided against it - unnecessary complexity since the go binary itself needs no changes. instead: cross-compile the existing go server for android and run it as a plain subprocess from a foreground service, with a webview pointed at localhost. lives in its own folder in repo root (e.g. /android), separate gradle/kotlin toolchain, not integrated into the go build.
-use the tools/docker_android for development
-
-- [x] create `/android` folder at repo root with a minimal android studio project (kotlin) - scaffolded, not opened/synced in android studio yet
-- [x] add `.gitignore` entries for android build artifacts (build/, .gradle/, local.properties, *.apk, *.aab) and never commit signing keystores
-- [x] cross-compile the go server with `GOOS=android GOARCH=arm64 go build` and get the binary into `android/app/src/main/jniLibs/arm64-v8a/libknovserver.so` (`make mobile-apk-binary`) - not `assets/` as originally planned, see next item
-- [x] handle android's sandboxed storage - no go code changes needed, existing KNOV_* env vars already cover this; ServerService.kt points them at subfolders of the app's private filesDir
-- [x] ~~on first app launch, copy the bundled binary into the app's private files dir and chmod it executable~~ - doesn't work: since android 10, apps can't execute a file they wrote to their own data dir at runtime (W^X), even after chmod +x, confirmed on a real device (`Permission denied`, error=13). fixed by shipping the binary as a "native library" (jniLibs) instead of an asset - the OS extracts those executable at install time. required `packaging { jniLibs { useLegacyPackaging = true } }` in app/build.gradle.kts so it's actually extracted to disk rather than mapped from inside the apk
-- [x] implement a foreground service that starts the binary via ProcessBuilder and shows the required persistent notification (ServerService.kt)
-- [x] implement a WebViewActivity that loads http://127.0.0.1:<port> once the server is up (MainActivity.kt, polls until reachable)
-- [x] restart behavior on crash - service now relaunches the process via a `waitFor()` watcher thread if it dies unexpectedly (ServerService.kt); binary is already re-extracted by the OS on every app (re)install, so no separate version check is needed
-- [x] added a minimal `Theme.AppCompat.DayNight.NoActionBar` (res/values/themes.xml) - MainActivity crashed on launch without it ("You need to use a Theme.AppCompat theme"), found on real-device test
-- [x] built and run for real - JAVA_HOME needs to point at android studio's bundled JBR (system java 25 is too new for AGP 8.13.2/gradle 9.3.0); `android.builder.sdkDownload=false` in gradle.properties needed too, the installed SDK's newer package.xml format isn't understood by this AGP's bundled sdklib and it tried (and failed) to redownload build-tools instead of using what's already installed
-- [x] test on a real device (sideloaded via `adb install`, no play store) - confirmed via logcat + curl through `adb forward`: server starts, binds to 127.0.0.1:8324, webview loads it (HTTP 200). visual on-screen confirmation still pending, device's wireless adb dropped when its screen locked mid-session
-- [x] app icon - generated mipmap-*/ic_launcher(_round).png from the existing static/knov_logo.png, wired into the manifest (no separate android asset pipeline needed)
-- [x] launch/error feedback - MainActivity shows a plain "starting server..." message in the webview itself while polling (no separate layout needed); after 15s still-not-up shows "still trying..." but keeps polling and auto-loads the real page once it comes up. ServerService now also retries if the very first exec attempt itself fails (previously only retried after a successful start later crashed)
-- [x] stop action on the persistent notification (previously it just said "Knov server running" with no way to stop it from there)
-- [x] in-app `.env` editor (EnvEditorActivity) - the go binary already applies a `.env` file from its cwd onto the process env unconditionally (loadEnvFile in configmanager/config.go), and the wrapper's cwd is the app's private filesDir, but there was no way to get a file in there without adb. small ".env" button on the main screen opens a plain text editor, saves to filesDir/.env, restarts ServerService
-- [ ] check battery-optimization behavior on real OEMs (some kill foreground services aggressively despite the notification) - needs a real device, couldn't verify from this session
-- [ ] make the data/storage folder accessible from a normal file manager on the phone - one of the main appeals of the app. currently KNOV_DATA_PATH etc point at subfolders of the app's private internal storage (getFilesDir(), `/data/user/0/com.knov.wrapper/files/...`), which is sandboxed - no file manager app can browse it (even with "all files access"), only adb (`run-as`) or android studio's device file explorer. switching to external app-specific storage (getExternalFilesDir(), under `/storage/emulated/0/Android/data/com.knov.wrapper/files/...`) would be reachable over usb/mtp and by some file managers, though android 11+ still hides `Android/data/` from the stock Files app specifically - may need a different approach (e.g. SAF / a user-chosen folder) to be genuinely convenient
-- [x] restrict WebView navigation to 127.0.0.1 and hand off other links to the system browser (MainActivity.kt) - rendered file content can contain links, and the default WebViewClient let the JS-enabled WebView navigate to arbitrary internet content
-- [x] request POST_NOTIFICATIONS at runtime on API 33+ (MainActivity.kt) - without it the persistent notification (and its Stop action) silently never appeared, though the foreground service still ran fine
-- [ ] `docker-build-android` uses `--no-cache`, so every android build redownloads/reinstalls the whole android sdk (cmdline-tools, platforms, build-tools) instead of reusing docker layer cache - matches the existing `--no-cache` convention on `docker-build-dev`/`docker-build-deployment` so left as-is for now, but worth revisiting since the sdk install layer is the most expensive part of this particular image
 
 # ai prompts
 

@@ -173,6 +173,25 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
+// @Summary Get file view links
+// @Description Returns a link per view of the file (e.g. rendered/raw, or a tracker's statistics/counters), marking the active one
+// @Tags files
+// @Param filepath query string true "File path"
+// @Param view query string false "Active view id (default: the file type's first view)"
+// @Produce json,html
+// @Success 200 {array} render.FileViewLink
+// @Router /api/files/views [get]
+func handleAPIGetFileViews(w http.ResponseWriter, r *http.Request) {
+	fp := r.URL.Query().Get("filepath")
+	if fp == "" {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
+		return
+	}
+
+	links := render.FileViewLinks(pathutils.ToRelative(fp), r.URL.Query().Get("view"))
+	writeResponse(w, r, links, render.RenderFileViewLinks(links))
+}
+
 // @Summary Get file overview (dates, hierarchy, links, related files)
 // @Description Returns every metadata/link fragment used on a file's detail page (created/edited
 // @Description dates, collection, folders, ancestors, kids, grandchildren, used/media/inbound
@@ -296,7 +315,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]string{"content": string(content)}
-	writeResponse(w, r, data, string(content))
+	writeResponse(w, r, data, render.RenderRawContent(content))
 }
 
 // @Summary Save file content

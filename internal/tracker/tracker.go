@@ -220,31 +220,27 @@ func SetMeta(id, title string, rows []CounterInput) error {
 // shared by Tick, TickDay and Reset. mutate itself is responsible for persisting
 // its change to trackerStorage; unlike the tracker's title/counter-list, day
 // deltas don't need mu since trackerStorage's own operations are atomic. Returns
-// the updated counter and its new all-time total.
-func mutateCounter(id, counterID string, mutate func(*Counter) error) (*Counter, int, error) {
+// the updated counter.
+func mutateCounter(id, counterID string, mutate func(*Counter) error) (*Counter, error) {
 	config, err := GetConfig(id)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	if config == nil {
-		return nil, 0, fmt.Errorf("%w: %q", ErrNotFound, id)
+		return nil, fmt.Errorf("%w: %q", ErrNotFound, id)
 	}
 	counter := config.GetCounter(counterID)
 	if counter == nil {
-		return nil, 0, fmt.Errorf("%w: counter %q", ErrNotFound, counterID)
+		return nil, fmt.Errorf("%w: counter %q", ErrNotFound, counterID)
 	}
 	if err := mutate(counter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	if err := generateIndex(id, config); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to generate tracker index for %s: %v", id, err)
 	}
-	total, err := Total(id, counterID, time.Time{})
-	if err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to compute tracker counter total for %s/%s: %v", id, counterID, err)
-	}
-	return counter, total, nil
+	return counter, nil
 }
 
 // Tick adds delta (+1 or -1) to counterID's bucket for today, then regenerates
@@ -253,15 +249,23 @@ func Tick(id, counterID string, delta int) (*Counter, int, error) {
 	if delta != 1 && delta != -1 {
 		return nil, 0, fmt.Errorf("%w: delta must be +1 or -1", ErrInvalidInput)
 	}
-	return mutateCounter(id, counterID, func(c *Counter) error {
+	counter, err := mutateCounter(id, counterID, func(c *Counter) error {
 		return trackerStorage.AddDelta(id, c.ID, time.Now().Format(dayKey), delta)
 	})
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err := Total(id, counterID, time.Time{})
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to compute tracker counter total for %s/%s: %v", id, counterID, err)
+	}
+	return counter, total, nil
 }
 
 // TickDay adds delta to counterID's bucket for an arbitrary day instead of today,
 // then regenerates the paired stats file. Unlike Tick, delta isn't restricted to
 // +1/-1: this is for backdating sample/test data, not the live +/- editor buttons.
-func TickDay(id, counterID string, day time.Time, delta int) (*Counter, int, error) {
+func TickDay(id, counterID string, day time.Time, delta int) (*Counter, error) {
 	return mutateCounter(id, counterID, func(c *Counter) error {
 		return trackerStorage.AddDelta(id, c.ID, day.Format(dayKey), delta)
 	})
@@ -269,7 +273,7 @@ func TickDay(id, counterID string, day time.Time, delta int) (*Counter, int, err
 
 // Reset zeroes counterID's recorded days back to 0, then regenerates the paired
 // stats file. Returns the updated counter.
-func Reset(id, counterID string) (*Counter, int, error) {
+func Reset(id, counterID string) (*Counter, error) {
 	return mutateCounter(id, counterID, func(c *Counter) error {
 		return trackerStorage.ResetCounter(id, c.ID)
 	})

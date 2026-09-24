@@ -65,15 +65,12 @@ func TestResetZeroesDaysAndKeepsCounter(t *testing.T) {
 		t.Fatalf("sanity: total before reset = %d, err = %v, want 2", total, err)
 	}
 
-	counter, total, err := Reset(id, counterID)
+	counter, err := Reset(id, counterID)
 	if err != nil {
 		t.Fatalf("Reset: %v", err)
 	}
 	if counter.ID != counterID || counter.Title != "pushups" {
 		t.Errorf("Reset returned counter %+v, want id=%s title=pushups", counter, counterID)
-	}
-	if total != 0 {
-		t.Errorf("Reset returned total = %d, want 0", total)
 	}
 	if days, err := trackerStorage.GetDays(id, counterID); err != nil || len(days) != 0 {
 		t.Errorf("Reset left days = %v (err %v), want empty", days, err)
@@ -85,7 +82,7 @@ func TestResetZeroesDaysAndKeepsCounter(t *testing.T) {
 }
 
 func TestResetUnknownTracker(t *testing.T) {
-	if _, _, err := Reset("does-not-exist", "whatever"); !errors.Is(err, ErrNotFound) {
+	if _, err := Reset("does-not-exist", "whatever"); !errors.Is(err, ErrNotFound) {
 		t.Errorf("Reset on unknown tracker: err = %v, want ErrNotFound", err)
 	}
 }
@@ -95,7 +92,7 @@ func TestResetUnknownCounter(t *testing.T) {
 	if err := SetMeta(id, "", []CounterInput{{Title: "sit-ups"}}); err != nil {
 		t.Fatalf("SetMeta: %v", err)
 	}
-	if _, _, err := Reset(id, "not-a-real-counter-id"); !errors.Is(err, ErrNotFound) {
+	if _, err := Reset(id, "not-a-real-counter-id"); !errors.Is(err, ErrNotFound) {
 		t.Errorf("Reset on unknown counter: err = %v, want ErrNotFound", err)
 	}
 }
@@ -176,11 +173,11 @@ func TestBuildStatsMarkdownRendersPerCounterColumns(t *testing.T) {
 	}
 
 	todayOnly := config.GetCounter(config.Counters[0].ID)
-	if _, _, err := TickDay(id, todayOnly.ID, time.Now(), 5); err != nil {
+	if _, err := TickDay(id, todayOnly.ID, time.Now(), 5); err != nil {
 		t.Fatalf("TickDay: %v", err)
 	}
 	fullStats := config.GetCounter(config.Counters[1].ID)
-	if _, _, err := TickDay(id, fullStats.ID, time.Now(), 7); err != nil {
+	if _, err := TickDay(id, fullStats.ID, time.Now(), 7); err != nil {
 		t.Fatalf("TickDay: %v", err)
 	}
 
