@@ -149,15 +149,5 @@ func createFilterTestMetadata() error {
 		}
 	}
 
-	if err := files.SaveAllCollectionsToCache(); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to update collections cache: %v", err)
-	}
-	if err := files.SaveAllFoldersToCache(); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to update folders cache: %v", err)
-	}
-	if err := files.SaveAllTagsToCache(); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to update tags cache: %v", err)
-	}
-
 	return nil
 }

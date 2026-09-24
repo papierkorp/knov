@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
@@ -296,17 +297,17 @@ func caseWidgetFileContentData() test.CaseResult {
 }
 
 // caseWidgetAggregateData covers the tags/collections/folders widgets' underlying calls -
-// these are pass-through cache reads with no widget-specific logic to break beyond "errors".
+// these are live counts with no widget-specific logic to break beyond "errors".
 func caseWidgetAggregateData() test.CaseResult {
 	name := "widget-aggregate-data"
 
-	if _, err := files.GetAllTagsCountFromCache(); err != nil {
+	if _, err := files.GetAllTags(configmanager.HideScopeDashboard); err != nil {
 		return errCase(name, err)
 	}
-	if _, err := files.GetAllCollectionsCountFromCache(); err != nil {
+	if _, err := files.GetAllCollections(configmanager.HideScopeDashboard); err != nil {
 		return errCase(name, err)
 	}
-	if _, err := files.GetAllFoldersCountFromCache(); err != nil {
+	if _, err := files.GetAllFolders(configmanager.HideScopeDashboard); err != nil {
 		return errCase(name, err)
 	}
 

@@ -1,6 +1,6 @@
 # unreleased
 
-_61 commits since last release_
+_64 commits since last release_
 
 ## breaking changes
 - existing tracker counter history embedded in each tracker's config file is imported automatically into the new storage the first time that tracker is opened after upgrading (see importLegacyDays). Back up your storage/config directory before upgrading, and open each existing tracker at least once post-upgrade to confirm the migration ran before relying on any automated backup rotation to expire the pre-upgrade one.
@@ -15,6 +15,7 @@ _61 commits since last release_
 - support per-column alignment in table editor
 
 ## features
+- replace hide tags with hide files by tag
 - add Android wrapper app (apk build)
 - add hide tags besides hide paths
 - add a open with another editor button to the built in theme info slideout
@@ -24,6 +25,8 @@ _61 commits since last release_
 - add KNOV_NOTIFY_MIN_LEVEL to mute notification toasts
 
 ## fixes
+- escape user content in kanban html rendering
+- guard folder api against path traversal
 - keep todo checkboxes correct across short code blocks and loose list items
 - encode file path segments in file-edit links
 

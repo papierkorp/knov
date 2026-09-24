@@ -11,10 +11,8 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
 - fixes
-  - html-escape user-controlled values in render_kanban.go (tag names in chip title/body/data-tag, card titles, file paths in data attributes) - currently interpolated raw via fmt.Fprintf, so a tag/title from frontmatter can inject html
 - chore
   - kb-status-inbox is not shown in info slideout as a tag
-  - unify tag counts on one way: the dashboard tag widget computes live (GetAllTagsExcludingHiddenFiles), while /api/metadata/tags reads the tag-count cache (CacheKeyTagCounts, unscoped only). simplest: drop the cache read in the tags handler and compute live (cheap now - one pass over the cached file list). not done yet since other code still reads that cache, incl. the dashboardtest and metadatatest suites
 - test
   - remote git in mobile
 

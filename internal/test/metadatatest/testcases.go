@@ -374,7 +374,7 @@ func caseSanitizeKanbanTags() test.CaseResult {
 }
 
 // caseAggregatesRespectHiddenPaths checks that GetAllTags/GetAllCollections/GetAllFolders/
-// GetAllEditors/GetAllTitles and the RebuildAllCaches->GetAllTagsCountFromCache path all
+// GetAllEditors/GetAllTitles all
 // exclude a file once its folder is added to HidePaths - each of these calls
 // files.FilterByVisibility(allFiles, "") internally, and this seeds one fixture whose tag,
 // folder segment and title are unique enough to check for directly, plus before/after counts
@@ -405,7 +405,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	editorsBefore, err := files.GetAllEditors()
+	editorsBefore, err := files.GetAllEditors("")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -435,14 +435,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	editorsAfter, err := files.GetAllEditors()
-	if err != nil {
-		return errCase(name, err)
-	}
-	if err := files.RebuildAllCaches(); err != nil {
-		return errCase(name, err)
-	}
-	cachedTags, err := files.GetAllTagsCountFromCache()
+	editorsAfter, err := files.GetAllEditors("")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -452,18 +445,17 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 	titleHidden := !slices.Contains(titles, heading)
 	collectionCountDropped := collectionsAfter["test"] == collectionsBefore["test"]-1
 	editorCountDropped := editorsAfter[string(files.EditorTypeCodeMirror)] == editorsBefore[string(files.EditorTypeCodeMirror)]-1
-	cacheTagHidden := cachedTags[tag] == 0
 
-	success := tagHidden && folderHidden && titleHidden && collectionCountDropped && editorCountDropped && cacheTagHidden
+	success := tagHidden && folderHidden && titleHidden && collectionCountDropped && editorCountDropped
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "hidden folder's file excluded from tags/folders/titles/collections/editors and the rebuilt tag cache",
-		Actual: fmt.Sprintf("tagHidden=%v folderHidden=%v titleHidden=%v collectionCountDropped=%v editorCountDropped=%v cacheTagHidden=%v",
-			tagHidden, folderHidden, titleHidden, collectionCountDropped, editorCountDropped, cacheTagHidden),
+		Expected: "hidden folder's file excluded from tags/folders/titles/collections/editors",
+		Actual: fmt.Sprintf("tagHidden=%v folderHidden=%v titleHidden=%v collectionCountDropped=%v editorCountDropped=%v",
+			tagHidden, folderHidden, titleHidden, collectionCountDropped, editorCountDropped),
 		Success: success,
 	}
 	if !success {
-		cr.Error = "one of GetAllTags/GetAllCollections/GetAllFolders/GetAllEditors/GetAllTitles/RebuildAllCaches did not apply FilterByVisibility"
+		cr.Error = "one of GetAllTags/GetAllCollections/GetAllFolders/GetAllEditors/GetAllTitles did not apply FilterByVisibility"
 	}
 	return cr
 }

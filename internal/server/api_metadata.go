@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -785,44 +786,29 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// options feed the edit/filter inputs, so only unscoped hide entries apply there
 	format := r.URL.Query().Get("format")
+	scope := configmanager.HideScopeBrowse
 	if format == "options" {
-		cachedTags, err := files.GetAllTagsFromCache()
-		if err != nil || len(cachedTags) == 0 {
-			if err != nil {
-				logging.LogError(logging.KeyApp, "failed to get cached tags, fallback to live data: %v", err)
-			}
-			tags, err := files.GetAllTags("")
-			if err != nil {
-				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
-				return
-			}
-			var tagList []string
-			for tag := range tags {
-				tagList = append(tagList, tag)
-			}
-			slices.Sort(tagList)
-			cachedTags = tagList
-		}
-		var html strings.Builder
-		for _, tag := range cachedTags {
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, tag, tag)
-		}
-		writeResponse(w, r, cachedTags, html.String())
+		scope = ""
+	}
+
+	tags, err := files.GetAllTags(scope)
+	if err != nil {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
 		return
 	}
 
-	tags, err := files.GetAllTagsCountFromCache()
-	if err != nil || len(tags) == 0 {
-		if err != nil {
-			logging.LogError(logging.KeyApp, "failed to get cached tag counts, fallback to live data: %v", err)
+	if format == "options" {
+		names := slices.Sorted(maps.Keys(tags))
+		var html strings.Builder
+		for _, name := range names {
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, name, name)
 		}
-		tags, err = files.GetAllTags("")
-		if err != nil {
-			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"))
-			return
-		}
+		writeResponse(w, r, names, html.String())
+		return
 	}
+
 	html := render.RenderBrowseHTML(tags, "/browse/tag", r.URL.Query().Get("actions") == "true", "tag")
 	writeResponse(w, r, tags, html)
 }
@@ -842,44 +828,29 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// options feed the edit/filter inputs, so only unscoped hide entries apply there
 	format := r.URL.Query().Get("format")
+	scope := configmanager.HideScopeBrowse
 	if format == "options" {
-		cachedCollections, err := files.GetAllCollectionsFromCache()
-		if err != nil || len(cachedCollections) == 0 {
-			if err != nil {
-				logging.LogError(logging.KeyApp, "failed to get cached collections, fallback to live data: %v", err)
-			}
-			collections, err := files.GetAllCollections("")
-			if err != nil {
-				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
-				return
-			}
-			var collectionList []string
-			for collection := range collections {
-				collectionList = append(collectionList, collection)
-			}
-			slices.Sort(collectionList)
-			cachedCollections = collectionList
-		}
-		var html strings.Builder
-		for _, collection := range cachedCollections {
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, collection, collection)
-		}
-		writeResponse(w, r, cachedCollections, html.String())
+		scope = ""
+	}
+
+	collections, err := files.GetAllCollections(scope)
+	if err != nil {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
 		return
 	}
 
-	collections, err := files.GetAllCollectionsCountFromCache()
-	if err != nil || len(collections) == 0 {
-		if err != nil {
-			logging.LogError(logging.KeyApp, "failed to get cached collection counts, fallback to live data: %v", err)
+	if format == "options" {
+		names := slices.Sorted(maps.Keys(collections))
+		var html strings.Builder
+		for _, name := range names {
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, name, name)
 		}
-		collections, err = files.GetAllCollections("")
-		if err != nil {
-			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"))
-			return
-		}
+		writeResponse(w, r, names, html.String())
+		return
 	}
+
 	html := render.RenderBrowseHTML(collections, "/browse/collection", r.URL.Query().Get("actions") == "true", "collection")
 	writeResponse(w, r, collections, html)
 }
@@ -899,44 +870,29 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// options feed the edit/filter inputs, so only unscoped hide entries apply there
 	format := r.URL.Query().Get("format")
+	scope := configmanager.HideScopeBrowse
 	if format == "options" {
-		cachedFolders, err := files.GetAllFoldersFromCache()
-		if err != nil || len(cachedFolders) == 0 {
-			if err != nil {
-				logging.LogError(logging.KeyApp, "failed to get cached folders, fallback to live data: %v", err)
-			}
-			folders, err := files.GetAllFolders("")
-			if err != nil {
-				writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
-				return
-			}
-			var folderList []string
-			for folder := range folders {
-				folderList = append(folderList, folder)
-			}
-			slices.Sort(folderList)
-			cachedFolders = folderList
-		}
-		var html strings.Builder
-		for _, folder := range cachedFolders {
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, folder, folder)
-		}
-		writeResponse(w, r, cachedFolders, html.String())
+		scope = ""
+	}
+
+	folders, err := files.GetAllFolders(scope)
+	if err != nil {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
 		return
 	}
 
-	folders, err := files.GetAllFoldersCountFromCache()
-	if err != nil || len(folders) == 0 {
-		if err != nil {
-			logging.LogError(logging.KeyApp, "failed to get cached folder counts, fallback to live data: %v", err)
+	if format == "options" {
+		names := slices.Sorted(maps.Keys(folders))
+		var html strings.Builder
+		for _, name := range names {
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, name, name)
 		}
-		folders, err = files.GetAllFolders("")
-		if err != nil {
-			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"))
-			return
-		}
+		writeResponse(w, r, names, html.String())
+		return
 	}
+
 	html := render.RenderBrowseHTML(folders, "/browse/folder", r.URL.Query().Get("actions") == "true", "folder")
 	writeResponse(w, r, folders, html)
 }
@@ -1007,16 +963,10 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filetypes, err := files.GetAllEditorsCountFromCache()
-	if err != nil || len(filetypes) == 0 {
-		if err != nil {
-			logging.LogError(logging.KeyApp, "failed to get cached editor counts, fallback to live data: %v", err)
-		}
-		filetypes, err = files.GetAllEditors()
-		if err != nil {
-			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"))
-			return
-		}
+	filetypes, err := files.GetAllEditors(configmanager.HideScopeBrowse)
+	if err != nil {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"))
+		return
 	}
 	html := render.RenderBrowseHTML(filetypes, "/browse/editor", false, "")
 	writeResponse(w, r, filetypes, html)

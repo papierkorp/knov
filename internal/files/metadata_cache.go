@@ -20,19 +20,12 @@ import (
 type CacheKey string
 
 const (
-	CacheKeyTags                  CacheKey = "all_tags"
-	CacheKeyCollections           CacheKey = "all_collections"
-	CacheKeyFolders               CacheKey = "all_folders"
 	CacheKeyFolderPaths           CacheKey = "all_folder_paths"
 	CacheKeyFilePaths             CacheKey = "all_file_paths"
 	CacheKeyTitles                CacheKey = "all_titles"
 	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
 	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
 	CacheKeyFullFileList          CacheKey = "all_files_full"
-	CacheKeyTagCounts             CacheKey = "tag_counts"
-	CacheKeyCollectionCounts      CacheKey = "collection_counts"
-	CacheKeyFolderCounts          CacheKey = "folder_counts"
-	CacheKeyEditorCounts          CacheKey = "editor_counts"
 )
 
 // in-memory memo of the decoded file list. cacheStorage.Get + json.Unmarshal of
@@ -222,232 +215,48 @@ func getStringListFromCache(key CacheKey) ([]string, error) {
 	return result, nil
 }
 
-// saveCountMapToCache saves a name->count map to cache storage
-func saveCountMapToCache(key CacheKey, counts map[string]int) error {
-	logging.LogDebug(logging.KeyApp, "saving %s to cache", key)
-	jsonData, err := json.Marshal(counts)
+// countBy counts the names returned by keys across all files visible for scope (see FilterByVisibility).
+// Computed live from the memoized file list - one pass, so no separate count cache is kept.
+func countBy(scope string, keys func(*Metadata) []string) (map[string]int, error) {
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return cacheStorage.Set(string(key), jsonData)
-}
 
-// getCountMapFromCache retrieves a name->count map from cache storage.
-// Returns (nil, nil) on a cache miss so callers can fall back to live data.
-func getCountMapFromCache(key CacheKey) (map[string]int, error) {
-	data, err := cacheStorage.Get(string(key))
-	if err != nil {
-		if strings.Contains(err.Error(), "key not found") ||
-			strings.Contains(err.Error(), "no such file") {
-			return nil, nil
+	counts := make(map[string]int)
+	for _, file := range FilterByVisibility(allFiles, scope) {
+		if file.Metadata == nil {
+			continue
 		}
-		return nil, err
+		for _, k := range keys(file.Metadata) {
+			if k != "" {
+				counts[k]++
+			}
+		}
 	}
-	if data == nil {
-		return nil, nil
-	}
-
-	var result map[string]int
-	if err := json.Unmarshal(data, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return counts, nil
 }
 
-// sortedCountKeys returns the sorted names from a name->count map
-func sortedCountKeys(counts map[string]int) []string {
-	keys := make([]string, 0, len(counts))
-	for k := range counts {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
-	return keys
-}
-
-// GetAllTags returns all unique tags with their counts, leaving out files hidden for scope (see FilterByVisibility).
+// GetAllTags returns all unique tags with their counts, leaving out files hidden for scope.
 func GetAllTags(scope string) (TagCount, error) {
-	allFiles, err := GetAllFilesCached()
-	if err != nil {
-		return nil, err
-	}
-	allFiles = FilterByVisibility(allFiles, scope)
-
-	tagCount := make(TagCount)
-	for _, file := range allFiles {
-		if file.Metadata == nil {
-			continue
-		}
-		for _, tag := range file.Metadata.Tags {
-			if tag != "" && !configmanager.IsKanbanTag(tag) {
-				tagCount[tag]++
-			}
-		}
-	}
-
-	return tagCount, nil
+	return countBy(scope, func(m *Metadata) []string {
+		return slices.DeleteFunc(slices.Clone(m.Tags), configmanager.IsKanbanTag)
+	})
 }
 
-// GetAllCollections returns all unique collections with their counts, leaving out files hidden for scope (see FilterByVisibility).
+// GetAllCollections returns all unique collections with their counts, leaving out files hidden for scope.
 func GetAllCollections(scope string) (CollectionCount, error) {
-	allFiles, err := GetAllFilesCached()
-	if err != nil {
-		return nil, err
-	}
-	allFiles = FilterByVisibility(allFiles, scope)
-
-	collectionCount := make(CollectionCount)
-	for _, file := range allFiles {
-		if file.Metadata != nil && file.Metadata.Collection != "" {
-			collectionCount[file.Metadata.Collection]++
-		}
-	}
-
-	return collectionCount, nil
+	return countBy(scope, func(m *Metadata) []string { return []string{m.Collection} })
 }
 
-// GetAllFolders returns all unique folders with their counts, leaving out files hidden for scope (see FilterByVisibility).
+// GetAllFolders returns all unique folders with their counts, leaving out files hidden for scope.
 func GetAllFolders(scope string) (FolderCount, error) {
-	allFiles, err := GetAllFilesCached()
-	if err != nil {
-		return nil, err
-	}
-	allFiles = FilterByVisibility(allFiles, scope)
-
-	folderCount := make(FolderCount)
-	for _, file := range allFiles {
-		if file.Metadata == nil {
-			continue
-		}
-		for _, f := range file.Metadata.Folders {
-			if f != "" {
-				folderCount[f]++
-			}
-		}
-	}
-
-	return folderCount, nil
+	return countBy(scope, func(m *Metadata) []string { return m.Folders })
 }
 
-// GetAllEditors returns all unique filetypes with their counts
-func GetAllEditors() (EditorTypeCount, error) {
-	allFiles, err := GetAllFilesCached()
-	if err != nil {
-		return nil, err
-	}
-	allFiles = FilterByVisibility(allFiles, "")
-
-	editorTypeCount := make(EditorTypeCount)
-	for _, file := range allFiles {
-		if file.Metadata != nil && file.Metadata.Editor != "" {
-			editorTypeCount[string(file.Metadata.Editor)]++
-		}
-	}
-
-	return editorTypeCount, nil
-}
-
-// SaveAllTagsToCache saves all unique tags, and their counts, to cache storage
-func SaveAllTagsToCache() error {
-	allTags, err := GetAllTags("")
-	if err != nil {
-		return err
-	}
-
-	if err := saveCountMapToCache(CacheKeyTagCounts, allTags); err != nil {
-		return err
-	}
-	return saveStringListToCache(CacheKeyTags, sortedCountKeys(allTags))
-}
-
-// GetAllTagsFromCache retrieves cached tag names from cache storage
-func GetAllTagsFromCache() ([]string, error) {
-	return getStringListFromCache(CacheKeyTags)
-}
-
-// GetAllTagsCountFromCache retrieves cached tag counts from cache storage.
-// Returns (nil, nil) on a cache miss so callers can fall back to live data.
-func GetAllTagsCountFromCache() (TagCount, error) {
-	counts, err := getCountMapFromCache(CacheKeyTagCounts)
-	if err != nil || counts == nil {
-		return nil, err
-	}
-	return TagCount(counts), nil
-}
-
-// SaveAllCollectionsToCache saves all unique collections, and their counts, to cache storage
-func SaveAllCollectionsToCache() error {
-	allCollections, err := GetAllCollections("")
-	if err != nil {
-		return err
-	}
-
-	if err := saveCountMapToCache(CacheKeyCollectionCounts, allCollections); err != nil {
-		return err
-	}
-	return saveStringListToCache(CacheKeyCollections, sortedCountKeys(allCollections))
-}
-
-// GetAllCollectionsFromCache retrieves cached collection names from cache storage
-func GetAllCollectionsFromCache() ([]string, error) {
-	return getStringListFromCache(CacheKeyCollections)
-}
-
-// GetAllCollectionsCountFromCache retrieves cached collection counts from cache storage.
-// Returns (nil, nil) on a cache miss so callers can fall back to live data.
-func GetAllCollectionsCountFromCache() (CollectionCount, error) {
-	counts, err := getCountMapFromCache(CacheKeyCollectionCounts)
-	if err != nil || counts == nil {
-		return nil, err
-	}
-	return CollectionCount(counts), nil
-}
-
-// SaveAllFoldersToCache saves all unique folders, and their counts, to cache storage
-func SaveAllFoldersToCache() error {
-	allFolders, err := GetAllFolders("")
-	if err != nil {
-		return err
-	}
-
-	if err := saveCountMapToCache(CacheKeyFolderCounts, allFolders); err != nil {
-		return err
-	}
-	return saveStringListToCache(CacheKeyFolders, sortedCountKeys(allFolders))
-}
-
-// GetAllFoldersFromCache retrieves cached folder names from cache storage
-func GetAllFoldersFromCache() ([]string, error) {
-	return getStringListFromCache(CacheKeyFolders)
-}
-
-// GetAllFoldersCountFromCache retrieves cached folder counts from cache storage.
-// Returns (nil, nil) on a cache miss so callers can fall back to live data.
-func GetAllFoldersCountFromCache() (FolderCount, error) {
-	counts, err := getCountMapFromCache(CacheKeyFolderCounts)
-	if err != nil || counts == nil {
-		return nil, err
-	}
-	return FolderCount(counts), nil
-}
-
-// SaveAllEditorsToCache saves all editor type counts to cache storage
-func SaveAllEditorsToCache() error {
-	allEditors, err := GetAllEditors()
-	if err != nil {
-		return err
-	}
-
-	return saveCountMapToCache(CacheKeyEditorCounts, allEditors)
-}
-
-// GetAllEditorsCountFromCache retrieves cached editor type counts from cache storage.
-// Returns (nil, nil) on a cache miss so callers can fall back to live data.
-func GetAllEditorsCountFromCache() (EditorTypeCount, error) {
-	counts, err := getCountMapFromCache(CacheKeyEditorCounts)
-	if err != nil || counts == nil {
-		return nil, err
-	}
-	return EditorTypeCount(counts), nil
+// GetAllEditors returns all unique editor types with their counts, leaving out files hidden for scope.
+func GetAllEditors(scope string) (EditorTypeCount, error) {
+	return countBy(scope, func(m *Metadata) []string { return []string{string(m.Editor)} })
 }
 
 // SaveAllFilePathsToCache saves all file paths to cache storage
@@ -511,10 +320,6 @@ func GetAllTitles() ([]string, error) {
 
 // MetadataCollector collects metadata across multiple files efficiently
 type MetadataCollector struct {
-	Tags                  map[string]int
-	Collections           map[string]int
-	Folders               map[string]int
-	Editors               map[string]int
 	FolderPaths           map[string]bool
 	Titles                map[string]bool
 	FilePaths             []string
@@ -525,10 +330,6 @@ type MetadataCollector struct {
 // NewMetadataCollector creates a new metadata collector
 func NewMetadataCollector() *MetadataCollector {
 	return &MetadataCollector{
-		Tags:                  make(map[string]int),
-		Collections:           make(map[string]int),
-		Folders:               make(map[string]int),
-		Editors:               make(map[string]int),
 		FolderPaths:           make(map[string]bool),
 		Titles:                make(map[string]bool),
 		FilePaths:             []string{},
@@ -541,29 +342,6 @@ func NewMetadataCollector() *MetadataCollector {
 func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Metadata) {
 	// collect file path
 	mc.FilePaths = append(mc.FilePaths, filePath)
-
-	// collect tags
-	for _, tag := range metadata.Tags {
-		if tag != "" && !configmanager.IsKanbanTag(tag) {
-			mc.Tags[tag]++
-		}
-	}
-
-	// collect collections
-	if metadata.Collection != "" {
-		mc.Collections[metadata.Collection]++
-	}
-
-	for _, f := range metadata.Folders {
-		if f != "" {
-			mc.Folders[f]++
-		}
-	}
-
-	// collect editor type
-	if metadata.Editor != "" {
-		mc.Editors[string(metadata.Editor)]++
-	}
 
 	// collect folder paths from file path
 	for _, path := range ancestorFolderPaths(filePath) {
@@ -595,27 +373,6 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 
 // SaveAllToCache saves all collected metadata to system cache
 func (mc *MetadataCollector) SaveAllToCache() error {
-	if err := saveCountMapToCache(CacheKeyTagCounts, mc.Tags); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyTags, sortedCountKeys(mc.Tags)); err != nil {
-		return err
-	}
-	if err := saveCountMapToCache(CacheKeyCollectionCounts, mc.Collections); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyCollections, sortedCountKeys(mc.Collections)); err != nil {
-		return err
-	}
-	if err := saveCountMapToCache(CacheKeyFolderCounts, mc.Folders); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyFolders, sortedCountKeys(mc.Folders)); err != nil {
-		return err
-	}
-	if err := saveCountMapToCache(CacheKeyEditorCounts, mc.Editors); err != nil {
-		return err
-	}
 	if err := saveStringListToCache(CacheKeyFolderPaths, utils.SetToSortedSlice(mc.FolderPaths)); err != nil {
 		return err
 	}
