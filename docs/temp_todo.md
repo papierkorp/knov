@@ -16,8 +16,6 @@
 - chore
   - kb-status-inbox is not shown in info slideout as a tag
   - unify tag counts on one way: the dashboard tag widget computes live (GetAllTagsExcludingHiddenFiles), while /api/metadata/tags reads the tag-count cache (CacheKeyTagCounts, unscoped only). simplest: drop the cache read in the tags handler and compute live (cheap now - one pass over the cached file list). not done yet since other code still reads that cache, incl. the dashboardtest and metadatatest suites
-  - OnHideSettingsChange overwrites OnChange on 16 settings, and the list of 14 bools is maintained by hand. A new Hide* toggle would silently miss the cache refresh. None of them had an OnChange before, so nothing breaks today.
-  - Old path-traversal risk in browse (not introduced here). filepath.Join(dataPath, folderPath) in handleAPIGetFolder takes path straight from the query and doesn’t reject ... This diff didn’t cause it, but you touched this handler, so it’s worth knowing.
 - test
   - remote git in mobile
 

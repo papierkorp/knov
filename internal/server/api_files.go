@@ -83,6 +83,10 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 
 	dataPath := configmanager.GetAppConfig().DataPath
 	fullPath := filepath.Join(dataPath, folderPath)
+	if !pathutils.PathContains(dataPath, fullPath) {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid path"))
+		return
+	}
 
 	// read directory
 	entries, err := os.ReadDir(fullPath)
