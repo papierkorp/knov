@@ -662,6 +662,11 @@
       "translation": ""
     },
     {
+      "id": "Hide Files By Tag",
+      "message": "Hide Files By Tag",
+      "translation": ""
+    },
+    {
       "id": "Hide Filter Files",
       "message": "Hide Filter Files",
       "translation": ""
@@ -714,11 +719,6 @@
     {
       "id": "Hide Scripts",
       "message": "Hide Scripts",
-      "translation": ""
-    },
-    {
-      "id": "Hide Tags",
-      "message": "Hide Tags",
       "translation": ""
     },
     {
@@ -1089,6 +1089,11 @@
     {
       "id": "Repair Selected",
       "message": "Repair Selected",
+      "translation": ""
+    },
+    {
+      "id": "Repository",
+      "message": "Repository",
       "translation": ""
     },
     {
@@ -1887,6 +1892,11 @@
       "translation": ""
     },
     {
+      "id": "cards hidden by the hide files by tag setting",
+      "message": "cards hidden by the hide files by tag setting",
+      "translation": ""
+    },
+    {
       "id": "cascade status",
       "message": "cascade status",
       "translation": ""
@@ -1967,13 +1977,13 @@
       "translation": ""
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
-      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban and/or ::detail (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter, kanban and the file detail view. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter, ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
       "translation": ""
     },
     {
-      "id": "comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. \"kb-status*\" hides every kb-status-* tag, while \"kb-status\" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere",
-      "message": "comma-separated tag patterns to hide from kanban card chips, the file detail view and the dashboard tag cloud. case-insensitive, use * as a wildcard, e.g. \"kb-status*\" hides every kb-status-* tag, while \"kb-status\" without a * only hides that exact tag. by default a pattern hides everywhere; append ::kanban, ::detail and/or ::dashboard (combine with |, e.g. ::kanban|detail) to a pattern to hide it in only those scopes, leaving it visible elsewhere",
+      "id": "comma-separated tag patterns - files carrying a matching tag are hidden, like Hide Paths but by tag. case-insensitive, * is a wildcard, e.g. \"private*\" hides every file tagged private or private-anything. by default a pattern hides everywhere; append scopes to hide only there, same as Hide Paths",
+      "message": "comma-separated tag patterns - files carrying a matching tag are hidden, like Hide Paths but by tag. case-insensitive, * is a wildcard, e.g. \"private*\" hides every file tagged private or private-anything. by default a pattern hides everywhere; append scopes to hide only there, same as Hide Paths",
       "translation": ""
     },
     {
@@ -3524,6 +3534,11 @@
     {
       "id": "invalid line",
       "message": "invalid line",
+      "translation": ""
+    },
+    {
+      "id": "invalid path",
+      "message": "invalid path",
       "translation": ""
     },
     {

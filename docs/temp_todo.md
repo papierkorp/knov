@@ -10,9 +10,8 @@
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
-  - kb-status tags silently disappear from tag suggestions and filters. GetAllTags and CollectFromMetadata now always drop kanban tags via IsKanbanTag. Three places read that tag list through /api/metadata/tags?format=options:
-    - add a setting to hide the kb-status tags in kanban cards (bool)
 - fixes
+  - html-escape user-controlled values in render_kanban.go (tag names in chip title/body/data-tag, card titles, file paths in data attributes) - currently interpolated raw via fmt.Fprintf, so a tag/title from frontmatter can inject html
 - chore
   - kb-status-inbox is not shown in info slideout as a tag
   - unify tag counts on one way: the dashboard tag widget computes live (GetAllTagsExcludingHiddenFiles), while /api/metadata/tags reads the tag-count cache (CacheKeyTagCounts, unscoped only). simplest: drop the cache read in the tags handler and compute live (cheap now - one pass over the cached file list). not done yet since other code still reads that cache, incl. the dashboardtest and metadatatest suites
@@ -146,6 +145,5 @@ Areas to scrutinize (your opinion must cover these):
 - Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
 - Architecture: Are the changes in line with the rest of the codebase?
 - Ignore the i18n translations since they are unrelated.
-- Ignore the temp_todo.md file; this is just a summary for me.
 
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?

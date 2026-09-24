@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"html/template"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -53,11 +54,11 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		data-status="%s"
 		data-prefix="%s"
 		ondragstart="kanbanDragStart(event)">`,
-		cardClass, sanitizeID(card.FilePath), card.FilePath, card.Status, prefix)
+		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(card.FilePath), template.HTMLEscapeString(card.Status), prefix)
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
-	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, pathutils.ToFileURL(card.FilePath), displayTitle, displayTitle)
+	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, template.HTMLEscapeString(pathutils.ToFileURL(card.FilePath)), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 	if len(visibleTags) > 0 {
 		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
@@ -66,14 +67,14 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 			if color, ok := tagColors[t]; ok {
 				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, color, color)
 			}
-			fmt.Fprintf(&html, `<span class="kanban-tag"%s data-tag="%s" onclick="kanbanSetTagFilter(this.dataset.tag)" title="%s">%s</span>`, style, t, t, t)
+			fmt.Fprintf(&html, `<span class="kanban-tag"%s data-tag="%s" onclick="kanbanSetTagFilter(this.dataset.tag)" title="%s">%s</span>`, style, template.HTMLEscapeString(t), template.HTMLEscapeString(t), template.HTMLEscapeString(t))
 		}
 		html.WriteString(`</div>`)
 	}
 	html.WriteString(`</div>`)
 
 	if card.Excerpt != "" {
-		fmt.Fprintf(&html, `<div class="kanban-card-excerpt">%s</div>`, card.Excerpt)
+		fmt.Fprintf(&html, `<div class="kanban-card-excerpt">%s</div>`, template.HTMLEscapeString(card.Excerpt))
 	}
 
 	// dates
@@ -82,7 +83,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
-			formatCardDate(card.CreatedAt))
+			template.HTMLEscapeString(formatCardDate(card.CreatedAt)))
 	}
 
 	fmt.Fprintf(&html, ` | `)
@@ -91,7 +92,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
-			formatCardDate(card.LastEdited))
+			template.HTMLEscapeString(formatCardDate(card.LastEdited)))
 	}
 	html.WriteString(`</div>`)
 
@@ -108,10 +109,10 @@ func RenderKanbanColumn(status, label string, cards []kanban.Card, board configm
 		data-status="%s"
 		ondragover="kanbanDragOver(event)"
 		ondragleave="kanbanDragLeave(event)"
-		ondrop="kanbanDrop(event)">`, status, status)
+		ondrop="kanbanDrop(event)">`, template.HTMLEscapeString(status), template.HTMLEscapeString(status))
 
 	fmt.Fprintf(&html, `<div class="kanban-column-header"><span class="kanban-column-label">%s</span><span class="kanban-column-count">%d</span></div>`,
-		label, len(cards))
+		template.HTMLEscapeString(label), len(cards))
 
 	if hiddenByTag {
 		fmt.Fprintf(&html, `<div class="kanban-hidden-warning"><i class="fa fa-eye-slash"></i> %s</div>`,
@@ -170,7 +171,7 @@ func RenderKanbanArchive(cards []kanban.Card, board configmanager.KanbanBoard) s
 	fmt.Fprintf(&html, `<select id="kanban-archive-tag-filter" class="kanban-archive-tag-filter" onchange="applyKanbanArchiveFilters()"><option value="">%s</option>`,
 		translation.SprintfForRequest(lang, "all tags"))
 	for _, t := range tags {
-		fmt.Fprintf(&html, `<option value="%s">%s</option>`, t, t)
+		fmt.Fprintf(&html, `<option value="%s">%s</option>`, template.HTMLEscapeString(t), template.HTMLEscapeString(t))
 	}
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
@@ -232,9 +233,9 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 	searchBlob := strings.ToLower(displayTitle + " " + card.FilePath + " " + strings.Join(visibleTags, " "))
 
 	fmt.Fprintf(&html, `<tr data-search="%s" data-tags="|%s|" data-title="%s" data-createdat="%s" data-lastedited="%s">`,
-		searchBlob, strings.Join(visibleTags, "|"), strings.ToLower(displayTitle), card.CreatedAt, card.LastEdited)
+		template.HTMLEscapeString(searchBlob), template.HTMLEscapeString(strings.Join(visibleTags, "|")), template.HTMLEscapeString(strings.ToLower(displayTitle)), template.HTMLEscapeString(card.CreatedAt), template.HTMLEscapeString(card.LastEdited))
 
-	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, pathutils.ToFileURL(card.FilePath), displayTitle, displayTitle)
+	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, template.HTMLEscapeString(pathutils.ToFileURL(card.FilePath)), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 
 	html.WriteString(`<td>`)
 	if len(visibleTags) > 0 {
@@ -245,14 +246,14 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 			if color, ok := tagColors[t]; ok {
 				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, color, color)
 			}
-			fmt.Fprintf(&html, `<span class="kanban-tag"%s>%s</span>`, style, t)
+			fmt.Fprintf(&html, `<span class="kanban-tag"%s>%s</span>`, style, template.HTMLEscapeString(t))
 		}
 		html.WriteString(`</div>`)
 	}
 	html.WriteString(`</td>`)
 
-	fmt.Fprintf(&html, `<td>%s</td>`, formatCardDate(card.CreatedAt))
-	fmt.Fprintf(&html, `<td>%s</td>`, formatCardDate(card.LastEdited))
+	fmt.Fprintf(&html, `<td>%s</td>`, template.HTMLEscapeString(formatCardDate(card.CreatedAt)))
+	fmt.Fprintf(&html, `<td>%s</td>`, template.HTMLEscapeString(formatCardDate(card.LastEdited)))
 
 	html.WriteString(`</tr>`)
 	return html.String()
@@ -303,7 +304,7 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 		if p == fileFilter {
 			selected = ` selected`
 		}
-		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, p, p, selected, filepath.Base(p))
+		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, template.HTMLEscapeString(p), template.HTMLEscapeString(p), selected, template.HTMLEscapeString(filepath.Base(p)))
 	}
 	html.WriteString(`</select>`)
 
@@ -311,7 +312,7 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 	fmt.Fprintf(&html, `<select id="kanban-events-from-filter" class="kanban-events-status-filter" title="%s" onchange="applyKanbanEventsFilters()"><option value="">%s: %s</option>`,
 		fromLabel, fromLabel, all)
 	for _, s := range fromStatuses {
-		fmt.Fprintf(&html, `<option value="%s">%s</option>`, s, s)
+		fmt.Fprintf(&html, `<option value="%s">%s</option>`, template.HTMLEscapeString(s), template.HTMLEscapeString(s))
 	}
 	html.WriteString(`</select>`)
 
@@ -319,14 +320,14 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 	fmt.Fprintf(&html, `<select id="kanban-events-to-filter" class="kanban-events-status-filter" title="%s" onchange="applyKanbanEventsFilters()"><option value="">%s: %s</option>`,
 		toLabel, toLabel, all)
 	for _, s := range toStatuses {
-		fmt.Fprintf(&html, `<option value="%s">%s</option>`, s, s)
+		fmt.Fprintf(&html, `<option value="%s">%s</option>`, template.HTMLEscapeString(s), template.HTMLEscapeString(s))
 	}
 	html.WriteString(`</select>`)
 
 	fmt.Fprintf(&html, `<input type="date" id="kanban-events-date-from" class="kanban-events-date" title="%s" value="%s" onchange="reloadKanbanEvents('%s')">`,
-		translation.SprintfForRequest(lang, "from date"), dateFrom, board)
+		translation.SprintfForRequest(lang, "from date"), template.HTMLEscapeString(dateFrom), board)
 	fmt.Fprintf(&html, `<input type="date" id="kanban-events-date-to" class="kanban-events-date" title="%s" value="%s" onchange="reloadKanbanEvents('%s')">`,
-		translation.SprintfForRequest(lang, "to date"), dateTo, board)
+		translation.SprintfForRequest(lang, "to date"), template.HTMLEscapeString(dateTo), board)
 	html.WriteString(`</div>`)
 
 	if len(events) == 0 {
@@ -351,11 +352,11 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 		}
 		searchBlob := strings.ToLower(e.FilePath + " " + e.FromStatus + " " + e.ToStatus)
 		fmt.Fprintf(&html, `<tr data-search="%s" data-time="%s" data-file="%s" data-from="%s" data-to="%s">`,
-			searchBlob, e.Timestamp.UTC().Format(time.RFC3339), strings.ToLower(e.FilePath), e.FromStatus, e.ToStatus)
+			template.HTMLEscapeString(searchBlob), e.Timestamp.UTC().Format(time.RFC3339), template.HTMLEscapeString(strings.ToLower(e.FilePath)), template.HTMLEscapeString(e.FromStatus), template.HTMLEscapeString(e.ToStatus))
 		fmt.Fprintf(&html, `<td>%s</td>`, configmanager.FormatDateTime(e.Timestamp))
-		fmt.Fprintf(&html, `<td title="%s">%s</td>`, e.FilePath, filepath.Base(e.FilePath))
-		fmt.Fprintf(&html, `<td>%s</td>`, from)
-		fmt.Fprintf(&html, `<td>%s</td>`, e.ToStatus)
+		fmt.Fprintf(&html, `<td title="%s">%s</td>`, template.HTMLEscapeString(e.FilePath), template.HTMLEscapeString(filepath.Base(e.FilePath)))
+		fmt.Fprintf(&html, `<td>%s</td>`, template.HTMLEscapeString(from))
+		fmt.Fprintf(&html, `<td>%s</td>`, template.HTMLEscapeString(e.ToStatus))
 		html.WriteString(`</tr>`)
 	}
 	html.WriteString(`</tbody>`)
