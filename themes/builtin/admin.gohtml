@@ -123,6 +123,22 @@
                     </div>
                 </div>
             </section>
+            <section class="settings-section">
+                <h2>{{T "Test Data"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
+                    <div class="admin-action-list">
+                        <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
+                                hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
+                            {{T "Setup Test Data"}}
+                        </button>
+                        <button class="btn-danger" hx-post="/api/testdata/clean" hx-swap="none"
+                                hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
+                            {{T "Clean Test Data"}}
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <div class="settings-col">
@@ -232,23 +248,6 @@
                     document.querySelectorAll('#component-broken-links input[name="repair"]').forEach(cb => cb.checked = checkbox.checked);
                 }
                 </script>
-            </div>
-        </section>
-
-        <section class="settings-section settings-section-wide">
-            <h2>{{T "Test Data"}}</h2>
-            <div class="setting-item">
-                <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
-                <div class="admin-action-list">
-                    <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
-                            hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
-                        {{T "Setup Test Data"}}
-                    </button>
-                    <button class="btn-danger" hx-post="/api/testdata/clean" hx-swap="none"
-                            hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
-                        {{T "Clean Test Data"}}
-                    </button>
-                </div>
             </div>
         </section>
 
