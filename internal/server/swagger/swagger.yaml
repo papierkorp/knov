@@ -1263,7 +1263,7 @@ paths:
       - application/x-www-form-urlencoded
       description: Adds a new empty entry row to the index or book editor
       parameters:
-      - description: entry type (separator, file, title)
+      - description: entry type (separator, file, title, filter)
         in: formData
         name: type
         required: true

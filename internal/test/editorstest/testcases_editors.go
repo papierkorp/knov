@@ -490,6 +490,76 @@ func caseBookPathContainment() test.CaseResult {
 	return cr
 }
 
+// caseBookFilterEntry verifies a `.book` "<!-- filter: id -->" entry composes to the
+// matching files of the real saved filter (filter.SavedFilterPaths via book.FilterResolver):
+// tagged text files are inlined, a tagged binary and the book itself are skipped silently,
+// and a missing filter shows the "could not include" marker.
+func caseBookFilterEntry() test.CaseResult {
+	name := "book-filter-entry"
+	tag := "edtest-bookfilter"
+
+	filterID := testPath("bookfilter")
+	if err := filter.SaveFilterConfig(&filter.Config{
+		Criteria: []filter.Criteria{{Metadata: "tags", Operator: "contains", Value: tag, Action: "include"}},
+		Logic:    "and",
+	}, filterID); err != nil {
+		return errCase(name, err)
+	}
+	defer filter.DeleteFilterConfig(filterID)
+
+	bookPath := testPath("bookfilter.book")
+	seeds := map[string]string{
+		testPath("bookfilter-a.md"):   "# A\n\nfilter body a\n",
+		testPath("bookfilter-b.txt"):  "filter body b\n",
+		testPath("bookfilter-c.png"):  "PNG-GARBAGE",
+		testPath("bookfilter-off.md"): "untagged body\n",
+		bookPath: book.ToMarkdown([]book.Entry{
+			{Type: book.EntryFilter, Value: filterID},
+			{Type: book.EntryFilter, Value: testPath("bookfilter-missing")},
+		}),
+	}
+	for p, content := range seeds {
+		if err := writeFile(p, content); err != nil {
+			return errCase(name, err)
+		}
+		meta := &files.Metadata{Path: pathutils.ToWithPrefix(p), Tags: []string{tag}}
+		if strings.HasSuffix(p, "-off.md") {
+			meta.Tags = nil
+		}
+		if p == bookPath {
+			meta.Editor = files.EditorTypeBook
+		}
+		if err := test.SeedMetadata(meta); err != nil {
+			return errCase(name, err)
+		}
+	}
+
+	composed, err := book.Compose(bookPath)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := strings.Contains(composed, "filter body a") &&
+		strings.Contains(composed, "filter body b") &&
+		!strings.Contains(composed, "untagged body") &&
+		!strings.Contains(composed, "PNG-GARBAGE") &&
+		!strings.Contains(composed, "bookfilter-c.png") &&
+		!strings.Contains(composed, "<!-- filter:") &&
+		strings.Count(composed, "could not include") == 1 &&
+		strings.Contains(composed, "bookfilter-missing")
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "tagged text files inlined, binary/self/untagged skipped, one marker for the missing filter",
+		Actual:   fmt.Sprintf("composed=%q", composed),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "book filter entry did not compose as expected"
+	}
+	return cr
+}
+
 // caseTableCreateEditSave mirrors handleAPITableEditorSave: build a markdown table, then
 // call the real MarkdownContentHandler.SaveTable to edit it in place (also exercises the
 // "table-save" operation from the build-order todo, same underlying call).

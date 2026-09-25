@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/book"
 	"knov/internal/configeditor"
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -436,6 +437,33 @@ func RegenerateAllIndexes() {
 		}
 	}
 	logging.LogDebug(logging.KeyApp, "filter indexes regenerated (%d filters)", len(ids))
+}
+
+func init() {
+	book.FilterResolver = SavedFilterPaths
+}
+
+// SavedFilterPaths runs a saved filter and returns the docs-relative paths of its matches.
+// books are left out: a book inlined into another book would show its raw entry list.
+func SavedFilterPaths(filterID string) ([]string, error) {
+	config, err := GetFilterConfig(filterID)
+	if err != nil {
+		return nil, err
+	}
+	if config == nil {
+		return nil, fmt.Errorf("filter not found: %s", filterID)
+	}
+	result, err := FilterFilesWithConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	var paths []string
+	for _, file := range result.Files {
+		if !files.IsBook(file.Path) {
+			paths = append(paths, pathutils.ToRelative(file.Path))
+		}
+	}
+	return paths, nil
 }
 
 func GetAllFilters() ([]string, error) {

@@ -4,12 +4,14 @@ package render
 import (
 	"fmt"
 	htmlpkg "html"
+	"slices"
 	"strings"
 	"sync/atomic"
 
 	"knov/internal/book"
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
+	"knov/internal/filter"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
@@ -104,6 +106,9 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/entry/add-entry" hx-vals='%s' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, addVals("separator"), t("add separator"))
 	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/entry/add-entry" hx-vals='%s' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, addVals("file"), t("add file"))
 	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/entry/add-entry" hx-vals='%s' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, addVals("title"), t("add title"))
+	if bookMode {
+		fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/entry/add-entry" hx-vals='%s' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, addVals("filter"), t("add filter"))
+	}
 	html.WriteString(`</div>`)
 
 	// save + cancel buttons
@@ -234,6 +239,26 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 			}
 			fmt.Fprintf(&html, `<label><input type="checkbox" name="entries[%d][subheaders]" value="true"%s/> %s</label>`, index, checked, t("include subheaders"))
 		}
+		html.WriteString(`</div>`)
+
+	case book.EntryFilter:
+		// a saved filter, resolved to its matching files when the book is composed
+		html.WriteString(`<div class="entry-filter">`)
+		fmt.Fprintf(&html, `<label>%s:</label>`, t("filter"))
+		fmt.Fprintf(&html, `<select name="entries[%d][value]" class="form-input">`, index)
+		ids, _ := filter.GetAllFilters()
+		// a missing (renamed/deleted) filter stays selected so a save doesn't silently swap it
+		if entry.Value != "" && !slices.Contains(ids, entry.Value) {
+			fmt.Fprintf(&html, `<option value="%s" selected>%s (%s)</option>`, htmlpkg.EscapeString(entry.Value), htmlpkg.EscapeString(entry.Value), t("filter not found"))
+		}
+		for _, id := range ids {
+			selected := ""
+			if id == entry.Value {
+				selected = " selected"
+			}
+			fmt.Fprintf(&html, `<option value="%s"%s>%s</option>`, htmlpkg.EscapeString(id), selected, htmlpkg.EscapeString(id))
+		}
+		html.WriteString(`</select>`)
 		html.WriteString(`</div>`)
 
 	case book.EntryUnknown:

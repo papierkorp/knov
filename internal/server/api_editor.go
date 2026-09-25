@@ -242,7 +242,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 // @Description Adds a new empty entry row to the index or book editor
 // @Tags editor
 // @Accept x-www-form-urlencoded
-// @Param type formData string true "entry type (separator, file, title)"
+// @Param type formData string true "entry type (separator, file, title, filter)"
 // @Param mode formData string false "index (default) or book"
 // @Produce json,html
 // @Router /api/editor/entry/add-entry [post]

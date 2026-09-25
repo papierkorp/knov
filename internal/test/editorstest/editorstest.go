@@ -30,6 +30,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseBookUnknownEntryRoundTrip,
 		caseBookTitleLevelRoundTrip,
 		caseBookPathContainment,
+		caseBookFilterEntry,
 		caseTableCreateEditSave,
 		caseTableAlignRoundTrip,
 		caseSectionSave,

@@ -1169,7 +1169,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "entry type (separator, file, title)",
+                        "description": "entry type (separator, file, title, filter)",
                         "name": "type",
                         "in": "formData",
                         "required": true

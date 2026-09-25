@@ -32,7 +32,14 @@ const (
 	// kept verbatim in Value - interior blank lines and indentation intact. The round-trip
 	// (Parse -> edit -> ToMarkdown) never drops it; Compose emits it verbatim into the document.
 	EntryUnknown = "unknown"
+	// EntryFilter references a saved filter by id (Value); its matching files are resolved
+	// at compose time, so the book follows the filter instead of a frozen file list
+	EntryFilter = "filter"
 )
+
+// FilterResolver returns the docs-relative paths matching a saved filter id. Set by the
+// filter package; book can't import it (filter -> files -> book).
+var FilterResolver func(filterID string) ([]string, error)
 
 // Entry is one line of a `.book`/`.index` file, in composition order: a file/section
 // reference (EntryFile, Value "path" or "path#anchor"), a "# text" heading (EntryTitle,
@@ -57,7 +64,8 @@ type Entry struct {
 // The [[ ]] body is taken verbatim (alias syntax not split out here). Parse assumes the
 // shape ToMarkdown writes, not arbitrary markdown; lines inside ``` / ~~~ fences are kept
 // verbatim inside the surrounding unknown block, never parsed as entries (an unterminated
-// fence runs to end of file - see markdown.FenceMask).
+// fence runs to end of file - see markdown.FenceMask). A "<!-- filter: id -->" line is a
+// filter entry.
 func Parse(content string) []Entry {
 	var entries []Entry
 	content = strings.ReplaceAll(content, "\r\n", "\n") // a Windows hand edit / textarea POST must not leave stray \r in a verbatim block
@@ -102,6 +110,13 @@ func Parse(content string) []Entry {
 					flush()
 					entries = append(entries, Entry{Type: EntryTitle, Value: text, Level: level})
 					continue
+				}
+				if id, ok := strings.CutPrefix(trimmed, "<!-- filter:"); ok && strings.HasSuffix(id, "-->") {
+					if id = strings.TrimSpace(strings.TrimSuffix(id, "-->")); id != "" {
+						flush()
+						entries = append(entries, Entry{Type: EntryFilter, Value: id})
+						continue
+					}
 				}
 				// a "[[...]]" wikilink (with or without a bullet) may be a file/section reference
 				if ref, sub, ok := parseFileRef(strings.TrimLeft(trimmed, "-*+ \t")); ok {
@@ -156,6 +171,11 @@ func ToMarkdown(entries []Entry) string {
 				} else {
 					fmt.Fprintf(&sb, "- [[%s]]\n", e.Value)
 				}
+			}
+		case EntryFilter:
+			// a newline or "-->" (only via a crafted POST) would break the comment line
+			if e.Value != "" && !strings.ContainsAny(e.Value, "\r\n") && !strings.Contains(e.Value, "-->") {
+				fmt.Fprintf(&sb, "<!-- filter: %s -->\n", e.Value)
 			}
 		case EntryUnknown:
 			if e.Value != "" {
@@ -219,7 +239,7 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 
 	var parts []string
 
-	for _, e := range entries {
+	for _, e := range expandFilters(bookPath, entries) {
 		switch e.Type {
 		case EntryUnknown:
 			// one verbatim block (hand-written prose/markdown: a table, a list, a note)
@@ -281,6 +301,48 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 
 	// blank line between pieces so a "---" stays a rule, not a setext underline
 	return strings.Join(parts, "\n\n")
+}
+
+// expandFilters replaces each filter entry with the verbatim content of each matching file
+// (read here, not via an EntryFile, so a "#" in a filename isn't taken for an anchor); an
+// unresolvable filter or unreadable match becomes the same visible "could not include"
+// marker as a bad file. binary matches are skipped, not warned about; a filter with nothing
+// to inline gets a visible note so the book doesn't look broken.
+func expandFilters(bookPath string, entries []Entry) []Entry {
+	var out []Entry
+	for _, e := range entries {
+		if e.Type != EntryFilter {
+			out = append(out, e)
+			continue
+		}
+		var paths []string
+		err := fmt.Errorf("no filter resolver registered")
+		if FilterResolver != nil {
+			paths, err = FilterResolver(e.Value)
+		}
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "book: skipping filter %q in %s: %v", e.Value, bookPath, err)
+			out = append(out, Entry{Type: EntryUnknown, Value: "> ⚠️ could not include filter `" + strings.ReplaceAll(e.Value, "`", "'") + "`"})
+			continue
+		}
+		before := len(out)
+		for _, p := range paths {
+			if !isInlineableWholeFile(p) {
+				continue
+			}
+			raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(p))
+			if err != nil {
+				logging.LogWarning(logging.KeyApp, "book: skipping filter match %q in %s: %v", p, bookPath, err)
+				out = append(out, Entry{Type: EntryUnknown, Value: "> ⚠️ could not include `" + strings.ReplaceAll(p, "`", "'") + "`"})
+				continue
+			}
+			out = append(out, Entry{Type: EntryUnknown, Value: strings.TrimSpace(string(raw))})
+		}
+		if len(out) == before {
+			out = append(out, Entry{Type: EntryUnknown, Value: "> no files match filter `" + strings.ReplaceAll(e.Value, "`", "'") + "`"})
+		}
+	}
+	return out
 }
 
 // isInlineableWholeFile reports whether a whole-file entry is safe to inline verbatim: a
