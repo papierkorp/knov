@@ -11,8 +11,16 @@ func newTestKind() Kind { return MustNew("filter/", files.EditorTypeFilter, "ind
 
 func TestMustNewNormalizesPrefix(t *testing.T) {
 	for _, in := range []string{"filter", "filter/"} {
-		if got := MustNew(in, files.EditorTypeFilter, "index").key("my/id"); got != "filter/my/id" {
+		if got, _ := MustNew(in, files.EditorTypeFilter, "index").key("my/id"); got != "filter/my/id" {
 			t.Errorf("MustNew(%q).key = %q, want filter/my/id", in, got)
+		}
+	}
+}
+
+func TestKeyRejectsTraversal(t *testing.T) {
+	for _, id := range []string{"", ".", "..", "../x", "../../x", "a/../../x"} {
+		if _, err := newTestKind().key(id); err == nil {
+			t.Errorf("key(%q) accepted, want error", id)
 		}
 	}
 }

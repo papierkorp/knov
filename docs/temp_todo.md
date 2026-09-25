@@ -11,9 +11,11 @@
   - toc in codemirror edit all
   - detect all images not in the media folder but in the data folder (e.g. someone copied it) and move it to the media folder and update all links to it
   - book/index editor - drag and drop
+  - in connections - allow me to add manual links besides all the auto generated ones
 - fixes
+  - if a `.` is in the name its not detected as markdown for new files
 - chore
-  - Path traversal (low severity). A filter id from a hand-edited .book now reaches configStorage.Get unchecked. There, filepath.Join(basePath, "filter/"+id+".json") means <!-- filter: ../../x --> can read any .json file outside the config folder and parse it as a filter config. The file’s contents aren’t shown back, only which files match, so the impact is small. But .book content is user-authored or synced data, and this change gives it a new route into config lookups. Check whether other filter-id entry points already guard against this. If not, this is an existing gap that the change widens. A simple fix is to only accept ids that appear in GetAllFilters(), or to guard in configeditor against keys that escape the prefix.
+  - configeditor id validation follow-ups: also validate id in WritePaired/PairedPath (currently only safe by call order), derive storage key from the cleaned id (`a/../b` and `a/` alias other keys), validate before trackerStorage.DeleteTracker in tracker.DeleteConfig, check err in TestMustNewNormalizesPrefix and add a test that Delete rejects traversal ids before touching the paired file
 - test
   - remote git in mobile
 

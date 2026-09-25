@@ -7,6 +7,7 @@ package configeditor
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configStorage"
@@ -39,7 +40,15 @@ func MustNew(prefix string, editor files.EditorType, extKey string) Kind {
 	}
 }
 
-func (k Kind) key(id string) string { return k.prefix + id }
+// key returns the configStorage key for id, rejecting ids (e.g. "../../x" from a
+// hand-edited .book or a crafted request) that would resolve outside the prefix.
+func (k Kind) key(id string) (string, error) {
+	root := filepath.Clean(k.label())
+	if p := filepath.Join(root, id); p == root || !pathutils.PathContains(root, p) {
+		return "", fmt.Errorf("invalid %s id: %q", k.label(), id)
+	}
+	return k.prefix + id, nil
+}
 
 // label is the prefix without its trailing slash, for log/error messages.
 func (k Kind) label() string { return strings.TrimSuffix(k.prefix, "/") }
@@ -58,12 +67,20 @@ func (k Kind) IDFromPath(relPath string) string {
 
 // Get loads the raw stored config bytes for id, or nil when absent.
 func (k Kind) Get(id string) ([]byte, error) {
-	return configStorage.Get(k.key(id))
+	key, err := k.key(id)
+	if err != nil {
+		return nil, err
+	}
+	return configStorage.Get(key)
 }
 
 // Set stores the raw config bytes for id.
 func (k Kind) Set(id string, data []byte) error {
-	return configStorage.Set(k.key(id), data)
+	key, err := k.key(id)
+	if err != nil {
+		return err
+	}
+	return configStorage.Set(key, data)
 }
 
 // List returns all stored ids for this kind.
@@ -103,6 +120,10 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 
 // Delete removes the stored config for id and its paired physical file + metadata.
 func (k Kind) Delete(id string) error {
+	key, err := k.key(id)
+	if err != nil {
+		return err
+	}
 	pairedPath := k.PairedPath(id)
 	fullPath := pathutils.ToDocsPath(pairedPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
@@ -111,5 +132,5 @@ func (k Kind) Delete(id string) error {
 	if err := files.MetaDataDelete(pathutils.ToWithPrefix(pairedPath)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file metadata %s: %v", k.label(), pairedPath, err)
 	}
-	return configStorage.Delete(k.key(id))
+	return configStorage.Delete(key)
 }
