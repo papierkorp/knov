@@ -13,7 +13,6 @@
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore
-  - configeditor id validation follow-ups: also validate id in WritePaired/PairedPath (currently only safe by call order), derive storage key from the cleaned id (`a/../b` and `a/` alias other keys), validate before trackerStorage.DeleteTracker in tracker.DeleteConfig, check err in TestMustNewNormalizesPrefix and add a test that Delete rejects traversal ids before touching the paired file
   - move the testdata panel in /admin below the epxort/import panel
   - change the cleanup orphaned files to look the same as scan for broken links and misplaced media but keep the storage statistics without the cleanup button
   - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.

@@ -40,12 +40,27 @@ func MustNew(prefix string, editor files.EditorType, extKey string) Kind {
 	}
 }
 
-// key returns the configStorage key for id, rejecting ids (e.g. "../../x" from a
-// hand-edited .book or a crafted request) that would resolve outside the prefix.
-func (k Kind) key(id string) (string, error) {
+// CleanID returns the normalized id (so "a/../b" and "a/" don't alias other keys),
+// rejecting ids (e.g. "../../x" from a hand-edited .book or a crafted request)
+// that would resolve outside the prefix.
+func (k Kind) CleanID(id string) (string, error) {
 	root := filepath.Clean(k.label())
-	if p := filepath.Join(root, id); p == root || !pathutils.PathContains(root, p) {
+	p := filepath.Join(root, id)
+	if p == root || !pathutils.PathContains(root, p) {
 		return "", fmt.Errorf("invalid %s id: %q", k.label(), id)
+	}
+	rel, err := filepath.Rel(root, p)
+	if err != nil {
+		return "", fmt.Errorf("invalid %s id: %q", k.label(), id)
+	}
+	return filepath.ToSlash(rel), nil
+}
+
+// key returns the configStorage key for id, see CleanID.
+func (k Kind) key(id string) (string, error) {
+	id, err := k.CleanID(id)
+	if err != nil {
+		return "", err
 	}
 	return k.prefix + id, nil
 }
@@ -100,6 +115,10 @@ func (k Kind) List() ([]string, error) {
 // metadata so the matching editor opens it. The file is always overwritten so it
 // stays in sync with the stored config.
 func (k Kind) WritePaired(id string, markdown []byte) error {
+	id, err := k.CleanID(id)
+	if err != nil {
+		return err
+	}
 	pairedPath := k.PairedPath(id)
 	fullPath := pathutils.ToDocsPath(pairedPath)
 
@@ -120,10 +139,11 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 
 // Delete removes the stored config for id and its paired physical file + metadata.
 func (k Kind) Delete(id string) error {
-	key, err := k.key(id)
+	id, err := k.CleanID(id)
 	if err != nil {
 		return err
 	}
+	key := k.prefix + id
 	pairedPath := k.PairedPath(id)
 	fullPath := pathutils.ToDocsPath(pairedPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {

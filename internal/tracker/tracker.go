@@ -156,6 +156,10 @@ func saveLocked(config *Config, id string) error {
 func DeleteConfig(id string) error {
 	mu.Lock()
 	defer mu.Unlock()
+	id, err := store.CleanID(id)
+	if err != nil {
+		return err
+	}
 	if err := trackerStorage.DeleteTracker(id); err != nil {
 		return fmt.Errorf("failed to delete tracker days: %w", err)
 	}

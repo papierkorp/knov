@@ -11,8 +11,9 @@ func newTestKind() Kind { return MustNew("filter/", files.EditorTypeFilter, "ind
 
 func TestMustNewNormalizesPrefix(t *testing.T) {
 	for _, in := range []string{"filter", "filter/"} {
-		if got, _ := MustNew(in, files.EditorTypeFilter, "index").key("my/id"); got != "filter/my/id" {
-			t.Errorf("MustNew(%q).key = %q, want filter/my/id", in, got)
+		got, err := MustNew(in, files.EditorTypeFilter, "index").key("my/id")
+		if err != nil || got != "filter/my/id" {
+			t.Errorf("MustNew(%q).key = %q, %v, want filter/my/id", in, got, err)
 		}
 	}
 }
@@ -21,6 +22,24 @@ func TestKeyRejectsTraversal(t *testing.T) {
 	for _, id := range []string{"", ".", "..", "../x", "../../x", "a/../../x"} {
 		if _, err := newTestKind().key(id); err == nil {
 			t.Errorf("key(%q) accepted, want error", id)
+		}
+	}
+}
+
+func TestKeyCleansID(t *testing.T) {
+	for id, want := range map[string]string{"a/../b": "filter/b", "a/": "filter/a", "./a//b": "filter/a/b"} {
+		if got, err := newTestKind().key(id); err != nil || got != want {
+			t.Errorf("key(%q) = %q, %v, want %q", id, got, err, want)
+		}
+	}
+}
+
+// storage backends are not initialized here, so reaching the paired file
+// delete would panic - an error return proves validation runs first.
+func TestDeleteRejectsTraversalBeforeTouchingFiles(t *testing.T) {
+	for _, id := range []string{"..", "../x", "a/../../x"} {
+		if err := newTestKind().Delete(id); err == nil {
+			t.Errorf("Delete(%q) accepted, want error", id)
 		}
 	}
 }
