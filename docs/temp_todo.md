@@ -9,13 +9,17 @@
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
-  - detect all images not in the media folder but in the data folder (e.g. someone copied it) and move it to the media folder and update all links to it
   - book/index editor - drag and drop
-  - in connections - allow me to add manual links besides all the auto generated ones
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore
   - configeditor id validation follow-ups: also validate id in WritePaired/PairedPath (currently only safe by call order), derive storage key from the cleaned id (`a/../b` and `a/` alias other keys), validate before trackerStorage.DeleteTracker in tracker.DeleteConfig, check err in TestMustNewNormalizesPrefix and add a test that Delete rejects traversal ids before touching the paired file
+  - move the testdata panel in /admin below the epxort/import panel
+  - change the cleanup orphaned files to look the same as scan for broken links and misplaced media but keep the storage statistics without the cleanup button
+  - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.
+  - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
+  - Missing: updateLinksInFile had its wiki logic rewritten but has no direct test, including the .md-less wiki form and the /media/ html src → ToMediaURL path. Check whether mediatest or metadatatest already cover rename with wiki and html links. If not, add a case.
+
 - test
   - remote git in mobile
 
@@ -54,8 +58,10 @@ give me an overview of the current git changes, dont make any changes yet just g
 **Global Rules:**
 - Prefer YAGNI, KISS, and boring, proven technology.
 - Assume the simplest possible solution is preferred unless a more complex design is justified by a current, concrete requirement.
-- Do not recommend abstractions, layers, patterns, dependencies, configuration, or indirection unless they solve a demonstrated problem today.
+- Do not recommend abstractions, layers, patterns, dependencies, configuration, or indirection unless they solve a demonstrated problem today. Exception: splitting out a new function or thin wrapper is allowed when it removes flags, branching, or mixed responsibilities from an existing function.
 - For every recommendation, ask: Can this be removed, inlined, replaced by a framework/ORM/stdlib built-in, or done with less code?
+- Before accepting any new function, helper, or utility, search the codebase for an existing one that already does the same or nearly the same thing. Reusing existing code beats writing new code.
+- Do not accept changes that grow an existing function with boolean flags, mode parameters, optional arguments, or special-case branches just to serve one new caller. If that happens, evaluate whether a separate function or thin wrapper would be simpler.
 - If complexity is justified, state exactly what current requirement justifies it.
 - If the code is already appropriately simple, say so clearly. Do not invent complexity just to fill sections.
 
@@ -68,11 +74,18 @@ give me an overview of the current git changes, dont make any changes yet just g
 - If it follows SOLID/patterns but adds unnecessary indirection, call that out explicitly.
 
 2. Architectural Consistency (The "Everywhere" Check)
-- *Note: If I haven't provided enough context about the rest of the codebase, ask me for specific files to compare against.*
+- *Note: Search the repository for related code before answering. If you still lack enough context about the rest of the codebase, ask me for specific files to compare against.*
 - Based on the code provided, does this follow a pattern that looks reusable and consistent?
 - **Red Flags:** Does this introduce a "one-off" solution? (e.g., using a direct SQL query when the project uses an ORM, or hardcoding values that should be environment variables).
 - Suggest how to refactor this to fit a unified architecture if it feels disjointed.
 - If the existing architecture is already too complex, say that instead of forcing consistency with it.
+
+**Reuse & Function Boundaries:**
+- **Unnecessary new functions:** Do the changes add functions, helpers, or utilities that duplicate existing ones in the codebase, framework, or stdlib? For each, name the existing function (with file path) that should be used instead.
+- **Near-duplicates:** Is there an existing function that already does most of the job? Would a small, natural extension of it be better than a copy with minor differences?
+- **Overcomplicated existing functions:** Were existing functions modified by adding boolean flags, mode/type parameters, optional arguments, special-case branches, or type checks to support the new use case? If so, would a separate function or thin wrapper be clearer? Consider the impact on existing callers.
+- **Decision rule:** Extend the existing function if the change fits its single responsibility and existing callers are unaffected or benefit. Create a new function or wrapper if the change adds a second responsibility, alters behavior for existing callers, or needs a flag to switch between behaviors.
+- For each finding, state the verdict: "Reuse existing X," "Extend existing X," "Split into new function," or "Fine as is."
 
 3. Production Readiness Assessment
 - **Error Handling:** Is it robust? What happens if the API/Database goes down?
@@ -89,7 +102,7 @@ give me an overview of the current git changes, dont make any changes yet just g
 5. Simplicity & Overengineering Check
 - Is this overengineered? Identify any unnecessary abstractions, layers, wrappers, factories, interfaces, configuration, dependencies, generic types, indirection, or premature generalization.
 - What is the simplest possible solution that still meets the stated requirements? Show the minimal implementation, diff, or pseudocode.
-- What can be deleted, inlined, hardcoded for now, replaced by a framework/ORM/stdlib feature, or deferred until actually needed?
+- What can be deleted, inlined, hardcoded for now, replaced by an existing function in the codebase, replaced by a framework/ORM/stdlib feature, or deferred until actually needed?
 - Is the added complexity justified by current scale, reliability, security, or team constraints? If not, simplify.
 - Rank the simplifications by impact vs. effort.
 - **Simplicity Verdict:** "Already simple," "Can be simplified," or "Significantly overengineered."
@@ -120,3 +133,5 @@ Areas to scrutinize (your opinion must cover these):
 - Ignore the i18n translations since they are unrelated.
 
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?
+
+keep the decisions in the temp_todo.md file in mind
