@@ -27,7 +27,9 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	if err := writeFile(referencer, fmt.Sprintf("[link](%s)\n", oldRel)); err != nil {
+	// the wiki link uses its usual extensionless form ([[note]] for note.md)
+	refContent := "[link](%s)\n[[%s]]\n"
+	if err := writeFile(referencer, fmt.Sprintf(refContent, oldRel, strings.TrimSuffix(oldRel, ".md"))); err != nil {
 		return errCase(name, err)
 	}
 	if err := saveMetadata(referencer, files.EditorTypeCodeMirror); err != nil {
@@ -57,10 +59,11 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	success := strings.Contains(got, newRel) && !strings.Contains(got, oldRel)
+	want := fmt.Sprintf(refContent, newRel, strings.TrimSuffix(newRel, ".md"))
+	success := got == want
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: fmt.Sprintf("referencer link points at %s", newRel),
+		Expected: want,
 		Actual:   got,
 		Success:  success,
 	}

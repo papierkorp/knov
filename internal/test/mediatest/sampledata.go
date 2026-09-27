@@ -68,7 +68,7 @@ func saveMediaMetadata(relPath string) error {
 // its own link metadata (real content-based link extraction, same as connectionstest/
 // jobstest use for used-links/linkstohere - not faked).
 func linkDoc(relDocPath, mediaRelPath string) error {
-	if err := writeFile(relDocPath, "# "+relDocPath+"\n\n![img](media/"+mediaRelPath+")\n"); err != nil {
+	if err := writeFile(relDocPath, "# "+relDocPath+"\n\n![img](media/"+mediaRelPath+")\n[[media/"+mediaRelPath+"]]\n<img src=\""+pathutils.ToMediaURL(mediaRelPath)+"\">\n"); err != nil {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.ToWithPrefix(relDocPath), Editor: files.EditorTypeCodeMirror}); err != nil {

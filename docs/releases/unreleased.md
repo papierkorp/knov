@@ -1,8 +1,9 @@
 # unreleased
 
-_69 commits since last release_
+_72 commits since last release_
 
 ## breaking changes
+- unify link extraction and rewriting in one link walker, please make a manual metadata rebuild
 - existing tracker counter history embedded in each tracker's config file is imported automatically into the new storage the first time that tracker is opened after upgrading (see importLegacyDays). Back up your storage/config directory before upgrading, and open each existing tracker at least once post-upgrade to confirm the migration ran before relying on any automated backup rotation to expire the pre-upgrade one.
 
 ## changes
@@ -15,6 +16,7 @@ _69 commits since last release_
 - support per-column alignment in table editor
 
 ## features
+- new admin action find media files in doc folder and move to media folder
 - add saved filter entries to books
 - add switchable file views (rendered/raw, tracker statistics/counters)
 - replace hide tags with hide files by tag

@@ -18,7 +18,6 @@
   - change the cleanup orphaned files to look the same as scan for broken links and misplaced media but keep the storage statistics without the cleanup button
   - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.
   - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
-  - Missing: updateLinksInFile had its wiki logic rewritten but has no direct test, including the .md-less wiki form and the /media/ html src → ToMediaURL path. Check whether mediatest or metadatatest already cover rename with wiki and html links. If not, add a case.
 
 - test
   - remote git in mobile

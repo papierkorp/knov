@@ -153,7 +153,7 @@ func caseRename() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	linkRewritten := bytes.Contains(referencerContent, []byte(newRel)) && !bytes.Contains(referencerContent, []byte(oldRel))
+	linkRewritten := bytes.Contains(referencerContent, []byte(`src="`+pathutils.ToMediaURL(newRel)+`"`)) && !bytes.Contains(referencerContent, []byte(oldRel))
 
 	newMeta, err := files.MetaDataGet(newMediaPath)
 	if err != nil {
