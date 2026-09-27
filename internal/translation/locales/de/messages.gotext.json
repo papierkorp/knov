@@ -32,6 +32,11 @@
       "translation": "{Integer} Links repariert, {Integer_1} konnten in ihrer Datei nicht zugeordnet werden"
     },
     {
+      "id": "{Integer} media files moved, {Integer_1} failed, {Integer_2} files updated",
+      "message": "{Integer} media files moved, {Integer_1} failed, {Integer_2} files updated",
+      "translation": "{Integer} Mediendateien verschoben, {Integer_1} fehlgeschlagen, {Integer_2} Dateien aktualisiert"
+    },
+    {
       "id": "{Integer}h ago",
       "message": "{Integer}h ago",
       "translation": "vor {Integer}h"
@@ -922,9 +927,24 @@
       "translation": "Metadaten"
     },
     {
+      "id": "Misplaced Media",
+      "message": "Misplaced Media",
+      "translation": "Falsch abgelegte Medien"
+    },
+    {
       "id": "Move",
       "message": "Move",
       "translation": "Verschieben"
+    },
+    {
+      "id": "Move {Integer} files to the media folder and update all links?",
+      "message": "Move {Integer} files to the media folder and update all links?",
+      "translation": "{Integer} Dateien in den Medienordner verschieben und alle Links aktualisieren?"
+    },
+    {
+      "id": "Move to Media Folder",
+      "message": "Move to Media Folder",
+      "translation": "In den Medienordner verschieben"
     },
     {
       "id": "New Dashboard",
@@ -1155,6 +1175,11 @@
       "id": "Scan for Broken Links",
       "message": "Scan for Broken Links",
       "translation": "nach defekten Links suchen"
+    },
+    {
+      "id": "Scan for Misplaced Media",
+      "message": "Scan for Misplaced Media",
+      "translation": "Nach falsch abgelegten Medien suchen"
     },
     {
       "id": "Search",
@@ -2982,6 +3007,11 @@
       "translation": "Fehler beim Scannen nach defekten Links"
     },
     {
+      "id": "failed to scan for misplaced media",
+      "message": "failed to scan for misplaced media",
+      "translation": "Fehler beim Suchen nach falsch abgelegten Medien"
+    },
+    {
       "id": "failed to search git history",
       "message": "failed to search git history",
       "translation": "Fehler bei der Suche im Git-Verlauf"
@@ -3147,6 +3177,11 @@
       "translation": "Dateien gelöscht"
     },
     {
+      "id": "filter",
+      "message": "filter",
+      "translation": ""
+    },
+    {
       "id": "filter config is required",
       "message": "filter config is required",
       "translation": "Filterkonfiguration ist erforderlich"
@@ -3177,6 +3212,11 @@
       "translation": "Filtername ist erforderlich."
     },
     {
+      "id": "filter not found",
+      "message": "filter not found",
+      "translation": ""
+    },
+    {
       "id": "filter preview",
       "message": "filter preview",
       "translation": "Filtervorschau"
@@ -3205,6 +3245,11 @@
       "id": "find in file...",
       "message": "find in file...",
       "translation": "in Datei suchen..."
+    },
+    {
+      "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
+      "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
+      "translation": "Nicht-Text-Dateien im Docs-Ordner finden (z. B. aus einem anderen Wiki kopierte Bilder), in den Medienordner verschieben und alle Links darauf aktualisieren. Nur erlaubte Medientypen werden verschoben - neue (z. B. application/zip oder image/*) unter Einstellungen \u003e Medieneinstellungen \u003e Erlaubte MIME-Typen hinzufügen"
     },
     {
       "id": "folder",
@@ -4042,6 +4087,11 @@
       "translation": "neuer Name (optional)"
     },
     {
+      "id": "new path",
+      "message": "new path",
+      "translation": "neuer Pfad"
+    },
+    {
       "id": "new path is required",
       "message": "new path is required",
       "translation": "neuer Pfad ist erforderlich"
@@ -4172,6 +4222,11 @@
       "translation": "keine Mediendateien gefunden"
     },
     {
+      "id": "no misplaced media files found",
+      "message": "no misplaced media files found",
+      "translation": "keine falsch abgelegten Mediendateien gefunden"
+    },
+    {
       "id": "no notifications yet",
       "message": "no notifications yet",
       "translation": "noch keine Benachrichtigungen"
@@ -4270,6 +4325,11 @@
       "id": "no version history available",
       "message": "no version history available",
       "translation": "kein Versionsverlauf verfügbar"
+    },
+    {
+      "id": "not an allowed media type, stays in place",
+      "message": "not an allowed media type, stays in place",
+      "translation": "kein erlaubter Medientyp, bleibt an seinem Ort"
     },
     {
       "id": "not used in any files",
@@ -4970,6 +5030,11 @@
       "id": "this is a conflict copy of",
       "message": "this is a conflict copy of",
       "translation": "dies ist eine Konfliktkopie von"
+    },
+    {
+      "id": "this tracker has no counters yet - add one in the editor.",
+      "message": "this tracker has no counters yet - add one in the editor.",
+      "translation": ""
     },
     {
       "id": "time",

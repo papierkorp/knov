@@ -27,6 +27,7 @@ const (
 	KeyMetadataRebuild Key = "metadata-rebuild"
 	KeyFullRebuild     Key = "full-rebuild"
 	KeyMediaCleanup    Key = "media-cleanup"
+	KeyMediaRelocate   Key = "media-relocate"
 	KeyGitRemote       Key = "git-remote"
 	KeyGitMaintenance  Key = "git-maintenance"
 	KeyDokuwikiExport  Key = "dokuwiki-export"
@@ -43,7 +44,7 @@ const (
 // AvailableKeys lists every valid log destination, e.g. for an admin log-viewer dropdown.
 var AvailableKeys = []Key{
 	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyFullRebuild,
-	KeyMediaCleanup, KeyGitRemote, KeyGitMaintenance, KeyDokuwikiExport, KeyPdfExport, KeyRepairLinks,
+	KeyMediaCleanup, KeyMediaRelocate, KeyGitRemote, KeyGitMaintenance, KeyDokuwikiExport, KeyPdfExport, KeyRepairLinks,
 	KeyDBMigration, KeyFilterDebug, KeyManualCronjob, KeyInAppTests,
 	KeyTheme, KeySettingsImport,
 }

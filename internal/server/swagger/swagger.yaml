@@ -202,6 +202,15 @@ definitions:
     additionalProperties:
       type: integer
     type: object
+  files.MediaRelocateResult:
+    properties:
+      failed:
+        type: integer
+      filesUpdated:
+        type: integer
+      moved:
+        type: integer
+    type: object
   files.Metadata:
     properties:
       ancestor:
@@ -283,6 +292,13 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  files.MisplacedMedia:
+    properties:
+      path:
+        type: string
+      target:
+        type: string
     type: object
   files.Reference:
     properties:
@@ -3152,6 +3168,54 @@ paths:
           schema:
             type: string
       summary: Get all media files
+      tags:
+      - media
+  /api/media/misplaced:
+    get:
+      description: Lists non-text files in the docs folder (e.g. images copied in
+        from another wiki) with their planned media destination. Files not matching
+        the allowed mime types have no destination and are only reported.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.MisplacedMedia'
+            type: array
+        "500":
+          description: failed to scan for misplaced media
+          schema:
+            type: string
+      summary: Scan for misplaced media files
+      tags:
+      - media
+  /api/media/misplaced/relocate:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Moves all allowed-type media files from the docs folder into the
+        media folder (mirroring their folder) and rewrites every link pointing to
+        them
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.MediaRelocateResult'
+        "409":
+          description: job already running
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Relocate misplaced media files
       tags:
       - media
   /api/media/path-display/{filepath}:

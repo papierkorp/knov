@@ -66,6 +66,14 @@ func movePhysical(oldFullPath, newFullPath string, isMedia bool) error {
 	return nil
 }
 
+// moveDocsToMedia is movePhysical for a docs file moving into the media root - it holds the docs
+// lock too, since it removes a docs file (docs before media, same order as git.CommitAllPending).
+func moveDocsToMedia(oldFullPath, newFullPath string) error {
+	unlock := lockDocsOp()
+	defer unlock()
+	return movePhysical(oldFullPath, newFullPath, true)
+}
+
 // MoveFileNoRefresh moves a single doc file from oldRelPath to newRelPath on disk and updates
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.

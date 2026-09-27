@@ -688,3 +688,40 @@ func RenderMediaStorageStats(stats *files.MediaStorageStats) string {
 		stats.OrphanedFiles,
 		orphanedSizeStr)
 }
+
+// RenderMisplacedMedia renders the result of ScanMisplacedMedia as a table of planned
+// moves (docs path -> media path) with a button relocating all of them.
+// Files without a target aren't an allowed media type and are listed as staying in place.
+func RenderMisplacedMedia(items []files.MisplacedMedia) string {
+	lang := configmanager.GetLanguage()
+	var html strings.Builder
+	html.WriteString(`<div id="component-misplaced-media">`)
+
+	if len(items) == 0 {
+		fmt.Fprintf(&html, `<p class="no-items">%s</p></div>`, translation.SprintfForRequest(lang, "no misplaced media files found"))
+		return html.String()
+	}
+
+	fmt.Fprintf(&html, `<table class="misplaced-media-table"><thead><tr><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		translation.SprintfForRequest(lang, "file"),
+		translation.SprintfForRequest(lang, "new path"))
+
+	movable := 0
+	for _, item := range items {
+		target := translation.SprintfForRequest(lang, "not an allowed media type, stays in place")
+		if item.Target != "" {
+			target = stdhtml.EscapeString("media/" + item.Target)
+			movable++
+		}
+		fmt.Fprintf(&html, `<tr><td>%s</td><td>%s</td></tr>`, stdhtml.EscapeString(item.Path), target)
+	}
+	html.WriteString(`</tbody></table>`)
+
+	if movable > 0 {
+		fmt.Fprintf(&html, `<button type="button" class="btn-danger" hx-post="/api/media/misplaced/relocate" hx-target="#misplaced-media-result" hx-swap="innerHTML" hx-confirm="%s"><i class="fa fa-folder-open"></i> %s</button>`,
+			stdhtml.EscapeString(translation.SprintfForRequest(lang, "Move %d files to the media folder and update all links?", movable)),
+			translation.SprintfForRequest(lang, "Move to Media Folder"))
+	}
+	html.WriteString(`</div>`)
+	return html.String()
+}

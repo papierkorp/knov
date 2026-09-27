@@ -250,6 +250,30 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 }
 
 // ----------------------------------------------------------------------------------------
+// ---------------------------------- mediaRelocateJob -------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// mediaRelocateJob moves misplaced media files from the docs folder into the media folder and
+// relinks them. The actual work lives in files.RelocateMisplacedMedia.
+type mediaRelocateJob struct {
+	result files.MediaRelocateResult
+}
+
+func (j *mediaRelocateJob) Name() string { return "media-relocate" }
+
+func (j *mediaRelocateJob) Run(_ context.Context) error {
+	result, err := files.RelocateMisplacedMedia(logging.KeyMediaRelocate)
+	j.result = result
+	return err
+}
+
+func (j *mediaRelocateJob) Output() any { return j.result }
+
+func (j *mediaRelocateJob) Message() string {
+	return fmt.Sprintf("moved %d files, %d failed, %d files updated", j.result.Moved, j.result.Failed, j.result.FilesUpdated)
+}
+
+// ----------------------------------------------------------------------------------------
 // -------------------------------- repairBrokenLinksJob -----------------------------------
 // ----------------------------------------------------------------------------------------
 

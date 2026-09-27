@@ -724,28 +724,27 @@ func ValidateMediaMimeType(mimeType string) bool {
 		return false
 	}
 
-	// normalize MIME type using utils function
-	mimeType = utils.Normalize(mimeType)
 	logging.LogDebug(logging.KeyApp, "validating mime type: %s against allowed types: %v", mimeType, allowedTypes)
-
-	// check exact matches first
-	for _, allowedType := range allowedTypes {
-		allowedType = utils.Normalize(allowedType)
-		if allowedType == mimeType {
-			logging.LogDebug(logging.KeyApp, "mime type %s allowed (exact match)", mimeType)
-			return true
-		}
-
-		// handle wildcard patterns like "image/*"
-		if strings.HasSuffix(allowedType, "/*") {
-			category := strings.TrimSuffix(allowedType, "/*")
-			if strings.HasPrefix(mimeType, category+"/") {
-				logging.LogDebug(logging.KeyApp, "mime type %s allowed (wildcard match: %s)", mimeType, allowedType)
-				return true
-			}
-		}
+	if isAllowedMimeType(mimeType) {
+		return true
 	}
 
 	logging.LogWarning(logging.KeyApp, "mime type %s not allowed, blocked upload", mimeType)
+	return false
+}
+
+// isAllowedMimeType reports whether mimeType matches the allowed media mime types setting,
+// exactly or via a wildcard pattern like "image/*".
+func isAllowedMimeType(mimeType string) bool {
+	mimeType = utils.Normalize(mimeType)
+	for _, allowedType := range configmanager.GetAllowedMimeTypes() {
+		allowedType = utils.Normalize(allowedType)
+		if allowedType == mimeType {
+			return true
+		}
+		if category, ok := strings.CutSuffix(allowedType, "/*"); ok && strings.HasPrefix(mimeType, category+"/") {
+			return true
+		}
+	}
 	return false
 }

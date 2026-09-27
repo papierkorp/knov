@@ -3946,8 +3946,9 @@ dl.media-info dd {
   padding: 10px 12px;
 }
 
-/* repair broken links */
-#component-broken-links .broken-links-table {
+/* repair broken links, misplaced media */
+#component-broken-links .broken-links-table,
+#component-misplaced-media .misplaced-media-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 12px;
@@ -3955,7 +3956,9 @@ dl.media-info dd {
 }
 
 #component-broken-links .broken-links-table th,
-#component-broken-links .broken-links-table td {
+#component-broken-links .broken-links-table td,
+#component-misplaced-media .misplaced-media-table th,
+#component-misplaced-media .misplaced-media-table td {
   text-align: left;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);

@@ -367,6 +367,17 @@ func RunMediaCleanup() (MediaCleanupResult, error) {
 	return j.result, nil
 }
 
+// RunMediaRelocate moves misplaced media files from the docs folder into the media folder with
+// dedup protection. Shares media cleanup's mutex - moved files look orphaned until their docs
+// are relinked, so a cleanup running in between could delete them.
+func RunMediaRelocate() (files.MediaRelocateResult, error) {
+	j := &mediaRelocateJob{}
+	if err := execute(&mediaCleanupMu, j); err != nil {
+		return files.MediaRelocateResult{}, err
+	}
+	return j.result, nil
+}
+
 // RunRepairBrokenLinks applies the selected broken-link repairs with dedup protection.
 func RunRepairBrokenLinks(entries []string) (RepairBrokenLinksResult, error) {
 	j := &repairBrokenLinksJob{entries: entries}

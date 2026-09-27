@@ -3832,6 +3832,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/media/misplaced": {
+            "get": {
+                "description": "Lists non-text files in the docs folder (e.g. images copied in from another wiki) with their planned media destination. Files not matching the allowed mime types have no destination and are only reported.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Scan for misplaced media files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.MisplacedMedia"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to scan for misplaced media",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/misplaced/relocate": {
+            "post": {
+                "description": "Moves all allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Relocate misplaced media files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/files.MediaRelocateResult"
+                        }
+                    },
+                    "409": {
+                        "description": "job already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/media/path-display/{filepath}": {
             "get": {
                 "produces": [
@@ -6746,6 +6812,20 @@ const docTemplate = `{
                 "type": "integer"
             }
         },
+        "files.MediaRelocateResult": {
+            "type": "object",
+            "properties": {
+                "failed": {
+                    "type": "integer"
+                },
+                "filesUpdated": {
+                    "type": "integer"
+                },
+                "moved": {
+                    "type": "integer"
+                }
+            }
+        },
         "files.Metadata": {
             "type": "object",
             "properties": {
@@ -6859,6 +6939,17 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "files.MisplacedMedia": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
                 }
             }
         },

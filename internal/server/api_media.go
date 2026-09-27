@@ -15,6 +15,7 @@ import (
 	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -391,6 +392,61 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 		"failed":  result.Failed,
 		"message": msg,
 	}, html)
+}
+
+// @Summary Scan for misplaced media files
+// @Description Lists non-text files in the docs folder (e.g. images copied in from another wiki) with their planned media destination. Files not matching the allowed mime types have no destination and are only reported.
+// @Tags media
+// @Produce json,html
+// @Success 200 {array} files.MisplacedMedia
+// @Failure 500 {string} string "failed to scan for misplaced media"
+// @Router /api/media/misplaced [get]
+func handleAPIGetMisplacedMedia(w http.ResponseWriter, r *http.Request) {
+	items, err := files.ScanMisplacedMedia()
+	if err != nil {
+		logging.LogError(logging.KeyMediaRelocate, "failed to scan for misplaced media: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for misplaced media"))
+		return
+	}
+
+	writeResponse(w, r, items, render.RenderMisplacedMedia(items))
+}
+
+// @Summary Relocate misplaced media files
+// @Description Moves all allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them
+// @Tags media
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Success 200 {object} files.MediaRelocateResult
+// @Failure 409 {string} string "job already running"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/misplaced/relocate [post]
+func handleAPIRelocateMisplacedMedia(w http.ResponseWriter, r *http.Request) {
+	result, err := job.RunMediaRelocate()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		writeAPIError(w, r, status, err.Error())
+		return
+	}
+
+	level := notify.LevelSuccess
+	if result.Failed > 0 {
+		level = notify.LevelError
+	}
+	notify.SetHeader(w, level, translation.SprintfForRequest(configmanager.GetLanguage(), "%d media files moved, %d failed, %d files updated", result.Moved, result.Failed, result.FilesUpdated))
+
+	// the relocate itself succeeded, so a failed rescan only replaces the list
+	html := ""
+	if items, err := files.ScanMisplacedMedia(); err != nil {
+		logging.LogError(logging.KeyMediaRelocate, "failed to rescan for misplaced media: %v", err)
+		html = render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for misplaced media"))
+	} else {
+		html = render.RenderMisplacedMedia(items)
+	}
+	writeResponse(w, r, result, html)
 }
 
 // @Summary Rename a media file

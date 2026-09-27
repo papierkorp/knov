@@ -32,6 +32,11 @@
       "translation": ""
     },
     {
+      "id": "{Integer} media files moved, {Integer_1} failed, {Integer_2} files updated",
+      "message": "{Integer} media files moved, {Integer_1} failed, {Integer_2} files updated",
+      "translation": ""
+    },
+    {
       "id": "{Integer}h ago",
       "message": "{Integer}h ago",
       "translation": ""
@@ -922,8 +927,23 @@
       "translation": ""
     },
     {
+      "id": "Misplaced Media",
+      "message": "Misplaced Media",
+      "translation": ""
+    },
+    {
       "id": "Move",
       "message": "Move",
+      "translation": ""
+    },
+    {
+      "id": "Move {Integer} files to the media folder and update all links?",
+      "message": "Move {Integer} files to the media folder and update all links?",
+      "translation": ""
+    },
+    {
+      "id": "Move to Media Folder",
+      "message": "Move to Media Folder",
       "translation": ""
     },
     {
@@ -1154,6 +1174,11 @@
     {
       "id": "Scan for Broken Links",
       "message": "Scan for Broken Links",
+      "translation": ""
+    },
+    {
+      "id": "Scan for Misplaced Media",
+      "message": "Scan for Misplaced Media",
       "translation": ""
     },
     {
@@ -2982,6 +3007,11 @@
       "translation": ""
     },
     {
+      "id": "failed to scan for misplaced media",
+      "message": "failed to scan for misplaced media",
+      "translation": ""
+    },
+    {
       "id": "failed to search git history",
       "message": "failed to search git history",
       "translation": ""
@@ -3147,6 +3177,11 @@
       "translation": ""
     },
     {
+      "id": "filter",
+      "message": "filter",
+      "translation": ""
+    },
+    {
       "id": "filter config is required",
       "message": "filter config is required",
       "translation": ""
@@ -3177,6 +3212,11 @@
       "translation": ""
     },
     {
+      "id": "filter not found",
+      "message": "filter not found",
+      "translation": ""
+    },
+    {
       "id": "filter preview",
       "message": "filter preview",
       "translation": ""
@@ -3204,6 +3244,11 @@
     {
       "id": "find in file...",
       "message": "find in file...",
+      "translation": ""
+    },
+    {
+      "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
+      "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
       "translation": ""
     },
     {
@@ -4042,6 +4087,11 @@
       "translation": ""
     },
     {
+      "id": "new path",
+      "message": "new path",
+      "translation": ""
+    },
+    {
       "id": "new path is required",
       "message": "new path is required",
       "translation": ""
@@ -4172,6 +4222,11 @@
       "translation": ""
     },
     {
+      "id": "no misplaced media files found",
+      "message": "no misplaced media files found",
+      "translation": ""
+    },
+    {
       "id": "no notifications yet",
       "message": "no notifications yet",
       "translation": ""
@@ -4269,6 +4324,11 @@
     {
       "id": "no version history available",
       "message": "no version history available",
+      "translation": ""
+    },
+    {
+      "id": "not an allowed media type, stays in place",
+      "message": "not an allowed media type, stays in place",
       "translation": ""
     },
     {
@@ -4969,6 +5029,11 @@
     {
       "id": "this is a conflict copy of",
       "message": "this is a conflict copy of",
+      "translation": ""
+    },
+    {
+      "id": "this tracker has no counters yet - add one in the editor.",
+      "message": "this tracker has no counters yet - add one in the editor.",
       "translation": ""
     },
     {

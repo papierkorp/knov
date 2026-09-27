@@ -236,6 +236,17 @@
         </section>
 
         <section class="settings-section settings-section-wide">
+            <h2>{{T "Misplaced Media"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings > Media Settings > Allowed MIME Types"}}</div>
+                <button type="button" class="btn-secondary"
+                        hx-get="/api/media/misplaced"
+                        hx-target="#misplaced-media-result" hx-swap="innerHTML">{{T "Scan for Misplaced Media"}}</button>
+                <div id="misplaced-media-result" style="margin-top:12px;"></div>
+            </div>
+        </section>
+
+        <section class="settings-section settings-section-wide">
             <h2>{{T "Repair Broken Links"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "scan all files for links pointing to paths that no longer exist and repair the selected ones"}}</div>
