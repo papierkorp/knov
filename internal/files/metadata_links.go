@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -636,9 +635,14 @@ func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) 
 }
 
 // rebuildLinkTarget reconstructs a link target for newPath, preserving whether
-// the original link used an absolute "/files/..." view URL or a bare relative path.
-func rebuildLinkTarget(originalTarget, newPath string) string {
-	if strings.HasPrefix(strings.TrimPrefix(originalTarget, "/"), "files/") {
+// the original link used an absolute "/files/..." view URL, a "/media/..." URL or a bare
+// relative path. html src/href always get a URL, a bare path would resolve against the page.
+func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) string {
+	html := kind == parser.LinkHTML
+	if rel, ok := strings.CutPrefix(newPath, "media/"); ok && (html || strings.HasPrefix(originalTarget, "/media/")) {
+		return pathutils.ToMediaURL(rel)
+	}
+	if html || strings.HasPrefix(strings.TrimPrefix(originalTarget, "/"), "files/") {
 		return pathutils.ToFileURL(pathutils.ToWithPrefix(newPath))
 	}
 	return newPath
@@ -654,81 +658,29 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 		return false, fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
 
-	content := string(contentData)
-	originalContent := content
-
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning(key, "no handler found for file %s, skipping link update", filePath)
 		return false, nil
 	}
 
-	updated := false
-
-	// markdown-style links: [text](oldPath) -> [text](newPath). The link target may
-	// also carry an anchor and/or be an absolute "/files/docs/..." view URL rather than
-	// a bare relative path, so each target is cleaned the same way metadata links are
-	// before comparing, and the original absolute/relative style is preserved on write.
-	markdownLinkRe := regexp.MustCompile(`\]\(([^)]+)\)`)
-	content = markdownLinkRe.ReplaceAllStringFunc(content, func(match string) string {
-		raw := match[2 : len(match)-1]
-		base, anchor, hasAnchor := strings.Cut(raw, "#")
-		if utils.CleanLink(base) != oldPath {
-			return match
+	// each link path is cleaned the same way metadata links are before comparing, and the
+	// original absolute/relative style is preserved on write. wiki links keep their
+	// extensionless form ([[note]] for note.md), since that's how they're normally typed
+	content, updated := parser.RewriteLinks(string(contentData), func(p string, kind parser.LinkKind) (string, bool) {
+		if parser.IsAppRouteLink(p, kind) || utils.CleanLink(p) != oldPath {
+			return "", false
 		}
-		updated = true
-		logging.LogDebug(key, "updated markdown link in %s", filePath)
-		newTarget := rebuildLinkTarget(base, newPath)
-		if hasAnchor {
-			newTarget += "#" + anchor
+		if kind == parser.LinkWiki {
+			if strings.HasSuffix(p, ".md") {
+				return newPath, true
+			}
+			return strings.TrimSuffix(newPath, ".md"), true
 		}
-		return "](" + newTarget + ")"
+		return rebuildLinkTarget(p, newPath, kind), true
 	})
 
-	// wiki-style links: [[oldPath]] and [[oldPath|text]] -> same with newPath.
-	// Also tries the extensionless form ([[note]] for note.md), since that's
-	// how wiki links are normally typed.
-	oldWikiTargets := []string{oldPath}
-	newWikiTargets := []string{newPath}
-	if noExt := strings.TrimSuffix(oldPath, ".md"); noExt != oldPath {
-		oldWikiTargets = append(oldWikiTargets, noExt)
-		newWikiTargets = append(newWikiTargets, strings.TrimSuffix(newPath, ".md"))
-	}
-
-	lines := strings.Split(content, "\n")
-	for i, line := range lines {
-		for t, oldTarget := range oldWikiTargets {
-			newTarget := newWikiTargets[t]
-			start := strings.Index(line, "[["+oldTarget)
-			if start == -1 {
-				continue
-			}
-			end := strings.Index(line[start:], "]]")
-			if end == -1 {
-				continue
-			}
-			end += start
-			linkPart := line[start+2 : end]
-
-			if linkPart == oldTarget {
-				line = strings.Replace(line, "[["+oldTarget+"]]", "[["+newTarget+"]]", 1)
-				updated = true
-				logging.LogDebug(key, "updated wiki link in %s", filePath)
-			} else if strings.HasPrefix(linkPart, oldTarget) && linkPart[len(oldTarget)] == '|' {
-				textPart := linkPart[len(oldTarget):]
-				line = strings.Replace(line, "[["+oldTarget+textPart+"]]", "[["+newTarget+textPart+"]]", 1)
-				updated = true
-				logging.LogDebug(key, "updated wiki link in %s", filePath)
-			}
-		}
-		lines[i] = line
-	}
-
 	if updated {
-		content = strings.Join(lines, "\n")
-	}
-
-	if updated && content != originalContent {
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return false, fmt.Errorf("failed to write updated content to %s: %w", filePath, err)
 		}

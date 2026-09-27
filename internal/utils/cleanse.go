@@ -28,6 +28,8 @@ func CleanseID(input string) string {
 func CleanLink(link string) string {
 	cleanLink := filepath.ToSlash(link)
 	cleanLink = strings.Split(cleanLink, "#")[0]
+	// "?" always starts a query - it isn't a valid filename char on windows
+	cleanLink = strings.Split(cleanLink, "?")[0]
 	cleanLink = strings.Split(cleanLink, "|")[0]
 	cleanLink = strings.TrimSpace(cleanLink)
 	// map URL path prefixes to metadata path prefixes

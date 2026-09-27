@@ -711,6 +711,9 @@ func (h *MarkdownHandler) restoreHTMLBlocks(html, tag string, blocks []htmlWrapp
 
 // resolveMediaPath returns a clean relative media path from a markdown image destination.
 func resolveMediaPath(dest string) string {
+	if decoded, err := url.PathUnescape(dest); err == nil {
+		dest = decoded
+	}
 	if pathutils.IsMedia(dest) {
 		return pathutils.ToRelative(dest)
 	}
@@ -938,51 +941,32 @@ func humanizeSlug(slug string) string {
 	return strings.Join(words, " ")
 }
 
-var wikiExtractRe = regexp.MustCompile(`\[\[([^\[\]|]+)`)
-
+// ExtractLinks returns the path of every link RewriteLinks sees, except external ones (with a
+// scheme like http:/mailto:/data: or a host like //cdn...), pure anchors and html root links to
+// app routes (/dashboard, /search?q=...) - for html only /media/ and /files/ are files.
+// A wiki link is only external with "//" ([[ns:page]] is a path), a one-letter scheme is a
+// windows drive (C:\x.png), so both are still reported as (broken) links.
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	var links []string
-	text := string(content)
-	text = removeCodeBlocks(text)
-
-	// extract [[wiki links]] (path before | if any)
-	for _, match := range wikiExtractRe.FindAllStringSubmatch(text, -1) {
-		if len(match) > 1 {
-			if link := strings.TrimSpace(match[1]); link != "" {
-				links = append(links, link)
-			}
+	// RewriteLinks is only used as the link walker here: the callback collects every path and
+	// never replaces one, so the (unchanged) content it returns is discarded
+	RewriteLinks(string(content), func(p string, kind LinkKind) (string, bool) {
+		p = strings.TrimSpace(p)
+		if p == "" || isExternalLink(p, kind) || IsAppRouteLink(p, kind) {
+			return "", false
 		}
-	}
-
-	// match [text](url) but exclude image links ![]()
-	// prepend a space so links at position 0 (start of file/line) still have a preceding char
-	mdLinkRegex := regexp.MustCompile(`[^!]\[([^\]]+)\]\(([^\)]+)\)`)
-	for _, match := range mdLinkRegex.FindAllStringSubmatch(" "+text, -1) {
-		if len(match) > 2 {
-			link := strings.TrimSpace(match[2])
-			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "#") {
-				links = append(links, link)
-			}
-		}
-	}
-
-	imgLinkRegex := regexp.MustCompile(`!\[([^\]]*)\]\(([^\)]+)\)`)
-	for _, match := range imgLinkRegex.FindAllStringSubmatch(text, -1) {
-		if len(match) > 2 {
-			link := strings.TrimSpace(match[2])
-			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
-				links = append(links, link)
-			}
-		}
-	}
+		links = append(links, p)
+		return "", false
+	})
 	return links
 }
 
-func removeCodeBlocks(text string) string {
-	// drop ``` / ~~~ fenced blocks, then any remaining inline `code` spans, so links
-	// inside code are never extracted
-	text = markdown.StripFencedBlocks(strings.Split(text, "\n"))
-	return regexp.MustCompile("`[^`\n]+`").ReplaceAllString(text, "")
+func isExternalLink(p string, kind LinkKind) bool {
+	if kind == LinkWiki {
+		return strings.Contains(p, "//")
+	}
+	u, err := url.Parse(p)
+	return err == nil && (len(u.Scheme) > 1 || u.Host != "")
 }
 
 func (h *MarkdownHandler) Name() string {

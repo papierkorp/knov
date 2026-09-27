@@ -93,11 +93,18 @@ func TestCodeBlocksUnterminated(t *testing.T) {
 	}
 }
 
-// both fence styles are removed while surrounding lines are kept verbatim.
-func TestStripFencedBlocksBothMarkers(t *testing.T) {
-	in := "keep 1\n```\ndrop\n```\nkeep 2\n~~~\ndrop\n~~~\nkeep 3"
-	want := "keep 1\nkeep 2\nkeep 3"
-	if got := StripFencedBlocks(strings.Split(in, "\n")); got != want {
-		t.Errorf("StripFencedBlocks(%q) = %q, want %q", in, got, want)
+// code spans close only at a backtick run of the same length, unmatched runs are text.
+func TestSplitCodeSpans(t *testing.T) {
+	cases := map[string]string{
+		"a `b` c":           "a |`b`| c",
+		"a ``b`c`` d":       "a |``b`c``| d",
+		"a ``b` c":          "a ``b` c",
+		"`a` b `c`":         "|`a`| b |`c`|",
+		"a ` b `` c ``` d ": "a ` b `` c ``` d ",
+	}
+	for in, want := range cases {
+		if got := strings.Join(SplitCodeSpans(in), "|"); got != want {
+			t.Errorf("SplitCodeSpans(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

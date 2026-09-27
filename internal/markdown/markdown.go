@@ -191,17 +191,46 @@ func closesFence(line string, ch byte, openLen int) bool {
 	return true
 }
 
-// StripFencedBlocks drops every ``` or ~~~ fenced code block (fence lines
-// included) from content (pre-split into lines) and returns the remaining lines
-// joined by "\n". Used where code content must not be scanned for links or prose.
-func StripFencedBlocks(lines []string) string {
-	mask := FenceMask(lines)
-
-	var kept []string
-	for i, line := range lines {
-		if !mask[i] {
-			kept = append(kept, line)
+// SplitCodeSpans splits a line into alternating text and inline `code` span parts (even
+// indexes are text, odd ones code spans including their backticks), so joining the parts
+// gives the line back. A span opened by a run of N backticks closes at the next run of
+// exactly N; a run without a match is literal text. Spans across lines aren't detected.
+func SplitCodeSpans(line string) []string {
+	var parts []string
+	start := 0
+	for i := 0; i < len(line); {
+		if line[i] != '`' {
+			i++
+			continue
 		}
+		n := backtickRun(line, i)
+		end := -1
+		for j := i + n; j < len(line); {
+			if line[j] != '`' {
+				j++
+				continue
+			}
+			m := backtickRun(line, j)
+			if m == n {
+				end = j + m
+				break
+			}
+			j += m
+		}
+		if end == -1 {
+			i += n
+			continue
+		}
+		parts = append(parts, line[start:i], line[i:end])
+		i, start = end, end
 	}
-	return strings.Join(kept, "\n")
+	return append(parts, line[start:])
+}
+
+func backtickRun(s string, i int) int {
+	n := 0
+	for i+n < len(s) && s[i+n] == '`' {
+		n++
+	}
+	return n
 }

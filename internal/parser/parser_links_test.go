@@ -120,3 +120,13 @@ func TestWikiLinkPureAnchor(t *testing.T) {
 		t.Errorf("ResolveWikiLinks(%q) = %q, want %q", "[[#some-header]]", got, want)
 	}
 }
+
+func TestExtractLinksDestination(t *testing.T) {
+	in := `![x](</media/a%20b.png> "title") [y](note.md 'title') ![z](img/c.png) <img src="/media/d.png"> <a href='#top'> <a href="mailto:a@b.c"> <img src="data:image/png;base64,AAAA"> <img data-src="lazy.png"> <script src="//cdn.example.com/x.js"> <a href="/dashboard"> set src="prose.png" [[ns:page]] [[https://example.com]] ![w](C:\x.png)
+[ref]: <ref img.png> "title"
+[^1]: footnote text`
+	want := []string{"/media/a%20b.png", "note.md", "img/c.png", `C:\x.png`, "ns:page", "/media/d.png", "ref img.png"}
+	if got := NewMarkdownHandler().ExtractLinks([]byte(in)); strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
+	}
+}
