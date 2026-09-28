@@ -51,6 +51,20 @@
   color: var(--warning);
 }
 
+#view-kanban-board-wrap:has(> .kanban-folder-missing) {
+  flex-direction: column;
+}
+
+#view-kanban-board-wrap .kanban-folder-missing {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--warning);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
 .kanban-column-count {
   font-weight: 400;
   color: var(--text-secondary);

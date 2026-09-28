@@ -666,7 +666,7 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 	}
 	boards := configmanager.GetKanbanBoards()
 	for _, b := range boards {
-		if _, err := os.Stat(pathutils.ToDocsPath(b.FolderPath)); os.IsNotExist(err) {
+		if BoardFolderMissing(b.FolderPath) {
 			warnings = append(warnings, t("board folder %q doesn't exist", b.FolderPath))
 		}
 	}
@@ -713,4 +713,10 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 		warnings = append(warnings, t("%d file(s) still carry %q whose status is not in the status list, retag them to put them back on the board", unknown[tag], tag))
 	}
 	return warnings
+}
+
+// BoardFolderMissing reports whether a configured board's folder doesn't exist (e.g. renamed).
+func BoardFolderMissing(folderPath string) bool {
+	_, err := os.Stat(pathutils.ToDocsPath(folderPath))
+	return os.IsNotExist(err)
 }

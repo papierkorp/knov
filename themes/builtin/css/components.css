@@ -3983,3 +3983,26 @@ dl.media-info dd {
 #entry-editor .entry-unknown label {
   color: var(--warning);
 }
+
+/* kanban config warnings: shown right below the section heading */
+#section-kanban {
+  display: flex;
+  flex-direction: column;
+}
+
+#section-kanban > h2 {
+  order: -2;
+}
+
+#section-kanban > .kanban-config-warnings {
+  order: -1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--warning);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--text);
+}
+
+#section-kanban > .kanban-config-warnings ul {
+  margin: 0.5rem 0 0;
+}

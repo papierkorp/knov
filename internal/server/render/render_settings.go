@@ -104,7 +104,7 @@ func RenderKanbanConfigWarnings(warnings []string, t func(string, ...any) string
 		return ""
 	}
 	var html strings.Builder
-	fmt.Fprintf(&html, `<div class="setting-item setting-item-note"><p class="section-description">%s</p><ul>`, t("kanban config warnings:"))
+	fmt.Fprintf(&html, `<div class="setting-item kanban-config-warnings"><strong><i class="fa fa-triangle-exclamation"></i> %s</strong><ul>`, t("kanban config warnings:"))
 	for _, w := range warnings {
 		fmt.Fprintf(&html, `<li>%s</li>`, template.HTMLEscapeString(w))
 	}

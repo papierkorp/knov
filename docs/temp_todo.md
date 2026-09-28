@@ -35,7 +35,6 @@
   Presumably this is so the warnings box updates. The cost is a full reload whenever a Kanban textarea loses focus.
   Building the warnings also scans every cached file’s tags and checks each board folder on disk, so the page does that work on every reload.
   Fix: reload only #section-kanban after a save instead of the whole page. That fits the “more htmx” goal better too.
-
 - test
   - remote git in mobile
 

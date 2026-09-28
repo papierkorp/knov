@@ -2,6 +2,11 @@
   "language": "en",
   "messages": [
     {
+      "id": "{Integer} file(s) still carry {Arg_2} whose status is not in the status list, retag them to put them back on the board",
+      "message": "{Integer} file(s) still carry {Arg_2} whose status is not in the status list, retag them to put them back on the board",
+      "translation": ""
+    },
+    {
       "id": "{Integer} files not shown (hidden in settings)",
       "message": "{Integer} files not shown (hidden in settings)",
       "translation": ""
@@ -122,6 +127,11 @@
       "translation": ""
     },
     {
+      "id": "Ancestor Filter Statuses",
+      "message": "Ancestor Filter Statuses",
+      "translation": ""
+    },
+    {
       "id": "Appearance",
       "message": "Appearance",
       "translation": ""
@@ -134,6 +144,11 @@
     {
       "id": "Apply bulk metadata change? This cannot be undone.",
       "message": "Apply bulk metadata change? This cannot be undone.",
+      "translation": ""
+    },
+    {
+      "id": "Archive Status",
+      "message": "Archive Status",
       "translation": ""
     },
     {
@@ -174,6 +189,11 @@
     {
       "id": "Barebones history",
       "message": "Barebones history",
+      "translation": ""
+    },
+    {
+      "id": "Boards",
+      "message": "Boards",
       "translation": ""
     },
     {
@@ -242,6 +262,11 @@
       "translation": "Cancel"
     },
     {
+      "id": "Card Styles",
+      "message": "Card Styles",
+      "translation": ""
+    },
+    {
       "id": "Changelog",
       "message": "Changelog",
       "translation": ""
@@ -289,6 +314,11 @@
     {
       "id": "Column Sorting",
       "message": "Column Sorting",
+      "translation": ""
+    },
+    {
+      "id": "Columns",
+      "message": "Columns",
       "translation": ""
     },
     {
@@ -562,6 +592,11 @@
       "translation": ""
     },
     {
+      "id": "Folder Sync",
+      "message": "Folder Sync",
+      "translation": ""
+    },
+    {
       "id": "Folders",
       "message": "Folders",
       "translation": ""
@@ -809,6 +844,11 @@
     {
       "id": "Kanban",
       "message": "Kanban",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Settings",
+      "message": "Kanban Settings",
       "translation": ""
     },
     {
@@ -1322,6 +1362,11 @@
       "translation": ""
     },
     {
+      "id": "Statuses",
+      "message": "Statuses",
+      "translation": ""
+    },
+    {
       "id": "Storage Statistics",
       "message": "Storage Statistics",
       "translation": ""
@@ -1349,6 +1394,11 @@
     {
       "id": "Table Settings",
       "message": "Table Settings",
+      "translation": ""
+    },
+    {
+      "id": "Tag Colors",
+      "message": "Tag Colors",
       "translation": ""
     },
     {
@@ -1737,6 +1787,11 @@
       "translation": ""
     },
     {
+      "id": "ancestor filter status {Arg_1} is not in the status list",
+      "message": "ancestor filter status {Arg_1} is not in the status list",
+      "translation": ""
+    },
+    {
       "id": "ancestors",
       "message": "ancestors",
       "translation": ""
@@ -1777,6 +1832,11 @@
       "translation": ""
     },
     {
+      "id": "archive status {Arg_1} is not in the status list",
+      "message": "archive status {Arg_1} is not in the status list",
+      "translation": ""
+    },
+    {
       "id": "are you sure you want to delete this dashboard?",
       "message": "are you sure you want to delete this dashboard?",
       "translation": ""
@@ -1794,6 +1854,11 @@
     {
       "id": "auth test passed",
       "message": "auth test passed",
+      "translation": ""
+    },
+    {
+      "id": "auto-create tag {Arg_1} (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses",
+      "message": "auto-create tag {Arg_1} (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses",
       "translation": ""
     },
     {
@@ -1839,6 +1904,16 @@
     {
       "id": "before",
       "message": "before",
+      "translation": ""
+    },
+    {
+      "id": "board folder {Arg_1} doesn't exist",
+      "message": "board folder {Arg_1} doesn't exist",
+      "translation": ""
+    },
+    {
+      "id": "board folder {Arg_1} doesn't exist, fix the board in the kanban settings",
+      "message": "board folder {Arg_1} doesn't exist, fix the board in the kanban settings",
       "translation": ""
     },
     {
@@ -1997,8 +2072,18 @@
       "translation": ""
     },
     {
+      "id": "column {Arg_1} is not in the status list",
+      "message": "column {Arg_1} is not in the status list",
+      "translation": ""
+    },
+    {
       "id": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
       "message": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/\u003cstatus\u003e/, and moving the file on disk into an existing folder/path/\u003cstatus\u003e/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",
+      "message": "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/\u003cstatus\u003e/, and moving the file on disk into an existing folder/path/\u003cstatus\u003e/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",
       "translation": ""
     },
     {
@@ -2007,8 +2092,38 @@
       "translation": ""
     },
     {
+      "id": "comma-separated folder/path:Display Name entries; each board covers that folder and its subfolders, the URL slug is derived from the folder path, e.g. projects/work:Work Board, personal/todo:Personal Todo. the folder must be relative to docs and can't start with docs/, media/ or files/",
+      "message": "comma-separated folder/path:Display Name entries; each board covers that folder and its subfolders, the URL slug is derived from the folder path, e.g. projects/work:Work Board, personal/todo:Personal Todo. the folder must be relative to docs and can't start with docs/, media/ or files/",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated list of all valid kanban statuses (letters, digits and _ only). removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
+      "message": "comma-separated list of all valid kanban statuses (letters, digits and _ only). removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated status:style entries; styles: normal, italic, highlighted, deleted, e.g. blocked:italic, archive:deleted",
+      "message": "comma-separated status:style entries; styles: normal, italic, highlighted, deleted, e.g. blocked:italic, archive:deleted",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated statuses a descendant card must have for its ancestor to appear in the ancestor filter (empty = all ancestors shown)",
+      "message": "comma-separated statuses a descendant card must have for its ancestor to appear in the ancestor filter (empty = all ancestors shown)",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated statuses shown as columns on every board (subset of Statuses)",
+      "message": "comma-separated statuses shown as columns on every board (subset of Statuses)",
+      "translation": ""
+    },
+    {
       "id": "comma-separated tag patterns - files carrying a matching tag are hidden, like Hide Paths but by tag. case-insensitive, * is a wildcard, e.g. \"private*\" hides every file tagged private or private-anything. by default a pattern hides everywhere; append scopes to hide only there, same as Hide Paths",
       "message": "comma-separated tag patterns - files carrying a matching tag are hidden, like Hide Paths but by tag. case-insensitive, * is a wildcard, e.g. \"private*\" hides every file tagged private or private-anything. by default a pattern hides everywhere; append scopes to hide only there, same as Hide Paths",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated tag:csscolor entries for tag chips on cards, e.g. urgent:red, blocked:orange, done:#2a2 or todo:var(--warning)",
+      "message": "comma-separated tag:csscolor entries for tag chips on cards, e.g. urgent:red, blocked:orange, done:#2a2 or todo:var(--warning)",
       "translation": ""
     },
     {
@@ -3282,6 +3397,11 @@
       "translation": ""
     },
     {
+      "id": "folder sync folder {Arg_1} has no matching board",
+      "message": "folder sync folder {Arg_1} has no matching board",
+      "translation": ""
+    },
+    {
       "id": "folder with new name already exists",
       "message": "folder with new name already exists",
       "translation": ""
@@ -3587,8 +3707,8 @@
       "translation": ""
     },
     {
-      "id": "invalid settings file",
-      "message": "invalid settings file",
+      "id": "invalid settings file: {Arg_1}",
+      "message": "invalid settings file: {Arg_1}",
       "translation": ""
     },
     {
@@ -3629,6 +3749,11 @@
     {
       "id": "kanban added at",
       "message": "kanban added at",
+      "translation": ""
+    },
+    {
+      "id": "kanban config warnings:",
+      "message": "kanban config warnings:",
       "translation": ""
     },
     {
@@ -4922,6 +5047,11 @@
       "translation": ""
     },
     {
+      "id": "status used for the archive drop zone shown while dragging (empty = disable the archive zone)",
+      "message": "status used for the archive drop zone shown while dragging (empty = disable the archive zone)",
+      "translation": ""
+    },
+    {
       "id": "suggested fix",
       "message": "suggested fix",
       "translation": ""
@@ -4994,6 +5124,11 @@
     {
       "id": "text file",
       "message": "text file",
+      "translation": ""
+    },
+    {
+      "id": "the status list is empty, no card can be placed on a board",
+      "message": "the status list is empty, no card can be placed on a board",
       "translation": ""
     },
     {

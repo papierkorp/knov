@@ -131,6 +131,10 @@ func RenderKanbanColumn(status, label string, cards []kanban.Card, board configm
 // RenderKanbanBoard renders the full board (all columns)
 func RenderKanbanBoard(columns []kanban.Column, board configmanager.KanbanBoard) string {
 	var html strings.Builder
+	if kanban.BoardFolderMissing(board.FolderPath) {
+		fmt.Fprintf(&html, `<div class="kanban-folder-missing"><i class="fa fa-triangle-exclamation"></i> %s</div>`,
+			template.HTMLEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "board folder %q doesn't exist, fix the board in the kanban settings", board.FolderPath)))
+	}
 	html.WriteString(`<div class="kanban-board" id="kanban-board">`)
 	hide := configmanager.NewHideMatcher(configmanager.HideScopeKanban)
 	for _, col := range columns {
