@@ -87,6 +87,10 @@ func main() {
 	}
 
 	configmanager.InitAppConfig()
+	if err := configmanager.ValidateEnvDefs(); err != nil {
+		logging.LogError(logging.KeyApp, "invalid env config: %v", err)
+		os.Exit(1)
+	}
 	translation.Init()
 
 	if startTests {
@@ -176,10 +180,6 @@ func main() {
 
 	if err := configmanager.InitSettings(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize settings: %v", err)
-		os.Exit(1)
-	}
-	if err := configmanager.CheckKanbanPrefix(); err != nil {
-		logging.LogError(logging.KeyApp, "invalid kanban config: %v", err)
 		os.Exit(1)
 	}
 	configmanager.LoadThemeSettings()

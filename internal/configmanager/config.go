@@ -695,11 +695,10 @@ var (
 	kanbanCardStyles      = []string{"normal", "italic", "highlighted", "deleted"}
 )
 
-// CheckKanbanPrefix refuses to start while KNOV_KANBAN_PREFIX isn't only letters, digits and _
-// (the prefix ends up in tags and html attributes).
-func CheckKanbanPrefix() error {
-	if !kanbanNamePattern.MatchString(GetKanbanPrefix()) {
-		return fmt.Errorf("KNOV_KANBAN_PREFIX %q must only contain letters, digits and _", GetKanbanPrefix())
+// validateKanbanPrefix only allows letters, digits and _ in KNOV_KANBAN_PREFIX.
+func validateKanbanPrefix(prefix string) error {
+	if !kanbanNamePattern.MatchString(prefix) {
+		return fmt.Errorf("%q must only contain letters, digits and _", prefix)
 	}
 	return nil
 }

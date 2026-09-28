@@ -30,7 +30,6 @@
   - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
   - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
   - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
-  - CheckKanbanSettings in main.go: The only startup validator of its kind, so it’s a one-off. It’s acceptable at this size. Don’t build a general env-validation hook for one variable.
 - test
   - remote git in mobile
 
@@ -50,6 +49,7 @@ small, precise and concise, high level overview, no examples that are prone to c
 
 ## overview
 
+```bash
 give me an overview of the current git changes, dont make any changes yet just give me your opinion
 
 - does it use the same principles as the rest of the application/packages?
@@ -59,9 +59,11 @@ give me an overview of the current git changes, dont make any changes yet just g
 - if you could refactor it - are there better ways to implement it?
 - are there some serious problems with the current solution?
 - what is it doing exactly?
+```
 
 ## analyze
 
+```bash
 **Role:** Act as a Senior Software Architect and Lead DevOps Engineer with 15+ years of experience in building scalable, production-grade systems. Also act as a pragmatic minimalist who strongly prefers the simplest solution that satisfies the current requirements.
 
 **Task:** Analyze the uncommitted working-tree changes. Critique the implementation, check for architectural consistency, verify production readiness, and explicitly evaluate whether the solution is overengineered and can be simplified.
@@ -117,9 +119,11 @@ give me an overview of the current git changes, dont make any changes yet just g
 - Is the added complexity justified by current scale, reliability, security, or team constraints? If not, simplify.
 - Rank the simplifications by impact vs. effort.
 - **Simplicity Verdict:** "Already simple," "Can be simplified," or "Significantly overengineered."
+```
 
 ## review
 
+```bash
 Role: Act as a Staff-Level Software Engineer conducting a code review with a high bar for quality and maintainability.
 
 Task: Review the current git diff. You are strictly prohibited from rewriting the code or providing "fixed" code snippets. You are only permitted to give your professional opinion on the changes.
@@ -146,3 +150,4 @@ Areas to scrutinize (your opinion must cover these):
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?
 
 - run `--start-tests --remove` and check for potentiol bugs
+```

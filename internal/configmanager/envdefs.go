@@ -1,6 +1,7 @@
 package configmanager
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -21,8 +22,9 @@ type EnvVarDef struct {
 	Default         string   // documented default value; "" = empty/unset by default
 	Sensitive       bool     // true = redact the current value on the environment page/API
 
-	apply func(cfg *AppConfig, baseDir string) // nil for vars with no AppConfig field (e.g. KNOV_LOG_*)
-	get   func(cfg AppConfig) string
+	apply    func(cfg *AppConfig, baseDir string) // nil for vars with no AppConfig field (e.g. KNOV_LOG_*)
+	get      func(cfg AppConfig) string
+	validate func(value string) error // nil = any value is accepted; checked by ValidateEnvDefs
 }
 
 type defOption func(*EnvVarDef)
@@ -35,6 +37,11 @@ func withOptions(values ...string) defOption {
 // withSensitive marks an env var's current value as redacted on the environment page/API.
 func withSensitive() defOption {
 	return func(d *EnvVarDef) { d.Sensitive = true }
+}
+
+// withValidate rejects an invalid env var value at startup (see ValidateEnvDefs).
+func withValidate(validate func(string) error) defOption {
+	return func(d *EnvVarDef) { d.validate = validate }
 }
 
 func applyOptions(d EnvVarDef, opts []defOption) EnvVarDef {
@@ -180,7 +187,7 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── kanban ──
 	boolDef("KNOV_KANBAN_EVENTS_ENABLED", "kanban", "set to false to disable kanban event logging entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.KanbanEventsEnabled }),
-	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox), letters, digits and _ only; existing tags are not renamed, so after a change cards still tagged with the old prefix drop off the board until they're retagged`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }),
+	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox), letters, digits and _ only; existing tags are not renamed, so after a change cards still tagged with the old prefix drop off the board until they're retagged`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }, withValidate(validateKanbanPrefix)),
 
 	// ── tracker ──
 	boolDef("KNOV_TRACKER_ENABLED", "tracker", "set to false to disable the tracker editor entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.TrackerEnabled }),
@@ -214,6 +221,20 @@ func applyEnvDefs(cfg *AppConfig, baseDir string) {
 			def.apply(cfg, baseDir)
 		}
 	}
+}
+
+// ValidateEnvDefs runs every env var's validator (withValidate) against its loaded value and
+// returns the first failure, so main can refuse to start on an invalid config.
+func ValidateEnvDefs() error {
+	for _, def := range EnvVarDefs {
+		if def.validate == nil {
+			continue
+		}
+		if err := def.validate(def.get(appConfig)); err != nil {
+			return fmt.Errorf("%s: %w", def.Key, err)
+		}
+	}
+	return nil
 }
 
 // envVarDefault looks up a KNOV_* key's documented default in EnvVarDefs, for the handful of
