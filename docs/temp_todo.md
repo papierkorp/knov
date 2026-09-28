@@ -30,6 +30,7 @@
   - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
   - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
   - CheckKanbanSettings in main.go: The only startup validator of its kind, so it’s a one-off. It’s acceptable at this size. Don’t build a general env-validation hook for one variable.
+  - A Windows absolute path like C:\x:tag is misread. It becomes folder C with tag \x:tag. The old parser had the same flaw, so this isn’t a regression, but the colon-delimited format simply can’t express it. Not worth fixing unless someone reports it.
 - test
   - remote git in mobile
 

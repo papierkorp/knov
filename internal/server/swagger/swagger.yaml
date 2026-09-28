@@ -4387,6 +4387,23 @@ paths:
       summary: Get settings section
       tags:
       - settings
+  /api/settings/kanban/warnings:
+    get:
+      description: Returns inconsistencies in the kanban settings (e.g. missing board
+        folders, columns not in the status list)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get kanban config warnings
+      tags:
+      - settings
   /api/system/backups:
     get:
       description: Lists every backup created and restore applied, newest first, as

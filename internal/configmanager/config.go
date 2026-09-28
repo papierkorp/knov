@@ -62,7 +62,6 @@ type AppConfig struct {
 	CronjobInterval           string
 	SearchIndexInterval       string
 	MetadataRebuildInterval   string
-	AutoCreateTags            []AutoCreateTag
 	TrackerEnabled            bool
 	NotifyDuration            int
 	NotifyMinLevel            string
@@ -396,37 +395,6 @@ func formatBackupProfiles(profiles []BackupProfile) string {
 	return strings.Join(parts, "; ")
 }
 
-// getAutoCreateTagsEnv parses "folder/path:tagname, tagname2, other/folder:tagname3" into a
-// list of auto-create tag rules. An entry with no ":" is a bare tag applied to every new file;
-// an entry with ":" scopes the tag to that folder (and its subfolders).
-func getAutoCreateTagsEnv(key string) []AutoCreateTag {
-	var result []AutoCreateTag
-	value := os.Getenv(key)
-	if value == "" {
-		return result
-	}
-	for _, entry := range strings.Split(value, ",") {
-		entry = strings.TrimSpace(entry)
-		if entry == "" {
-			continue
-		}
-		parts := strings.SplitN(entry, ":", 2)
-		if len(parts) == 1 {
-			if tag := strings.TrimSpace(parts[0]); tag != "" {
-				result = append(result, AutoCreateTag{Tag: tag})
-			}
-			continue
-		}
-		folderPath := strings.Trim(strings.TrimSpace(parts[0]), "/")
-		tag := strings.TrimSpace(parts[1])
-		if tag == "" {
-			continue
-		}
-		result = append(result, AutoCreateTag{FolderPath: folderPath, Tag: tag})
-	}
-	return result
-}
-
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -493,9 +461,21 @@ func GetKanbanColumns() []string {
 	return KanbanColumns.Get()
 }
 
-// GetAutoCreateTags returns the folder-scoped tags applied to newly created files
+// GetAutoCreateTags returns the folder-scoped tags applied to newly created files. An entry
+// with no ":" is a bare tag applied to every new file; "folder/path:tag" scopes the tag to
+// that folder (and its subfolders).
 func GetAutoCreateTags() []AutoCreateTag {
-	return appConfig.AutoCreateTags
+	var result []AutoCreateTag
+	for _, entry := range AutoCreateTags.Get() {
+		folderPath, tag, ok := strings.Cut(entry, ":")
+		if !ok {
+			folderPath, tag = "", entry
+		}
+		if tag = strings.TrimSpace(tag); tag != "" {
+			result = append(result, AutoCreateTag{FolderPath: NormalizeKanbanFolder(folderPath), Tag: tag})
+		}
+	}
+	return result
 }
 
 // KanbanStatusTag returns the full tag for a given status
@@ -762,6 +742,23 @@ func ValidateKanbanBoards(entries []string) error {
 			return fmt.Errorf("duplicate board folder %q", folderPath)
 		}
 		folders = append(folders, folderPath)
+	}
+	return nil
+}
+
+// ValidateAutoCreateTags rejects "folder/path:tag" entries with an empty tag or a folder outside docs.
+func ValidateAutoCreateTags(entries []string) error {
+	for _, entry := range entries {
+		folderPath, tag, ok := strings.Cut(entry, ":")
+		if !ok {
+			continue
+		}
+		if strings.TrimSpace(tag) == "" {
+			return fmt.Errorf("invalid entry %q (expected tag or folder/path:tag)", entry)
+		}
+		if err := validateKanbanFolder(folderPath); err != nil {
+			return fmt.Errorf("invalid entry %q: %w", entry, err)
+		}
 	}
 	return nil
 }

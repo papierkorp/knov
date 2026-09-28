@@ -472,6 +472,14 @@ var (
 		Desc:     "comma-separated status:style entries; styles: normal, italic, highlighted, deleted, e.g. blocked:italic, archive:deleted",
 		Validate: ValidateKanbanCardStyles,
 	})
+	AutoCreateTags = register(&StringSliceSetting{
+		key:      "autoCreateTags",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Label:    "Auto-Create Tags",
+		Desc:     `comma-separated tags automatically added to newly created files; a bare tag (no ":") applies to every new file everywhere, a "folder/path:tag" entry only to files created under that folder and its subfolders, e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox`,
+		Validate: ValidateAutoCreateTags,
+	})
 
 	// ── General ───────────────────────────────────────────────────────────────
 	Language = register(&StringSetting{

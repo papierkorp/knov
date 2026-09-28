@@ -92,7 +92,7 @@ func listDef(key, category, description string, def []string, field func(*AppCon
 }
 
 // compositeDef defines an env var whose parsing/formatting doesn't fit the type-based
-// constructors above: a composite AppConfig field (AutoCreateTags, BackupAutoProfiles) or a
+// constructors above: a composite AppConfig field (BackupAutoProfiles) or a
 // var with no AppConfig field at all, read directly by another package (KNOV_LOG_*). apply may be nil for the latter case.
 func compositeDef(key, category, description, def string, apply func(cfg *AppConfig, key string), get func(cfg AppConfig, key string) string, opts ...defOption) EnvVarDef {
 	return applyOptions(EnvVarDef{
@@ -181,10 +181,6 @@ var EnvVarDefs = []EnvVarDef{
 	// ── kanban ──
 	boolDef("KNOV_KANBAN_EVENTS_ENABLED", "kanban", "set to false to disable kanban event logging entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.KanbanEventsEnabled }),
 	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox), letters, digits and _ only; existing tags are not renamed, so after a change cards still tagged with the old prefix drop off the board until they're retagged`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }),
-	compositeDef("KNOV_AUTOCREATE_TAGS", "kanban", "tags automatically added to newly created files (comma-separated, empty = disabled); a bare tag (no \":\") applies to every new file everywhere; a \"folder/path:tag\" entry only applies to files created under that folder (recursive - also covers subfolders); e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox", "",
-		func(cfg *AppConfig, key string) { cfg.AutoCreateTags = getAutoCreateTagsEnv(key) },
-		func(cfg AppConfig, _ string) string { return formatAutoCreateTags(cfg.AutoCreateTags) },
-	),
 
 	// ── tracker ──
 	boolDef("KNOV_TRACKER_ENABLED", "tracker", "set to false to disable the tracker editor entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.TrackerEnabled }),
@@ -252,16 +248,4 @@ func CurrentEnvValues() map[string]string {
 		values[def.Key] = def.get(appConfig)
 	}
 	return values
-}
-
-func formatAutoCreateTags(tags []AutoCreateTag) string {
-	parts := make([]string, 0, len(tags))
-	for _, a := range tags {
-		if a.FolderPath != "" {
-			parts = append(parts, a.FolderPath+":"+a.Tag)
-		} else {
-			parts = append(parts, a.Tag)
-		}
-	}
-	return strings.Join(parts, ", ")
 }

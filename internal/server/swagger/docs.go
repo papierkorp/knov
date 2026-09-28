@@ -5582,6 +5582,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/settings/kanban/warnings": {
+            "get": {
+                "description": "Returns inconsistencies in the kanban settings (e.g. missing board folders, columns not in the status list)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Get kanban config warnings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/settings/{key}": {
             "post": {
                 "description": "Updates a single setting value by key and persists it",

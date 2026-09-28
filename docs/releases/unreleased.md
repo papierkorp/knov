@@ -1,6 +1,6 @@
 # unreleased
 
-_75 commits since last release_
+_77 commits since last release_
 
 ## breaking changes
 - move kanban config from env vars to the settings page, please re-enter your kanban boards, statuses, columns etc. under settings

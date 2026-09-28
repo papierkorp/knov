@@ -2,11 +2,6 @@
   "language": "de",
   "messages": [
     {
-      "id": "{Integer} file(s) still carry {Arg_2} whose status is not in the status list, retag them to put them back on the board",
-      "message": "{Integer} file(s) still carry {Arg_2} whose status is not in the status list, retag them to put them back on the board",
-      "translation": ""
-    },
-    {
       "id": "{Integer} files not shown (hidden in settings)",
       "message": "{Integer} files not shown (hidden in settings)",
       "translation": "{Integer} Dateien nicht angezeigt (in den Einstellungen ausgeblendet)"

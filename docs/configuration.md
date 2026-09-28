@@ -145,10 +145,10 @@ Trackers are named counters (e.g. habit or hit-count tracking) with +/- buttons 
 
 Useful for kanban setups where every new file in a given folder should land in a default column.
 
-- `KNOV_AUTOCREATE_TAGS` - comma-separated list of `folder/path:tag` entries (recursive - also covers subfolders); a bare tag with no `folder/path:` prefix applies to every newly created file everywhere
+- **Auto-Create Tags** (settings page, Kanban section) - comma-separated list of `folder/path:tag` entries (recursive - also covers subfolders); a bare tag with no `folder/path:` prefix applies to every newly created file everywhere
 - Multiple entries can target the same folder (or the same tag can be repeated across folders) - each entry is independent
 
-Example: `KNOV_AUTOCREATE_TAGS=projects/work:kb-status-inbox,personal/todo:kb-status-inbox` puts every new file created under either of those two kanban board folders straight into the inbox column of its board.
+Example: `projects/work:kb-status-inbox, personal/todo:kb-status-inbox` puts every new file created under either of those two kanban board folders straight into the inbox column of its board.
 
 ---
 

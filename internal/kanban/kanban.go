@@ -690,7 +690,7 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 	for _, a := range configmanager.GetAutoCreateTags() {
 		status, isStatus := strings.CutPrefix(a.Tag, prefix+"-status-")
 		if strings.HasPrefix(a.Tag, prefix+"-") && !(isStatus && slices.Contains(statuses, status)) {
-			warnings = append(warnings, t("auto-create tag %q (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses", a.Tag))
+			warnings = append(warnings, t("auto-create tag %q doesn't match the kanban prefix/statuses", a.Tag))
 		}
 	}
 	return warnings
