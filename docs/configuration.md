@@ -42,7 +42,7 @@ The kanban board organises files into columns based on status tags. Everything b
 - Add one status tag to a file inside a configured board's folder to place it in a column - e.g. `kb-status-inbox`
 - Only one status tag per file is valid; if you add two the last one wins
 - The tag is `<prefix>-status-<status>`; the prefix is `KNOV_KANBAN_PREFIX` (default `kb`, letters, digits and _ only, needs a restart), the `-status-` middle is fixed
-- Changing the prefix or removing/renaming a status never deletes existing tags - those cards just drop off the board until retagged, and the Kanban Settings section lists them as a warning
+- Changing the prefix or removing/renaming a status never deletes existing tags - those cards just drop off the board until retagged
 
 **Statuses and columns:**
 - **Statuses** (default `inbox, inprogress, blocked, archive`) defines every valid status - adding a new status tag outside this list is rejected

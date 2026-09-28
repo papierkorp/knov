@@ -4,7 +4,6 @@ package kanban
 import (
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -656,8 +655,8 @@ func TagNotifyMsg(oldTag, newTag string) string {
 // ConfigWarnings lists inconsistencies in the current kanban settings that don't block a save:
 // an empty status list, board folders that don't exist (e.g. renamed), columns, archive or ancestor filter statuses
 // that aren't in the status list, folder sync folders without a board, auto-create tags under
-// the prefix that aren't valid status tags, and status tags files still carry that aren't in the
-// status list (kept by the tag sanitizer, but off the board).
+// the prefix that aren't valid status tags. It only reads settings (plus one stat per board), no
+// file scan, since it runs after every kanban setting save.
 func ConfigWarnings(t func(string, ...any) string) []string {
 	prefix, statuses := configmanager.GetKanbanPrefix(), configmanager.GetKanbanStatuses()
 	var warnings []string
@@ -693,24 +692,6 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 		if strings.HasPrefix(a.Tag, prefix+"-") && !(isStatus && slices.Contains(statuses, status)) {
 			warnings = append(warnings, t("auto-create tag %q (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses", a.Tag))
 		}
-	}
-	allFiles, err := files.GetAllFilesCached()
-	if err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to list files for kanban config warnings: %v", err)
-	}
-	unknown := map[string]int{}
-	for _, f := range allFiles {
-		if f.Metadata == nil {
-			continue
-		}
-		for _, tag := range f.Metadata.Tags {
-			if status, ok := strings.CutPrefix(tag, prefix+"-status-"); ok && !slices.Contains(statuses, status) {
-				unknown[tag]++
-			}
-		}
-	}
-	for _, tag := range slices.Sorted(maps.Keys(unknown)) {
-		warnings = append(warnings, t("%d file(s) still carry %q whose status is not in the status list, retag them to put them back on the board", unknown[tag], tag))
 	}
 	return warnings
 }

@@ -319,7 +319,6 @@ type StringSliceSetting struct {
 	Target   string
 	OnChange func(interface{})
 	Validate func([]string) error
-	Refresh  bool
 
 	RefreshFileCaches bool
 }
@@ -334,7 +333,7 @@ func (s *StringSliceSetting) Key() string           { return s.key }
 func (s *StringSliceSetting) Type() string          { return "textarea" }
 func (s *StringSliceSetting) GetValue() interface{} { return s.Get() }
 func (s *StringSliceSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh, RefreshFileCaches: s.RefreshFileCaches}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, RefreshFileCaches: s.RefreshFileCaches}
 }
 func (s *StringSliceSetting) parse(v string) (interface{}, error) {
 	parts := strings.Split(v, ",")

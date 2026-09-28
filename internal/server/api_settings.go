@@ -88,6 +88,21 @@ func renderSettingsSection(s configmanager.SettingSection, t func(string, ...any
 	}
 }
 
+// @Summary Get kanban config warnings
+// @Description Returns inconsistencies in the kanban settings (e.g. missing board folders, columns not in the status list)
+// @Tags settings
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/settings/kanban/warnings [get]
+func handleAPIGetKanbanConfigWarnings(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+	warnings := kanban.ConfigWarnings(t)
+	writeResponse(w, r, warnings, render.RenderKanbanConfigWarnings(warnings, t))
+}
+
 // @Summary Get all settings
 // @Description Returns all settings sections as HTML (HTMX) or JSON
 // @Tags settings
@@ -175,8 +190,13 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 	if configmanager.RefreshesFileCaches(key) {
 		files.RefreshCaches()
 	}
-	if rs, ok := s.(configmanager.RenderableSetting); ok && rs.GetMeta().Refresh {
-		w.Header().Set("HX-Refresh", "true")
+	if rs, ok := s.(configmanager.RenderableSetting); ok {
+		if rs.GetMeta().Refresh {
+			w.Header().Set("HX-Refresh", "true")
+		} else {
+			// lets a section re-fetch itself after a save, e.g. to update its warnings
+			w.Header().Set("HX-Trigger", "settings-"+rs.GetMeta().Section.Key+"-saved")
+		}
 	}
 	writeResponse(w, r, map[string]interface{}{"key": key, "value": s.GetValue()}, "")
 }

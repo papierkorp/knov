@@ -97,18 +97,19 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 	return html.String()
 }
 
-// RenderKanbanConfigWarnings renders the inconsistencies in the kanban settings as a note, empty
-// if there are none.
+// RenderKanbanConfigWarnings renders the inconsistencies in the kanban settings as a note (empty
+// if there are none) that re-fetches itself after a kanban setting was saved.
 func RenderKanbanConfigWarnings(warnings []string, t func(string, ...any) string) string {
-	if len(warnings) == 0 {
-		return ""
-	}
 	var html strings.Builder
-	fmt.Fprintf(&html, `<div class="setting-item kanban-config-warnings"><strong><i class="fa fa-triangle-exclamation"></i> %s</strong><ul>`, t("kanban config warnings:"))
-	for _, w := range warnings {
-		fmt.Fprintf(&html, `<li>%s</li>`, template.HTMLEscapeString(w))
+	html.WriteString(`<div id="kanban-config-warnings" class="setting-item" hx-get="/api/settings/kanban/warnings" hx-trigger="settings-kanban-saved from:body" hx-swap="outerHTML">`)
+	if len(warnings) > 0 {
+		fmt.Fprintf(&html, `<strong><i class="fa fa-triangle-exclamation"></i> %s</strong><ul>`, t("kanban config warnings:"))
+		for _, w := range warnings {
+			fmt.Fprintf(&html, `<li>%s</li>`, template.HTMLEscapeString(w))
+		}
+		html.WriteString(`</ul>`)
 	}
-	html.WriteString(`</ul></div>`)
+	html.WriteString(`</div>`)
 	return html.String()
 }
 

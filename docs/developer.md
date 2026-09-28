@@ -452,7 +452,7 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 
 - Kanban state is stored as a regular metadata tag: `{prefix}-status-{status}` (e.g. `kb-status-inbox`)
 - The prefix comes from `KNOV_KANBAN_PREFIX` (env, restart - changing it is a data-format change), valid statuses from the settings registry (`KanbanStatuses` in `settings_registry.go`)
-- `sanitizeKanbanTags(oldTags, tags)` in `metadata.go` only checks *newly added* `{prefix}-*` tags (must be `{prefix}-status-{allowed status}`, a new status tag replaces the existing one) — tags already on the file are always kept, so a config change never deletes data; orphaned status tags are surfaced by `kanban.ConfigWarnings` instead. Called from `SetTags` / `PatchTags` / the metadata patch
+- `sanitizeKanbanTags(oldTags, tags)` in `metadata.go` only checks *newly added* `{prefix}-*` tags (must be `{prefix}-status-{allowed status}`, a new status tag replaces the existing one) — tags already on the file are always kept, so a config change never deletes data (orphaned status tags just drop off the board). Called from `SetTags` / `PatchTags` / the metadata patch
 
 ## Boards
 

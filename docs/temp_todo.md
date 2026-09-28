@@ -23,7 +23,6 @@
     - Values are re-parsed on every read. GetKanbanBoards, GetKanbanTagColors and GetKanbanCardStyles parse on each call. RenderKanbanCard builds the card-style map for every card, and SyncFolderTag parses boards twice per file during the file-sync cronjob.
     With realistic sizes this doesn’t matter.
     The cleanest fix is to cache the parsed value in an OnChange on the setting, or at least read the maps once per board render instead of once per card.
-  - ConfigWarnings walks every file’s tags on each Kanban settings load. Every kanban setting has Refresh: true, so each saved field reloads the whole page and triggers another full scan. The file list is cached, so it’s only iteration, but on large vaults this is the most expensive part of the change.
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
   - pathutils => windows/linux path function
   - The settings API layer checks the tags twice, and the first check can use stale data. handleAPISetMetadataTags (internal/server/api_metadata.go:696) reads oldMeta outside the metadata lock and checks the new tags against it. Then SetTags checks them again against m.Tags inside MetaDataMutate, which is the check that actually counts. If two requests race, the first check can pass or fail differently from the second. The only thing that goes wrong is which error message the user sees; the data stays correct. This pattern existed before, but the change now adds a dependency on old tags. Acceptable for now.
@@ -31,10 +30,6 @@
   - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
   - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
   - CheckKanbanSettings in main.go: The only startup validator of its kind, so it’s a one-off. It’s acceptable at this size. Don’t build a general env-validation hook for one variable.
-  - Every Kanban setting has Refresh: true, which reloads the whole page after each save
-  Presumably this is so the warnings box updates. The cost is a full reload whenever a Kanban textarea loses focus.
-  Building the warnings also scans every cached file’s tags and checks each board folder on disk, so the page does that work on every reload.
-  Fix: reload only #section-kanban after a save instead of the whole page. That fits the “more htmx” goal better too.
 - test
   - remote git in mobile
 
@@ -144,8 +139,9 @@ Areas to scrutinize (your opinion must cover these):
 - Performance: Are there O(n²) loops hiding in the changes, or unnecessary database queries?
 - Maintainability: Is the naming clear? Is it adding accidental complexity or tight coupling?
 - Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
-- run `--start-tests --remove` and check for potentiol bugs 
 - Architecture: Are the changes in line with the rest of the codebase?
 - Ignore the i18n translations since they are unrelated.
 
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?
+
+- run `--start-tests --remove` and check for potentiol bugs
