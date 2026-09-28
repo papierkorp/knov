@@ -693,28 +693,17 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		tags = []string{}
 	}
 
-	// read existing tags so they're kept by the sanitizer and to detect kanban changes for notify messages
-	oldMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
-	var oldTags []string
-	var oldKbTag string
-	if oldMeta != nil {
-		oldTags = oldMeta.Tags
-		oldKbTag = kanban.TagFromList(oldMeta.Tags)
-	}
-
-	sanitized, err := files.SanitizeKanbanTags(oldTags, tags)
-	if err != nil {
+	oldTags, newTags, err := files.SetTagsStrict(pathutils.ToWithPrefix(filePath), tags)
+	if errors.Is(err, files.ErrInvalidKanbanTags) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
-	newKbTag := kanban.TagFromList(sanitized)
-
-	if err := files.SetTags(pathutils.ToWithPrefix(filePath), sanitized); err != nil {
+	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
 
-	if msg := kanban.TagNotifyMsg(oldKbTag, newKbTag); msg != "" {
+	if msg := kanban.TagNotifyMsg(kanban.TagFromList(oldTags), kanban.TagFromList(newTags)); msg != "" {
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), msg))
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))

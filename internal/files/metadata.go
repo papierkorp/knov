@@ -9,6 +9,7 @@ package files
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -312,6 +313,10 @@ func MetaDataSyncNoRefresh(path string) error {
 	return nil
 }
 
+// ErrInvalidKanbanTags is returned (wrapped) by SanitizeKanbanTags and SetTagsStrict when tags
+// adds an unknown kanban tag or a status outside the allowlist.
+var ErrInvalidKanbanTags = errors.New("invalid kanban tag(s) removed")
+
 // SanitizeKanbanTags checks the kanban tags that tags adds to oldTags: an unknown
 // <prefix>-<x> tag or a status outside the allowlist is removed and reported. Tags already in
 // oldTags are always kept, so a later kanban settings change never deletes existing tags - this
@@ -340,7 +345,7 @@ func SanitizeKanbanTags(oldTags, tags []string) ([]string, error) {
 	}
 
 	if len(invalidTags) > 0 {
-		return result, fmt.Errorf("invalid kanban tag(s) removed: %s (allowed statuses: %s)",
+		return result, fmt.Errorf("%w: %s (allowed statuses: %s)", ErrInvalidKanbanTags,
 			strings.Join(invalidTags, ", "), strings.Join(validStatuses, ", "))
 	}
 	return result, nil
@@ -407,6 +412,26 @@ func SetEditorNoRefresh(path string, editor EditorType) error {
 // transitions the same way the old field-merge path did.
 func SetTags(path string, tags []string) error {
 	return withRefresh(func() error { return SetTagsNoRefresh(path, tags) })
+}
+
+// SetTagsStrict is SetTags for user input: the kanban check runs against the tags on disk under
+// the path lock, and invalid kanban tags (ErrInvalidKanbanTags) reject the whole save instead
+// of being dropped. Returns the tags before and after the save as seen under the lock.
+func SetTagsStrict(path string, tags []string) (oldTags, newTags []string, err error) {
+	err = withRefresh(func() error {
+		return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+			cleaned, err := SanitizeKanbanTags(m.Tags, tags)
+			if err != nil {
+				return false, err
+			}
+			oldKanbanStatus := kanbanStatusFromTags(m.Tags)
+			oldTags, newTags = m.Tags, cleaned
+			m.Tags = cleaned
+			applyKanbanTimestamps(m, oldKanbanStatus)
+			return true, nil
+		})
+	})
+	return oldTags, newTags, err
 }
 
 // SetTagsNoRefresh is SetTags without the aggregate cache refresh. See SetEditorNoRefresh.
