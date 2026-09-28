@@ -21,10 +21,6 @@
   - change the cleanup orphaned files to look the same as scan for broken links and misplaced media but keep the storage statistics without the cleanup button
   - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.
   - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
-  - 5. Settings are re-parsed on every call (performance, negligible). GetKanbanCardStyles() builds a new map for every card, and GetKanbanTagColors() does the same for every card with tags. GetKanbanBoards() re-parses the boards and recomputes slugs on every lookup. For realistic board sizes this is just allocation noise, not a real O(n²). Parsing once per render (or caching in OnChange) would be cleaner, but not needed now.
-    - Values are re-parsed on every read. GetKanbanBoards, GetKanbanTagColors and GetKanbanCardStyles parse on each call. RenderKanbanCard builds the card-style map for every card, and SyncFolderTag parses boards twice per file during the file-sync cronjob.
-    With realistic sizes this doesn’t matter.
-    The cleanest fix is to cache the parsed value in an OnChange on the setting, or at least read the maps once per board render instead of once per card.
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
   - The settings API layer checks the tags twice, and the first check can use stale data. handleAPISetMetadataTags (internal/server/api_metadata.go:696) reads oldMeta outside the metadata lock and checks the new tags against it. Then SetTags checks them again against m.Tags inside MetaDataMutate, which is the check that actually counts. If two requests race, the first check can pass or fail differently from the second. The only thing that goes wrong is which error message the user sees; the data stays correct. This pattern existed before, but the change now adds a dependency on old tags. Acceptable for now.
   - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
@@ -143,7 +139,7 @@ Areas to scrutinize (your opinion must cover these):
 - Security: Does this introduce injection risks, exposed secrets, or unsafe deserialization?
 - Performance: Are there O(n²) loops hiding in the changes, or unnecessary database queries?
 - Maintainability: Is the naming clear? Is it adding accidental complexity or tight coupling?
-- Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
+- Side Effects: Are there changes to global state, environment variables, or external APIs that werent considered?
 - Architecture: Are the changes in line with the rest of the codebase?
 - Ignore the i18n translations since they are unrelated.
 

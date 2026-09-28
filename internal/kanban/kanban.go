@@ -64,13 +64,13 @@ func folderMatches(meta *files.Metadata, folderPath string) bool {
 	return pathutils.FolderContains(strings.Join(meta.Folders, "/"), folderPath)
 }
 
-// resolveBoardFolder returns the most specific (longest) configured kanban board folder that
-// contains dir, or "" if no configured board covers it.
-func resolveBoardFolder(dir string) string {
-	best := ""
+// resolveBoard returns the most specific (longest) configured kanban board whose folder
+// contains dir, or a zero KanbanBoard (empty FolderPath) if no configured board covers it.
+func resolveBoard(dir string) configmanager.KanbanBoard {
+	var best configmanager.KanbanBoard
 	for _, b := range configmanager.GetKanbanBoards() {
-		if pathutils.FolderContains(dir, b.FolderPath) && len(b.FolderPath) > len(best) {
-			best = b.FolderPath
+		if pathutils.FolderContains(dir, b.FolderPath) && len(b.FolderPath) > len(best.FolderPath) {
+			best = b
 		}
 	}
 	return best
@@ -247,7 +247,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 		// caller either didn't say which board, or named one the file isn't actually under -
 		// never trust an unvalidated board hint for the physical move below, only for scoping
 		// the event log entry
-		board = resolveBoardFolder(dir)
+		board = resolveBoard(dir).FolderPath
 	}
 	eventFolder := board
 	if eventFolder == "" {
@@ -379,11 +379,12 @@ func SyncFolderTag(path string, changedAt time.Time) error {
 			return false, nil
 		}
 		dir := strings.Join(meta.Folders, "/")
-		board = resolveBoardFolder(dir)
+		cfgBoard := resolveBoard(dir)
+		board = cfgBoard.FolderPath
 		if board == "" {
 			return false, nil // not under any configured board
 		}
-		if cfgBoard, ok := configmanager.GetKanbanBoardByFolder(board); !ok || !cfgBoard.FolderSync {
+		if !cfgBoard.FolderSync {
 			return false, nil // foldersync not enabled for this board
 		}
 		status = strings.TrimPrefix(dir, board+"/")

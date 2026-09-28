@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"knov/internal/backup"
 	"knov/internal/logging"
@@ -242,14 +243,50 @@ func SetBackupsPath(path string) {
 	appConfig.BackupsPath = path
 }
 
+// settingsMemo caches a value derived from up to two StringSliceSettings. store() always saves a
+// new pointer, so comparing the stored pointers is enough to know when to rebuild - no OnChange
+// invalidation needed. The cached value is shared, callers must not modify it.
+type settingsMemo[T any] struct {
+	p atomic.Pointer[settingsMemoEntry[T]]
+}
+
+type settingsMemoEntry[T any] struct {
+	a, b *[]string
+	val  T
+}
+
+func (m *settingsMemo[T]) get(a, b *StringSliceSetting, build func() T) T {
+	ka := a.val.Load()
+	var kb *[]string
+	if b != nil {
+		kb = b.val.Load()
+	}
+	if e := m.p.Load(); e != nil && e.a == ka && e.b == kb {
+		return e.val
+	}
+	v := build()
+	m.p.Store(&settingsMemoEntry[T]{a: ka, b: kb, val: v})
+	return v
+}
+
+var (
+	kanbanTagColorsMemo  settingsMemo[map[string]string]
+	kanbanCardStylesMemo settingsMemo[map[string]string]
+	kanbanBoardsMemo     settingsMemo[[]KanbanBoard]
+)
+
 // GetKanbanTagColors returns the tag-name → CSS-color map
 func GetKanbanTagColors() map[string]string {
-	return parseKeyValues(KanbanTagColors.Get())
+	return kanbanTagColorsMemo.get(KanbanTagColors, nil, func() map[string]string {
+		return parseKeyValues(KanbanTagColors.Get())
+	})
 }
 
 // GetKanbanCardStyles returns the kanban-status → card-style map ("normal"|"italic"|"highlighted"|"deleted")
 func GetKanbanCardStyles() map[string]string {
-	return parseKeyValues(KanbanCardStyles.Get())
+	return kanbanCardStylesMemo.get(KanbanCardStyles, nil, func() map[string]string {
+		return parseKeyValues(KanbanCardStyles.Get())
+	})
 }
 
 // GetKanbanArchiveStatus returns the status used to archive (hide) cards from the board
@@ -265,7 +302,9 @@ func GetKanbanAncestorAllowedStatus() []string {
 
 // GetKanbanBoards returns the configured folder-based kanban boards
 func GetKanbanBoards() []KanbanBoard {
-	return parseKanbanBoards(KanbanBoards.Get(), KanbanFolderSync.Get())
+	return kanbanBoardsMemo.get(KanbanBoards, KanbanFolderSync, func() []KanbanBoard {
+		return parseKanbanBoards(KanbanBoards.Get(), KanbanFolderSync.Get())
+	})
 }
 
 // GetKanbanBoardBySlug looks up a configured kanban board by its URL slug
