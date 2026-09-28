@@ -857,7 +857,7 @@ func SetMetadataNoRefresh(path string, patch *Metadata) error {
 		}
 		if len(patch.Tags) > 0 {
 			oldKanbanStatus := kanbanStatusFromTags(m.Tags)
-			cleaned, err := sanitizeKanbanTags(patch.Tags)
+			cleaned, err := SanitizeKanbanTags(m.Tags, patch.Tags)
 			if err != nil {
 				logging.LogWarning(logging.KeyApp, "tag sanitization for %s: %v", normalized, err)
 			}

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -211,8 +212,12 @@ func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	skipped, err := configmanager.ImportSettingsJSON(data)
+	if errors.Is(err, configmanager.ErrSaveSettings) {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
+		return
+	}
 	if err != nil {
-		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file"))
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file: %s", err.Error()))
 		return
 	}
 

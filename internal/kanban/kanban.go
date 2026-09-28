@@ -4,6 +4,7 @@ package kanban
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -219,7 +220,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 
 // MoveCard updates the kanban status tag on a file and returns the previous status (empty if
 // none) and the file's current path - unchanged unless the resolved board has foldersync
-// enabled (via KNOV_KANBAN_FOLDERSYNC), in which case the file is physically moved into
+// enabled (via the Folder Sync setting), in which case the file is physically moved into
 // board/newStatus/ and newFilePath reflects that. The physical move (if
 // any) always happens before the tag is touched: if it fails outright, MoveCard returns an error
 // and nothing changes, so the tag can never end up claiming a location the file was never
@@ -255,7 +256,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 	}
 
 	// foldersync: physically relocate the card into board/newStatus/ so its on-disk location
-	// mirrors the tag - only for boards that opted in via KNOV_KANBAN_FOLDERSYNC. Done before the
+	// mirrors the tag - only for boards that opted in via the Folder Sync setting. Done before the
 	// tag write below so a failed move can't leave the tag out of sync with where the file
 	// actually is.
 	if cfgBoard, ok := configmanager.GetKanbanBoardByFolder(board); ok && cfgBoard.FolderSync {
@@ -485,7 +486,7 @@ func Archived(folderPath string) ([]Card, error) {
 }
 
 // FilterAncestorsByAllowedStatus drops ancestors whose descendant cards in folderPath (and its
-// subfolders) have no allowed status configured via KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS - e.g.
+// subfolders) have no allowed status configured via the Ancestor Filter Statuses setting - e.g.
 // hides an "epic" once every child card under it has been archived. No allowed status configured
 // means no filtering (all ancestors kept).
 func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]string, error) {
@@ -650,4 +651,66 @@ func TagNotifyMsg(oldTag, newTag string) string {
 	default:
 		return ""
 	}
+}
+
+// ConfigWarnings lists inconsistencies in the current kanban settings that don't block a save:
+// an empty status list, board folders that don't exist (e.g. renamed), columns, archive or ancestor filter statuses
+// that aren't in the status list, folder sync folders without a board, auto-create tags under
+// the prefix that aren't valid status tags, and status tags files still carry that aren't in the
+// status list (kept by the tag sanitizer, but off the board).
+func ConfigWarnings(t func(string, ...any) string) []string {
+	prefix, statuses := configmanager.GetKanbanPrefix(), configmanager.GetKanbanStatuses()
+	var warnings []string
+	if len(statuses) == 0 {
+		warnings = append(warnings, t("the status list is empty, no card can be placed on a board"))
+	}
+	boards := configmanager.GetKanbanBoards()
+	for _, b := range boards {
+		if _, err := os.Stat(pathutils.ToDocsPath(b.FolderPath)); os.IsNotExist(err) {
+			warnings = append(warnings, t("board folder %q doesn't exist", b.FolderPath))
+		}
+	}
+	for _, c := range configmanager.GetKanbanColumns() {
+		if !slices.Contains(statuses, c) {
+			warnings = append(warnings, t("column %q is not in the status list", c))
+		}
+	}
+	if a := configmanager.GetKanbanArchiveStatus(); a != "" && !slices.Contains(statuses, a) {
+		warnings = append(warnings, t("archive status %q is not in the status list", a))
+	}
+	for _, a := range configmanager.GetKanbanAncestorAllowedStatus() {
+		if !slices.Contains(statuses, a) {
+			warnings = append(warnings, t("ancestor filter status %q is not in the status list", a))
+		}
+	}
+	for _, f := range configmanager.KanbanFolderSync.Get() {
+		if !slices.ContainsFunc(boards, func(b configmanager.KanbanBoard) bool { return b.FolderPath == configmanager.NormalizeKanbanFolder(f) }) {
+			warnings = append(warnings, t("folder sync folder %q has no matching board", f))
+		}
+	}
+	for _, a := range configmanager.GetAutoCreateTags() {
+		status, isStatus := strings.CutPrefix(a.Tag, prefix+"-status-")
+		if strings.HasPrefix(a.Tag, prefix+"-") && !(isStatus && slices.Contains(statuses, status)) {
+			warnings = append(warnings, t("auto-create tag %q (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses", a.Tag))
+		}
+	}
+	allFiles, err := files.GetAllFilesCached()
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to list files for kanban config warnings: %v", err)
+	}
+	unknown := map[string]int{}
+	for _, f := range allFiles {
+		if f.Metadata == nil {
+			continue
+		}
+		for _, tag := range f.Metadata.Tags {
+			if status, ok := strings.CutPrefix(tag, prefix+"-status-"); ok && !slices.Contains(statuses, status) {
+				unknown[tag]++
+			}
+		}
+	}
+	for _, tag := range slices.Sorted(maps.Keys(unknown)) {
+		warnings = append(warnings, t("%d file(s) still carry %q whose status is not in the status list, retag them to put them back on the board", unknown[tag], tag))
+	}
+	return warnings
 }

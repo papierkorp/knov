@@ -487,8 +487,8 @@ func caseFilterScopedHidePath() test.CaseResult {
 	name := "test19scoped_hide_path"
 
 	prev := configmanager.HidePaths.Get()
-	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
-	configmanager.HidePaths.SetFromString("test/filter-tests::" + configmanager.HideScopeFilter)
+	defer configmanager.SetSetting(configmanager.HidePaths, strings.Join(prev, ","))
+	configmanager.SetSetting(configmanager.HidePaths, "test/filter-tests::"+configmanager.HideScopeFilter)
 
 	result, err := filter.FilterFilesWithConfig(&filter.Config{
 		Criteria: []filter.Criteria{

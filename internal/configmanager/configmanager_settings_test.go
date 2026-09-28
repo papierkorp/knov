@@ -25,25 +25,18 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// handleAPISetSetting's path: GetSetting(key).SetFromString + SaveSettings, for a single
-// boolean setting.
+// handleAPISetSetting's path: SetSetting, for a single boolean setting.
 func TestIndividualSetSetting(t *testing.T) {
 	setting := GetSetting("spellCheck").(*BoolSetting)
 	original := setting.Get()
-	defer func() {
-		setting.SetFromString(fmt.Sprintf("%v", original))
-		SaveSettings()
-	}()
+	defer SetSetting(setting, fmt.Sprintf("%v", original))
 
 	probe := !original
-	if err := setting.SetFromString(fmt.Sprintf("%v", probe)); err != nil {
-		t.Fatal(err)
-	}
-	if err := SaveSettings(); err != nil {
+	if err := SetSetting(setting, fmt.Sprintf("%v", probe)); err != nil {
 		t.Fatal(err)
 	}
 	if setting.Get() != probe {
-		t.Errorf("spellCheck = %v after SetFromString+SaveSettings, want %v", setting.Get(), probe)
+		t.Errorf("spellCheck = %v after SetSetting, want %v", setting.Get(), probe)
 	}
 }
 
@@ -54,8 +47,8 @@ func TestBulkSetSettings(t *testing.T) {
 	vimMode := GetSetting("codeMirrorVimMode").(*BoolSetting)
 	origPageSize, origVimMode := pageSize.Get(), vimMode.Get()
 	defer func() {
-		pageSize.SetFromString(fmt.Sprintf("%d", origPageSize))
-		vimMode.SetFromString(fmt.Sprintf("%v", origVimMode))
+		SetSetting(pageSize, fmt.Sprintf("%d", origPageSize))
+		SetSetting(vimMode, fmt.Sprintf("%v", origVimMode))
 		SaveSettings()
 	}()
 
@@ -85,7 +78,7 @@ func TestBulkSetUnknownKeySkipped(t *testing.T) {
 	vimMode := GetSetting("codeMirrorVimMode").(*BoolSetting)
 	origSpellCheck, origVimMode := spellCheck.Get(), vimMode.Get()
 	defer func() {
-		spellCheck.SetFromString(fmt.Sprintf("%v", origSpellCheck))
+		SetSetting(spellCheck, fmt.Sprintf("%v", origSpellCheck))
 		SaveSettings()
 	}()
 
@@ -153,11 +146,11 @@ func TestLanguages(t *testing.T) {
 // everywhere.
 func TestHidePathsTagValidation(t *testing.T) {
 	prev := HidePaths.Get()
-	defer HidePaths.SetFromString(strings.Join(prev, ","))
+	defer SetSetting(HidePaths, strings.Join(prev, ","))
 
-	err := HidePaths.SetFromString("archive::serach")
+	err := SetSetting(HidePaths, "archive::serach")
 	if err == nil {
-		t.Error("SetFromString(\"archive::serach\") did not return an error")
+		t.Error("SetSetting(\"archive::serach\") did not return an error")
 	}
 	if !slices.Equal(HidePaths.Get(), prev) {
 		t.Errorf("HidePaths changed to %v despite the rejected entry, want unchanged %v", HidePaths.Get(), prev)
@@ -168,13 +161,13 @@ func TestHidePathsTagValidation(t *testing.T) {
 // and rejects a pattern segment that isn't a valid regexp.
 func TestHidePathsValidation(t *testing.T) {
 	prev := HidePaths.Get()
-	defer HidePaths.SetFromString(strings.Join(prev, ","))
+	defer SetSetting(HidePaths, strings.Join(prev, ","))
 
-	if err := HidePaths.SetFromString("archive::dashboard"); err != nil {
-		t.Errorf(`SetFromString("archive::dashboard") returned %v, want nil`, err)
+	if err := SetSetting(HidePaths, "archive::dashboard"); err != nil {
+		t.Errorf(`SetSetting("archive::dashboard") returned %v, want nil`, err)
 	}
-	if err := HidePaths.SetFromString("archive/[unclosed"); err == nil {
-		t.Error(`SetFromString("archive/[unclosed") did not return an error`)
+	if err := SetSetting(HidePaths, "archive/[unclosed"); err == nil {
+		t.Error(`SetSetting("archive/[unclosed") did not return an error`)
 	}
 }
 
@@ -182,9 +175,9 @@ func TestHidePathsValidation(t *testing.T) {
 // the tagged scopes; "*" matches any single segment.
 func TestPathHidden(t *testing.T) {
 	prev := HidePaths.Get()
-	defer HidePaths.SetFromString(strings.Join(prev, ","))
+	defer SetSetting(HidePaths, strings.Join(prev, ","))
 
-	if err := HidePaths.SetFromString("archive::search|filter"); err != nil {
+	if err := SetSetting(HidePaths, "archive::search|filter"); err != nil {
 		t.Fatalf("failed to set HidePaths: %v", err)
 	}
 	for _, scope := range []string{"", HideScopeBrowse, HideScopeKanban} {
@@ -198,7 +191,7 @@ func TestPathHidden(t *testing.T) {
 		}
 	}
 
-	if err := HidePaths.SetFromString("*/todo"); err != nil {
+	if err := SetSetting(HidePaths, "*/todo"); err != nil {
 		t.Fatalf("failed to set HidePaths: %v", err)
 	}
 	hide := NewHideMatcher("")
@@ -215,9 +208,9 @@ func TestPathHidden(t *testing.T) {
 // that scope, same as HidePaths.
 func TestTagHidden(t *testing.T) {
 	prev := HideFilesByTag.Get()
-	defer HideFilesByTag.SetFromString(strings.Join(prev, ","))
+	defer SetSetting(HideFilesByTag, strings.Join(prev, ","))
 
-	if err := HideFilesByTag.SetFromString("kb-status*"); err != nil {
+	if err := SetSetting(HideFilesByTag, "kb-status*"); err != nil {
 		t.Fatalf("failed to set HideFilesByTag: %v", err)
 	}
 	hide := NewHideMatcher(HideScopeKanban)
@@ -231,7 +224,7 @@ func TestTagHidden(t *testing.T) {
 		t.Error(`"kb-status*" should not hide "other-tag"`)
 	}
 
-	if err := HideFilesByTag.SetFromString("kb-status"); err != nil {
+	if err := SetSetting(HideFilesByTag, "kb-status"); err != nil {
 		t.Fatalf("failed to set HideFilesByTag: %v", err)
 	}
 	hide = NewHideMatcher(HideScopeKanban)
@@ -242,7 +235,7 @@ func TestTagHidden(t *testing.T) {
 		t.Error(`"kb-status" should hide the exact tag "kb-status"`)
 	}
 
-	if err := HideFilesByTag.SetFromString("kb-status*::kanban"); err != nil {
+	if err := SetSetting(HideFilesByTag, "kb-status*::kanban"); err != nil {
 		t.Fatalf("failed to set HideFilesByTag: %v", err)
 	}
 	if !NewHideMatcher(HideScopeKanban).TagHidden("kb-status-inbox") {
@@ -252,8 +245,8 @@ func TestTagHidden(t *testing.T) {
 		t.Error(`"kb-status*::kanban" should not hide "kb-status-inbox" in the detail scope`)
 	}
 
-	if err := HideFilesByTag.SetFromString("kb-status*::bogus"); err == nil {
-		t.Error(`SetFromString("kb-status*::bogus") did not return an error`)
+	if err := SetSetting(HideFilesByTag, "kb-status*::bogus"); err == nil {
+		t.Error(`SetSetting("kb-status*::bogus") did not return an error`)
 	}
 }
 

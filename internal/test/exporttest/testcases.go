@@ -155,16 +155,16 @@ func caseSettingsExportImportRoundtrip() test.CaseResult {
 	name := "settings-export-import-roundtrip"
 
 	original := configmanager.HideTodo.Get()
-	defer configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", original))
+	defer configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", original))
 
 	probeValue := !original
-	configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", probeValue))
+	configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", probeValue))
 	exported, err := configmanager.ExportSettingsJSON()
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", original))
+	configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", original))
 	if _, err := configmanager.ImportSettingsJSON(exported); err != nil {
 		return errCase(name, err)
 	}

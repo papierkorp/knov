@@ -11,8 +11,21 @@ import (
 type StorableSetting interface {
 	Key() string
 	GetValue() interface{}
-	setFromJSON(v interface{}) error
-	SetFromString(s string) error
+	// parse / parseJSON validate a value on its own without storing it (parseJSON returns nil,
+	// nil for a value of the wrong type, which is ignored); store applies an already parsed value.
+	parse(v string) (interface{}, error)
+	parseJSON(v interface{}) (interface{}, error)
+	store(v interface{})
+}
+
+// setFromJSON parses and stores a stored/imported JSON value, ignoring one of the wrong type.
+func setFromJSON(s StorableSetting, v interface{}) error {
+	val, err := s.parseJSON(v)
+	if err != nil || val == nil {
+		return err
+	}
+	s.store(val)
+	return nil
 }
 
 // RenderableSetting extends StorableSetting with UI metadata for auto-rendering.
@@ -108,19 +121,22 @@ func (s *BoolSetting) GetValue() interface{} { return s.Get() }
 func (s *BoolSetting) GetMeta() Meta {
 	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh, RefreshFileCaches: s.RefreshFileCaches}
 }
-func (s *BoolSetting) setFromJSON(v interface{}) error {
-	if b, ok := v.(bool); ok {
-		s.val.Store(&b)
-	}
-	return nil
-}
-func (s *BoolSetting) SetFromString(v string) error {
+func (s *BoolSetting) parse(v string) (interface{}, error) {
 	b, _ := strconv.ParseBool(v) // empty string → false (unchecked checkbox)
+	return b, nil
+}
+func (s *BoolSetting) parseJSON(v interface{}) (interface{}, error) {
+	if b, ok := v.(bool); ok {
+		return b, nil
+	}
+	return nil, nil
+}
+func (s *BoolSetting) store(v interface{}) {
+	b := v.(bool)
 	s.val.Store(&b)
 	if s.OnChange != nil {
 		s.OnChange(b)
 	}
-	return nil
 }
 
 // ── IntSetting ────────────────────────────────────────────────────────────────
@@ -164,7 +180,17 @@ func (s *IntSetting) validate(n int) error {
 	}
 	return nil
 }
-func (s *IntSetting) setFromJSON(v interface{}) error {
+func (s *IntSetting) parse(v string) (interface{}, error) {
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return nil, fmt.Errorf("invalid integer: %q", v)
+	}
+	if err := s.validate(n); err != nil {
+		return nil, err
+	}
+	return n, nil
+}
+func (s *IntSetting) parseJSON(v interface{}) (interface{}, error) {
 	var n int
 	switch val := v.(type) {
 	case float64:
@@ -172,44 +198,36 @@ func (s *IntSetting) setFromJSON(v interface{}) error {
 	case int:
 		n = val
 	default:
-		return nil
+		return nil, nil
 	}
 	if err := s.validate(n); err != nil {
-		return fmt.Errorf("setting %q: stored value %d: %w", s.key, n, err)
+		return nil, fmt.Errorf("setting %q: stored value %d: %w", s.key, n, err)
 	}
-	s.val.Store(&n)
-	return nil
+	return n, nil
 }
-func (s *IntSetting) SetFromString(v string) error {
-	n, err := strconv.Atoi(v)
-	if err != nil {
-		return fmt.Errorf("invalid integer: %q", v)
-	}
-	if err := s.validate(n); err != nil {
-		return err
-	}
+func (s *IntSetting) store(v interface{}) {
+	n := v.(int)
 	s.val.Store(&n)
 	if s.OnChange != nil {
 		s.OnChange(n)
 	}
-	return nil
 }
 
 // ── StringSetting ─────────────────────────────────────────────────────────────
 
 type StringSetting struct {
-	key         string
-	Default     string
-	val         atomic.Pointer[string]
-	Section     SettingSection
-	Group       SettingGroup
-	Label       string
-	Desc        string
-	Trigger     string
-	Target      string
-	Options     []SettingOption
-	DynURL      string
-	Refresh     bool
+	key     string
+	Default string
+	val     atomic.Pointer[string]
+	Section SettingSection
+	Group   SettingGroup
+	Label   string
+	Desc    string
+	Trigger string
+	Target  string
+	Options []SettingOption
+	DynURL  string
+	Refresh bool
 	// FontPreview makes Type() report "font-select" instead of "select", so a
 	// font picker showing what each choice actually looks like is rendered in
 	// place of a plain dropdown.
@@ -245,26 +263,28 @@ func (s *StringSetting) validate(v string) error {
 	}
 	return nil
 }
-func (s *StringSetting) setFromJSON(v interface{}) error {
+func (s *StringSetting) parse(v string) (interface{}, error) {
+	if err := s.validate(v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+func (s *StringSetting) parseJSON(v interface{}) (interface{}, error) {
 	str, ok := v.(string)
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	if err := s.validate(str); err != nil {
-		return fmt.Errorf("setting %q: stored value %q: %w", s.key, str, err)
+		return nil, fmt.Errorf("setting %q: stored value %q: %w", s.key, str, err)
 	}
-	s.val.Store(&str)
-	return nil
+	return str, nil
 }
-func (s *StringSetting) SetFromString(v string) error {
-	if err := s.validate(v); err != nil {
-		return err
-	}
-	s.val.Store(&v)
+func (s *StringSetting) store(v interface{}) {
+	str := v.(string)
+	s.val.Store(&str)
 	if s.OnChange != nil {
-		s.OnChange(v)
+		s.OnChange(str)
 	}
-	return nil
 }
 func (s *StringSetting) Type() string {
 	if len(s.Options) > 0 {
@@ -299,6 +319,7 @@ type StringSliceSetting struct {
 	Target   string
 	OnChange func(interface{})
 	Validate func([]string) error
+	Refresh  bool
 
 	RefreshFileCaches bool
 }
@@ -313,9 +334,25 @@ func (s *StringSliceSetting) Key() string           { return s.key }
 func (s *StringSliceSetting) Type() string          { return "textarea" }
 func (s *StringSliceSetting) GetValue() interface{} { return s.Get() }
 func (s *StringSliceSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, RefreshFileCaches: s.RefreshFileCaches}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh, RefreshFileCaches: s.RefreshFileCaches}
 }
-func (s *StringSliceSetting) setFromJSON(v interface{}) error {
+func (s *StringSliceSetting) parse(v string) (interface{}, error) {
+	parts := strings.Split(v, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	if s.Validate != nil {
+		if err := s.Validate(result); err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
+}
+func (s *StringSliceSetting) parseJSON(v interface{}) (interface{}, error) {
 	var result []string
 	switch val := v.(type) {
 	case []interface{}:
@@ -328,35 +365,21 @@ func (s *StringSliceSetting) setFromJSON(v interface{}) error {
 	case []string:
 		result = val
 	default:
-		return nil
+		return nil, nil
 	}
 	if s.Validate != nil {
 		if err := s.Validate(result); err != nil {
-			return fmt.Errorf("setting %q: stored value %v: %w", s.key, result, err)
+			return nil, fmt.Errorf("setting %q: stored value %v: %w", s.key, result, err)
 		}
 	}
-	s.val.Store(&result)
-	return nil
+	return result, nil
 }
-func (s *StringSliceSetting) SetFromString(v string) error {
-	parts := strings.Split(v, ",")
-	result := make([]string, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			result = append(result, p)
-		}
-	}
-	if s.Validate != nil {
-		if err := s.Validate(result); err != nil {
-			return err
-		}
-	}
+func (s *StringSliceSetting) store(v interface{}) {
+	result := v.([]string)
 	s.val.Store(&result)
 	if s.OnChange != nil {
 		s.OnChange(result)
 	}
-	return nil
 }
 
 // ── NoteSetting ───────────────────────────────────────────────────────────────
@@ -378,5 +401,6 @@ func (s *NoteSetting) GetValue() interface{} { return nil }
 func (s *NoteSetting) GetMeta() Meta {
 	return Meta{Section: s.Section, Group: s.Group, Desc: s.Text}
 }
-func (s *NoteSetting) setFromJSON(interface{}) error { return nil }
-func (s *NoteSetting) SetFromString(string) error    { return nil }
+func (s *NoteSetting) parse(string) (interface{}, error)          { return nil, nil }
+func (s *NoteSetting) parseJSON(interface{}) (interface{}, error) { return nil, nil }
+func (s *NoteSetting) store(interface{})                          {}

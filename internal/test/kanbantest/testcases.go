@@ -76,8 +76,8 @@ func caseHideScopeKanban() test.CaseResult {
 	name := "hide-scope-kanban"
 
 	prev := configmanager.HidePaths.Get()
-	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
-	configmanager.HidePaths.SetFromString(testFolder + "::" + configmanager.HideScopeKanban)
+	defer configmanager.SetSetting(configmanager.HidePaths, strings.Join(prev, ","))
+	configmanager.SetSetting(configmanager.HidePaths, testFolder+"::"+configmanager.HideScopeKanban)
 
 	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
@@ -104,8 +104,8 @@ func caseHiddenByTag() test.CaseResult {
 	name := "hidden-by-tag"
 
 	prev := configmanager.HideFilesByTag.Get()
-	defer configmanager.HideFilesByTag.SetFromString(strings.Join(prev, ","))
-	if err := configmanager.HideFilesByTag.SetFromString(configmanager.KanbanStatusTag("inbox") + "::" + configmanager.HideScopeKanban); err != nil {
+	defer configmanager.SetSetting(configmanager.HideFilesByTag, strings.Join(prev, ","))
+	if err := configmanager.SetSetting(configmanager.HideFilesByTag, configmanager.KanbanStatusTag("inbox")+"::"+configmanager.HideScopeKanban); err != nil {
 		return errCase(name, err)
 	}
 

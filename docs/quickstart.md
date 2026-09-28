@@ -81,7 +81,7 @@ Back the data and storage folders up to keep everything safe.
 
 ## Kanban
 
-- Configure boards explicitly with `KNOV_KANBAN_BOARDS=folder/path:Display Name` (comma-separated) - each board covers that folder and its subfolders
+- Configure boards on `/settings` under Kanban Settings → Boards (`folder/path:Display Name`, comma-separated) - each board covers that folder and its subfolders
 - Add a status tag to a file in a board's folder to put it on the board: `kb-status-inbox`, `kb-status-inprogress`, `kb-status-blocked`, `kb-status-archive` (the `kb` prefix is configurable, `-status-` is fixed)
 - Go to `/kanban` to see your configured boards and open one
 

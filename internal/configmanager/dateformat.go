@@ -50,8 +50,7 @@ func GetDateFormat() string {
 
 // SetDateFormat updates user settings with a new date display style.
 func SetDateFormat(style string) {
-	DateFormat.SetFromString(CheckDateFormat(style)) //nolint:errcheck // pre-validated by CheckDateFormat
-	SaveSettings()                                   //nolint:errcheck
+	SetSetting(DateFormat, CheckDateFormat(style)) //nolint:errcheck // pre-validated by CheckDateFormat
 }
 
 // FormatDate formats t as a date only, using the configured display style and timezone.

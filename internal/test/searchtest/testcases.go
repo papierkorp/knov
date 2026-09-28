@@ -262,8 +262,8 @@ func caseSearchScopedHidePath() test.CaseResult {
 	name := "search-scoped-hide-path"
 
 	prev := configmanager.HidePaths.Get()
-	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
-	configmanager.HidePaths.SetFromString(testDir + "::" + configmanager.HideScopeSearch)
+	defer configmanager.SetSetting(configmanager.HidePaths, strings.Join(prev, ","))
+	configmanager.SetSetting(configmanager.HidePaths, testDir+"::"+configmanager.HideScopeSearch)
 
 	byTitle, err := search.SearchFilesByTitle("AlphaUniqueTitle", 10)
 	if err != nil {

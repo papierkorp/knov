@@ -59,16 +59,16 @@ Filters are saved metadata queries that produce a live file list.
 
 ## Kanban
 
-- Boards are explicitly configured folders (`KNOV_KANBAN_BOARDS=folder/path:Display Name`), each covering that folder and its subfolders
+- Boards are explicitly configured folders (`folder/path:Display Name` in the Kanban Settings), each covering that folder and its subfolders
 - A file gets a kanban status tag to appear in a column - e.g. `kb-status-inbox`
-- Columns are configurable per instance (`KNOV_KANBAN_COLUMNS`)
+- Columns are configurable per instance (Kanban Settings)
 - Drag cards between columns to update status - saves automatically
-- Optional folder-sync (`KNOV_KANBAN_FOLDERSYNC`) - moving a card physically relocates the file into a status-named subfolder, and moving a file into such a folder updates its status tag
-- Optional archive drop zone (`KNOV_KANBAN_ARCHIVE_STATUS`) that isn't shown as a column
+- Optional folder-sync - moving a card physically relocates the file into a status-named subfolder, and moving a file into such a folder updates its status tag
+- Optional archive drop zone that isn't shown as a column
 - Every card move is recorded in an event log, queryable via `GET /api/kanban/{board}/events`
 - Quick filters (ancestor, tag, search) always visible in the toolbar
 - Advanced filter panel (same system as saved filters) available via the filter button
-- Tag chips on cards can be colour-coded per tag (`KNOV_KANBAN_TAG_COLORS`); cards can be styled per column (`KNOV_KANBAN_CARD_STYLES`)
+- Tag chips on cards can be colour-coded per tag; cards can be styled per column
 
 ## Dashboard System
 

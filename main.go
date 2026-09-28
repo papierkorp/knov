@@ -178,6 +178,10 @@ func main() {
 		logging.LogError(logging.KeyApp, "failed to initialize settings: %v", err)
 		os.Exit(1)
 	}
+	if err := configmanager.CheckKanbanPrefix(); err != nil {
+		logging.LogError(logging.KeyApp, "invalid kanban config: %v", err)
+		os.Exit(1)
+	}
 	configmanager.LoadThemeSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 

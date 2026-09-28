@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -93,6 +94,21 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 		}
 	}
 
+	return html.String()
+}
+
+// RenderKanbanConfigWarnings renders the inconsistencies in the kanban settings as a note, empty
+// if there are none.
+func RenderKanbanConfigWarnings(warnings []string, t func(string, ...any) string) string {
+	if len(warnings) == 0 {
+		return ""
+	}
+	var html strings.Builder
+	fmt.Fprintf(&html, `<div class="setting-item setting-item-note"><p class="section-description">%s</p><ul>`, t("kanban config warnings:"))
+	for _, w := range warnings {
+		fmt.Fprintf(&html, `<li>%s</li>`, template.HTMLEscapeString(w))
+	}
+	html.WriteString(`</ul></div>`)
 	return html.String()
 }
 

@@ -29,34 +29,36 @@ Knov uses git to version every file change automatically. You do not interact wi
 
 ## Kanban
 
-The kanban board organises files into columns based on status tags.
+The kanban board organises files into columns based on status tags. Everything below except the tag prefix and the event log is configured in the **Kanban Settings** section on `/settings` (no restart needed).
 
 **Boards:**
-- Each board is a folder you configure explicitly via `KNOV_KANBAN_BOARDS` - format: `folder/path:Display Name`, comma-separated, e.g. `KNOV_KANBAN_BOARDS=projects/work:Work Board,personal/todo:Personal Todo`
+- Each board is a folder you configure explicitly via **Boards** - format: `folder/path:Display Name`, comma-separated, e.g. `projects/work:Work Board, personal/todo:Personal Todo`
 - A board covers that folder and all its subfolders (recursive)
 - The board's URL is a slug derived from its folder path (e.g. `projects/work` → `/kanban/projects-work`); duplicate slugs are automatically disambiguated with a numeric suffix
 - `/kanban` with no boards configured shows an empty picker; each configured board appears there under its display name
+- Renaming a board's folder doesn't update **Boards** - the Kanban Settings section warns about a board folder that doesn't exist, fix the entry there
 
 **Placing files on a board:**
 - Add one status tag to a file inside a configured board's folder to place it in a column - e.g. `kb-status-inbox`
 - Only one status tag per file is valid; if you add two the last one wins
-- The tag is `<prefix>-status-<status>`; the prefix defaults to `kb` (`KNOV_KANBAN_PREFIX`), the `-status-` middle is fixed
+- The tag is `<prefix>-status-<status>`; the prefix is `KNOV_KANBAN_PREFIX` (default `kb`, letters, digits and _ only, needs a restart), the `-status-` middle is fixed
+- Changing the prefix or removing/renaming a status never deletes existing tags - those cards just drop off the board until retagged, and the Kanban Settings section lists them as a warning
 
 **Statuses and columns:**
-- `KNOV_KANBAN_STATUS` (default `inbox, inprogress, blocked, archive`) defines every valid status - a status tag outside this list is rejected
-- `KNOV_KANBAN_COLUMNS` (default `inbox, inprogress, blocked`) is the subset shown as columns on the board; applies to every board
-- `KNOV_KANBAN_ARCHIVE_STATUS` (default `archive`) is shown as a separate drop zone while dragging rather than a column - leave empty to disable it
-- `KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS` (default empty = no restriction) - only show an ancestor in the ancestor filter when a descendant card has one of these statuses
+- **Statuses** (default `inbox, inprogress, blocked, archive`) defines every valid status - adding a new status tag outside this list is rejected
+- **Columns** (default `inbox, inprogress, blocked`) is the subset shown as columns on the board; applies to every board
+- **Archive Status** (default `archive`) is shown as a separate drop zone while dragging rather than a column - leave empty to disable it
+- **Ancestor Filter Statuses** (default empty = no restriction) - only show an ancestor in the ancestor filter when a descendant card has one of these statuses
 
 **Folder-sync (opt-in):**
-- `KNOV_KANBAN_FOLDERSYNC` - comma-separated board folder paths (subset of `KNOV_KANBAN_BOARDS`) where card position and on-disk location are kept in sync
+- **Folder Sync** - comma-separated board folder paths (subset of **Boards**) where card position and on-disk location are kept in sync
 - Moving a card moves the file into `folder/path/<status>/`; moving a file on disk into such a folder sets its status tag (picked up by the file-sync cronjob)
 - If you move files by hand outside the app, run a manual file-sync before dragging those cards in the UI - the board doesn't know about an external move until the cronjob has run
 
 **Card colours:**
 - Non-status tags appear as chips on each card
-- Give specific tags a colour with `KNOV_KANBAN_TAG_COLORS` - e.g. `urgent:red,user1:green`
-- Style cards per status with `KNOV_KANBAN_CARD_STYLES` (`status:style`, comma-separated) - styles: `normal`, `italic`, `highlighted`, `deleted`; e.g. `archive:deleted, inprogress:highlighted, waiting:italic`
+- Give specific tags a colour with **Tag Colors** - e.g. `urgent:red,user1:green`
+- Style cards per status with **Card Styles** (`status:style`, comma-separated) - styles: `normal`, `italic`, `highlighted`, `deleted`; e.g. `archive:deleted, inprogress:highlighted, waiting:italic`
 - Any valid CSS colour name or hex value works for tag colours
 
 **Event log:**

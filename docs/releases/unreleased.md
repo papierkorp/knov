@@ -1,6 +1,6 @@
 # unreleased
 
-_73 commits since last release_
+_74 commits since last release_
 
 ## breaking changes
 - unify link extraction and rewriting in one link walker, please make a manual metadata rebuild

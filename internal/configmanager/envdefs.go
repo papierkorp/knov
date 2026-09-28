@@ -1,9 +1,7 @@
 package configmanager
 
 import (
-	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -94,9 +92,8 @@ func listDef(key, category, description string, def []string, field func(*AppCon
 }
 
 // compositeDef defines an env var whose parsing/formatting doesn't fit the type-based
-// constructors above: a composite AppConfig field (KanbanBoards, AutoCreateTags, the
-// tag-color/card-style maps) or a var with no AppConfig field at all, read directly by
-// another package (KNOV_LOG_*). apply may be nil for the latter case.
+// constructors above: a composite AppConfig field (AutoCreateTags, BackupAutoProfiles) or a
+// var with no AppConfig field at all, read directly by another package (KNOV_LOG_*). apply may be nil for the latter case.
 func compositeDef(key, category, description, def string, apply func(cfg *AppConfig, key string), get func(cfg AppConfig, key string) string, opts ...defOption) EnvVarDef {
 	return applyOptions(EnvVarDef{
 		Key: key, Category: category, Description: description, Default: def,
@@ -107,12 +104,6 @@ func compositeDef(key, category, description, def string, apply func(cfg *AppCon
 		},
 		get: func(cfg AppConfig) string { return get(cfg, key) },
 	}, opts)
-}
-
-// getRaw reads a key straight from the process environment - the get for compositeDef entries
-// with no AppConfig field, or whose current value is best shown as-is (KNOV_KANBAN_FOLDERSYNC).
-func getRaw(_ AppConfig, key string) string {
-	return os.Getenv(key)
 }
 
 // EnvCategoryDescriptions documents a handful of categories (the Category argument shared by
@@ -126,8 +117,7 @@ var EnvCategoryDescriptions = map[string]string{
 }
 
 // EnvVarDefs lists every recognized KNOV_* environment variable, grouped and ordered the same
-// way .env.example presents them. KNOV_KANBAN_FOLDERSYNC must stay after KNOV_KANBAN_BOARDS:
-// its apply flags an already-parsed board by folder path, so KanbanBoards needs to exist first.
+// way .env.example presents them.
 var EnvVarDefs = []EnvVarDef{
 	// ── paths ── Default here is relative to the executable's directory (pathDef joins it
 	// onto that directory), matching the Description on each.
@@ -190,30 +180,10 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── kanban ──
 	boolDef("KNOV_KANBAN_EVENTS_ENABLED", "kanban", "set to false to disable kanban event logging entirely (no storage is created)", true, func(c *AppConfig) *bool { return &c.KanbanEventsEnabled }),
-	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox)`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }),
-	listDef("KNOV_KANBAN_STATUS", "kanban", "all possible kanban statuses (comma-separated, defines all valid tag values)", []string{"inbox", "inprogress", "blocked", "archive"}, func(c *AppConfig) *[]string { return &c.KanbanStatuses }),
-	listDef("KNOV_KANBAN_COLUMNS", "kanban", "visible columns on the board (subset of KNOV_KANBAN_STATUS)", []string{"inbox", "inprogress", "blocked"}, func(c *AppConfig) *[]string { return &c.KanbanColumns }),
+	stringDef("KNOV_KANBAN_PREFIX", "kanban", `prefix used for kanban tags (e.g. "kb" → tag: kb-status-inbox), letters, digits and _ only; existing tags are not renamed, so after a change cards still tagged with the old prefix drop off the board until they're retagged`, "kb", func(c *AppConfig) *string { return &c.KanbanPrefix }),
 	compositeDef("KNOV_AUTOCREATE_TAGS", "kanban", "tags automatically added to newly created files (comma-separated, empty = disabled); a bare tag (no \":\") applies to every new file everywhere; a \"folder/path:tag\" entry only applies to files created under that folder (recursive - also covers subfolders); e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox", "",
 		func(cfg *AppConfig, key string) { cfg.AutoCreateTags = getAutoCreateTagsEnv(key) },
 		func(cfg AppConfig, _ string) string { return formatAutoCreateTags(cfg.AutoCreateTags) },
-	),
-	compositeDef("KNOV_KANBAN_TAG_COLORS", "kanban", "custom css colors for specific tags on the kanban board (tag:csscolor, comma-separated); e.g. username:green,urgent:red,blocked:orange", "",
-		func(cfg *AppConfig, key string) { cfg.KanbanTagColors = getStringMapEnv(key) },
-		func(cfg AppConfig, _ string) string { return formatStringMap(cfg.KanbanTagColors) },
-	),
-	compositeDef("KNOV_KANBAN_CARD_STYLES", "kanban", "card style per kanban status (status:style, comma-separated); styles: normal, italic, highlighted, deleted; e.g. blocked:italic,waiting:italic,urgent:highlighted,done:deleted,archive:deleted", "",
-		func(cfg *AppConfig, key string) { cfg.KanbanCardStyles = getStringMapEnv(key) },
-		func(cfg AppConfig, _ string) string { return formatStringMap(cfg.KanbanCardStyles) },
-	),
-	stringDef("KNOV_KANBAN_ARCHIVE_STATUS", "kanban", "status used for the archive drop zone shown while dragging (empty = disable the archive zone)", "archive", func(c *AppConfig) *string { return &c.KanbanArchiveStatus }),
-	listDef("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", "kanban", "statuses a descendant card must have for its ancestor to appear in the ancestor filter (comma-separated, subset of KNOV_KANBAN_STATUS; empty = no restriction, all ancestors shown); e.g. inbox,inprogress,blocked", nil, func(c *AppConfig) *[]string { return &c.KanbanAncestorAllowedStatus }),
-	compositeDef("KNOV_KANBAN_BOARDS", "kanban", "kanban boards (folder/path:Display Name, comma-separated); each board covers that folder and its subfolders. The URL slug is derived from the folder path automatically; e.g. projects/work:Work Board,personal/todo:Personal Todo", "",
-		func(cfg *AppConfig, key string) { cfg.KanbanBoards = getKanbanBoardsEnv(key) },
-		func(cfg AppConfig, _ string) string { return formatKanbanBoards(cfg.KanbanBoards) },
-	),
-	compositeDef("KNOV_KANBAN_FOLDERSYNC", "kanban", "board folder paths (comma-separated, subset of KNOV_KANBAN_BOARDS) that enable foldersync: moving a card physically moves the file into folder/path/<status>/, and moving the file on disk into an existing folder/path/<status>/ folder sets the tag (picked up by the file-sync cronjob); if you move files by hand outside the app, trigger a manual file-sync run before dragging cards for those files in the UI - the board doesn't know about an external move until the cronjob has run, so a drag against a file that was already moved on disk will fail against its stale path; e.g. projects/work", "",
-		func(cfg *AppConfig, key string) { cfg.KanbanBoards = applyKanbanFolderSyncEnv(cfg.KanbanBoards, key) },
-		getRaw,
 	),
 
 	// ── tracker ──
@@ -241,8 +211,7 @@ Examples:
 }
 
 // applyEnvDefs populates cfg from every documented env var that has an AppConfig field
-// (def.apply != nil), in EnvVarDefs order - the order matters for KNOV_KANBAN_BOARDS /
-// KNOV_KANBAN_FOLDERSYNC (see EnvVarDefs doc comment).
+// (def.apply != nil), in EnvVarDefs order.
 func applyEnvDefs(cfg *AppConfig, baseDir string) {
 	for _, def := range EnvVarDefs {
 		if def.apply != nil {
@@ -283,27 +252,6 @@ func CurrentEnvValues() map[string]string {
 		values[def.Key] = def.get(appConfig)
 	}
 	return values
-}
-
-func formatStringMap(m map[string]string) string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	parts := make([]string, 0, len(keys))
-	for _, k := range keys {
-		parts = append(parts, k+":"+m[k])
-	}
-	return strings.Join(parts, ", ")
-}
-
-func formatKanbanBoards(boards []KanbanBoard) string {
-	parts := make([]string, 0, len(boards))
-	for _, b := range boards {
-		parts = append(parts, b.FolderPath+":"+b.DisplayName)
-	}
-	return strings.Join(parts, ", ")
 }
 
 func formatAutoCreateTags(tags []AutoCreateTag) string {

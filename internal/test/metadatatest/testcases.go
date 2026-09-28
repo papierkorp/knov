@@ -349,26 +349,29 @@ func caseAllEditorTypes() test.CaseResult {
 }
 
 // caseSanitizeKanbanTags exercises SanitizeKanbanTags with one non-kanban tag, one valid
-// status tag, and one invalid status tag - the invalid one should be dropped and reported.
+// status tag, and one invalid status tag - the invalid one should be dropped and reported, unless
+// it's already on the file (existing tags are never dropped by a settings change).
 func caseSanitizeKanbanTags() test.CaseResult {
 	name := "sanitize-kanban-tags"
 
 	validTag := configmanager.KanbanStatusTag("inbox")
 	invalidTag := configmanager.GetKanbanPrefix() + "-status-not-a-real-status"
 
-	cleaned, err := files.SanitizeKanbanTags([]string{"unrelated", validTag, invalidTag})
+	cleaned, err := files.SanitizeKanbanTags(nil, []string{"unrelated", validTag, invalidTag})
+	kept, keptErr := files.SanitizeKanbanTags([]string{invalidTag}, []string{"unrelated", invalidTag})
 
 	success := err != nil && strings.Contains(err.Error(), invalidTag) &&
-		slices.Contains(cleaned, "unrelated") && slices.Contains(cleaned, validTag) && !slices.Contains(cleaned, invalidTag)
+		slices.Contains(cleaned, "unrelated") && slices.Contains(cleaned, validTag) && !slices.Contains(cleaned, invalidTag) &&
+		keptErr == nil && slices.Contains(kept, invalidTag)
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: fmt.Sprintf("cleaned=[unrelated, %s], error mentions %s", validTag, invalidTag),
-		Actual:   fmt.Sprintf("cleaned=%v err=%v", cleaned, err),
+		Expected: fmt.Sprintf("cleaned=[unrelated, %s], error mentions %s; existing %s kept", validTag, invalidTag, invalidTag),
+		Actual:   fmt.Sprintf("cleaned=%v err=%v kept=%v keptErr=%v", cleaned, err, kept, keptErr),
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "SanitizeKanbanTags did not drop the invalid status tag as expected"
+		cr.Error = "SanitizeKanbanTags did not drop the new invalid status tag / keep the existing one as expected"
 	}
 	return cr
 }
@@ -412,10 +415,10 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 
 	prev := configmanager.HidePaths.Get()
 	defer func() {
-		configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+		configmanager.SetSetting(configmanager.HidePaths, strings.Join(prev, ","))
 		_ = files.MetaDataDelete(probePath)
 	}()
-	if err := configmanager.HidePaths.SetFromString(hideFolder); err != nil {
+	if err := configmanager.SetSetting(configmanager.HidePaths, hideFolder); err != nil {
 		return errCase(name, err)
 	}
 

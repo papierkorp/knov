@@ -74,8 +74,8 @@ func caseFolderContents() test.CaseResult {
 	// for the duration of the check, since it's a real persisted user setting (not scoped
 	// to test data) and may already be true in the running environment.
 	prevHideTodo := configmanager.HideTodo.Get()
-	configmanager.HideTodo.SetFromString("false")
-	defer configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", prevHideTodo))
+	configmanager.SetSetting(configmanager.HideTodo, "false")
+	defer configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", prevHideTodo))
 
 	fullPath := pathutils.ToDocsPath(testDir)
 	entries, err := os.ReadDir(fullPath)
@@ -269,14 +269,14 @@ func caseHiddenFileTypeFilter() test.CaseResult {
 	name := "hidden-file-type-filter"
 
 	prev := configmanager.HideTodo.Get()
-	defer configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", prev))
+	defer configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", prev))
 
 	sample := []files.File{{Path: testPath(hiddenFile), Metadata: &files.Metadata{Editor: files.EditorTypeTodo}}}
 
-	configmanager.HideTodo.SetFromString("false")
+	configmanager.SetSetting(configmanager.HideTodo, "false")
 	shown := files.FilterByVisibility(sample, "")
 
-	configmanager.HideTodo.SetFromString("true")
+	configmanager.SetSetting(configmanager.HideTodo, "true")
 	hidden := files.FilterByVisibility(sample, "")
 
 	success := len(shown) == 1 && len(hidden) == 0

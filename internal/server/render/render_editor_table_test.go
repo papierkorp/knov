@@ -1,23 +1,38 @@
 package render
 
 import (
+	"os"
 	"strconv"
 	"strings"
 	"testing"
 
+	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 )
+
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "knov-render-test")
+	if err != nil {
+		panic(err)
+	}
+	if err := configStorage.Init("json", dir); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
+}
 
 // withBoolSetting sets s to value for the duration of the test, restoring its
 // prior value afterwards so global setting state doesn't leak between tests.
 func withBoolSetting(t *testing.T, s *configmanager.BoolSetting, value bool) {
 	t.Helper()
 	original := s.Get()
-	if err := s.SetFromString(strconv.FormatBool(value)); err != nil {
+	if err := configmanager.SetSetting(s, strconv.FormatBool(value)); err != nil {
 		t.Fatalf("failed to set %s: %v", s.Key(), err)
 	}
 	t.Cleanup(func() {
-		if err := s.SetFromString(strconv.FormatBool(original)); err != nil {
+		if err := configmanager.SetSetting(s, strconv.FormatBool(original)); err != nil {
 			t.Fatalf("failed to restore %s: %v", s.Key(), err)
 		}
 	})

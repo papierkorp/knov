@@ -198,7 +198,7 @@
   background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
-/* ---- Card style variants (KNOV_KANBAN_CARD_STYLES) ---- */
+/* ---- Card style variants (Card Styles setting) ---- */
 
 .kanban-card--italic .kanban-card-title {
   font-style: italic;

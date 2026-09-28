@@ -19,7 +19,7 @@ import (
 // RenderKanbanCard renders a single draggable card.
 func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string {
 	var html strings.Builder
-	prefix := configmanager.GetKanbanPrefix()
+	prefix := template.HTMLEscapeString(configmanager.GetKanbanPrefix())
 
 	displayTitle := card.Title
 	if displayTitle == "" {
@@ -45,7 +45,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 
 	cardClass := "kanban-card"
 	if style := configmanager.GetKanbanCardStyles()[card.Status]; style != "" && style != "normal" {
-		cardClass += " kanban-card--" + style
+		cardClass += " kanban-card--" + template.HTMLEscapeString(style)
 	}
 
 	fmt.Fprintf(&html, `<div class="%s" id="kanban-card-%s"
@@ -65,7 +65,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		for _, t := range visibleTags {
 			style := ""
 			if color, ok := tagColors[t]; ok {
-				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, color, color)
+				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, template.HTMLEscapeString(color), template.HTMLEscapeString(color))
 			}
 			fmt.Fprintf(&html, `<span class="kanban-tag"%s data-tag="%s" onclick="kanbanSetTagFilter(this.dataset.tag)" title="%s">%s</span>`, style, template.HTMLEscapeString(t), template.HTMLEscapeString(t), template.HTMLEscapeString(t))
 		}
@@ -244,7 +244,7 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 		for _, t := range visibleTags {
 			style := ""
 			if color, ok := tagColors[t]; ok {
-				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, color, color)
+				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, template.HTMLEscapeString(color), template.HTMLEscapeString(color))
 			}
 			fmt.Fprintf(&html, `<span class="kanban-tag"%s>%s</span>`, style, template.HTMLEscapeString(t))
 		}

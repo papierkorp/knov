@@ -693,17 +693,19 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		tags = []string{}
 	}
 
-	sanitized, err := files.SanitizeKanbanTags(tags)
+	// read existing tags so they're kept by the sanitizer and to detect kanban changes for notify messages
+	oldMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	var oldTags []string
+	var oldKbTag string
+	if oldMeta != nil {
+		oldTags = oldMeta.Tags
+		oldKbTag = kanban.TagFromList(oldMeta.Tags)
+	}
+
+	sanitized, err := files.SanitizeKanbanTags(oldTags, tags)
 	if err != nil {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
-	}
-
-	// read existing tags to detect kanban changes for notify messages
-	oldMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
-	var oldKbTag string
-	if oldMeta != nil {
-		oldKbTag = kanban.TagFromList(oldMeta.Tags)
 	}
 	newKbTag := kanban.TagFromList(sanitized)
 

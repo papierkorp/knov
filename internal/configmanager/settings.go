@@ -2,10 +2,12 @@ package configmanager
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"mime"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"knov/internal/configStorage"
 	"knov/internal/logging"
@@ -40,7 +42,7 @@ func InitSettings() error {
 		if v, ok := raw[s.Key()]; ok {
 			var val interface{}
 			if err := json.Unmarshal(v, &val); err == nil {
-				if err := s.setFromJSON(val); err != nil {
+				if err := setFromJSON(s, val); err != nil {
 					logging.LogError(logging.KeyApp, "ignoring invalid stored setting: %v", err)
 				}
 			}
@@ -76,11 +78,48 @@ func SaveSettings() error {
 	return nil
 }
 
-// BulkSetFromForm applies every key in values whose key is a known setting,
-// then calls SaveSettings exactly once. Validation errors are collected and
-// returned; a save error is appended last. Unknown keys are logged and skipped.
+// ErrSaveSettings wraps a failure to persist settings (as opposed to a rejected value).
+var ErrSaveSettings = errors.New("failed to save settings")
+
+// settingsMu serialises store+save+rollback, so two saves can't interleave their rollbacks.
+var settingsMu sync.Mutex
+
+// proposedSettings holds parsed, validated values that aren't stored yet.
+type proposedSettings map[StorableSetting]interface{}
+
+// applySettings stores and saves all proposed values - if the save fails nothing changes.
+func applySettings(p proposedSettings) error {
+	settingsMu.Lock()
+	defer settingsMu.Unlock()
+
+	previous := make(proposedSettings, len(p))
+	for s, v := range p {
+		previous[s] = s.GetValue()
+		s.store(v)
+	}
+	if err := SaveSettings(); err != nil {
+		for s, v := range previous {
+			s.store(v)
+		}
+		return fmt.Errorf("%w: %v", ErrSaveSettings, err)
+	}
+	return nil
+}
+
+// SetSetting validates and saves a single setting value. A failed save wraps ErrSaveSettings.
+func SetSetting(s StorableSetting, value string) error {
+	v, err := s.parse(value)
+	if err != nil {
+		return err
+	}
+	return applySettings(proposedSettings{s: v})
+}
+
+// BulkSetFromForm applies every key in values whose key is a known setting and saves once -
+// all of them or, if any value is invalid, none. Unknown keys are logged and skipped.
 func BulkSetFromForm(values map[string][]string) []error {
 	var errs []error
+	p := proposedSettings{}
 	for key, vals := range values {
 		s := GetSetting(key)
 		if s == nil {
@@ -91,14 +130,20 @@ func BulkSetFromForm(values map[string][]string) []error {
 		if len(vals) > 0 {
 			val = vals[0]
 		}
-		if err := s.SetFromString(val); err != nil {
+		v, err := s.parse(val)
+		if err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", key, err))
+			continue
 		}
+		p[s] = v
 	}
-	if err := SaveSettings(); err != nil {
-		errs = append(errs, err)
+	if len(errs) > 0 {
+		return errs
 	}
-	return errs
+	if err := applySettings(p); err != nil {
+		return []error{err}
+	}
+	return nil
 }
 
 // ExportSettingsJSON returns the current settings as a JSON blob (for export).
@@ -114,7 +159,8 @@ func ExportSettingsJSON() ([]byte, error) {
 
 // ImportSettingsJSON loads settings from a JSON blob and persists them, returning the
 // keys of any settings whose stored value failed validation and was skipped (kept at its
-// prior value) - see logging.KeySettingsImport for the reason each one was rejected.
+// prior value) - see logging.KeySettingsImport for the reason each one was rejected. The
+// remaining values are stored and saved together - if the save fails, nothing changes.
 // Note: customFaviconExt is intentionally ignored on import for the same reason
 // it is excluded from export — the favicon file must be uploaded separately.
 func ImportSettingsJSON(data []byte) (skipped []string, err error) {
@@ -122,19 +168,26 @@ func ImportSettingsJSON(data []byte) (skipped []string, err error) {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, err
 	}
+	p := proposedSettings{}
 	for _, s := range allSettings {
 		if v, ok := raw[s.Key()]; ok {
 			var val interface{}
 			if err := json.Unmarshal(v, &val); err == nil {
-				if err := s.setFromJSON(val); err != nil {
+				parsed, err := s.parseJSON(val)
+				if err != nil {
 					logging.LogError(logging.KeySettingsImport, "ignoring invalid imported setting: %v", err)
 					skipped = append(skipped, s.Key())
+				} else if parsed != nil {
+					p[s] = parsed
 				}
 			}
 		}
 	}
+	if err := applySettings(p); err != nil {
+		return nil, err
+	}
 	applyLanguage(Language.Get())
-	return skipped, SaveSettings()
+	return skipped, nil
 }
 
 // ── favicon accessors ─────────────────────────────────────────────────────────

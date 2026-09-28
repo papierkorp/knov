@@ -10,13 +10,31 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
   - book/index editor - drag and drop
+  - system/structure for startup warnings / upgrades to a new version for new releases (breaking changes) (since when, what changed, what does the user have to do now) - maybe use this in the releasenotes instead of breakingchange
+    - add the kanban envs
+    - add link extraction
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore
-  - move the testdata panel in /admin below the epxort/import panel
   - change the cleanup orphaned files to look the same as scan for broken links and misplaced media but keep the storage statistics without the cleanup button
   - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.
   - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
+  - 5. Settings are re-parsed on every call (performance, negligible). GetKanbanCardStyles() builds a new map for every card, and GetKanbanTagColors() does the same for every card with tags. GetKanbanBoards() re-parses the boards and recomputes slugs on every lookup. For realistic board sizes this is just allocation noise, not a real O(n²). Parsing once per render (or caching in OnChange) would be cleaner, but not needed now.
+    - Values are re-parsed on every read. GetKanbanBoards, GetKanbanTagColors and GetKanbanCardStyles parse on each call. RenderKanbanCard builds the card-style map for every card, and SyncFolderTag parses boards twice per file during the file-sync cronjob.
+    With realistic sizes this doesn’t matter.
+    The cleanest fix is to cache the parsed value in an OnChange on the setting, or at least read the maps once per board render instead of once per card.
+  - ConfigWarnings walks every file’s tags on each Kanban settings load. Every kanban setting has Refresh: true, so each saved field reloads the whole page and triggers another full scan. The file list is cached, so it’s only iteration, but on large vaults this is the most expensive part of the change.
+  - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
+  - pathutils => windows/linux path function
+  - The settings API layer checks the tags twice, and the first check can use stale data. handleAPISetMetadataTags (internal/server/api_metadata.go:696) reads oldMeta outside the metadata lock and checks the new tags against it. Then SetTags checks them again against m.Tags inside MetaDataMutate, which is the check that actually counts. If two requests race, the first check can pass or fail differently from the second. The only thing that goes wrong is which error message the user sees; the data stays correct. This pattern existed before, but the change now adds a dependency on old tags. Acceptable for now.
+  - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
+  - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
+  - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
+  - CheckKanbanSettings in main.go: The only startup validator of its kind, so it’s a one-off. It’s acceptable at this size. Don’t build a general env-validation hook for one variable.
+  - Every Kanban setting has Refresh: true, which reloads the whole page after each save
+  Presumably this is so the warnings box updates. The cost is a full reload whenever a Kanban textarea loses focus.
+  Building the warnings also scans every cached file’s tags and checks each board folder on disk, so the page does that work on every reload.
+  Fix: reload only #section-kanban after a save instead of the whole page. That fits the “more htmx” goal better too.
 
 - test
   - remote git in mobile
@@ -114,7 +132,7 @@ Task: Review the current git diff. You are strictly prohibited from rewriting th
 Constraints:
 - Do not output any code. Do not suggest code blocks, patches, or refactored versions of the provided diff.
 - Verdict: If the changes are completely safe, logically sound, and meet standard best practices, explicitly state: "VERDICT: APPROVED" in your response.
-- Problems: If you find any issues, do not fix them. Instead, explain why they are problematic, the potential impact (e.g., runtime error, security hole, performance bottleneck, unreadability), and optionally, the strategy to fix them (without writing the actual code).
+- Problems: If you find any issues, do not fix them. Instead, explain why they are problematic, the potential impact (e.g., runtime error, security hole, performance bottleneck, unreadability), and the strategy to fix them (without writing the actual code).
 - Review the changes from two angles:
   1. As an unreleased app that does not need backwards compatibility: breaking changes, simpler designs, removed compatibility shims, and cleanup of legacy paths may be acceptable if they improve the final product.
   2. As an app with backwards-compatibility requirements: existing APIs, data formats, contracts, configuration, persisted state, integrations, and user behavior must continue to work unless a migration or deprecation path is clearly justified.
@@ -127,9 +145,8 @@ Areas to scrutinize (your opinion must cover these):
 - Performance: Are there O(n²) loops hiding in the changes, or unnecessary database queries?
 - Maintainability: Is the naming clear? Is it adding accidental complexity or tight coupling?
 - Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
+- run `--start-tests --remove` and check for potentiol bugs 
 - Architecture: Are the changes in line with the rest of the codebase?
 - Ignore the i18n translations since they are unrelated.
 
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?
-
-keep the decisions in the temp_todo.md file in mind

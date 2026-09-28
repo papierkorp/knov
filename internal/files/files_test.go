@@ -1,22 +1,38 @@
 package files
 
 import (
+	"os"
+	"slices"
 	"strings"
 	"testing"
 
+	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 )
+
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "knov-files-test")
+	if err != nil {
+		panic(err)
+	}
+	if err := configStorage.Init("json", dir); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
+}
 
 // setHideFilesByTag sets HideFilesByTag for the duration of the test and restores the previous value on cleanup.
 func setHideFilesByTag(t *testing.T, entries ...string) {
 	t.Helper()
 	prev := configmanager.HideFilesByTag.Get()
 	t.Cleanup(func() {
-		if err := configmanager.HideFilesByTag.SetFromString(strings.Join(prev, ",")); err != nil {
+		if err := configmanager.SetSetting(configmanager.HideFilesByTag, strings.Join(prev, ",")); err != nil {
 			t.Fatalf("failed to restore HideFilesByTag: %v", err)
 		}
 	})
-	if err := configmanager.HideFilesByTag.SetFromString(strings.Join(entries, ",")); err != nil {
+	if err := configmanager.SetSetting(configmanager.HideFilesByTag, strings.Join(entries, ",")); err != nil {
 		t.Fatalf("failed to set HideFilesByTag: %v", err)
 	}
 }
@@ -57,5 +73,25 @@ func TestFilterByVisibilityNoHideFilesByTag(t *testing.T) {
 	got := FilterByVisibility([]File{tagged}, "")
 	if len(got) != 1 {
 		t.Fatalf("expected file visible with no HideFilesByTag configured, got %v", got)
+	}
+}
+
+// SanitizeKanbanTags drops newly added invalid kanban tags but keeps the ones already on the file,
+// and a newly added status tag replaces the existing one.
+func TestSanitizeKanbanTagsKeepsExisting(t *testing.T) {
+	orphan := configmanager.GetKanbanPrefix() + "-status-gone"
+	inbox := configmanager.KanbanStatusTag("inbox")
+
+	got, err := SanitizeKanbanTags([]string{"a", orphan}, []string{"a", orphan})
+	if err != nil || !slices.Equal(got, []string{"a", orphan}) {
+		t.Errorf("existing tags: got %v, %v, want [a %s] and no error", got, err, orphan)
+	}
+	got, err = SanitizeKanbanTags(nil, []string{"a", orphan})
+	if err == nil || !slices.Equal(got, []string{"a"}) {
+		t.Errorf("new invalid tag: got %v, %v, want [a] and an error", got, err)
+	}
+	got, err = SanitizeKanbanTags([]string{"a", orphan}, []string{"a", orphan, inbox})
+	if err != nil || !slices.Equal(got, []string{"a", inbox}) {
+		t.Errorf("new status: got %v, %v, want [a %s] and no error", got, err, inbox)
 	}
 }

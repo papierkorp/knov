@@ -312,75 +312,31 @@ func MetaDataSyncNoRefresh(path string) error {
 	return nil
 }
 
-// SanitizeKanbanTags ensures at most one kanban status tag is present, that
-// it is in the configured allowlist, and that no unknown kanban-prefixed tags
-// (e.g. kb-anything-unknown) are accepted.
+// SanitizeKanbanTags checks the kanban tags that tags adds to oldTags: an unknown
+// <prefix>-<x> tag or a status outside the allowlist is removed and reported. Tags already in
+// oldTags are always kept, so a later kanban settings change never deletes existing tags - this
+// includes a file that already carries several status tags, which keeps all of them. Only a newly
+// added valid status tag replaces every other status tag (at most one status per file from then on).
 // Returns the cleaned tag list and an error describing any removed tags.
-func SanitizeKanbanTags(tags []string) ([]string, error) {
-	return sanitizeKanbanTags(tags)
-}
-
-// sanitizeKanbanTags is the internal implementation.
-func sanitizeKanbanTags(tags []string) ([]string, error) {
+func SanitizeKanbanTags(oldTags, tags []string) ([]string, error) {
 	validStatuses := configmanager.GetKanbanStatuses()
-	prefix := configmanager.GetKanbanPrefix()
-	prefixDash := prefix + "-"
+	prefixDash := configmanager.GetKanbanPrefix() + "-"
+	statusDash := prefixDash + "status-"
 
-	// known sub-namespaces under the prefix (extend this list as new ones are added)
-	knownSubNamespaces := []string{"status"}
-
+	var result, invalidTags []string
 	var kanbanTag string
-	var invalidTags []string
-	var nonKanban []string
-
 	for _, t := range tags {
-		if !strings.HasPrefix(t, prefixDash) {
-			nonKanban = append(nonKanban, t)
-			continue
-		}
-
-		// tag starts with kb- — determine sub-namespace
-		rest := strings.TrimPrefix(t, prefixDash) // e.g. "status-inbox" or "foo-bar"
-		parts := strings.SplitN(rest, "-", 2)
-		subNamespace := parts[0] // "status", "foo", etc.
-
-		// reject unknown sub-namespaces entirely
-		known := false
-		for _, ns := range knownSubNamespaces {
-			if subNamespace == ns {
-				known = true
-				break
-			}
-		}
-		if !known {
+		switch {
+		case !strings.HasPrefix(t, prefixDash) || slices.Contains(oldTags, t):
+			result = append(result, t)
+		case strings.HasPrefix(t, statusDash) && slices.Contains(validStatuses, strings.TrimPrefix(t, statusDash)):
+			kanbanTag = t // last valid one wins
+		default:
 			invalidTags = append(invalidTags, t)
-			continue
-		}
-
-		// for kb-status-* validate against the allowlist
-		if subNamespace == "status" {
-			statusValue := ""
-			if len(parts) == 2 {
-				statusValue = parts[1]
-			}
-			valid := false
-			for _, s := range validStatuses {
-				if s == statusValue {
-					valid = true
-					break
-				}
-			}
-			if valid {
-				kanbanTag = t // last valid one wins
-			} else {
-				invalidTags = append(invalidTags, t)
-			}
 		}
 	}
-
-	result := nonKanban
 	if kanbanTag != "" {
-		result = append(result, kanbanTag)
+		result = append(slices.DeleteFunc(result, configmanager.IsKanbanTag), kanbanTag)
 	}
 
 	if len(invalidTags) > 0 {
@@ -457,7 +413,7 @@ func SetTags(path string, tags []string) error {
 func SetTagsNoRefresh(path string, tags []string) error {
 	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		oldKanbanStatus := kanbanStatusFromTags(m.Tags)
-		cleaned, err := sanitizeKanbanTags(tags)
+		cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "tag sanitization for %s: %v", path, err)
 		}
@@ -502,7 +458,7 @@ func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err er
 			return false, nil
 		}
 		oldKanbanStatus := kanbanStatusFromTags(m.Tags)
-		cleaned, err := sanitizeKanbanTags(tags)
+		cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "tag sanitization for %s: %v", path, err)
 		}

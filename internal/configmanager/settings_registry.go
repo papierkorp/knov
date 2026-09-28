@@ -408,6 +408,79 @@ var (
 		Validate: ValidateHideScopes,
 	})
 
+	// ── Kanban ────────────────────────────────────────────────────────────────
+	KanbanBoards = register(&StringSliceSetting{
+		key:      "kanbanBoards",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Boards",
+		Desc:     "comma-separated folder/path:Display Name entries; each board covers that folder and its subfolders, the URL slug is derived from the folder path, e.g. projects/work:Work Board, personal/todo:Personal Todo. the folder must be relative to docs and can't start with docs/, media/ or files/",
+		Validate: ValidateKanbanBoards,
+	})
+	KanbanFolderSync = register(&StringSliceSetting{
+		key:      "kanbanFolderSync",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Folder Sync",
+		Desc:     "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/<status>/, and moving the file on disk into an existing folder/path/<status>/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",
+		Validate: ValidateKanbanFolderSync,
+	})
+	KanbanStatuses = register(&StringSliceSetting{
+		key:      "kanbanStatuses",
+		Default:  []string{"inbox", "inprogress", "blocked", "archive"},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Statuses",
+		Desc:     "comma-separated list of all valid kanban statuses (letters, digits and _ only). removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
+		Validate: validateKanbanNames,
+	})
+	KanbanColumns = register(&StringSliceSetting{
+		key:      "kanbanColumns",
+		Default:  []string{"inbox", "inprogress", "blocked"},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Columns",
+		Desc:     "comma-separated statuses shown as columns on every board (subset of Statuses)",
+		Validate: validateKanbanNames,
+	})
+	KanbanArchiveStatus = register(&StringSetting{
+		key: "kanbanArchiveStatus", Default: "archive",
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Archive Status",
+		Desc:     "status used for the archive drop zone shown while dragging (empty = disable the archive zone)",
+		Validate: ValidateKanbanArchiveStatus,
+	})
+	KanbanAncestorAllowedStatus = register(&StringSliceSetting{
+		key:      "kanbanAncestorAllowedStatus",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Ancestor Filter Statuses",
+		Desc:     "comma-separated statuses a descendant card must have for its ancestor to appear in the ancestor filter (empty = all ancestors shown)",
+		Validate: validateKanbanNames,
+	})
+	KanbanTagColors = register(&StringSliceSetting{
+		key:      "kanbanTagColors",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Tag Colors",
+		Desc:     "comma-separated tag:csscolor entries for tag chips on cards, e.g. urgent:red, blocked:orange, done:#2a2 or todo:var(--warning)",
+		Validate: ValidateKanbanTagColors,
+	})
+	KanbanCardStyles = register(&StringSliceSetting{
+		key:      "kanbanCardStyles",
+		Default:  []string{},
+		Section:  SectionKanban,
+		Refresh:  true,
+		Label:    "Card Styles",
+		Desc:     "comma-separated status:style entries; styles: normal, italic, highlighted, deleted, e.g. blocked:italic, archive:deleted",
+		Validate: ValidateKanbanCardStyles,
+	})
+
 	// ── General ───────────────────────────────────────────────────────────────
 	Language = register(&StringSetting{
 		key: "language", Default: "en",

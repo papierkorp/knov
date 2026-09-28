@@ -4,6 +4,7 @@ package configmanager
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -33,60 +34,53 @@ var appConfig AppConfig
 // EnvVarDefs - not here. A field with no corresponding EnvVarDefs entry isn't 1:1 env-backed
 // (e.g. LinkRegex is a fixed constant, not user-configurable).
 type AppConfig struct {
-	DataPath                    string
-	ThemesPath                  string
-	StoragePath                 string
-	LogsPath                    string
-	BackupsPath                 string
-	ServerPort                  string
-	ServerHost                  string
-	GitRemote                   string
-	GitRemoteBranch             string
-	GitAutoPush                 bool
-	GitPushTimeout              string
-	GitUser                     string
-	GitPassword                 string
-	GitToken                    string
-	GitSSHKey                   string
-	ConfigStorageProvider       string
-	MetadataStorageProvider     string
-	CacheStorageProvider        string
-	SearchStorageProvider       string
-	TrackerStorageProvider      string
-	KanbanEventsEnabled         bool
-	KanbanEventsProvider        string
-	SearchEngine                string
-	LinkRegex                   []string
-	CronjobInterval             string
-	SearchIndexInterval         string
-	MetadataRebuildInterval     string
-	KanbanPrefix                string
-	KanbanStatuses              []string
-	KanbanColumns               []string
-	AutoCreateTags              []AutoCreateTag
-	KanbanTagColors             map[string]string
-	KanbanCardStyles            map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
-	KanbanArchiveStatus         string
-	KanbanAncestorAllowedStatus []string
-	KanbanBoards                []KanbanBoard
-	TrackerEnabled              bool
-	NotifyDuration              int
-	NotifyMinLevel              string
-	DefaultEditor               string
-	BackupAutoProfiles          []BackupProfile
-	BackupRotationKeepDays      int
-	BackupRotationKeepDefault   int
-	BackupS3Endpoint            string
-	BackupS3Region              string
-	BackupS3Bucket              string
-	BackupS3Prefix              string
-	BackupS3AccessKey           string
-	BackupS3SecretKey           string
-	BackupS3UseSSL              bool
-	LogFileEnabled              bool
-	LogMaxSizeMB                int
-	LogMaxFiles                 int
-	MOTD                        string
+	DataPath                  string
+	ThemesPath                string
+	StoragePath               string
+	LogsPath                  string
+	BackupsPath               string
+	ServerPort                string
+	ServerHost                string
+	GitRemote                 string
+	GitRemoteBranch           string
+	GitAutoPush               bool
+	GitPushTimeout            string
+	GitUser                   string
+	GitPassword               string
+	GitToken                  string
+	GitSSHKey                 string
+	ConfigStorageProvider     string
+	MetadataStorageProvider   string
+	CacheStorageProvider      string
+	SearchStorageProvider     string
+	TrackerStorageProvider    string
+	KanbanEventsEnabled       bool
+	KanbanEventsProvider      string
+	KanbanPrefix              string
+	SearchEngine              string
+	LinkRegex                 []string
+	CronjobInterval           string
+	SearchIndexInterval       string
+	MetadataRebuildInterval   string
+	AutoCreateTags            []AutoCreateTag
+	TrackerEnabled            bool
+	NotifyDuration            int
+	NotifyMinLevel            string
+	DefaultEditor             string
+	BackupAutoProfiles        []BackupProfile
+	BackupRotationKeepDays    int
+	BackupRotationKeepDefault int
+	BackupS3Endpoint          string
+	BackupS3Region            string
+	BackupS3Bucket            string
+	BackupS3Prefix            string
+	BackupS3AccessKey         string
+	BackupS3SecretKey         string
+	BackupS3UseSSL            bool
+	LogFileEnabled            bool
+	LogMaxSizeMB              int
+	LogMaxFiles               int
+	MOTD                      string
 }
 
 // KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug.
@@ -250,33 +244,33 @@ func SetBackupsPath(path string) {
 
 // GetKanbanTagColors returns the tag-name → CSS-color map
 func GetKanbanTagColors() map[string]string {
-	return appConfig.KanbanTagColors
+	return parseKeyValues(KanbanTagColors.Get())
 }
 
 // GetKanbanCardStyles returns the kanban-status → card-style map ("normal"|"italic"|"highlighted"|"deleted")
 func GetKanbanCardStyles() map[string]string {
-	return appConfig.KanbanCardStyles
+	return parseKeyValues(KanbanCardStyles.Get())
 }
 
 // GetKanbanArchiveStatus returns the status used to archive (hide) cards from the board
 func GetKanbanArchiveStatus() string {
-	return appConfig.KanbanArchiveStatus
+	return KanbanArchiveStatus.Get()
 }
 
 // GetKanbanAncestorAllowedStatus returns the statuses a descendant card must have for its
 // ancestor to be listed in the ancestor filter; empty means no restriction (all allowed)
 func GetKanbanAncestorAllowedStatus() []string {
-	return appConfig.KanbanAncestorAllowedStatus
+	return KanbanAncestorAllowedStatus.Get()
 }
 
 // GetKanbanBoards returns the configured folder-based kanban boards
 func GetKanbanBoards() []KanbanBoard {
-	return appConfig.KanbanBoards
+	return parseKanbanBoards(KanbanBoards.Get(), KanbanFolderSync.Get())
 }
 
 // GetKanbanBoardBySlug looks up a configured kanban board by its URL slug
 func GetKanbanBoardBySlug(slug string) (KanbanBoard, bool) {
-	for _, b := range appConfig.KanbanBoards {
+	for _, b := range GetKanbanBoards() {
 		if b.Slug == slug {
 			return b, true
 		}
@@ -286,7 +280,7 @@ func GetKanbanBoardBySlug(slug string) (KanbanBoard, bool) {
 
 // GetKanbanBoardByFolder looks up a configured kanban board by its exact folder path
 func GetKanbanBoardByFolder(folderPath string) (KanbanBoard, bool) {
-	for _, b := range appConfig.KanbanBoards {
+	for _, b := range GetKanbanBoards() {
 		if b.FolderPath == folderPath {
 			return b, true
 		}
@@ -294,62 +288,45 @@ func GetKanbanBoardByFolder(folderPath string) (KanbanBoard, bool) {
 	return KanbanBoard{}, false
 }
 
-// getStringMapEnv parses "key1:val1,key2:val2" into a map
-func getStringMapEnv(key string) map[string]string {
+// parseKeyValues parses "key:val" entries into a map, skipping malformed ones
+func parseKeyValues(entries []string) map[string]string {
 	result := make(map[string]string)
-	if value := os.Getenv(key); value != "" {
-		for _, pair := range strings.Split(value, ",") {
-			parts := strings.SplitN(strings.TrimSpace(pair), ":", 2)
-			if len(parts) == 2 {
-				k := strings.TrimSpace(parts[0])
-				v := strings.TrimSpace(parts[1])
-				if k != "" && v != "" {
-					result[k] = v
-				}
-			}
+	for _, entry := range entries {
+		k, v, ok := strings.Cut(entry, ":")
+		k, v = strings.TrimSpace(k), strings.TrimSpace(v)
+		if ok && k != "" && v != "" {
+			result[k] = v
 		}
 	}
 	return result
 }
 
-// getKanbanBoardsEnv parses "folder/path:Display Name, other/folder:Other Name" into a list of
-// kanban boards, deriving a stable URL slug from each folder path (colliding slugs get a numeric
-// suffix, same scheme as header-anchor IDs).
-func getKanbanBoardsEnv(key string) []KanbanBoard {
-	var boards []KanbanBoard
-	usedSlugs := map[string]int{}
-	value := os.Getenv(key)
-	if value == "" {
-		return boards
-	}
-	for _, pair := range strings.Split(value, ",") {
-		parts := strings.SplitN(strings.TrimSpace(pair), ":", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		folderPath := strings.Trim(strings.TrimSpace(parts[0]), "/")
-		displayName := strings.TrimSpace(parts[1])
-		if folderPath == "" || displayName == "" {
-			continue
-		}
-		slug := utils.GenerateID(folderPath, usedSlugs)
-		boards = append(boards, KanbanBoard{FolderPath: folderPath, DisplayName: displayName, Slug: slug})
-	}
-	return boards
+// NormalizeKanbanFolder turns a configured board / folder sync folder into the trimmed,
+// forward-slash docs-relative form boards are looked up by (pathutils can't be used here, it
+// imports configmanager).
+func NormalizeKanbanFolder(folder string) string {
+	return strings.Trim(strings.ReplaceAll(strings.TrimSpace(folder), `\`, "/"), "/")
 }
 
-// applyKanbanFolderSyncEnv marks the boards named in KNOV_KANBAN_FOLDERSYNC (a comma-separated
-// list of board folder paths) as FolderSync-enabled. Kept separate from KNOV_KANBAN_BOARDS so the
-// board list's free-text display names can never collide with a flag token.
-func applyKanbanFolderSyncEnv(boards []KanbanBoard, key string) []KanbanBoard {
-	for _, raw := range getStringListEnv(key, nil) {
-		folderPath := strings.Trim(raw, "/")
-		i := slices.IndexFunc(boards, func(b KanbanBoard) bool { return b.FolderPath == folderPath })
-		if i == -1 {
-			logging.LogWarning(logging.KeyApp, "%s names folder %q which has no matching board in KNOV_KANBAN_BOARDS, ignoring", key, folderPath)
+// parseKanbanBoards parses "folder/path:Display Name" entries into kanban boards, deriving a
+// stable URL slug from each folder path (colliding slugs get a numeric suffix, same scheme as
+// header-anchor IDs) and flagging the boards whose folder path is listed in folderSync.
+func parseKanbanBoards(entries, folderSync []string) []KanbanBoard {
+	var boards []KanbanBoard
+	usedSlugs := map[string]int{}
+	for _, entry := range entries {
+		folderPath, displayName, ok := strings.Cut(entry, ":")
+		folderPath = NormalizeKanbanFolder(folderPath)
+		displayName = strings.TrimSpace(displayName)
+		if !ok || folderPath == "" || displayName == "" {
 			continue
 		}
-		boards[i].FolderSync = true
+		boards = append(boards, KanbanBoard{
+			FolderPath:  folderPath,
+			DisplayName: displayName,
+			Slug:        utils.GenerateID(folderPath, usedSlugs),
+			FolderSync:  slices.ContainsFunc(folderSync, func(f string) bool { return NormalizeKanbanFolder(f) == folderPath }),
+		})
 	}
 	return boards
 }
@@ -508,12 +485,12 @@ func GetKanbanPrefix() string {
 
 // GetKanbanStatuses returns all possible kanban statuses
 func GetKanbanStatuses() []string {
-	return appConfig.KanbanStatuses
+	return KanbanStatuses.Get()
 }
 
 // GetKanbanColumns returns the visible kanban columns
 func GetKanbanColumns() []string {
-	return appConfig.KanbanColumns
+	return KanbanColumns.Get()
 }
 
 // GetAutoCreateTags returns the folder-scoped tags applied to newly created files
@@ -523,12 +500,12 @@ func GetAutoCreateTags() []AutoCreateTag {
 
 // KanbanStatusTag returns the full tag for a given status
 func KanbanStatusTag(status string) string {
-	return appConfig.KanbanPrefix + "-status-" + status
+	return GetKanbanPrefix() + "-status-" + status
 }
 
 // IsKanbanTag returns true if a tag is a kanban status tag
 func IsKanbanTag(tag string) bool {
-	return strings.HasPrefix(tag, appConfig.KanbanPrefix+"-status-")
+	return strings.HasPrefix(tag, GetKanbanPrefix()+"-status-")
 }
 
 func initLogLevel() {
@@ -727,6 +704,107 @@ func ValidateHidePaths(entries []string) error {
 		pattern, _ := splitHideEntry(entry)
 		if _, err := compileHidePath(pattern); err != nil {
 			return fmt.Errorf("invalid pattern %q: %w", entry, err)
+		}
+	}
+	return nil
+}
+
+var (
+	kanbanNamePattern     = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
+	kanbanTagColorPattern = regexp.MustCompile(`^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|var\(--[\w-]+\))$`)
+	kanbanCardStyles      = []string{"normal", "italic", "highlighted", "deleted"}
+)
+
+// CheckKanbanPrefix refuses to start while KNOV_KANBAN_PREFIX isn't only letters, digits and _
+// (the prefix ends up in tags and html attributes).
+func CheckKanbanPrefix() error {
+	if !kanbanNamePattern.MatchString(GetKanbanPrefix()) {
+		return fmt.Errorf("KNOV_KANBAN_PREFIX %q must only contain letters, digits and _", GetKanbanPrefix())
+	}
+	return nil
+}
+
+// ValidateKanbanArchiveStatus allows an empty value (archive zone disabled) or a valid status name.
+func ValidateKanbanArchiveStatus(status string) error {
+	if status == "" {
+		return nil
+	}
+	return validateKanbanNames([]string{status})
+}
+
+// validateKanbanNames only allows letters, digits and _ in every status name, each at most once.
+func validateKanbanNames(names []string) error {
+	for i, n := range names {
+		if !kanbanNamePattern.MatchString(n) {
+			return fmt.Errorf("invalid status %q, only letters, digits and _ are allowed", n)
+		}
+		if slices.Contains(names[:i], n) {
+			return fmt.Errorf("duplicate status %q", n)
+		}
+	}
+	return nil
+}
+
+// ValidateKanbanBoards rejects malformed folder/path:Display Name entries, folders outside docs
+// and a folder configured twice.
+func ValidateKanbanBoards(entries []string) error {
+	var folders []string
+	for _, entry := range entries {
+		folderPath, displayName, ok := strings.Cut(entry, ":")
+		if !ok || strings.TrimSpace(displayName) == "" {
+			return fmt.Errorf("invalid entry %q (expected folder/path:Display Name)", entry)
+		}
+		if err := validateKanbanFolder(folderPath); err != nil {
+			return err
+		}
+		folderPath = NormalizeKanbanFolder(folderPath)
+		if slices.Contains(folders, folderPath) {
+			return fmt.Errorf("duplicate board folder %q", folderPath)
+		}
+		folders = append(folders, folderPath)
+	}
+	return nil
+}
+
+// ValidateKanbanFolderSync rejects folders outside docs.
+func ValidateKanbanFolderSync(folders []string) error {
+	for _, f := range folders {
+		if err := validateKanbanFolder(f); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateKanbanFolder only accepts a clean path below the docs folder - no .., absolute or
+// drive path, and no leading docs/, media/ or files/ that pathutils would strip or reroute.
+// Uses forward-slash rules only, so a value is accepted or rejected the same on every OS.
+func validateKanbanFolder(folderPath string) error {
+	folderPath = NormalizeKanbanFolder(folderPath)
+	first, _, _ := strings.Cut(folderPath, "/")
+	if strings.Contains(folderPath, ":") || path.Clean(folderPath) != folderPath || slices.Contains([]string{".", "..", "docs", "media", "files"}, first) {
+		return fmt.Errorf("invalid folder %q, must be a folder path relative to docs (e.g. projects/work)", folderPath)
+	}
+	return nil
+}
+
+// ValidateKanbanTagColors only allows color names, #hex or var(--name) values, since the color
+// ends up in a style attribute.
+func ValidateKanbanTagColors(entries []string) error {
+	return validateKeyValues(entries, kanbanTagColorPattern.MatchString, "expected tag:color with a color name, #hex or var(--name)")
+}
+
+// ValidateKanbanCardStyles only allows the known card styles, since the style ends up in a class.
+func ValidateKanbanCardStyles(entries []string) error {
+	return validateKeyValues(entries, func(v string) bool { return slices.Contains(kanbanCardStyles, v) }, "expected status:style with style one of "+strings.Join(kanbanCardStyles, ", "))
+}
+
+// validateKeyValues rejects "key:value" entries that are malformed or whose value fails valid.
+func validateKeyValues(entries []string, valid func(string) bool, hint string) error {
+	for _, entry := range entries {
+		k, v, ok := strings.Cut(entry, ":")
+		if !ok || strings.TrimSpace(k) == "" || !valid(strings.TrimSpace(v)) {
+			return fmt.Errorf("invalid entry %q (%s)", entry, hint)
 		}
 	}
 	return nil

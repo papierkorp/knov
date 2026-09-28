@@ -1,12 +1,14 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/kanban"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -67,17 +69,23 @@ func handleAPIGetSettingsSection(w http.ResponseWriter, r *http.Request) {
 			t := func(key string, args ...any) string {
 				return translation.SprintfForRequest(lang, key, args...)
 			}
-			var html string
-			if s.Key == configmanager.SectionAppearance.Key {
-				html = render.RenderSettingsSection(s, t, render.RenderFaviconItem(t))
-			} else {
-				html = render.RenderSettingsSection(s, t)
-			}
-			writeResponse(w, r, toSectionJSON(s), html)
+			writeResponse(w, r, toSectionJSON(s), renderSettingsSection(s, t))
 			return
 		}
 	}
 	writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown section"))
+}
+
+// renderSettingsSection renders a section together with its section-specific extra items.
+func renderSettingsSection(s configmanager.SettingSection, t func(string, ...any) string) string {
+	switch s.Key {
+	case configmanager.SectionAppearance.Key:
+		return render.RenderSettingsSection(s, t, render.RenderFaviconItem(t))
+	case configmanager.SectionKanban.Key:
+		return render.RenderSettingsSection(s, t, render.RenderKanbanConfigWarnings(kanban.ConfigWarnings(t), t))
+	default:
+		return render.RenderSettingsSection(s, t)
+	}
 }
 
 // @Summary Get all settings
@@ -95,7 +103,7 @@ func handleAPIGetAllSettings(w http.ResponseWriter, r *http.Request) {
 	sections := configmanager.AllSections()
 	jsonData := make([]sectionJSON, len(sections))
 	for i, s := range sections {
-		html += render.RenderSettingsSection(s, t)
+		html += renderSettingsSection(s, t)
 		jsonData[i] = toSectionJSON(s)
 	}
 	writeResponse(w, r, jsonData, html)
@@ -116,6 +124,10 @@ func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	errs := configmanager.BulkSetFromForm(r.Form)
+	if len(errs) == 1 && errors.Is(errs[0], configmanager.ErrSaveSettings) {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
+		return
+	}
 	if len(errs) > 0 {
 		msgs := make([]string, len(errs))
 		for i, e := range errs {
@@ -151,12 +163,13 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting"))
 		return
 	}
-	if err := s.SetFromString(r.FormValue(key)); err != nil {
-		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
+	err := configmanager.SetSetting(s, r.FormValue(key))
+	if errors.Is(err, configmanager.ErrSaveSettings) {
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
 		return
 	}
-	if err := configmanager.SaveSettings(); err != nil {
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"))
+	if err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
 	}
 	if configmanager.RefreshesFileCaches(key) {

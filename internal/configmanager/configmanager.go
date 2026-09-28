@@ -48,8 +48,7 @@ func GetLanguage() string {
 // SetLanguage updates user settings with new language
 func SetLanguage(lang string) {
 	validLang := CheckLanguage(lang)
-	Language.SetFromString(validLang) //nolint:errcheck // pre-validated by CheckLanguage
-	SaveSettings()                    //nolint:errcheck
+	SetSetting(Language, validLang) //nolint:errcheck // pre-validated by CheckLanguage
 }
 
 // GetTheme returns the current theme name.
@@ -57,6 +56,5 @@ func GetTheme() string { return Theme.Get() }
 
 // SetTheme updates the theme and persists.
 func SetTheme(theme string) {
-	Theme.SetFromString(theme) //nolint:errcheck // theme is a dynamic-select, no Options to validate against
-	SaveSettings()             //nolint:errcheck
+	SetSetting(Theme, theme) //nolint:errcheck // theme is a dynamic-select, no Options to validate against
 }

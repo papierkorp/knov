@@ -53,7 +53,7 @@ func seedScopeProbes() error {
 	}
 
 	files.InvalidateFileListCache()
-	return configmanager.HidePaths.SetFromString(strings.Join(entries, ","))
+	return configmanager.SetSetting(configmanager.HidePaths, strings.Join(entries, ","))
 }
 
 func getJSON(client *http.Client, url string, out interface{}) error {
@@ -82,7 +82,7 @@ func caseHideScopeEndpoints() test.CaseResult {
 
 	prevHidePaths := configmanager.HidePaths.Get()
 	defer func() {
-		configmanager.HidePaths.SetFromString(strings.Join(prevHidePaths, ","))
+		configmanager.SetSetting(configmanager.HidePaths, strings.Join(prevHidePaths, ","))
 		files.InvalidateFileListCache()
 	}()
 

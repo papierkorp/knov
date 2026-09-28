@@ -201,7 +201,7 @@ Two layers:
 
 - Types: `*BoolSetting`, `*IntSetting`, `*StringSetting` (also renders as select or dynamic-select), `*StringSliceSetting`, `*MapSetting[T]` (structured/nested values, no UI)
 - Sections and groups are declared in `settings_definitions.go` and appear in the UI automatically
-- `OnChange` fires on API saves (`SetFromString`) but not on startup load — startup side-effects are applied explicitly in `InitSettings`
+- `OnChange` fires whenever a value is stored - on saves (`SetSetting`, `BulkSetFromForm`, `ImportSettingsJSON`) and on the startup load in `InitSettings`
 - `IntSetting` and `StringSetting` validate against `Min`/`Max` and `Options` respectively; invalid API values return 400, invalid stored values fall back to the default with a warning
 - All values are stored in `atomic.Pointer[T]` — reads are lock-free. `MapSetting` uses copy-on-write: always build a fresh copy before calling `Set`, never mutate the map returned by `Get`
 
@@ -451,13 +451,12 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 ## Tag System
 
 - Kanban state is stored as a regular metadata tag: `{prefix}-status-{status}` (e.g. `kb-status-inbox`)
-- Prefix and valid statuses come from env: `KNOV_KANBAN_PREFIX`, `KNOV_KANBAN_STATUS`
-- `sanitizeKanbanTags()` in `metadata.go` enforces: one kanban tag max, known sub-namespace only (`status` for now), status must be in allowlist — called from `SetTags` / `PatchTags`
-- Adding a new sub-namespace (e.g. `kb-priority-*`): add it to `knownSubNamespaces` in `sanitizeKanbanTags`
+- The prefix comes from `KNOV_KANBAN_PREFIX` (env, restart - changing it is a data-format change), valid statuses from the settings registry (`KanbanStatuses` in `settings_registry.go`)
+- `sanitizeKanbanTags(oldTags, tags)` in `metadata.go` only checks *newly added* `{prefix}-*` tags (must be `{prefix}-status-{allowed status}`, a new status tag replaces the existing one) — tags already on the file are always kept, so a config change never deletes data; orphaned status tags are surfaced by `kanban.ConfigWarnings` instead. Called from `SetTags` / `PatchTags` / the metadata patch
 
 ## Boards
 
-- Boards are explicitly configured folders, not auto-derived collections: `KNOV_KANBAN_BOARDS=folder/path:Display Name,...` (`internal/configmanager/config.go` → `AppConfig.KanbanBoards []KanbanBoard{FolderPath, DisplayName, Slug}`)
+- Boards are explicitly configured folders, not auto-derived collections: the `KanbanBoards` setting (`folder/path:Display Name,...`), parsed per call by `configmanager.GetKanbanBoards()` into `[]KanbanBoard{FolderPath, DisplayName, Slug, FolderSync}`
 - `Slug` is derived from `FolderPath` via `utils.GenerateID` (same helper used for markdown header/TOC anchor IDs) - duplicate slugs get a numeric suffix, not an error
 - A file appears on a board if its directory equals the board's `FolderPath` or is nested under it (`kanban.folderMatches`, recursive match against `metadata.Folders` joined with `/`) - this is a superset of the old "same top-level collection" rule, not a replacement filter criterion in the generic filter engine
 - `kanban.BuildBoard`/`TagsForFolder`/`FilesForFolder`/`GetOrder`/`SaveOrder` all take a literal folder path, not a slug - they have no dependency on `configmanager.GetKanbanBoards()` at all, which is what lets `kanbantest` seed/assert against a folder path directly with zero config plumbing
@@ -481,14 +480,9 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 | `static_kanban.css`     | all kanban styles (ID + class selectors)                             |
 | `{theme}-kanban.gohtml` | page shell per theme                                                 |
 
-## Env Vars
+## Config
 
-```
-KNOV_KANBAN_BOARDS=projects/work:Work Board,personal/todo:Personal Todo  # boards (folder:name)
-KNOV_KANBAN_PREFIX=kb          # tag prefix
-KNOV_KANBAN_STATUS=inbox,inprogress,blocked,archive  # all valid statuses
-KNOV_KANBAN_COLUMNS=inbox,inprogress,blocked         # visible columns (subset)
-```
+- Only `KNOV_KANBAN_PREFIX` (tag format) and `KNOV_KANBAN_EVENTS_ENABLED` / `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER` (storage init) are env vars; everything else is a runtime setting in the Kanban section of `settings_registry.go`
 
 # Notifications
 
