@@ -14,6 +14,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/markdown"
 	"knov/internal/pathutils"
+	"knov/internal/pathutils/crosspath"
 	"knov/internal/translation"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -104,6 +105,7 @@ func ResolveWikiTarget(inner string) (linkPath, anchor string) {
 		anchor = linkPath[idx:]
 		linkPath = linkPath[:idx]
 	}
+	linkPath = crosspath.ToSlash(linkPath)
 	if linkPath == "" {
 		return "", anchor
 	}
@@ -847,7 +849,12 @@ func ProcessMarkdownLinks(content string) string {
 		}
 
 		if isImage {
-			return matches[1] + "[" + text + "](" + strings.ReplaceAll(u, "\\", "/") + ")"
+			// escapes stay for goldmark, only windows separators are converted - in the path,
+			// not the title or anchor
+			if prefix, p, suffix := splitLinkPath(u, "?#", true); isWindowsPath(p) {
+				u = prefix + crosspath.ToSlash(p) + suffix
+			}
+			return matches[1] + "[" + text + "](" + u + ")"
 		}
 
 		// external links — leave as-is
@@ -873,6 +880,7 @@ func ProcessMarkdownLinks(content string) string {
 			anchor = u[idx:]
 			u = u[:idx]
 		}
+		u = markdownLinkPath(u)
 
 		// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
 		if text == "" {

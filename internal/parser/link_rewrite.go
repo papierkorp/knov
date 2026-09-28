@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"knov/internal/markdown"
+	"knov/internal/pathutils/crosspath"
 )
 
 // LinkKind is the syntax a link was written in.
@@ -24,18 +25,43 @@ var (
 	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|\S+)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	linkSuffixRe      = regexp.MustCompile(`\s+(?:=\d*x\d*|["'])`) // " =WxH" (wiki.js) or "title"
 	wikijsImageSizeRe = regexp.MustCompile(`^\s+=\d*x\d*`)
+	// a CommonMark backslash escape (\_ \( ...) - except "\.", so windows "..\" and ".hidden"
+	// segments (sub\..\x, sub\.git) count as separators
+	mdEscapeRe = regexp.MustCompile(`\\[!-\-/:-@\[-` + "`" + `{-~]`)
 )
+
+// isWindowsPath reports whether a markdown link path uses windows "\" separators - any "\" that
+// isn't a markdown escape (sub\note, a\..\b) makes all of its "\" separators (sub\_resources\x).
+func isWindowsPath(p string) bool {
+	return strings.Contains(mdEscapeRe.ReplaceAllString(p, ""), `\`)
+}
+
+// markdownLinkPath resolves the "\" of a markdown link path: separators in a windows path,
+// CommonMark escapes otherwise (\_ -> _). An escaped "\\" is a separator too, a "\" is never
+// part of a linked filename.
+func markdownLinkPath(p string) string {
+	if !isWindowsPath(p) {
+		p = mdEscapeRe.ReplaceAllStringFunc(p, func(m string) string { return m[1:] })
+	}
+	return crosspath.ToSlash(p)
+}
 
 // RewriteLinks replaces, outside fenced code blocks and inline code, the path of every markdown
 // ](dest), [[wiki]], reference-style [id]: dest and html src/href link for which fn returns a new
-// path (fn gets the path without angle brackets, title, query or anchor). Anything around the
-// path is kept as-is, except a wiki.js " =WxH" image size, which goldmark doesn't parse and would
-// break the image. Returns the content and whether anything was replaced.
+// path (fn gets the path without angle brackets, title, query or anchor, with windows "\"
+// separators as "/" and for markdown with escapes resolved). Anything around the path is kept
+// as-is, except a wiki.js " =WxH" image size, which goldmark doesn't parse and would break the
+// image. Returns the content and whether anything was replaced.
 // ExtractLinks walks links through this too, so both always see the same links.
 func RewriteLinks(content string, fn func(p string, kind LinkKind) (string, bool)) (string, bool) {
 	changed := false
 	replace := func(dest, stops string, kind LinkKind, titled bool) string {
 		prefix, p, suffix := splitLinkPath(dest, stops, titled)
+		if kind == LinkMarkdown {
+			p = markdownLinkPath(p)
+		} else {
+			p = crosspath.ToSlash(p)
+		}
 		newPath, ok := fn(p, kind)
 		if !ok || newPath == p {
 			return dest

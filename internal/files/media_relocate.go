@@ -218,7 +218,6 @@ func (idx *relocateIndex) resolve(doc, link string, wiki bool) string {
 	if decoded, err := url.PathUnescape(link); err == nil {
 		link = decoded
 	}
-	link = strings.ReplaceAll(link, "\\", "/")
 	root := strings.HasPrefix(link, "/")
 	if root && strings.HasPrefix(link, "/media/") {
 		if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {

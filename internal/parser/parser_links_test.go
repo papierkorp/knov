@@ -32,6 +32,15 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		// a Windows-style backslash path is normalized to forward slashes - the only
 		// transformation the image branch ever applies.
 		{"image embed backslash path normalized", `![Diagram](sub\diagram.png)`, "![Diagram](sub/diagram.png)"},
+		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + pathutils.ToFileURL("sub/note.md") + ")"},
+		// a markdown escape (\_) is no separator, and the anchor is left as written
+		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + pathutils.ToFileURL("a_b.md") + `#c\d)`},
+		{"image embed markdown escape kept", `![D](a\_b.png)`, `![D](a\_b.png)`},
+		// in a windows path every "\" is a separator, also before punctuation (_resources)
+		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + pathutils.ToFileURL("sub/_resources/a.md") + ")"},
+		{"image embed title and anchor ignored", `![D](a\_b.png#c\d "t\x")`, `![D](a\_b.png#c\d "t\x")`},
+		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
+		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("a/../b/.c.md") + ")"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -102,6 +111,8 @@ func TestWikiTargetExtraction(t *testing.T) {
 		{"note#section|Display Text", "note.md", "#section"},
 		{"#header", "", "#header"},
 		{"mein%20ordner/notiz", "mein ordner/notiz.md", ""},
+		{`sub.d\note`, "sub.d/note.md", ""},
+		{`note#a\b`, "note.md", `#a\b`},
 	}
 	for _, c := range cases {
 		t.Run(c.in, func(t *testing.T) {
@@ -122,12 +133,46 @@ func TestWikiLinkPureAnchor(t *testing.T) {
 }
 
 func TestExtractLinksDestination(t *testing.T) {
-	in := `![x](</media/a%20b.png> "title") [y](note.md 'title') ![z](img/c.png) <img src="/media/d.png"> <a href='#top'> <a href="mailto:a@b.c"> <img src="data:image/png;base64,AAAA"> <img data-src="lazy.png"> <script src="//cdn.example.com/x.js"> <a href="/dashboard"> set src="prose.png" [[ns:page]] [[https://example.com]] ![w](C:\x.png)
+	in := `![x](</media/a%20b.png> "title") [y](note.md 'title') ![z](img/c.png) <img src="/media/d.png"> <a href='#top'> <a href="mailto:a@b.c"> <img src="data:image/png;base64,AAAA"> <img data-src="lazy.png"> <script src="//cdn.example.com/x.js"> <a href="/dashboard"> set src="prose.png" [[ns:page]] [[https://example.com]] ![w](C:\x.png) [e](a\_b.md) [f](sub\_res\a.md)
 [ref]: <ref img.png> "title"
 [note]: remember this
 [^1]: footnote text`
-	want := []string{"/media/a%20b.png", "note.md", "img/c.png", `C:\x.png`, "ns:page", "/media/d.png", "ref img.png"}
+	want := []string{"/media/a%20b.png", "note.md", "img/c.png", "C:/x.png", "a_b.md", "sub/_res/a.md", "ns:page", "/media/d.png", "ref img.png"}
 	if got := NewMarkdownHandler().ExtractLinks([]byte(in)); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
+	}
+}
+
+// a "\" that isn't a markdown escape makes the whole path a windows path, so every "\" is a
+// separator - otherwise all "\" are markdown escapes.
+func TestMarkdownLinkPath(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{`a\_b.md`, "a_b.md"},                          // escape only
+		{`a\\b.md`, "a/b.md"},                          // escaped backslash
+		{`sub\note.md`, "sub/note.md"},                 // letter after "\"
+		{`sub\1.md`, "sub/1.md"},                       // digit after "\"
+		{`sub\_resources\a.md`, "sub/_resources/a.md"}, // punctuation folder
+		{`a\..\b.md`, "a/../b.md"},                     // "\." is no escape
+		{`..\.git\x`, "../.git/x"},                     // hidden folder
+		{`sub\`, "sub/"},                               // trailing "\"
+		{`_a\_b.md`, "_a_b.md"},                        // ambiguous, read as escapes
+	}
+	for _, c := range cases {
+		if got := markdownLinkPath(c.in); got != c.want {
+			t.Errorf("markdownLinkPath(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}
+
+func TestRewriteLinksBackslashes(t *testing.T) {
+	var got []string
+	RewriteLinks(`[a](sub\_res\x.md) [b](a\_b.md) [[sub\_res\y]]`, func(p string, _ LinkKind) (string, bool) {
+		got = append(got, p)
+		return "", false
+	})
+	// markdown links get their escapes or windows separators resolved, wiki links every "\" as "/"
+	want := []string{"sub/_res/x.md", "a_b.md", "sub/_res/y"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Errorf("RewriteLinks paths = %q, want %q", got, want)
 	}
 }

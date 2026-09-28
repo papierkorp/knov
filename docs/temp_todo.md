@@ -13,6 +13,8 @@
   - system/structure for startup warnings / upgrades to a new version for new releases (breaking changes) (since when, what changed, what does the user have to do now) - maybe use this in the releasenotes instead of breakingchange
     - add the kanban envs
     - add link extraction
+  - tournament editor
+  - encrypt single files/folders
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore
@@ -24,13 +26,11 @@
     With realistic sizes this doesn’t matter.
     The cleanest fix is to cache the parsed value in an OnChange on the setting, or at least read the maps once per board render instead of once per card.
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
-  - pathutils => windows/linux path function
   - The settings API layer checks the tags twice, and the first check can use stale data. handleAPISetMetadataTags (internal/server/api_metadata.go:696) reads oldMeta outside the metadata lock and checks the new tags against it. Then SetTags checks them again against m.Tags inside MetaDataMutate, which is the check that actually counts. If two requests race, the first check can pass or fail differently from the second. The only thing that goes wrong is which error message the user sees; the data stays correct. This pattern existed before, but the change now adds a dependency on old tags. Acceptable for now.
   - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
   - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
   - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
   - CheckKanbanSettings in main.go: The only startup validator of its kind, so it’s a one-off. It’s acceptable at this size. Don’t build a general env-validation hook for one variable.
-  - A Windows absolute path like C:\x:tag is misread. It becomes folder C with tag \x:tag. The old parser had the same flaw, so this isn’t a regression, but the colon-delimited format simply can’t express it. Not worth fixing unless someone reports it.
 - test
   - remote git in mobile
 

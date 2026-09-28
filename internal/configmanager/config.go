@@ -13,6 +13,7 @@ import (
 
 	"knov/internal/backup"
 	"knov/internal/logging"
+	"knov/internal/pathutils/crosspath"
 	"knov/internal/utils"
 
 	"github.com/go-git/go-billy/v5/osfs"
@@ -301,10 +302,9 @@ func parseKeyValues(entries []string) map[string]string {
 }
 
 // NormalizeKanbanFolder turns a configured board / folder sync folder into the trimmed,
-// forward-slash docs-relative form boards are looked up by (pathutils can't be used here, it
-// imports configmanager).
+// forward-slash docs-relative form boards are looked up by.
 func NormalizeKanbanFolder(folder string) string {
-	return strings.Trim(strings.ReplaceAll(strings.TrimSpace(folder), `\`, "/"), "/")
+	return strings.Trim(crosspath.ToSlash(strings.TrimSpace(folder)), "/")
 }
 
 // parseKanbanBoards parses "folder/path:Display Name" entries into kanban boards, deriving a
@@ -731,7 +731,7 @@ func ValidateKanbanBoards(entries []string) error {
 	var folders []string
 	for _, entry := range entries {
 		folderPath, displayName, ok := strings.Cut(entry, ":")
-		if !ok || strings.TrimSpace(displayName) == "" {
+		if !ok || strings.TrimSpace(displayName) == "" || crosspath.IsWindowsAbs(strings.TrimSpace(entry)) {
 			return fmt.Errorf("invalid entry %q (expected folder/path:Display Name)", entry)
 		}
 		if err := validateKanbanFolder(folderPath); err != nil {
@@ -749,6 +749,9 @@ func ValidateKanbanBoards(entries []string) error {
 // ValidateAutoCreateTags rejects "folder/path:tag" entries with an empty tag or a folder outside docs.
 func ValidateAutoCreateTags(entries []string) error {
 	for _, entry := range entries {
+		if crosspath.IsWindowsAbs(strings.TrimSpace(entry)) {
+			return fmt.Errorf("invalid folder in %q, must be a folder path relative to docs (e.g. projects/work)", entry)
+		}
 		folderPath, tag, ok := strings.Cut(entry, ":")
 		if !ok {
 			continue

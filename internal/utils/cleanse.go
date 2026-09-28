@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"knov/internal/pathutils/crosspath"
 )
 
 func CleanseID(input string) string {
@@ -26,7 +28,7 @@ func CleanseID(input string) string {
 
 // CleanLink normalizes a link by removing anchors, aliases, and adding extensions
 func CleanLink(link string) string {
-	cleanLink := filepath.ToSlash(link)
+	cleanLink := crosspath.ToSlash(link)
 	cleanLink = strings.Split(cleanLink, "#")[0]
 	// "?" always starts a query - it isn't a valid filename char on windows
 	cleanLink = strings.Split(cleanLink, "?")[0]

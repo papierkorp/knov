@@ -216,6 +216,8 @@ func MediaRoot() string { return getMediaPath() }
 // normalization the To* functions above do. Use this over filepath.ToSlash for any path
 // that will be compared against or stored as a forward-slash path (git tree paths, cache
 // keys, URLs) - on Windows filepath.Rel/Join/Dir/Clean etc. all return backslash paths.
+// Only for real filesystem paths of the host OS (a "\" stays on linux, where it's a valid
+// filename char) - for path text from content/settings/input use crosspath.ToSlash.
 func ToSlash(path string) string {
 	return filepath.ToSlash(path)
 }
