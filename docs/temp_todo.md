@@ -20,7 +20,6 @@
   - if a `.` is in the name its not detected as markdown for new files
   - admin/ scan for misplaced media doesnt find a .excalidraw file
 - chore
-  - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
 - test
   - remote git in mobile
