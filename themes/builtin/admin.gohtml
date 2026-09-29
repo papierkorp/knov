@@ -65,16 +65,14 @@
             <section class="settings-section">
                 <h2>{{T "Storage Statistics"}}</h2>
                 <div class="setting-item">
-                    <div class="help-text">{{T "media file storage usage and cleanup"}}</div>
-                    <div hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+                    <div class="help-text">{{T "media file storage usage"}}</div>
+                    <div id="storage-stats-result" hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
                         {{T "loading..."}}
                     </div>
-                    <div style="margin-top:12px;">
-                        <button class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-swap="none"
-                                hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
-                            <i class="fa fa-trash"></i> {{T "Cleanup Orphaned Files"}}
-                        </button>
-                    </div>
+                    <button type="button" class="btn-secondary" style="margin-top:12px;"
+                            hx-get="/api/media/stats" hx-target="#storage-stats-result" hx-swap="innerHTML">
+                        <i class="fa fa-rotate"></i> {{T "refresh"}}
+                    </button>
                 </div>
             </section>
             <section class="settings-section">
@@ -247,6 +245,17 @@
         </section>
 
         <section class="settings-section settings-section-wide">
+            <h2>{{T "Orphaned Media"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "find media files that no document links to and delete the selected ones"}}</div>
+                <button type="button" class="btn-secondary"
+                        hx-get="/api/media/orphaned"
+                        hx-target="#orphaned-media-result" hx-swap="innerHTML">{{T "Scan for Orphaned Media"}}</button>
+                <div id="orphaned-media-result" style="margin-top:12px;"></div>
+            </div>
+        </section>
+
+        <section class="settings-section settings-section-wide">
             <h2>{{T "Kanban Tags"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "find files with several kanban status tags, statuses or kanban tags that aren't configured, cards outside any board and cards on folder sync boards whose status folder disagrees with their tag. cleanup sets the status folder (folder sync) or keeps the first valid status tag, everything else has to be fixed by hand"}}</div>
@@ -265,11 +274,6 @@
                         hx-get="/api/metadata/broken-links"
                         hx-target="#broken-links-result" hx-swap="innerHTML">{{T "Scan for Broken Links"}}</button>
                 <div id="broken-links-result" style="margin-top:12px;"></div>
-                <script>
-                function toggleAllBrokenLinks(checkbox) {
-                    document.querySelectorAll('#component-broken-links input[name="repair"]').forEach(cb => cb.checked = checkbox.checked);
-                }
-                </script>
             </div>
         </section>
 

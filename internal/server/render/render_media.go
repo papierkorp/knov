@@ -638,55 +638,55 @@ func RenderMediaListSelect(mediaFiles []files.File) string {
 	return html.String()
 }
 
-// RenderMediaStorageStats renders storage statistics for the admin dashboard
+// RenderMediaStorageStats renders storage statistics for the admin dashboard, one row per
+// media category plus a total row
 func RenderMediaStorageStats(stats *files.MediaStorageStats) string {
-	// format sizes
-	totalSizeStr := utils.FormatFileSize(stats.TotalSize)
-	usedSizeStr := utils.FormatFileSize(stats.UsedSize)
-	orphanedSizeStr := utils.FormatFileSize(stats.OrphanedSize)
+	lang := configmanager.GetLanguage()
+	var html strings.Builder
+	fmt.Fprintf(&html, `<div id="storage-stats" class="storage-stats-table"><table><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		translation.SprintfForRequest(lang, "type"),
+		translation.SprintfForRequest(lang, "total media files"),
+		translation.SprintfForRequest(lang, "used media files"),
+		translation.SprintfForRequest(lang, "orphaned media files"))
+	for _, c := range stats.Categories {
+		writeMediaStatsRow(&html, "", mediaCategoryLabel(c.Category), c)
+	}
+	writeMediaStatsRow(&html, "stats-total", translation.SprintfForRequest(lang, "total"), stats.MediaCategoryStats)
+	html.WriteString(`</tbody></table></div>`)
+	return html.String()
+}
 
-	return fmt.Sprintf(`
-		<div id="storage-stats" class="storage-stats-table">
-			<table>
-				<thead>
-					<tr>
-						<th>%s</th>
-						<th>%s</th>
-						<th>%s</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>%s</td>
-						<td>%d</td>
-						<td>%s</td>
-					</tr>
-					<tr>
-						<td>%s</td>
-						<td>%d</td>
-						<td>%s</td>
-					</tr>
-					<tr class="orphaned-row">
-						<td>%s</td>
-						<td>%d</td>
-						<td>%s</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "type"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "files"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "size"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "total media files"),
-		stats.TotalFiles,
-		totalSizeStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "used media files"),
-		stats.UsedFiles,
-		usedSizeStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media files"),
-		stats.OrphanedFiles,
-		orphanedSizeStr)
+// writeMediaStatsRow writes one row of the storage statistics table
+func writeMediaStatsRow(html *strings.Builder, class, label string, c files.MediaCategoryStats) {
+	fmt.Fprintf(html, `<tr class="%s"><td>%s</td><td>%d <span class="stats-size">(%s)</span></td><td>%d <span class="stats-size">(%s)</span></td><td>%d <span class="stats-size">(%s)</span></td></tr>`,
+		class, label,
+		c.TotalFiles, utils.FormatFileSize(c.TotalSize),
+		c.UsedFiles, utils.FormatFileSize(c.UsedSize),
+		c.OrphanedFiles, utils.FormatFileSize(c.OrphanedSize))
+}
+
+// mediaCategoryLabel returns the translated label of a files.MediaCategory
+func mediaCategoryLabel(category string) string {
+	lang := configmanager.GetLanguage()
+	switch category {
+	case files.MediaCategoryImage:
+		return translation.SprintfForRequest(lang, "images")
+	case files.MediaCategoryVideo:
+		return translation.SprintfForRequest(lang, "videos")
+	case files.MediaCategoryAudio:
+		return translation.SprintfForRequest(lang, "audio files")
+	case files.MediaCategoryDocument:
+		return translation.SprintfForRequest(lang, "documents")
+	case files.MediaCategoryArchive:
+		return translation.SprintfForRequest(lang, "archives")
+	case files.MediaCategoryText:
+		return translation.SprintfForRequest(lang, "text files")
+	case files.MediaCategoryFont:
+		return translation.SprintfForRequest(lang, "fonts")
+	case files.MediaCategoryProgram:
+		return translation.SprintfForRequest(lang, "programs")
+	}
+	return translation.SprintfForRequest(lang, "other")
 }
 
 // RenderMisplacedMedia renders the result of ScanMisplacedMedia as a table of planned
@@ -723,5 +723,33 @@ func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 			translation.SprintfForRequest(lang, "Move to Media Folder"))
 	}
 	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderOrphanedMedia renders the orphaned media files as a table of checkboxes (all selected)
+// with a button deleting the selected ones.
+func RenderOrphanedMedia(paths []string) string {
+	lang := configmanager.GetLanguage()
+	var html strings.Builder
+	html.WriteString(`<div id="component-orphaned-media">`)
+
+	if len(paths) == 0 {
+		fmt.Fprintf(&html, `<p class="no-items">%s</p></div>`, translation.SprintfForRequest(lang, "no orphaned media files found"))
+		return html.String()
+	}
+
+	fmt.Fprintf(&html, `<form hx-post="/api/media/cleanup-orphaned" hx-target="#orphaned-media-result" hx-swap="innerHTML" hx-status:4xx="swap:none" hx-status:5xx="swap:none" hx-confirm="%s">`,
+		stdhtml.EscapeString(translation.SprintfForRequest(lang, "Delete the selected orphaned media files? This cannot be undone.")))
+	fmt.Fprintf(&html, `<table class="orphaned-media-table"><thead><tr><th><input type="checkbox" checked onclick="%s"></th><th>%s</th></tr></thead><tbody>`,
+		toggleAllCheckboxesJS, translation.SprintfForRequest(lang, "file"))
+	for _, p := range paths {
+		escaped := stdhtml.EscapeString(p)
+		fmt.Fprintf(&html, `<tr><td><input type="checkbox" name="path" value="%s" checked></td><td>%s</td></tr>`, escaped, escaped)
+	}
+	html.WriteString(`</tbody></table>`)
+
+	fmt.Fprintf(&html, `<button type="submit" class="btn-danger"><i class="fa fa-trash"></i> %s</button>`,
+		translation.SprintfForRequest(lang, "Delete Selected"))
+	html.WriteString(`</form></div>`)
 	return html.String()
 }

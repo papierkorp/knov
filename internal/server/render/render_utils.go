@@ -29,6 +29,10 @@ const (
 	StatusInfo    StatusClass = "status-info"
 )
 
+// toggleAllCheckboxesJS is the onclick of a table header "select all" checkbox - it (un)checks
+// every checkbox of the table body, so the rendered component doesn't depend on theme js
+const toggleAllCheckboxesJS = `this.closest('table').querySelectorAll('tbody input[type=checkbox]').forEach(cb => cb.checked = this.checked)`
+
 // RenderStatusMessage renders a status message span with predefined status class.
 // message is HTML-escaped - it is routinely built from error strings and
 // user-controlled file paths, so callers must pass plain text, not markup.

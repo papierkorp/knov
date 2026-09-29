@@ -320,6 +320,7 @@ func NewRouter() *chi.Mux {
 			r.Get("/preview", handleAPIMediaPreview)
 			r.Delete("/*", handleAPIDeleteMedia)
 			r.Get("/stats", handleAPIMediaStats)
+			r.Get("/orphaned", handleAPIGetOrphanedMedia)
 			r.Post("/cleanup-orphaned", handleAPICleanupOrphanedMedia)
 			r.Get("/misplaced", handleAPIGetMisplacedMedia)
 			r.Post("/misplaced/relocate", handleAPIRelocateMisplacedMedia)

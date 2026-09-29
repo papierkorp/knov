@@ -65,9 +65,9 @@ type Resumable interface {
 
 // MediaCleanupResult holds the outcome of an orphaned media cleanup run.
 type MediaCleanupResult struct {
-	Deleted int
-	Size    int64
-	Failed  int
+	Deleted int   `json:"deleted"`
+	Size    int64 `json:"size"`
+	Failed  int   `json:"failed"`
 }
 
 // RepairBrokenLinksResult holds the outcome of a broken-links repair run.

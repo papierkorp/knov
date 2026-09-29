@@ -507,6 +507,14 @@ func GetOrphanedMediaFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyOrphanedMedia)
 }
 
+// ScanOrphanedMedia rebuilds the orphaned media cache and returns its paths
+func ScanOrphanedMedia() ([]string, error) {
+	if err := UpdateOrphanedMediaCache(); err != nil {
+		return nil, err
+	}
+	return GetOrphanedMediaFromCache()
+}
+
 // UpdateOrphanedMediaCache efficiently updates only the orphaned media cache
 // by checking media files instead of all files
 func UpdateOrphanedMediaCache() error {
@@ -517,7 +525,7 @@ func UpdateOrphanedMediaCache() error {
 		return err
 	}
 
-	var orphanedMedia []string
+	orphanedMedia := []string{}
 	for _, mediaFile := range mediaFiles {
 		metadata, err := MetaDataGet(mediaFile.Path)
 		if err != nil || metadata == nil {

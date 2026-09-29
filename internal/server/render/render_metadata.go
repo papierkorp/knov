@@ -165,7 +165,7 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 	}
 
 	html.WriteString(`<form hx-post="/api/metadata/broken-links/repair" hx-target="#broken-links-result" hx-swap="innerHTML">`)
-	html.WriteString(`<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="toggleAllBrokenLinks(this)"></th>`)
+	fmt.Fprintf(&html, `<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="%s"></th>`, toggleAllCheckboxesJS)
 	fmt.Fprintf(&html, `<th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "broken link"),

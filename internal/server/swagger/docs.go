@@ -3759,7 +3759,7 @@ const docTemplate = `{
         },
         "/api/media/cleanup-orphaned": {
             "post": {
-                "description": "Deletes all orphaned media files (files not referenced by any documents)",
+                "description": "Deletes the selected orphaned media files (files not referenced by any documents)",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -3771,16 +3771,39 @@ const docTemplate = `{
                     "media"
                 ],
                 "summary": "Cleanup orphaned media files",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "Orphaned media paths to delete (media/...), repeatable",
+                        "name": "path",
+                        "in": "formData"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "cleanup result",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/job.MediaCleanupResult"
+                        }
+                    },
+                    "400": {
+                        "description": "no media files selected",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "job already running",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "500": {
-                        "description": "internal error",
+                        "description": "internal error or all selected files failed to delete",
                         "schema": {
                             "type": "string"
                         }
@@ -3891,6 +3914,36 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/orphaned": {
+            "get": {
+                "description": "Lists media files that no document links to",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "List orphaned media files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to get orphaned media",
                         "schema": {
                             "type": "string"
                         }
@@ -4067,10 +4120,9 @@ const docTemplate = `{
                 "summary": "Get media storage statistics",
                 "responses": {
                     "200": {
-                        "description": "storage statistics",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/files.MediaStorageStats"
                         }
                     },
                     "500": {
@@ -6893,6 +6945,32 @@ const docTemplate = `{
                 "type": "integer"
             }
         },
+        "files.MediaCategoryStats": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "orphanedFiles": {
+                    "type": "integer"
+                },
+                "orphanedSize": {
+                    "type": "integer"
+                },
+                "totalFiles": {
+                    "type": "integer"
+                },
+                "totalSize": {
+                    "type": "integer"
+                },
+                "usedFiles": {
+                    "type": "integer"
+                },
+                "usedSize": {
+                    "type": "integer"
+                }
+            }
+        },
         "files.MediaRelocateResult": {
             "type": "object",
             "properties": {
@@ -6903,6 +6981,39 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "moved": {
+                    "type": "integer"
+                }
+            }
+        },
+        "files.MediaStorageStats": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "description": "per MediaCategory, sorted by category",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/files.MediaCategoryStats"
+                    }
+                },
+                "category": {
+                    "type": "string"
+                },
+                "orphanedFiles": {
+                    "type": "integer"
+                },
+                "orphanedSize": {
+                    "type": "integer"
+                },
+                "totalFiles": {
+                    "type": "integer"
+                },
+                "totalSize": {
+                    "type": "integer"
+                },
+                "usedFiles": {
+                    "type": "integer"
+                },
+                "usedSize": {
                     "type": "integer"
                 }
             }
@@ -7132,6 +7243,20 @@ const docTemplate = `{
                 "JobStatusCanceled",
                 "JobStatusInterrupted"
             ]
+        },
+        "job.MediaCleanupResult": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
         },
         "jobStorage.JobRecord": {
             "type": "object",

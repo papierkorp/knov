@@ -16,6 +16,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
+	"knov/internal/utils"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -183,13 +184,14 @@ func (j *cacheInvalidateJob) Run(_ context.Context) error {
 // ----------------------------------------------------------------------------------------
 
 type mediaCleanupJob struct {
+	paths  []string
 	result MediaCleanupResult
 }
 
 func (j *mediaCleanupJob) Name() string { return "media-cleanup" }
 
 func (j *mediaCleanupJob) Run(_ context.Context) error {
-	result, err := doMediaCleanup()
+	result, err := doMediaCleanup(j.paths)
 	j.result = result
 	return err
 }
@@ -197,22 +199,35 @@ func (j *mediaCleanupJob) Run(_ context.Context) error {
 func (j *mediaCleanupJob) Output() any { return j.result }
 
 func (j *mediaCleanupJob) Message() string {
-	msg := fmt.Sprintf("deleted %d files (%.2f MB)", j.result.Deleted, float64(j.result.Size)/(1024*1024))
+	msg := fmt.Sprintf("deleted %d files (%s)", j.result.Deleted, utils.FormatFileSize(j.result.Size))
 	if j.result.Failed > 0 {
 		msg += fmt.Sprintf(", %d failed", j.result.Failed)
 	}
 	return msg
 }
 
-// doMediaCleanup is the shared implementation used by mediaCleanupJob.Run.
-func doMediaCleanup() (MediaCleanupResult, error) {
+// doMediaCleanup is the shared implementation used by mediaCleanupJob.Run. Only the selected
+// paths that are in the orphaned media cache are deleted.
+func doMediaCleanup(paths []string) (MediaCleanupResult, error) {
+	if len(paths) == 0 {
+		return MediaCleanupResult{}, nil
+	}
+
 	orphanedMedia, err := files.GetOrphanedMediaFromCache()
 	if err != nil {
 		return MediaCleanupResult{}, fmt.Errorf("failed to get orphaned media: %w", err)
 	}
 
+	selected := make(map[string]bool, len(paths))
+	for _, p := range paths {
+		selected[p] = true
+	}
+
 	var result MediaCleanupResult
 	for _, mediaPath := range orphanedMedia {
+		if !selected[mediaPath] {
+			continue
+		}
 		// double-check the file is still orphaned (cache may be stale)
 		meta, err := files.MetaDataGet(mediaPath)
 		if err == nil && meta != nil && len(meta.LinksToHere) > 0 {

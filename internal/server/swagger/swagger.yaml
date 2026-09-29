@@ -202,6 +202,23 @@ definitions:
     additionalProperties:
       type: integer
     type: object
+  files.MediaCategoryStats:
+    properties:
+      category:
+        type: string
+      orphanedFiles:
+        type: integer
+      orphanedSize:
+        type: integer
+      totalFiles:
+        type: integer
+      totalSize:
+        type: integer
+      usedFiles:
+        type: integer
+      usedSize:
+        type: integer
+    type: object
   files.MediaRelocateResult:
     properties:
       failed:
@@ -209,6 +226,28 @@ definitions:
       filesUpdated:
         type: integer
       moved:
+        type: integer
+    type: object
+  files.MediaStorageStats:
+    properties:
+      categories:
+        description: per MediaCategory, sorted by category
+        items:
+          $ref: '#/definitions/files.MediaCategoryStats'
+        type: array
+      category:
+        type: string
+      orphanedFiles:
+        type: integer
+      orphanedSize:
+        type: integer
+      totalFiles:
+        type: integer
+      totalSize:
+        type: integer
+      usedFiles:
+        type: integer
+      usedSize:
         type: integer
     type: object
   files.Metadata:
@@ -368,6 +407,15 @@ definitions:
     - JobStatusError
     - JobStatusCanceled
     - JobStatusInterrupted
+  job.MediaCleanupResult:
+    properties:
+      deleted:
+        type: integer
+      failed:
+        type: integer
+      size:
+        type: integer
+    type: object
   jobStorage.JobRecord:
     properties:
       args:
@@ -3171,18 +3219,34 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Deletes all orphaned media files (files not referenced by any documents)
+      description: Deletes the selected orphaned media files (files not referenced
+        by any documents)
+      parameters:
+      - collectionFormat: multi
+        description: Orphaned media paths to delete (media/...), repeatable
+        in: formData
+        items:
+          type: string
+        name: path
+        type: array
       produces:
       - application/json
       - text/html
       responses:
         "200":
-          description: cleanup result
+          description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/job.MediaCleanupResult'
+        "400":
+          description: no media files selected
+          schema:
+            type: string
+        "409":
+          description: job already running
+          schema:
+            type: string
         "500":
-          description: internal error
+          description: internal error or all selected files failed to delete
           schema:
             type: string
       summary: Cleanup orphaned media files
@@ -3264,6 +3328,26 @@ paths:
           schema:
             type: string
       summary: Relocate misplaced media files
+      tags:
+      - media
+  /api/media/orphaned:
+    get:
+      description: Lists media files that no document links to
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: failed to get orphaned media
+          schema:
+            type: string
+      summary: List orphaned media files
       tags:
       - media
   /api/media/path-display/{filepath}:
@@ -3380,10 +3464,9 @@ paths:
       - text/html
       responses:
         "200":
-          description: storage statistics
+          description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/files.MediaStorageStats'
         "500":
           description: internal error
           schema:

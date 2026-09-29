@@ -151,7 +151,14 @@ func caseMediaCleanup() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	result, err := job.RunMediaCleanup()
+	// an empty selection must not delete anything
+	empty, err := job.RunMediaCleanup(nil)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	// usedMediaFile is selected too, it must be skipped since it isn't orphaned
+	result, err := job.RunMediaCleanup([]string{"media/" + mediaPath(orphanMediaFile), "media/" + mediaPath(usedMediaFile)})
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -163,12 +170,13 @@ func caseMediaCleanup() test.CaseResult {
 	_, usedStatErr := os.Stat(pathutils.ToMediaPath(mediaPath(usedMediaFile)))
 	usedKept := usedStatErr == nil
 
-	success := result.Deleted >= 1 && orphanGone && orphanMeta == nil && usedKept
+	success := empty.Deleted == 0 && result.Deleted == 1 && result.Failed == 0 && orphanGone && orphanMeta == nil && usedKept
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "orphaned media deleted from disk+metadata, used media kept",
-		Actual:   fmt.Sprintf("deleted=%d orphanGone=%v orphanMetaNil=%v usedKept=%v", result.Deleted, orphanGone, orphanMeta == nil, usedKept),
-		Success:  success,
+		Expected: "empty selection deletes nothing, selected orphaned media deleted from disk+metadata, used media kept",
+		Actual: fmt.Sprintf("emptyDeleted=%d deleted=%d failed=%d orphanGone=%v orphanMetaNil=%v usedKept=%v",
+			empty.Deleted, result.Deleted, result.Failed, orphanGone, orphanMeta == nil, usedKept),
+		Success: success,
 	}
 	if !success {
 		cr.Error = "RunMediaCleanup did not delete only the orphaned media file as expected"

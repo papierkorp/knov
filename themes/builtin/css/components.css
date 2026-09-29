@@ -3946,9 +3946,11 @@ dl.media-info dd {
   padding: 10px 12px;
 }
 
-/* repair broken links, misplaced media, kanban issues */
+/* repair broken links, misplaced media, orphaned media, kanban issues, storage stats */
+#storage-stats table,
 #component-broken-links .broken-links-table,
 #component-misplaced-media .misplaced-media-table,
+#component-orphaned-media .orphaned-media-table,
 #component-kanban-issues .kanban-issues-table {
   width: 100%;
   border-collapse: collapse;
@@ -3956,15 +3958,28 @@ dl.media-info dd {
   font-size: 0.88em;
 }
 
+#storage-stats th,
+#storage-stats td,
 #component-broken-links .broken-links-table th,
 #component-broken-links .broken-links-table td,
 #component-misplaced-media .misplaced-media-table th,
 #component-misplaced-media .misplaced-media-table td,
+#component-orphaned-media .orphaned-media-table th,
+#component-orphaned-media .orphaned-media-table td,
 #component-kanban-issues .kanban-issues-table th,
 #component-kanban-issues .kanban-issues-table td {
   text-align: left;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
+}
+
+#storage-stats .stats-size {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
+#storage-stats .stats-total {
+  font-weight: 600;
 }
 
 /* book: composed-view export toolbar */

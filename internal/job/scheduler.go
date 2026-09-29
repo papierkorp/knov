@@ -357,10 +357,10 @@ func RunCacheInvalidate() error {
 	return execute(&cacheInvalidMu, &cacheInvalidateJob{})
 }
 
-// RunMediaCleanup deletes orphaned media files with dedup protection.
+// RunMediaCleanup deletes the selected orphaned media files with dedup protection.
 // Returns the cleanup result alongside any fatal error.
-func RunMediaCleanup() (MediaCleanupResult, error) {
-	j := &mediaCleanupJob{}
+func RunMediaCleanup(paths []string) (MediaCleanupResult, error) {
+	j := &mediaCleanupJob{paths: paths}
 	if err := execute(&mediaCleanupMu, j); err != nil {
 		return MediaCleanupResult{}, err
 	}

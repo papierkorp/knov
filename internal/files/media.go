@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -136,29 +137,29 @@ func IsAudioFile(ext string) bool {
 
 // GetFileTypeIcon returns appropriate Font Awesome icon for file type
 func GetFileTypeIcon(ext string) string {
-	mimeType := configmanager.MimeTypeByExtension(ext)
-	switch {
-	case strings.HasPrefix(mimeType, "image/"):
-		return "fa-image"
-	case strings.HasPrefix(mimeType, "video/"):
-		return "fa-video"
-	case strings.HasPrefix(mimeType, "audio/"):
-		return "fa-music"
-	case mimeType == "application/pdf":
+	switch strings.ToLower(ext) {
+	case ".pdf":
 		return "fa-file-pdf"
-	case mimeType == "application/msword" || mimeType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+	case ".doc", ".docx", ".odt", ".rtf":
 		return "fa-file-word"
-	case mimeType == "application/vnd.ms-excel" || mimeType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+	case ".xls", ".xlsx", ".ods":
 		return "fa-file-excel"
-	case mimeType == "application/vnd.ms-powerpoint" || mimeType == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+	case ".ppt", ".pptx", ".odp":
 		return "fa-file-powerpoint"
-	case strings.HasPrefix(mimeType, "text/"):
-		return "fa-file-alt"
-	case mimeType == "application/zip" || mimeType == "application/x-rar-compressed" || mimeType == "application/x-7z-compressed":
-		return "fa-file-archive"
-	default:
-		return "fa-file"
 	}
+	switch MediaCategory(ext) {
+	case MediaCategoryImage:
+		return "fa-image"
+	case MediaCategoryVideo:
+		return "fa-video"
+	case MediaCategoryAudio:
+		return "fa-music"
+	case MediaCategoryText:
+		return "fa-file-alt"
+	case MediaCategoryArchive:
+		return "fa-file-archive"
+	}
+	return "fa-file"
 }
 
 // FilterMediaFiles filters media files based on orphaned status
@@ -187,19 +188,81 @@ func FilterMediaFiles(mediaFiles []File, orphanedMedia []string, filter string) 
 	return filtered
 }
 
-// MediaStorageStats contains statistics about media file storage
+// MediaStorageStats contains statistics about media file storage, the embedded
+// MediaCategoryStats holds the totals over all categories (Category is empty)
 type MediaStorageStats struct {
-	TotalFiles    int
-	TotalSize     int64
-	UsedFiles     int
-	UsedSize      int64
-	OrphanedFiles int
-	OrphanedSize  int64
+	MediaCategoryStats
+	Categories []MediaCategoryStats `json:"categories"` // per MediaCategory, sorted by category
+}
+
+// MediaCategoryStats holds the file counts and sizes of one MediaCategory
+type MediaCategoryStats struct {
+	Category      string `json:"category,omitempty"`
+	TotalFiles    int    `json:"totalFiles"`
+	TotalSize     int64  `json:"totalSize"`
+	UsedFiles     int    `json:"usedFiles"`
+	UsedSize      int64  `json:"usedSize"`
+	OrphanedFiles int    `json:"orphanedFiles"`
+	OrphanedSize  int64  `json:"orphanedSize"`
+}
+
+// add counts one file of size as used or orphaned
+func (s *MediaCategoryStats) add(size int64, orphaned bool) {
+	s.TotalFiles++
+	s.TotalSize += size
+	if orphaned {
+		s.OrphanedFiles++
+		s.OrphanedSize += size
+	} else {
+		s.UsedFiles++
+		s.UsedSize += size
+	}
+}
+
+// media categories returned by MediaCategory
+const (
+	MediaCategoryImage    = "image"
+	MediaCategoryVideo    = "video"
+	MediaCategoryAudio    = "audio"
+	MediaCategoryDocument = "document"
+	MediaCategoryArchive  = "archive"
+	MediaCategoryText     = "text"
+	MediaCategoryFont     = "font"
+	MediaCategoryProgram  = "program"
+	MediaCategoryOther    = "other"
+)
+
+// MediaCategory returns the category of path (or a bare extension like ".png") by its
+// extension, or MediaCategoryOther if unknown - a fixed table instead of the mime lookup,
+// since mime.TypeByExtension depends on the host (/etc/mime.types, windows registry).
+// only used for grouping (stats, icons), IsImageFile/IsVideoFile/IsAudioFile stay mime based
+// since they decide what the browser can render inline
+func MediaCategory(path string) string {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico", ".tif", ".tiff", ".avif", ".heic", ".heif":
+		return MediaCategoryImage
+	case ".mp4", ".webm", ".mkv", ".mov", ".avi", ".wmv", ".flv", ".m4v", ".mpg", ".mpeg", ".ogv", ".3gp":
+		return MediaCategoryVideo
+	case ".mp3", ".wav", ".ogg", ".oga", ".flac", ".aac", ".m4a", ".opus", ".wma", ".mid", ".midi":
+		return MediaCategoryAudio
+	case ".pdf", ".epub", ".rtf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp", ".odg":
+		return MediaCategoryDocument
+	case ".zip", ".rar", ".7z", ".gz", ".tgz", ".tar", ".bz2", ".xz", ".zst":
+		return MediaCategoryArchive
+	case ".txt", ".csv", ".json", ".xml", ".yaml", ".yml", ".toml", ".html", ".htm", ".css", ".js", ".excalidraw",
+		".md", ".log", ".ini", ".conf", ".cfg", ".sh", ".bat", ".cmd", ".ps1", ".py", ".rb", ".pl", ".go", ".ts", ".sql":
+		return MediaCategoryText
+	case ".ttf", ".otf", ".woff", ".woff2":
+		return MediaCategoryFont
+	case ".exe", ".msi", ".dll", ".deb", ".rpm", ".apk", ".dmg", ".pkg", ".appimage", ".jar":
+		return MediaCategoryProgram
+	}
+	return MediaCategoryOther
 }
 
 // GetMediaStorageStats returns statistics about media file storage
 func GetMediaStorageStats() (*MediaStorageStats, error) {
-	stats := &MediaStorageStats{}
+	stats := &MediaStorageStats{Categories: []MediaCategoryStats{}}
 
 	// get all media files
 	mediaFiles, err := GetAllMediaFiles()
@@ -213,34 +276,33 @@ func GetMediaStorageStats() (*MediaStorageStats, error) {
 		orphanedMedia = []string{}
 	}
 
-	// calculate stats
-	for _, file := range mediaFiles {
-		stats.TotalFiles++
-
-		// get file size from filesystem
-		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path, "media/"))
-		fileInfo, err := contentStorage.GetFileInfo(fullPath)
-		if err == nil && fileInfo != nil {
-			fileSize := fileInfo.Size()
-			stats.TotalSize += fileSize
-
-			isOrphaned := false
-			for _, orphaned := range orphanedMedia {
-				if orphaned == file.Path {
-					isOrphaned = true
-					break
-				}
-			}
-
-			if isOrphaned {
-				stats.OrphanedFiles++
-				stats.OrphanedSize += fileSize
-			} else {
-				stats.UsedFiles++
-				stats.UsedSize += fileSize
-			}
-		}
+	orphaned := make(map[string]bool, len(orphanedMedia))
+	for _, p := range orphanedMedia {
+		orphaned[p] = true
 	}
+
+	// calculate stats
+	byCategory := map[string]*MediaCategoryStats{}
+	for _, file := range mediaFiles {
+		// size stays 0 if the file info can't be read
+		var fileSize int64
+		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path, "media/"))
+		if fileInfo, err := contentStorage.GetFileInfo(fullPath); err == nil && fileInfo != nil {
+			fileSize = fileInfo.Size()
+		}
+
+		c := MediaCategory(file.Path)
+		if byCategory[c] == nil {
+			byCategory[c] = &MediaCategoryStats{Category: c}
+		}
+		byCategory[c].add(fileSize, orphaned[file.Path])
+		stats.add(fileSize, orphaned[file.Path])
+	}
+
+	for _, c := range byCategory {
+		stats.Categories = append(stats.Categories, *c)
+	}
+	slices.SortFunc(stats.Categories, func(a, b MediaCategoryStats) int { return strings.Compare(a.Category, b.Category) })
 
 	return stats, nil
 }

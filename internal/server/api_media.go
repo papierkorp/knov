@@ -18,6 +18,7 @@ import (
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+	"knov/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -335,7 +336,7 @@ func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 // @Description Returns statistics about media file storage (total, used, orphaned)
 // @Tags media
 // @Produce json,html
-// @Success 200 {object} map[string]interface{} "storage statistics"
+// @Success 200 {object} files.MediaStorageStats
 // @Failure 500 {string} string "internal error"
 // @Router /api/media/stats [get]
 func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
@@ -349,16 +350,48 @@ func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, stats, render.RenderMediaStorageStats(stats))
 }
 
+// @Summary List orphaned media files
+// @Description Lists media files that no document links to
+// @Tags media
+// @Produce json,html
+// @Success 200 {array} string
+// @Failure 500 {string} string "failed to get orphaned media"
+// @Router /api/media/orphaned [get]
+func handleAPIGetOrphanedMedia(w http.ResponseWriter, r *http.Request) {
+	paths, err := files.ScanOrphanedMedia()
+	if err != nil {
+		logging.LogError(logging.KeyMediaCleanup, "failed to get orphaned media: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get orphaned media"))
+		return
+	}
+
+	writeResponse(w, r, paths, render.RenderOrphanedMedia(paths))
+}
+
 // @Summary Cleanup orphaned media files
-// @Description Deletes all orphaned media files (files not referenced by any documents)
+// @Description Deletes the selected orphaned media files (files not referenced by any documents)
 // @Tags media
 // @Accept application/x-www-form-urlencoded
+// @Param path formData []string false "Orphaned media paths to delete (media/...), repeatable" collectionFormat(multi)
 // @Produce json,html
-// @Success 200 {object} map[string]interface{} "cleanup result"
-// @Failure 500 {string} string "internal error"
+// @Success 200 {object} job.MediaCleanupResult
+// @Failure 400 {string} string "no media files selected"
+// @Failure 409 {string} string "job already running"
+// @Failure 500 {string} string "internal error or all selected files failed to delete"
 // @Router /api/media/cleanup-orphaned [post]
 func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
-	result, err := job.RunMediaCleanup()
+	if err := r.ParseForm(); err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+
+	paths := r.Form["path"]
+	if len(paths) == 0 {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no media files selected"))
+		return
+	}
+
+	result, err := job.RunMediaCleanup(paths)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
@@ -368,30 +401,30 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if result.Deleted == 0 && result.Failed == 0 {
-		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "no orphaned media files to clean up")
-		html := render.RenderStatusMessage(render.StatusInfo, msg)
-		writeResponse(w, r, map[string]interface{}{"deleted": 0, "message": msg}, html)
-		return
+	level := notify.LevelSuccess
+	if result.Deleted == 0 {
+		level = notify.LevelInfo
 	}
-
-	sizeStr := fmt.Sprintf("%.2f MB", float64(result.Size)/(1024*1024))
-	msg := fmt.Sprintf("%s %d %s (%s)",
-		translation.SprintfForRequest(configmanager.GetLanguage(), "deleted"),
-		result.Deleted,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media files"),
-		sizeStr)
+	msg := translation.SprintfForRequest(configmanager.GetLanguage(), "%d orphaned media files deleted (%s)", result.Deleted, utils.FormatFileSize(result.Size))
 	if result.Failed > 0 {
-		msg += fmt.Sprintf(". %s: %d", translation.SprintfForRequest(configmanager.GetLanguage(), "failed"), result.Failed)
+		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "%d orphaned media files deleted (%s), %d failed", result.Deleted, utils.FormatFileSize(result.Size), result.Failed)
+		if result.Deleted == 0 {
+			writeAPIError(w, r, http.StatusInternalServerError, msg)
+			return
+		}
+		level = notify.LevelWarning
 	}
+	notify.SetHeader(w, level, msg)
 
-	html := render.RenderStatusMessage(render.StatusOK, msg)
-	writeResponse(w, r, map[string]interface{}{
-		"deleted": result.Deleted,
-		"size":    result.Size,
-		"failed":  result.Failed,
-		"message": msg,
-	}, html)
+	// the cleanup itself succeeded, so a failed rescan only replaces the list
+	var html string
+	if paths, err := files.GetOrphanedMediaFromCache(); err != nil {
+		logging.LogError(logging.KeyMediaCleanup, "failed to get orphaned media: %v", err)
+		html = render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get orphaned media"))
+	} else {
+		html = render.RenderOrphanedMedia(paths)
+	}
+	writeResponse(w, r, result, html)
 }
 
 // @Summary Scan for misplaced media files

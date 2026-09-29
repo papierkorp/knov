@@ -42,6 +42,16 @@
       "translation": "{Integer} Mediendateien verschoben, {Integer_1} fehlgeschlagen, {Integer_2} Dateien aktualisiert"
     },
     {
+      "id": "{Integer} orphaned media files deleted ({Arg_2})",
+      "message": "{Integer} orphaned media files deleted ({Arg_2})",
+      "translation": "{Integer} verwaiste Mediendateien gelöscht ({Arg_2})"
+    },
+    {
+      "id": "{Integer} orphaned media files deleted ({Arg_2}), {Integer_1} failed",
+      "message": "{Integer} orphaned media files deleted ({Arg_2}), {Integer_1} failed",
+      "translation": "{Integer} verwaiste Mediendateien gelöscht ({Arg_2}), {Integer_1} fehlgeschlagen"
+    },
+    {
       "id": "{Integer}h ago",
       "message": "{Integer}h ago",
       "translation": "vor {Integer}h"
@@ -292,11 +302,6 @@
       "translation": ""
     },
     {
-      "id": "Cleanup Orphaned Files",
-      "message": "Cleanup Orphaned Files",
-      "translation": "Verwaiste Dateien bereinigen"
-    },
-    {
       "id": "Clear range",
       "message": "Clear range",
       "translation": ""
@@ -427,14 +432,19 @@
       "translation": "Löschen"
     },
     {
-      "id": "Delete all orphaned media files? This cannot be undone.",
-      "message": "Delete all orphaned media files? This cannot be undone.",
-      "translation": "Alle verwaisten Mediendateien löschen? Dies kann nicht rückgängig gemacht werden."
+      "id": "Delete Selected",
+      "message": "Delete Selected",
+      "translation": "Ausgewählte löschen"
     },
     {
       "id": "Delete backup {Arg_1}? This cannot be undone.",
       "message": "Delete backup {Arg_1}? This cannot be undone.",
       "translation": "Backup {Arg_1} löschen? Dies kann nicht rückgängig gemacht werden."
+    },
+    {
+      "id": "Delete the selected orphaned media files? This cannot be undone.",
+      "message": "Delete the selected orphaned media files? This cannot be undone.",
+      "translation": "Die ausgewählten verwaisten Mediendateien löschen? Dies kann nicht rückgängig gemacht werden."
     },
     {
       "id": "Description",
@@ -1062,6 +1072,11 @@
       "translation": "Ausrichtung"
     },
     {
+      "id": "Orphaned Media",
+      "message": "Orphaned Media",
+      "translation": "Verwaiste Medien"
+    },
+    {
       "id": "Overview",
       "message": "Overview",
       "translation": "Übersicht"
@@ -1235,6 +1250,11 @@
       "id": "Scan for Misplaced Media",
       "message": "Scan for Misplaced Media",
       "translation": "Nach falsch abgelegten Medien suchen"
+    },
+    {
+      "id": "Scan for Orphaned Media",
+      "message": "Scan for Orphaned Media",
+      "translation": "Nach verwaisten Medien suchen"
     },
     {
       "id": "Search",
@@ -1857,6 +1877,11 @@
       "translation": ""
     },
     {
+      "id": "archives",
+      "message": "archives",
+      "translation": "Archive"
+    },
+    {
       "id": "are you sure you want to delete this dashboard?",
       "message": "are you sure you want to delete this dashboard?",
       "translation": "Möchtest du dieses Dashboard wirklich löschen?"
@@ -1870,6 +1895,11 @@
       "id": "at",
       "message": "at",
       "translation": "am"
+    },
+    {
+      "id": "audio files",
+      "message": "audio files",
+      "translation": "Audiodateien"
     },
     {
       "id": "auth test passed",
@@ -2407,11 +2437,6 @@
       "translation": "diese Nachricht löschen?"
     },
     {
-      "id": "deleted",
-      "message": "deleted",
-      "translation": "gelöscht"
-    },
-    {
       "id": "deletion canceled",
       "message": "deletion canceled",
       "translation": "Löschvorgang abgebrochen"
@@ -2495,6 +2520,11 @@
       "id": "distraction-free writing",
       "message": "distraction-free writing",
       "translation": "ablenkungsfreies Schreiben"
+    },
+    {
+      "id": "documents",
+      "message": "documents",
+      "translation": "Dokumente"
     },
     {
       "id": "done",
@@ -2752,11 +2782,6 @@
       "translation": "als PDF exportieren"
     },
     {
-      "id": "failed",
-      "message": "failed",
-      "translation": "fehlgeschlagen"
-    },
-    {
       "id": "failed to browse files",
       "message": "failed to browse files",
       "translation": "Fehler beim Durchsuchen der Dateien"
@@ -2905,6 +2930,11 @@
       "id": "failed to get notifications",
       "message": "failed to get notifications",
       "translation": "Fehler beim Abrufen der Benachrichtigungen"
+    },
+    {
+      "id": "failed to get orphaned media",
+      "message": "failed to get orphaned media",
+      "translation": "Fehler beim Abrufen verwaister Medien"
     },
     {
       "id": "failed to get previous commit",
@@ -3402,6 +3432,11 @@
       "translation": "in Datei suchen..."
     },
     {
+      "id": "find media files that no document links to and delete the selected ones",
+      "message": "find media files that no document links to and delete the selected ones",
+      "translation": "Mediendateien finden, auf die kein Dokument verlinkt, und die ausgewählten löschen"
+    },
+    {
       "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
       "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
       "translation": "Nicht-Text-Dateien im Docs-Ordner finden (z. B. aus einem anderen Wiki kopierte Bilder), in den Medienordner verschieben und alle Links darauf aktualisieren. Nur erlaubte Medientypen werden verschoben - neue (z. B. application/zip oder image/*) unter Einstellungen \u003e Medieneinstellungen \u003e Erlaubte MIME-Typen hinzufügen"
@@ -3495,6 +3530,11 @@
       "id": "font used for level-1 headings when exporting to pdf, overriding the general heading font",
       "message": "font used for level-1 headings when exporting to pdf, overriding the general heading font",
       "translation": "Schriftart für Überschriften der Ebene 1 beim PDF-Export, überschreibt die allgemeine Überschriften-Schriftart"
+    },
+    {
+      "id": "fonts",
+      "message": "fonts",
+      "translation": "Schriftarten"
     },
     {
       "id": "format",
@@ -3630,6 +3670,11 @@
       "id": "ids are required",
       "message": "ids are required",
       "translation": "IDs sind erforderlich"
+    },
+    {
+      "id": "images",
+      "message": "images",
+      "translation": "Bilder"
     },
     {
       "id": "import",
@@ -4007,9 +4052,9 @@
       "translation": "Mediendatei nicht gefunden"
     },
     {
-      "id": "media file storage usage and cleanup",
-      "message": "media file storage usage and cleanup",
-      "translation": "Speichernutzung und Bereinigung von Mediendateien"
+      "id": "media file storage usage",
+      "message": "media file storage usage",
+      "translation": "Speichernutzung der Mediendateien"
     },
     {
       "id": "media files",
@@ -4407,6 +4452,11 @@
       "translation": "keine Mediendateien gefunden"
     },
     {
+      "id": "no media files selected",
+      "message": "no media files selected",
+      "translation": "keine Mediendateien ausgewählt"
+    },
+    {
       "id": "no misplaced media files found",
       "message": "no misplaced media files found",
       "translation": "keine falsch abgelegten Mediendateien gefunden"
@@ -4422,9 +4472,9 @@
       "translation": "keine verwaisten Mediendateien"
     },
     {
-      "id": "no orphaned media files to clean up",
-      "message": "no orphaned media files to clean up",
-      "translation": "keine verwaisten Mediendateien zu bereinigen"
+      "id": "no orphaned media files found",
+      "message": "no orphaned media files found",
+      "translation": "keine verwaisten Mediendateien gefunden"
     },
     {
       "id": "no other files in this folder",
@@ -4582,6 +4632,11 @@
       "translation": "verwaiste Mediendateien"
     },
     {
+      "id": "other",
+      "message": "other",
+      "translation": "Sonstige"
+    },
+    {
       "id": "outdent",
       "message": "outdent",
       "translation": "ausrücken"
@@ -4675,6 +4730,11 @@
       "id": "problem",
       "message": "problem",
       "translation": ""
+    },
+    {
+      "id": "programs",
+      "message": "programs",
+      "translation": "Programme"
     },
     {
       "id": "pull completed",
@@ -5207,6 +5267,11 @@
       "translation": "Textdatei"
     },
     {
+      "id": "text files",
+      "message": "text files",
+      "translation": "Textdateien"
+    },
+    {
       "id": "the status list is empty, no card can be placed on a board",
       "message": "the status list is empty, no card can be placed on a board",
       "translation": ""
@@ -5290,6 +5355,11 @@
       "id": "top-level folders named {Arg_1} are reserved, choose another folder",
       "message": "top-level folders named {Arg_1} are reserved, choose another folder",
       "translation": "Ordner der obersten Ebene mit den Namen {Arg_1} sind reserviert, bitte einen anderen Ordner wählen"
+    },
+    {
+      "id": "total",
+      "message": "total",
+      "translation": "gesamt"
     },
     {
       "id": "total media files",
@@ -5470,6 +5540,11 @@
       "id": "version no longer available",
       "message": "version no longer available",
       "translation": "Version nicht mehr verfügbar"
+    },
+    {
+      "id": "videos",
+      "message": "videos",
+      "translation": "Videos"
     },
     {
       "id": "view",
