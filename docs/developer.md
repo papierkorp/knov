@@ -1356,7 +1356,7 @@ Generated files live in `docs/changelogs/<year>.md` (e.g. `docs/changelogs/2026.
 | `feat:`                                                              | features         | new feature         |
 | `fix:`                                                               | fixes            | bug fix             |
 | `build:` `chore:` `ci:` `docs:` `style:` `refactor:` `perf:` `test:` | other            | everything else     |
-| `feat!:` / `BREAKING CHANGE:` footer                                 | breaking changes | breaking API change |
+| `feat!:` / `BREAKING CHANGE:` footer                                 | breaking changes | breaking API change - also write the user-facing upgrade note in `docs/upgrade.md` (`make release` moves it into the release notes and fails if it is missing) |
 
 Scopes are supported: `feat(kanban): add drag drop` is treated the same as `feat: add drag drop`.
 

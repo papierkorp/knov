@@ -611,9 +611,10 @@ func RenderChangelog() (string, []parser.TOCItem) {
 // repeated between docs/release.md and a release note still gets a unique id.
 //
 // from and to select the "upgrade path" tool's version range: when both are
-// set to known versions (see ReleaseVersions) only the release notes between
-// them (inclusive) are rendered; otherwise the full history is rendered, same
-// as before the tool existed.
+// set to known versions (see ReleaseVersions) only the release notes after
+// from (the user is already on it) up to and including to are rendered,
+// oldest first so the "upgrading from" steps read in the order they're done;
+// otherwise the full history is rendered newest first.
 func RenderRelease(from, to string) (string, []parser.TOCItem) {
 	usedIDs := make(map[string]int)
 
@@ -631,7 +632,14 @@ func RenderRelease(from, to string) (string, []parser.TOCItem) {
 		from, to = normalizeReleaseRange(versions, from, to)
 		out.WriteString(renderReleaseRangeForm(versions, from, to))
 	}
-	html, releasesTOC := renderDocsMarkdownFiltered("docs/releases", releaseBefore, releaseRangeFilter(versions, from, to), usedIDs)
+	keep, less := releaseRangeFilter(versions, from, to), releaseBefore
+	if keep != nil {
+		less = func(a, b string) bool { return releaseBefore(b, a) }
+	}
+	html, releasesTOC := renderDocsMarkdownFiltered("docs/releases", less, keep, usedIDs)
+	if keep != nil && html == "" {
+		html = `<p class="no-changelog">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no releases in this range") + `</p>`
+	}
 	out.WriteString(html)
 	toc = append(toc, releasesTOC...)
 	return out.String(), toc
@@ -671,7 +679,7 @@ func normalizeReleaseRange(versions []string, from, to string) (string, string) 
 }
 
 // releaseRangeFilter returns a renderDocsMarkdownFiltered predicate keeping
-// only release-notes files between from and to (inclusive). It keeps
+// only release-notes files after from up to and including to. It keeps
 // everything when from or to is empty or unknown, so an absent/bad range
 // falls back to the full history instead of rendering nothing.
 func releaseRangeFilter(versions []string, from, to string) func(name string) bool {
@@ -684,11 +692,12 @@ func releaseRangeFilter(versions []string, from, to string) func(name string) bo
 			return false
 		}
 		k := semverKey(name)
-		return k >= lo && k <= hi
+		return k > lo && k <= hi
 	}
 }
 
-// renderReleaseRangeForm renders the "upgrade path" from/to version picker.
+// renderReleaseRangeForm renders the "upgrade path" from/to version picker -
+// from is the version the user is already on, so its notes are left out.
 // It's a plain GET form back to /system/release (like the file
 // version-compare picker in render_git.go) rather than htmx, since a full
 // page navigation is simplest for a page that's also embedded in the narrow
@@ -698,7 +707,7 @@ func renderReleaseRangeForm(versions []string, from, to string) string {
 	lang := configmanager.GetLanguage()
 	var b strings.Builder
 	b.WriteString(`<form id="release-range-form" method="get" action="/system/release">`)
-	fmt.Fprintf(&b, `<span>%s</span>`, translation.SprintfForRequest(lang, "show changes from"))
+	fmt.Fprintf(&b, `<span>%s</span>`, translation.SprintfForRequest(lang, "upgrading from"))
 	b.WriteString(releaseVersionSelect("from", versions, from, versions[0]))
 	fmt.Fprintf(&b, `<span>%s</span>`, translation.SprintfForRequest(lang, "to"))
 	b.WriteString(releaseVersionSelect("to", versions, to, versions[len(versions)-1]))

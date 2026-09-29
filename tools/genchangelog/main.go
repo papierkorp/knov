@@ -5,9 +5,10 @@
 //     and conventional-commit type (unchanged, kept in the repo, not shown in
 //     the app).
 //   - docs/releases/<version>.md - curated end-user release notes per git tag
-//     (vX.Y.Z), containing only breaking changes, changes, features and fixes.
-//     Commits with "[skip changelog]" in the message are left out. A
-//     "BREAKING CHANGE:" trailer in the commit body is used as the note text.
+//     (vX.Y.Z), containing the hand-written upgrade notes from docs/upgrade.md
+//     plus changes, features and fixes. Commits with "[skip changelog]" in the
+//     message are left out. With -version the upgrade notes are moved into the
+//     new release and docs/upgrade.md is reset to its empty template.
 //     The oldest release has no previous tag to diff against, so its notes are
 //     taken from README.md instead of the full commit history.
 package main
@@ -30,7 +31,11 @@ var (
 	typeRe            = regexp.MustCompile(`^([A-Za-z]+)(\([^)]*\))?!?:\s*(.*)$`)
 	versionTagRe      = regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
 	breakingTrailerRe = regexp.MustCompile(`(?m)^BREAKING[ -]CHANGE:\s*(.*)$`)
+	commentRe         = regexp.MustCompile(`(?s)<!--.*?-->`)
+	headingRe         = regexp.MustCompile(`^(#+)\s`)
 )
+
+const upgradeFile = "docs/upgrade.md"
 
 type section struct {
 	title string
@@ -159,7 +164,7 @@ func main() {
 	}
 
 	writeChangelogs(years, yearMonths, months)
-	writeReleases(releaseOrder, releases, len(tags) > 0)
+	writeReleases(releaseOrder, releases, len(tags) > 0, *releaseVersion)
 }
 
 func writeChangelogs(years []int, yearMonths map[int][]string, months map[string]*monthData) {
@@ -197,7 +202,7 @@ func writeChangelogs(years []int, yearMonths map[int][]string, months map[string
 	}
 }
 
-func writeReleases(order []string, releases map[string]*releaseData, hasTags bool) {
+func writeReleases(order []string, releases map[string]*releaseData, hasTags bool, releaseVersion string) {
 	if err := os.MkdirAll("docs/releases", 0755); err != nil {
 		fatal(err)
 	}
@@ -216,12 +221,39 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 		}
 	}
 
+	// only the newest (not yet frozen) release gets docs/upgrade.md, and a new
+	// release with breaking commits must not be cut without upgrade notes.
+	// a rerun after a failed release commit finds the release file already
+	// written (and upgrade.md already reset), so it's not checked again - but
+	// leftover notes then would silently leak into the next release.
+	upgradeData, _ := os.ReadFile(upgradeFile)
+	notes, err := upgradeNotes(string(upgradeData))
+	if err != nil {
+		fatal(err)
+	}
+	newest := "unreleased"
+	if releaseVersion != "" {
+		newest = releaseVersion
+		rd := releases[releaseVersion]
+		if rd == nil {
+			fatal(fmt.Errorf("no commits since last release"))
+		}
+		if _, err := os.Stat("docs/releases/" + releaseVersion + ".md"); err == nil {
+			if notes != "" {
+				fatal(fmt.Errorf("docs/releases/%s.md already exists but %s still has notes - move them manually", releaseVersion, upgradeFile))
+			}
+		} else if notes == "" && len(rd.breaking) > 0 {
+			fatal(fmt.Errorf("breaking commits since last release but %s is empty:\n%s", upgradeFile, strings.Join(rd.breaking, "\n")))
+		}
+	}
+
+	notesWritten := false
 	for _, v := range order {
 		rd := releases[v]
 		if v == "unreleased" && !hasTags {
 			continue
 		}
-		if v != initial && rd.empty() {
+		if v != initial && rd.empty() && (v != newest || notes == "") {
 			continue
 		}
 		path := "docs/releases/" + v + ".md"
@@ -240,7 +272,15 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 			buf.Write(readme)
 		} else {
 			fmt.Fprintf(&buf, "_%d commits since last release_\n\n", rd.commits)
-			writeSection(&buf, "##", "breaking changes", rd.breaking)
+			if v == newest && notes != "" {
+				to := "next release"
+				if v != "unreleased" {
+					to = v
+				}
+				// newest is order[0] and isn't the initial release here, so an older one exists
+				fmt.Fprintf(&buf, "## upgrading from %s to %s\n\n%s\n\n", order[1], to, notes)
+				notesWritten = true
+			}
 			writeSection(&buf, "##", "changes", rd.changes)
 			writeSection(&buf, "##", "features", rd.features)
 			writeSection(&buf, "##", "fixes", rd.fixes)
@@ -251,6 +291,36 @@ func writeReleases(order []string, releases map[string]*releaseData, hasTags boo
 		}
 		fmt.Printf("release notes written to %s\n", path)
 	}
+
+	// only reset once the notes are safely in the new release file, keeping
+	// the file's leading comment as the template
+	if releaseVersion != "" && notesWritten {
+		if err := os.WriteFile(upgradeFile, []byte(commentRe.FindString(string(upgradeData))+"\n"), 0644); err != nil {
+			fatal(err)
+		}
+		fmt.Printf("%s reset\n", upgradeFile)
+	}
+}
+
+// upgradeNotes returns the upgrade notes without comments, headings shifted
+// one level down to nest under the release's "upgrading from" heading - ""
+// when there are no notes. "# " would end up as a release-level "## " section
+// and "###### " can't be shifted, so both are rejected.
+func upgradeNotes(data string) (string, error) {
+	lines := strings.Split(strings.TrimSpace(commentRe.ReplaceAllString(data, "")), "\n")
+	fence := false
+	for i, line := range lines {
+		if strings.HasPrefix(line, "```") || strings.HasPrefix(line, "~~~") {
+			fence = !fence
+		}
+		if m := headingRe.FindStringSubmatch(line); m != nil && !fence {
+			if len(m[1]) == 1 || len(m[1]) >= 6 {
+				return "", fmt.Errorf("%s: use \"## \" to \"##### \" headings, got %q", upgradeFile, line)
+			}
+			lines[i] = "#" + line
+		}
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 // versionTags maps the commit hash of every vX.Y.Z tag (lightweight or
@@ -310,7 +380,8 @@ func classifyCommit(md *monthData, subject string) {
 }
 
 // classifyRelease adds a commit to the curated release notes. Breaking commits
-// go only under "breaking changes"; everything else is limited to the
+// are only collected for the missing-upgrade-notes check (the notes themselves
+// come from docs/upgrade.md); everything else is limited to the
 // change/feat/fix types so internal work never reaches end users.
 func classifyRelease(rd *releaseData, subject, message string) {
 	if strings.Contains(message, "[skip changelog]") {

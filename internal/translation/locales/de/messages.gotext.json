@@ -132,9 +132,9 @@
       "translation": "Alle Dateien"
     },
     {
-      "id": "Allowed MIME Types",
-      "message": "Allowed MIME Types",
-      "translation": "Erlaubte MIME-Typen"
+      "id": "Allowed Media Types",
+      "message": "Allowed Media Types",
+      "translation": ""
     },
     {
       "id": "Ancestor Filter Statuses",
@@ -2127,9 +2127,9 @@
       "translation": ""
     },
     {
-      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
-      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
-      "translation": "kommagetrennte MIME-Typen oder Dateiendungen, die als Medien akzeptiert werden (z. B. image/*, application/pdf, .excalidraw)"
+      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw) - files with a listed extension are accepted on upload and moved by the misplaced media scan regardless of their content",
+      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw) - files with a listed extension are accepted on upload and moved by the misplaced media scan regardless of their content",
+      "translation": ""
     },
     {
       "id": "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/\u003cstatus\u003e/, and moving the file on disk into an existing folder/path/\u003cstatus\u003e/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",
@@ -3437,9 +3437,9 @@
       "translation": "Mediendateien finden, auf die kein Dokument verlinkt, und die ausgewählten löschen"
     },
     {
-      "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
-      "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
-      "translation": "Nicht-Text-Dateien im Docs-Ordner finden (z. B. aus einem anderen Wiki kopierte Bilder), in den Medienordner verschieben und alle Links darauf aktualisieren. Nur erlaubte Medientypen werden verschoben - neue (z. B. application/zip oder image/*) unter Einstellungen \u003e Medieneinstellungen \u003e Erlaubte MIME-Typen hinzufügen"
+      "id": "find non-text files and files with an allowed extension in the docs folder (e.g. images or .excalidraw files copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip, image/* or .excalidraw) under Settings \u003e Media Settings \u003e Allowed Media Types",
+      "message": "find non-text files and files with an allowed extension in the docs folder (e.g. images or .excalidraw files copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip, image/* or .excalidraw) under Settings \u003e Media Settings \u003e Allowed Media Types",
+      "translation": ""
     },
     {
       "id": "fix",
@@ -4527,6 +4527,11 @@
       "translation": "keine verwandten Dateien gefunden"
     },
     {
+      "id": "no releases in this range",
+      "message": "no releases in this range",
+      "translation": "keine Releases in diesem Bereich"
+    },
+    {
       "id": "no remote configured",
       "message": "no remote configured",
       "translation": "kein Remote konfiguriert"
@@ -5097,11 +5102,6 @@
       "translation": "Archiv anzeigen"
     },
     {
-      "id": "show changes from",
-      "message": "show changes from",
-      "translation": ""
-    },
-    {
       "id": "show events",
       "message": "show events",
       "translation": "Ereignisse anzeigen"
@@ -5485,6 +5485,11 @@
       "id": "unused",
       "message": "unused",
       "translation": "unbenutzt"
+    },
+    {
+      "id": "upgrading from",
+      "message": "upgrading from",
+      "translation": "Update von"
     },
     {
       "id": "upload",

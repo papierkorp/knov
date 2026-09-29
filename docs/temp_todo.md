@@ -10,10 +10,7 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
   - book/index editor - drag and drop
-  - system/structure for startup warnings / upgrades to a new version for new releases (breaking changes) (since when, what changed, what does the user have to do now) - maybe use this in the releasenotes instead of breakingchange / deprecations
-    - add the kanban envs
-    - add link extraction
-    - mimetypes
+  - system/structure for startup warnings
   - tournament editor
   - encrypt single files/folders
   - in admin export/import add a export to pdf

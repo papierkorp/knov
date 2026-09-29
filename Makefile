@@ -84,7 +84,7 @@ release:
 	TAG="v$$VERSION"; \
 	git rev-parse -q --verify "refs/tags/$$TAG" >/dev/null && { echo "tag $$TAG already exists"; exit 1; } || true; \
 	go run ./tools/genchangelog -version "$$TAG"; \
-	git add internal/version/version.yaml docs/changelogs/ docs/releases/; \
+	git add internal/version/version.yaml docs/changelogs/ docs/releases/ docs/upgrade.md; \
 	git commit -m "chore: release $$TAG"; \
 	git tag -a "$$TAG" -m "release $$TAG"; \
 	echo "created release commit + tag $$TAG - push with: git push --follow-tags"

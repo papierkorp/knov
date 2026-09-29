@@ -10,7 +10,7 @@ If there are no version entries yet, no official release has been published so f
 
 Stop the app, replace the program file with the new version, and start it again. Your notes and settings stay where they are and are not touched. It is still a good idea to make a backup first on the **/system/backup** page.
 
-Look at the breaking changes in the release notes below to see if anything relevant changed before upgrading.
+Look at the "upgrading from" section of every version between yours and the new one in the release notes below - it lists breaking changes, what you have to do and what is deprecated or removed.
 
 ## What the details mean
 

@@ -132,8 +132,8 @@
       "translation": "All Files"
     },
     {
-      "id": "Allowed MIME Types",
-      "message": "Allowed MIME Types",
+      "id": "Allowed Media Types",
+      "message": "Allowed Media Types",
       "translation": ""
     },
     {
@@ -2127,8 +2127,8 @@
       "translation": ""
     },
     {
-      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
-      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
+      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw) - files with a listed extension are accepted on upload and moved by the misplaced media scan regardless of their content",
+      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw) - files with a listed extension are accepted on upload and moved by the misplaced media scan regardless of their content",
       "translation": ""
     },
     {
@@ -3437,8 +3437,8 @@
       "translation": ""
     },
     {
-      "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
-      "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
+      "id": "find non-text files and files with an allowed extension in the docs folder (e.g. images or .excalidraw files copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip, image/* or .excalidraw) under Settings \u003e Media Settings \u003e Allowed Media Types",
+      "message": "find non-text files and files with an allowed extension in the docs folder (e.g. images or .excalidraw files copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip, image/* or .excalidraw) under Settings \u003e Media Settings \u003e Allowed Media Types",
       "translation": ""
     },
     {
@@ -4527,6 +4527,11 @@
       "translation": ""
     },
     {
+      "id": "no releases in this range",
+      "message": "no releases in this range",
+      "translation": ""
+    },
+    {
       "id": "no remote configured",
       "message": "no remote configured",
       "translation": ""
@@ -5097,11 +5102,6 @@
       "translation": ""
     },
     {
-      "id": "show changes from",
-      "message": "show changes from",
-      "translation": ""
-    },
-    {
       "id": "show events",
       "message": "show events",
       "translation": ""
@@ -5484,6 +5484,11 @@
     {
       "id": "unused",
       "message": "unused",
+      "translation": ""
+    },
+    {
+      "id": "upgrading from",
+      "message": "upgrading from",
       "translation": ""
     },
     {
