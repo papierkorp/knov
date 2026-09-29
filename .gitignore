@@ -203,6 +203,7 @@ data*/
 data*/*
 temp*/
 temp*/*
+testmedia*/*
 knov_temp_test/
 bin/
 # stray `go build ./` output in the repo root (real builds go to bin/)

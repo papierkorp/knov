@@ -1,6 +1,6 @@
 # unreleased
 
-_89 commits since last release_
+_91 commits since last release_
 
 ## upgrading from v1.0.0 to next release
 
@@ -53,6 +53,7 @@ _89 commits since last release_
 - add KNOV_NOTIFY_MIN_LEVEL to mute notification toasts
 
 ## fixes
+- add the markdown extension to new files whose name contains a dot
 - guard configeditor ids against path traversal
 - apply browse hide scope to metadata counts by computing them live
 - escape user content in kanban html rendering

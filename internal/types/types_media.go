@@ -115,9 +115,3 @@ func MediaCategory(path string) string {
 	}
 	return MediaCategoryOther
 }
-
-// IsActiveMimeType reports whether a response of mimeType could run scripts when opened
-// directly in the browser (html, svg and other xml).
-func IsActiveMimeType(mimeType string) bool {
-	return mimeType == "text/html" || strings.HasSuffix(mimeType, "xml")
-}

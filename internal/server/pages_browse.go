@@ -110,9 +110,12 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ext := strings.ToLower(filepath.Ext(mediaPath))
-	// unknown types are served as a download, types that could run scripts (html, svg) sandboxed
+	// unknown types are served as a download. media is untrusted user content, so every response is
+	// sandboxed (opaque origin) - whatever gets in can't run scripts against the app's origin,
+	// regardless of its type or extension. pdf is exempt: the sandbox blocks the browser's pdf
+	// viewer, which already runs isolated from the page's origin
 	ct := types.ServeMimeType(ext)
-	if types.IsActiveMimeType(ct) {
+	if ct != "application/pdf" {
 		w.Header().Set("Content-Security-Policy", "sandbox")
 	}
 	w.Header().Set("Content-Type", ct)

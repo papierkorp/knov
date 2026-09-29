@@ -17,7 +17,8 @@
 - fixes
 - chore
   - do tests copie the live data folder? if so do we need to copy the whole data folder? so a user needs double the space if he wants to test?
-  - New trust boundary: extension-only acceptance skips the content check. A file called x.excalidraw can contain anything. That’s mitigated because its MIME entry is empty, so it’s served as a download. But if an admin lists an extension that maps to an active type (.html, .svg), arbitrary content gets in, and only the sandbox header protects it. That header is on today; just keep in mind it is now a required safety net, not an extra layer.
+  - misplaced media - show detection (e.g. mime type/extension)
+  - admin misplaced media scan => add checkboxes like for orphaned media
 - test
   - remote git in mobile
   - does the import/export of settings still work?

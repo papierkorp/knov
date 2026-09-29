@@ -37,14 +37,3 @@ func TestMimeTypeByExtension(t *testing.T) {
 		}
 	}
 }
-
-func TestIsActiveMimeType(t *testing.T) {
-	for mimeType, want := range map[string]bool{
-		"text/html": true, "image/svg+xml": true, "text/xml": true, "application/xhtml+xml": true,
-		"application/pdf": false, "image/png": false, "text/plain": false,
-	} {
-		if got := IsActiveMimeType(mimeType); got != want {
-			t.Errorf("IsActiveMimeType(%q) = %v, want %v", mimeType, got, want)
-		}
-	}
-}
