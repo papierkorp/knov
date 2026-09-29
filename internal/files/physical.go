@@ -78,6 +78,9 @@ func moveDocsToMedia(oldFullPath, newFullPath string) error {
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.
 func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
+	if err := pathutils.CheckNewDocsPath(newRelPath); err != nil {
+		return err
+	}
 	if err := movePhysical(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath), false); err != nil {
 		return err
 	}
@@ -181,6 +184,9 @@ func removeDirPhysical(fullPath string) error {
 // was inside it, then refreshes the aggregate caches once. Returns the number of files whose
 // links were updated successfully and the number that failed.
 func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, failed int, err error) {
+	if err := pathutils.CheckNewDocsPath(newFullPath); err != nil {
+		return 0, 0, err
+	}
 	// collect all files before the move so we can update their links
 	var filesToUpdate []struct{ oldRel, newRel string }
 	_ = filepath.Walk(currentFullPath, func(p string, info os.FileInfo, err error) error {

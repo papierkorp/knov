@@ -344,24 +344,16 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		filePath = filePath + configmanager.ExtensionForEditor(formEditor)
 	}
 
+	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+		return
+	}
 	fullPath := pathutils.ToDocsPath(filePath)
 
 	// check if file exists (to determine if this is creation or update)
 	_, statErr := os.Stat(fullPath)
 	isNewFile := os.IsNotExist(statErr)
 
-	// create directories if they don't exist
-	if isNewFile {
-		dir := filepath.Dir(fullPath)
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
-			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-			return
-		}
-	}
-
-	err := os.WriteFile(fullPath, []byte(content), 0644)
-	if err != nil {
+	if err := contentStorage.WriteFile(fullPath, []byte(content), 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save file %s: %v", fullPath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
@@ -1000,6 +992,9 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := job.RunMoveFolder(currentPath, newPath)
+	if writeReservedPathError(w, r, err) {
+		return
+	}
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move folder %s -> %s: %v", currentPath, newPath, err)
 		status := http.StatusInternalServerError

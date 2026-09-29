@@ -186,6 +186,9 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	if !parser.IsMarkdownExtension(filezpath) {
 		filezpath = filezpath + configmanager.ExtensionForEditor(kind.extKey)
 	}
+	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filezpath)) {
+		return
+	}
 	fullPath := pathutils.ToDocsPath(filezpath)
 
 	// parse entries[i][type] / [value] / [subheaders]
@@ -310,6 +313,9 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	if filepath.Ext(filePath) == "" {
 		filePath = filePath + configmanager.ExtensionForEditor(extensionKey)
 	}
+	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+		return
+	}
 
 	// parse JSON content from frontend
 	var listItems []render.ListItem
@@ -324,14 +330,6 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 
 	// convert to full path
 	fullPath := pathutils.ToDocsPath(filePath)
-
-	// create directory if it doesn't exist
-	dir := filepath.Dir(fullPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		return
-	}
 
 	// save content as markdown
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
@@ -610,7 +608,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	markdownFullPath := pathutils.ToDocsPath(markdownFileName)
 
 	// save markdown file
-	if err := os.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
+	if err := contentStorage.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write markdown file %s: %v", markdownFullPath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"))
 		return

@@ -13,8 +13,10 @@ import (
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // wantsHTML reports whether the response body should be HTML rather than JSON.
@@ -86,6 +88,20 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message s
 	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
 
+// writeReservedPathError answers 400 if err is pathutils.ErrReservedPath and reports whether it did.
+func writeReservedPathError(w http.ResponseWriter, r *http.Request, err error) bool {
+	if !errors.Is(err, pathutils.ErrReservedPath) {
+		return false
+	}
+	writeAPIError(w, r, http.StatusBadRequest, reservedPathMessage())
+	return true
+}
+
+// reservedPathMessage is the translated response text for pathutils.ErrReservedPath.
+func reservedPathMessage() string {
+	return translation.SprintfForRequest(configmanager.GetLanguage(), "top-level folders named %s are reserved, choose another folder", strings.Join(configmanager.ReservedDocsFolders(), ", "))
+}
+
 // moveErrorMessages holds a call site's translated response text for each outcome
 // handleMoveError distinguishes, so the classification logic can be shared without dictating
 // wording that differs (deliberately) between the rename/media-rename/set-path handlers.
@@ -107,6 +123,9 @@ func handleMoveError(err error, context, oldPath, newPath string, msgs moveError
 		return false
 	case errors.Is(err, files.ErrMoveSourceMissing):
 		respond(http.StatusNotFound, msgs.sourceMissing)
+		return true
+	case errors.Is(err, pathutils.ErrReservedPath):
+		respond(http.StatusBadRequest, reservedPathMessage())
 		return true
 	case errors.Is(err, files.ErrMoveTargetExists):
 		respond(http.StatusConflict, msgs.targetExists)

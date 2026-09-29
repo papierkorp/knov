@@ -15,6 +15,7 @@
     - add link extraction
   - tournament editor
   - encrypt single files/folders
+  - new admin action: kanban scan + cleanup
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore
@@ -24,9 +25,27 @@
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
   - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
   - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
-  - validateKanbanFolder rejects folders whose first segment is docs, media or files. That’s needed because of how pathutils strips or reroutes those prefixes. The side effect is that a real folder called docs/files/... can never be a board. It’s documented in the code comment, but not in the setting’s Desc.
 - test
   - remote git in mobile
+  - does the import/export of settings still work?
+
+# reserved folders refactoring
+
+- todo: make docs paths unambiguous so no top-level docs folder name has to be reserved
+  - problem: pathutils.parsePath guesses the type from free text - a leading "files/" is stripped, "media/..." is read as a media file and "docs/..." as a docs file. a docs file at data/docs/media/x.md (or docs/docs/..., docs/files/...) therefore can't be resolved back to itself
+    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.CheckNewDocsPath/ErrReservedPath reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
+    - the workaround only covers files created by the app - files that arrive via git pull/sync or are copied into the filesystem are still broken:
+      - contentStorage.ListFiles + files.pathsToFiles list them as "media/x.md" without a docs/ prefix
+      - File.ViewURL points to /files/x.md => docs/x.md (404 or the wrong file)
+      - their metadata key "media/x.md" is the same key as a real media file data/media/x.md, so the two overwrite each other's metadata
+  - fix:
+    - docs paths always carry an explicit "docs/" prefix internally (listing, metadata keys, File.Path)
+    - user input (form paths, rename/move targets) and /files/<rel> URLs are treated as literal docs-relative paths - no prefix stripping (e.g. a separate docs-rel => full path function next to ToDocsPath)
+    - keep the prefix guessing only where it's really needed (links in content / old metadata)
+    - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this
+  - migration: metadata keys of docs files that currently collide with media keys, and filter/tracker configStorage ids starting with docs/, media/ or files/ (see configeditor.CleanID)
+  - afterwards delete: ReservedDocsFolders, CheckNewDocsPath, ErrReservedPath, writeReservedPathError/reservedPathMessage, the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn TestCheckNewDocsPath into "these paths now resolve correctly" tests
+  - touches many ToDocsPath/ToWithPrefix/ToRelative callers - do it as its own refactor, run `--start-tests --remove` afterwards
 
 # every other time
 
@@ -144,5 +163,10 @@ Areas to scrutinize (your opinion must cover these):
 
 Also give your opinion about the changes: is the current solution overengineered and can it be simplified?
 
-- run `--start-tests --remove` and check for potentiol bugs
+
+
+
+
+
+- run `--start-tests --remove` and check for potential bugs
 ```

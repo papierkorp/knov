@@ -2,8 +2,11 @@
 package pathutils
 
 import (
+	"errors"
 	"net/url"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -50,6 +53,7 @@ func parsePath(inputPath string) *PathInfo {
 	var relativePath string
 	var withPrefix string
 
+	// the prefixes stripped below must match configmanager.ReservedDocsFolders
 	// strip leading slash and "files/" prefix used in stored metadata links
 	normalizedPath = strings.TrimPrefix(normalizedPath, "/")
 	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
@@ -169,13 +173,6 @@ func stripDataPathPrefix(path string) string {
 	if p, ok := strings.CutPrefix(normalizedPath, dataPath+"/"); ok {
 		return p
 	}
-
-	// fallback: strip just the basename of data path (e.g. data/docs/file.md -> docs/file.md)
-	dataPathName := filepath.Base(dataPath)
-	if p, ok := strings.CutPrefix(normalizedPath, dataPathName+"/"); ok {
-		return p
-	}
-
 	return path
 }
 
@@ -238,6 +235,24 @@ func BaseWithoutExt(path string) string {
 // auto-create-tag folder scoping.
 func FolderContains(dirPath, folderPath string) bool {
 	return dirPath == folderPath || strings.HasPrefix(dirPath, folderPath+"/")
+}
+
+// ErrReservedPath is returned when a new docs file or folder would land in a reserved top-level
+// folder (see CheckNewDocsPath).
+var ErrReservedPath = errors.New("target is in a reserved top-level folder")
+
+// CheckNewDocsPath returns ErrReservedPath if the user-given docs path doesn't exist yet and
+// lies in a top-level folder parsePath reads as a prefix (see configmanager.ReservedDocsFolders)
+// - such a file can't be resolved back to itself, so nothing may be created or moved there.
+func CheckNewDocsPath(path string) error {
+	first, _, _ := strings.Cut(ToRelative(path), "/")
+	if !slices.Contains(configmanager.ReservedDocsFolders(), first) {
+		return nil
+	}
+	if _, err := os.Stat(ToDocsPath(path)); err == nil {
+		return nil
+	}
+	return ErrReservedPath
 }
 
 // PathContains reports whether candidate is root itself or strictly beneath it on the

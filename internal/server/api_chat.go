@@ -187,6 +187,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 
 	var newContent []byte
 	var fullPath string
+	var resolvedEditor files.EditorType
 
 	if mode == "append" {
 		if !strings.Contains(target, ".") {
@@ -199,8 +200,24 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		} else {
 			newContent = []byte(msg.Content)
 		}
+	} else {
+		editor := files.EditorType(r.FormValue("editor"))
+		target, newContent, resolvedEditor = formatForEditor(target, msg.Content, editor)
+		fullPath = pathutils.ToDocsPath(target)
+	}
+
+	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+		return
+	}
+	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
+		logging.LogError(logging.KeyApp, "failed to write file during chat move: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move message"))
+		return
+	}
+
+	normalizedTarget := pathutils.ToWithPrefix(target)
+	if mode == "append" {
 		// initialize metadata if file is new
-		normalizedTarget := pathutils.ToWithPrefix(target)
 		if existingMeta, _ := files.MetaDataGet(normalizedTarget); existingMeta == nil {
 			if err := files.MetaDataSync(normalizedTarget); err != nil {
 				logging.LogWarning(logging.KeyApp, "failed to save metadata after append: %v", err)
@@ -210,23 +227,10 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-	} else {
-		editor := files.EditorType(r.FormValue("editor"))
-		var resolvedEditor files.EditorType
-		target, newContent, resolvedEditor = formatForEditor(target, msg.Content, editor)
-		fullPath = pathutils.ToDocsPath(target)
-		normalizedTarget := pathutils.ToWithPrefix(target)
-		if err := files.MetaDataSync(normalizedTarget); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to save metadata for moved chat message: %v", err)
-		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to set editor for moved chat message: %v", err)
-		}
-	}
-
-	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
-		logging.LogError(logging.KeyApp, "failed to write file during chat move: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move message"))
-		return
+	} else if err := files.MetaDataSync(normalizedTarget); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to save metadata for moved chat message: %v", err)
+	} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to set editor for moved chat message: %v", err)
 	}
 
 	if err := chat.Delete(id); err != nil {
@@ -299,6 +303,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 
 	var newContent []byte
 	var fullPath string
+	var resolvedEditor files.EditorType
 
 	if mode == "append" {
 		if !strings.Contains(target, ".") {
@@ -312,21 +317,26 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 			newContent = []byte(combined)
 		}
 	} else {
-		var resolvedEditor files.EditorType
 		target, newContent, resolvedEditor = formatForEditor(target, combined, editor)
 		fullPath = pathutils.ToDocsPath(target)
+	}
+
+	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+		return
+	}
+	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
+		logging.LogError(logging.KeyApp, "failed to write file during bulk chat move: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"))
+		return
+	}
+
+	if mode != "append" {
 		normalizedTarget := pathutils.ToWithPrefix(target)
 		if err := files.MetaDataSync(normalizedTarget); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to save metadata for bulk chat move: %v", err)
 		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to set editor for bulk chat move: %v", err)
 		}
-	}
-
-	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
-		logging.LogError(logging.KeyApp, "failed to write file during bulk chat move: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"))
-		return
 	}
 
 	// delete all moved messages

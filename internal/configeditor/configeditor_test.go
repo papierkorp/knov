@@ -1,9 +1,11 @@
 package configeditor
 
 import (
+	"errors"
 	"testing"
 
 	"knov/internal/files"
+	"knov/internal/pathutils"
 )
 
 // newTestKind mirrors how a real editor builds its descriptor.
@@ -23,6 +25,17 @@ func TestKeyRejectsTraversal(t *testing.T) {
 		if _, err := newTestKind().key(id); err == nil {
 			t.Errorf("key(%q) accepted, want error", id)
 		}
+	}
+}
+
+func TestKeyRejectsReservedFolders(t *testing.T) {
+	for _, id := range []string{"docs/x", "media/x", "files/a/x"} {
+		if _, err := newTestKind().key(id); !errors.Is(err, pathutils.ErrReservedPath) {
+			t.Errorf("key(%q) = %v, want ErrReservedPath", id, err)
+		}
+	}
+	if _, err := newTestKind().key("a/docs/x"); err != nil {
+		t.Errorf("key(a/docs/x) rejected: %v", err)
 	}
 }
 

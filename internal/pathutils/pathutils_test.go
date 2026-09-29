@@ -141,3 +141,33 @@ func TestPathContains(t *testing.T) {
 		t.Error("expected sibling with shared prefix to not be contained")
 	}
 }
+
+func TestCheckNewDocsPath(t *testing.T) {
+	for _, p := range []string{"docs/docs/x.md", "docs/media/x.md", "docs/files/a/x.md", "media"} {
+		if CheckNewDocsPath(p) != ErrReservedPath {
+			t.Errorf("%s should be reserved", p)
+		}
+	}
+	// every reserved name must really be read as a prefix, or the list drifted from parsePath
+	for _, name := range configmanager.ReservedDocsFolders() {
+		if ToRelative(name+"/x.md") == name+"/x.md" {
+			t.Errorf("%s is reserved but not stripped by parsePath", name)
+		}
+	}
+	dataName := filepath.Base(configmanager.GetAppConfig().DataPath)
+	for _, p := range []string{"x.md", "a/files/x.md", "mediafiles/x.md", "docs/" + dataName + "/x.md"} {
+		if err := CheckNewDocsPath(p); err != nil {
+			t.Errorf("%s should not be reserved: %v", p, err)
+		}
+	}
+	existing := filepath.Join(getDocsPath(), "media", "existing.md")
+	if err := os.MkdirAll(filepath.Dir(existing), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(existing, nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckNewDocsPath("docs/media/existing.md"); err != nil {
+		t.Errorf("existing file should stay writable: %v", err)
+	}
+}

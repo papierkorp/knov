@@ -167,6 +167,11 @@
       "translation": "Klammern automatisch schließen"
     },
     {
+      "id": "Auto-Create Tags",
+      "message": "Auto-Create Tags",
+      "translation": ""
+    },
+    {
       "id": "Backup created: {Arg_1}",
       "message": "Backup created: {Arg_1}",
       "translation": "Backup erstellt: {Arg_1}"
@@ -1852,8 +1857,8 @@
       "translation": "Authentifizierungstest erfolgreich"
     },
     {
-      "id": "auto-create tag {Arg_1} (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses",
-      "message": "auto-create tag {Arg_1} (KNOV_AUTOCREATE_TAGS) doesn't match the kanban prefix/statuses",
+      "id": "auto-create tag {Arg_1} doesn't match the kanban prefix/statuses",
+      "message": "auto-create tag {Arg_1} doesn't match the kanban prefix/statuses",
       "translation": ""
     },
     {
@@ -2119,6 +2124,11 @@
     {
       "id": "comma-separated tag:csscolor entries for tag chips on cards, e.g. urgent:red, blocked:orange, done:#2a2 or todo:var(--warning)",
       "message": "comma-separated tag:csscolor entries for tag chips on cards, e.g. urgent:red, blocked:orange, done:#2a2 or todo:var(--warning)",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated tags automatically added to newly created files; a bare tag (no \":\") applies to every new file everywhere, a \"folder/path:tag\" entry only to files created under that folder and its subfolders, e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox. the folder must be relative to docs and can't start with docs/, media/ or files/",
+      "message": "comma-separated tags automatically added to newly created files; a bare tag (no \":\") applies to every new file everywhere, a \"folder/path:tag\" entry only to files created under that folder and its subfolders, e.g. starred, projects/work:kb-status-inbox, personal/todo:kb-status-inbox. the folder must be relative to docs and can't start with docs/, media/ or files/",
       "translation": ""
     },
     {
@@ -5200,6 +5210,11 @@
       "id": "todo mode",
       "message": "todo mode",
       "translation": "Todo-Modus"
+    },
+    {
+      "id": "top-level folders named {Arg_1} are reserved, choose another folder",
+      "message": "top-level folders named {Arg_1} are reserved, choose another folder",
+      "translation": "Ordner der obersten Ebene mit den Namen {Arg_1} sind reserviert, bitte einen anderen Ordner wählen"
     },
     {
       "id": "total media files",

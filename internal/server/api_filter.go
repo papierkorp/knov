@@ -125,6 +125,9 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
 	if err := filter.SaveFilterConfig(config, filterID); err != nil {
+		if writeReservedPathError(w, r, err) {
+			return
+		}
 		logging.LogError(logging.KeyApp, "failed to save filter config: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details."))
 		return
