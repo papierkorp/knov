@@ -24,7 +24,6 @@ import (
 	"knov/internal/metadataStorage"
 	"knov/internal/pathutils"
 	"knov/internal/searchStorage"
-	"knov/internal/utils"
 )
 
 // metaLocks closes a lost-update race: two independent writers of the SAME path (e.g. a
@@ -689,43 +688,22 @@ func MetaDataExportAll() ([]*Metadata, error) {
 	return allMetadata, nil
 }
 
-// ValidateMediaMimeType checks if a MIME type is allowed for media uploads
-func ValidateMediaMimeType(mimeType string) bool {
-	if mimeType == "" {
-		logging.LogWarning(logging.KeyApp, "empty mime type provided for validation")
-		return false
-	}
-
-	// get current allowed mime types
-	allowedTypes := configmanager.GetAllowedMimeTypes()
+// ValidateMediaType checks if a file is allowed for media uploads by its MIME type or extension
+func ValidateMediaType(fileName, mimeType string) bool {
+	// get current allowed media types
+	allowedTypes := configmanager.GetAllowedMediaTypes()
 
 	// if no allowed types configured, deny by default for security
 	if len(allowedTypes) == 0 {
-		logging.LogWarning(logging.KeyApp, "no allowed mime types configured, denying upload")
+		logging.LogWarning(logging.KeyApp, "no allowed media types configured, denying upload")
 		return false
 	}
 
-	logging.LogDebug(logging.KeyApp, "validating mime type: %s against allowed types: %v", mimeType, allowedTypes)
-	if isAllowedMimeType(mimeType) {
+	logging.LogDebug(logging.KeyApp, "validating media type: %s (%s) against allowed types: %v", mimeType, fileName, allowedTypes)
+	if configmanager.IsAllowedMediaType(fileName, mimeType) {
 		return true
 	}
 
-	logging.LogWarning(logging.KeyApp, "mime type %s not allowed, blocked upload", mimeType)
-	return false
-}
-
-// isAllowedMimeType reports whether mimeType matches the allowed media mime types setting,
-// exactly or via a wildcard pattern like "image/*".
-func isAllowedMimeType(mimeType string) bool {
-	mimeType = utils.Normalize(mimeType)
-	for _, allowedType := range configmanager.GetAllowedMimeTypes() {
-		allowedType = utils.Normalize(allowedType)
-		if allowedType == mimeType {
-			return true
-		}
-		if category, ok := strings.CutSuffix(allowedType, "/*"); ok && strings.HasPrefix(mimeType, category+"/") {
-			return true
-		}
-	}
+	logging.LogWarning(logging.KeyApp, "media type %s (%s) not allowed, blocked upload", mimeType, fileName)
 	return false
 }

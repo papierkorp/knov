@@ -236,7 +236,7 @@
         <section class="settings-section settings-section-wide">
             <h2>{{T "Misplaced Media"}}</h2>
             <div class="setting-item">
-                <div class="help-text">{{T "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings > Media Settings > Allowed MIME Types"}}</div>
+                <div class="help-text">{{T "find non-text files and files with an allowed extension in the docs folder (e.g. images or .excalidraw files copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip, image/* or .excalidraw) under Settings > Media Settings > Allowed Media Types"}}</div>
                 <button type="button" class="btn-secondary"
                         hx-get="/api/media/misplaced"
                         hx-target="#misplaced-media-result" hx-swap="innerHTML">{{T "Scan for Misplaced Media"}}</button>

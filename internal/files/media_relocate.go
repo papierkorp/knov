@@ -15,10 +15,11 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/types"
 )
 
-// MisplacedMedia is a non-text file found in the docs folder (e.g. copied in from another
-// wiki). Target is its media-relative destination, mirroring its docs folder - empty when
+// MisplacedMedia is a non-text or allowed-extension file found in the docs folder (e.g. copied
+// in from another wiki). Target is its media-relative destination, mirroring its docs folder - empty when
 // its type isn't an allowed media type, in which case it is only reported, never moved.
 type MisplacedMedia struct {
 	Path   string `json:"path"`
@@ -83,8 +84,8 @@ func RelocateMisplacedMedia(key logging.Key) (MediaRelocateResult, error) {
 	return result, nil
 }
 
-// listMisplacedMedia returns the misplaced media in the docs folder (allowed non-text media
-// types get a conflict-free media target, other binaries none) and every docs file path.
+// listMisplacedMedia returns the misplaced media in the docs folder (allowed media types get a
+// conflict-free media target, other binaries none) and every docs file path.
 func listMisplacedMedia() (items []MisplacedMedia, paths []string, err error) {
 	paths, err = contentStorage.ListFiles()
 	if err != nil {
@@ -97,18 +98,19 @@ func listMisplacedMedia() (items []MisplacedMedia, paths []string, err error) {
 		if parser.IsMarkdownExtension(rel) {
 			continue
 		}
-		// text files (.txt, .json, .xml, ...) render as docs, so only binaries are moved - the
-		// content is sniffed like on upload, since the extension's mime type is os-dependent.
-		// svg sniffs as text but is still an image
+		// text files (.txt, .json, .xml, ...) render as docs, so only binaries and files whose
+		// extension is listed in the allowed media types (e.g. .excalidraw) are moved - the content
+		// is sniffed like on upload, so binaries with unknown extensions are caught too. svg sniffs
+		// as text but is still an image
 		mimeType := sniffMimeType(pathutils.ToDocsPath("docs/" + rel))
-		if extMime := configmanager.MimeTypeByExtension(strings.ToLower(filepath.Ext(rel))); strings.HasPrefix(extMime, "image/") {
+		if extMime := types.MimeTypeByExtension(strings.ToLower(filepath.Ext(rel))); strings.HasPrefix(extMime, "image/") {
 			mimeType = extMime
 		}
-		if mimeType == "" || strings.HasPrefix(mimeType, "text/") {
+		if (mimeType == "" || strings.HasPrefix(mimeType, "text/")) && !configmanager.IsAllowedMediaExtension(rel) {
 			continue
 		}
 		item := MisplacedMedia{Path: rel}
-		if isAllowedMimeType(mimeType) {
+		if configmanager.IsAllowedMediaType(rel, mimeType) {
 			ext := path.Ext(rel)
 			item.Target = rel
 			for i := 1; planned[item.Target] || fileExists(pathutils.ToMediaPath("media/"+item.Target)); i++ {

@@ -2127,8 +2127,8 @@
       "translation": ""
     },
     {
-      "id": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
-      "message": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
+      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
+      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
       "translation": ""
     },
     {

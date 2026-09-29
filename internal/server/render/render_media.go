@@ -13,6 +13,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
+	"knov/internal/types"
 	"knov/internal/utils"
 )
 
@@ -371,7 +372,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	html.WriteString(RenderMediaPathDisplay(relativePath))
 
 	fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), configmanager.MimeTypeByExtension(fileExt))
+		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), types.ServeMimeType(fileExt))
 
 	if metadata.Size > 0 {
 		fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
@@ -544,7 +545,7 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 		videoElement := fmt.Sprintf(`
 			<video controls style="max-width: %dpx; max-height: %dpx;">
 				<source src="%s" type="%s">
-			</video>`, size, size, mediaURL, configmanager.MimeTypeByExtension(ext))
+			</video>`, size, size, mediaURL, types.MimeTypeByExtension(ext))
 
 		if showCaption {
 			content = fmt.Sprintf(`
@@ -556,7 +557,7 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 			content = videoElement
 		}
 
-	case configmanager.MimeTypeByExtension(ext) == "application/pdf":
+	case types.MimeTypeByExtension(ext) == "application/pdf":
 		// for PDFs, use fixed iframe size
 		pdfElement := fmt.Sprintf(`
 			<iframe src="%s" style="width: %dpx; height: %dpx;"></iframe>`,
@@ -665,25 +666,25 @@ func writeMediaStatsRow(html *strings.Builder, class, label string, c files.Medi
 		c.OrphanedFiles, utils.FormatFileSize(c.OrphanedSize))
 }
 
-// mediaCategoryLabel returns the translated label of a files.MediaCategory
+// mediaCategoryLabel returns the translated label of a types.MediaCategory
 func mediaCategoryLabel(category string) string {
 	lang := configmanager.GetLanguage()
 	switch category {
-	case files.MediaCategoryImage:
+	case types.MediaCategoryImage:
 		return translation.SprintfForRequest(lang, "images")
-	case files.MediaCategoryVideo:
+	case types.MediaCategoryVideo:
 		return translation.SprintfForRequest(lang, "videos")
-	case files.MediaCategoryAudio:
+	case types.MediaCategoryAudio:
 		return translation.SprintfForRequest(lang, "audio files")
-	case files.MediaCategoryDocument:
+	case types.MediaCategoryDocument:
 		return translation.SprintfForRequest(lang, "documents")
-	case files.MediaCategoryArchive:
+	case types.MediaCategoryArchive:
 		return translation.SprintfForRequest(lang, "archives")
-	case files.MediaCategoryText:
+	case types.MediaCategoryText:
 		return translation.SprintfForRequest(lang, "text files")
-	case files.MediaCategoryFont:
+	case types.MediaCategoryFont:
 		return translation.SprintfForRequest(lang, "fonts")
-	case files.MediaCategoryProgram:
+	case types.MediaCategoryProgram:
 		return translation.SprintfForRequest(lang, "programs")
 	}
 	return translation.SprintfForRequest(lang, "other")

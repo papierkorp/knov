@@ -10,6 +10,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/types"
 )
 
 // handleFavicon serves the custom favicon if one has been uploaded,
@@ -74,7 +75,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	ext := strings.ToLower(filepath.Ext(filePath))
 
 	// set content type headers before serving files
-	if ct := configmanager.MimeTypeByExtension(ext); ct != "" {
+	if ct := types.MimeTypeByExtension(ext); ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
 

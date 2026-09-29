@@ -2127,9 +2127,9 @@
       "translation": ""
     },
     {
-      "id": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
-      "message": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
-      "translation": "kommagetrennte MIME-Typen, die für den Upload akzeptiert werden (z. B. image/*, application/pdf)"
+      "id": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
+      "message": "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw)",
+      "translation": "kommagetrennte MIME-Typen oder Dateiendungen, die als Medien akzeptiert werden (z. B. image/*, application/pdf, .excalidraw)"
     },
     {
       "id": "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/\u003cstatus\u003e/, and moving the file on disk into an existing folder/path/\u003cstatus\u003e/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",

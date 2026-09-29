@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/thememanager"
+	"knov/internal/types"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -110,9 +110,13 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ext := strings.ToLower(filepath.Ext(mediaPath))
-	if ct := configmanager.MimeTypeByExtension(ext); ct != "" {
-		w.Header().Set("Content-Type", ct)
+	// unknown types are served as a download, types that could run scripts (html, svg) sandboxed
+	ct := types.ServeMimeType(ext)
+	if types.IsActiveMimeType(ct) {
+		w.Header().Set("Content-Security-Policy", "sandbox")
 	}
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	w.Header().Set("Cache-Control", "public, max-age=31536000")
 

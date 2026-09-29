@@ -10,17 +10,18 @@
   - a collection/library for books so i can download multiple books with one click
   - toc in codemirror edit all
   - book/index editor - drag and drop
-  - system/structure for startup warnings / upgrades to a new version for new releases (breaking changes) (since when, what changed, what does the user have to do now) - maybe use this in the releasenotes instead of breakingchange
+  - system/structure for startup warnings / upgrades to a new version for new releases (breaking changes) (since when, what changed, what does the user have to do now) - maybe use this in the releasenotes instead of breakingchange / deprecations
     - add the kanban envs
     - add link extraction
+    - mimetypes
   - tournament editor
   - encrypt single files/folders
   - in admin export/import add a export to pdf
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
-  - admin/ scan for misplaced media doesnt find a .excalidraw file
 - chore
-  - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
+  - do tests copie the live data folder? if so do we need to copy the whole data folder? so a user needs double the space if he wants to test?
+  - New trust boundary: extension-only acceptance skips the content check. A file called x.excalidraw can contain anything. That’s mitigated because its MIME entry is empty, so it’s served as a download. But if an admin lists an extension that maps to an active type (.html, .svg), arbitrary content gets in, and only the sandbox header protects it. That header is on today; just keep in mind it is now a required safety net, not an extra layer.
 - test
   - remote git in mobile
   - does the import/export of settings still work?
@@ -56,6 +57,12 @@
 ## docs
 
 small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points, as few subheaders as possible (i think it becomes more unreadable if its too segmented)
+
+## too much reviews
+
+so i already used multiple reviews of this commit and it never gets approved. im not even sure if it are always different problems or if the same problem gets tossed around.
+
+what do you think is the root of the problem and could fix this mess dont make any changes and give me the different options?
 
 ## overview
 

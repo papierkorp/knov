@@ -13,6 +13,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/types"
 )
 
 // DefaultCollection is the Collection value for root-level files (no containing folder).
@@ -197,7 +198,7 @@ func FilterByVisibility(files []File, scope string) []File {
 // For docs paths the metadata Editor field is used.
 func isHiddenByType(file File) bool {
 	ext := strings.ToLower(filepath.Ext(file.Path))
-	mime := configmanager.MimeTypeByExtension(ext)
+	mime := types.MimeTypeByExtension(ext)
 
 	// check by mime (image, video, pdf — reliable on all platforms)
 	if configmanager.IsHiddenByMime(mime) {

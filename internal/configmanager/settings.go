@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"mime"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"knov/internal/configStorage"
 	"knov/internal/logging"
 	"knov/internal/translation"
+	"knov/internal/types"
 )
 
 // ── init/save ─────────────────────────────────────────────────────────────────
@@ -258,9 +258,9 @@ func GetBorderStyle() string {
 	}
 	return s
 }
-func GetShowCaption() bool          { return ShowCaption.Get() }
-func GetImageClickBehavior() string { return ImageClickBehavior.Get() }
-func GetAllowedMimeTypes() []string { return AllowedMimeTypes.Get() }
+func GetShowCaption() bool           { return ShowCaption.Get() }
+func GetImageClickBehavior() string  { return ImageClickBehavior.Get() }
+func GetAllowedMediaTypes() []string { return AllowedMediaTypes.Get() }
 
 func GetTablePageSize() int {
 	s := PageSize.Get()
@@ -358,35 +358,18 @@ func IsHiddenByExt(ext string) bool {
 	return false
 }
 
-// MimeTypeByExtension returns the clean mime type for an extension (no parameters).
-func MimeTypeByExtension(ext string) string {
-	mimeType := mime.TypeByExtension(ext)
-	if i := strings.Index(mimeType, ";"); i >= 0 {
-		mimeType = strings.TrimSpace(mimeType[:i])
-	}
-	return mimeType
-}
-
 // IsImageExtension returns true if the file extension maps to an allowed image/* mime type
 func IsImageExtension(ext string) bool {
-	mimeType := MimeTypeByExtension(ext)
-	if !strings.HasPrefix(mimeType, "image/") {
-		return false
-	}
-	for _, allowed := range GetAllowedMimeTypes() {
-		if allowed == mimeType {
-			return true
-		}
-	}
-	return false
+	mimeType := types.MimeTypeByExtension(ext)
+	return strings.HasPrefix(mimeType, "image/") && isAllowedMimeType(mimeType)
 }
 
 // IsVideoExtension returns true if the extension maps to a video/* mime type.
 func IsVideoExtension(ext string) bool {
-	return strings.HasPrefix(MimeTypeByExtension(ext), "video/")
+	return strings.HasPrefix(types.MimeTypeByExtension(ext), "video/")
 }
 
 // IsAudioExtension returns true if the extension maps to an audio/* mime type.
 func IsAudioExtension(ext string) bool {
-	return strings.HasPrefix(MimeTypeByExtension(ext), "audio/")
+	return strings.HasPrefix(types.MimeTypeByExtension(ext), "audio/")
 }

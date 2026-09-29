@@ -14,6 +14,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/types"
 	"knov/internal/utils"
 )
 
@@ -46,8 +47,11 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// detect content type
 	contentType := http.DetectContentType(fileBytes)
 
+	// sanitize filename first, so the stored name is the one validated
+	sanitizedName := utils.SanitizeFilename(header.Filename, 255, true, false)
+
 	// validate MIME type
-	if !ValidateMediaMimeType(contentType) {
+	if !ValidateMediaType(sanitizedName, contentType) {
 		logging.LogWarning(logging.KeyApp, "unsupported media type: %s", contentType)
 		return nil, fmt.Errorf("unsupported file type")
 	}
@@ -65,9 +69,6 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	} else {
 		contextDir = pathutils.ToRelative(contextDir)
 	}
-
-	// sanitize filename
-	sanitizedName := utils.SanitizeFilename(header.Filename, 255, true, false)
 
 	// create media path mirroring docs structure
 	var mediaPath string
@@ -147,16 +148,16 @@ func GetFileTypeIcon(ext string) string {
 	case ".ppt", ".pptx", ".odp":
 		return "fa-file-powerpoint"
 	}
-	switch MediaCategory(ext) {
-	case MediaCategoryImage:
+	switch types.MediaCategory(ext) {
+	case types.MediaCategoryImage:
 		return "fa-image"
-	case MediaCategoryVideo:
+	case types.MediaCategoryVideo:
 		return "fa-video"
-	case MediaCategoryAudio:
+	case types.MediaCategoryAudio:
 		return "fa-music"
-	case MediaCategoryText:
+	case types.MediaCategoryText:
 		return "fa-file-alt"
-	case MediaCategoryArchive:
+	case types.MediaCategoryArchive:
 		return "fa-file-archive"
 	}
 	return "fa-file"
@@ -219,47 +220,6 @@ func (s *MediaCategoryStats) add(size int64, orphaned bool) {
 	}
 }
 
-// media categories returned by MediaCategory
-const (
-	MediaCategoryImage    = "image"
-	MediaCategoryVideo    = "video"
-	MediaCategoryAudio    = "audio"
-	MediaCategoryDocument = "document"
-	MediaCategoryArchive  = "archive"
-	MediaCategoryText     = "text"
-	MediaCategoryFont     = "font"
-	MediaCategoryProgram  = "program"
-	MediaCategoryOther    = "other"
-)
-
-// MediaCategory returns the category of path (or a bare extension like ".png") by its
-// extension, or MediaCategoryOther if unknown - a fixed table instead of the mime lookup,
-// since mime.TypeByExtension depends on the host (/etc/mime.types, windows registry).
-// only used for grouping (stats, icons), IsImageFile/IsVideoFile/IsAudioFile stay mime based
-// since they decide what the browser can render inline
-func MediaCategory(path string) string {
-	switch strings.ToLower(filepath.Ext(path)) {
-	case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico", ".tif", ".tiff", ".avif", ".heic", ".heif":
-		return MediaCategoryImage
-	case ".mp4", ".webm", ".mkv", ".mov", ".avi", ".wmv", ".flv", ".m4v", ".mpg", ".mpeg", ".ogv", ".3gp":
-		return MediaCategoryVideo
-	case ".mp3", ".wav", ".ogg", ".oga", ".flac", ".aac", ".m4a", ".opus", ".wma", ".mid", ".midi":
-		return MediaCategoryAudio
-	case ".pdf", ".epub", ".rtf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp", ".odg":
-		return MediaCategoryDocument
-	case ".zip", ".rar", ".7z", ".gz", ".tgz", ".tar", ".bz2", ".xz", ".zst":
-		return MediaCategoryArchive
-	case ".txt", ".csv", ".json", ".xml", ".yaml", ".yml", ".toml", ".html", ".htm", ".css", ".js", ".excalidraw",
-		".md", ".log", ".ini", ".conf", ".cfg", ".sh", ".bat", ".cmd", ".ps1", ".py", ".rb", ".pl", ".go", ".ts", ".sql":
-		return MediaCategoryText
-	case ".ttf", ".otf", ".woff", ".woff2":
-		return MediaCategoryFont
-	case ".exe", ".msi", ".dll", ".deb", ".rpm", ".apk", ".dmg", ".pkg", ".appimage", ".jar":
-		return MediaCategoryProgram
-	}
-	return MediaCategoryOther
-}
-
 // GetMediaStorageStats returns statistics about media file storage
 func GetMediaStorageStats() (*MediaStorageStats, error) {
 	stats := &MediaStorageStats{Categories: []MediaCategoryStats{}}
@@ -291,7 +251,7 @@ func GetMediaStorageStats() (*MediaStorageStats, error) {
 			fileSize = fileInfo.Size()
 		}
 
-		c := MediaCategory(file.Path)
+		c := types.MediaCategory(file.Path)
 		if byCategory[c] == nil {
 			byCategory[c] = &MediaCategoryStats{Category: c}
 		}

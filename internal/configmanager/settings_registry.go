@@ -239,19 +239,20 @@ var (
 		Min:     intPtr(1), Max: intPtr(100),
 		Trigger: "change delay:500ms",
 	})
-	AllowedMimeTypes = register(&StringSliceSetting{
-		key: "allowedMimeTypes",
+	AllowedMediaTypes = register(&StringSliceSetting{
+		key: "allowedMediaTypes",
 		Default: []string{
 			"image/jpeg", "image/gif", "image/png", "image/webp",
 			"image/vnd.microsoft.icon", "image/svg+xml",
 			"audio/mpeg", "audio/ogg", "audio/wav",
 			"video/webm", "video/ogg", "video/mp4",
-			"application/pdf", "text/vtt",
+			"application/pdf", ".vtt",
 		},
-		Section: SectionMedia,
-		Label:   "Allowed MIME Types",
-		Desc:    "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
-		Trigger: "change delay:1s",
+		Section:  SectionMedia,
+		Label:    "Allowed Media Types",
+		Desc:     "comma-separated MIME types or file extensions accepted as media (e.g. image/*, application/pdf, .excalidraw) - files with a listed extension are accepted on upload and moved by the misplaced media scan regardless of their content",
+		Trigger:  "change delay:1s",
+		Validate: validateAllowedMediaTypes,
 	})
 	EnablePreviews = register(&BoolSetting{
 		key: "enablePreviews", Default: true,
