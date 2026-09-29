@@ -3887,7 +3887,7 @@ const docTemplate = `{
         },
         "/api/media/misplaced/relocate": {
             "post": {
-                "description": "Moves all allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them",
+                "description": "Moves the selected allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -3899,11 +3899,30 @@ const docTemplate = `{
                     "media"
                 ],
                 "summary": "Relocate misplaced media files",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "docs-relative paths of the misplaced media files to move",
+                        "name": "path",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/files.MediaRelocateResult"
+                        }
+                    },
+                    "400": {
+                        "description": "no media files selected",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "409": {

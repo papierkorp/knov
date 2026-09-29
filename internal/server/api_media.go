@@ -446,16 +446,29 @@ func handleAPIGetMisplacedMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Relocate misplaced media files
-// @Description Moves all allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them
+// @Description Moves the selected allowed-type media files from the docs folder into the media folder (mirroring their folder) and rewrites every link pointing to them
 // @Tags media
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
+// @Param path formData []string true "docs-relative paths of the misplaced media files to move" collectionFormat(multi)
 // @Success 200 {object} files.MediaRelocateResult
+// @Failure 400 {string} string "no media files selected"
 // @Failure 409 {string} string "job already running"
 // @Failure 500 {string} string "internal error"
 // @Router /api/media/misplaced/relocate [post]
 func handleAPIRelocateMisplacedMedia(w http.ResponseWriter, r *http.Request) {
-	result, err := job.RunMediaRelocate()
+	if err := r.ParseForm(); err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+
+	paths := r.Form["path"]
+	if len(paths) == 0 {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "no media files selected"))
+		return
+	}
+
+	result, err := job.RunMediaRelocate(paths)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {

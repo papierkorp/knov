@@ -3312,9 +3312,18 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Moves all allowed-type media files from the docs folder into the
-        media folder (mirroring their folder) and rewrites every link pointing to
-        them
+      description: Moves the selected allowed-type media files from the docs folder
+        into the media folder (mirroring their folder) and rewrites every link pointing
+        to them
+      parameters:
+      - collectionFormat: multi
+        description: docs-relative paths of the misplaced media files to move
+        in: formData
+        items:
+          type: string
+        name: path
+        required: true
+        type: array
       produces:
       - application/json
       - text/html
@@ -3323,6 +3332,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/files.MediaRelocateResult'
+        "400":
+          description: no media files selected
+          schema:
+            type: string
         "409":
           description: job already running
           schema:

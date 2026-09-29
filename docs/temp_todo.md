@@ -17,7 +17,6 @@
 - fixes
 - chore
   - do tests copie the live data folder? if so do we need to copy the whole data folder? so a user needs double the space if he wants to test?
-  - admin misplaced media scan => add checkboxes like for orphaned media
 - test
   - remote git in mobile
   - does the import/export of settings still work?

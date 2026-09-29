@@ -691,7 +691,7 @@ func mediaCategoryLabel(category string) string {
 }
 
 // RenderMisplacedMedia renders the result of ScanMisplacedMedia as a table of planned
-// moves (docs path -> media path) with a button relocating all of them.
+// moves (docs path -> media path) with checkboxes (all selected) and a button relocating the selected ones.
 // Files without a target aren't an allowed media type and are listed as staying in place.
 func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 	lang := configmanager.GetLanguage()
@@ -703,15 +703,21 @@ func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 		return html.String()
 	}
 
-	fmt.Fprintf(&html, `<table class="misplaced-media-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+	fmt.Fprintf(&html, `<form hx-post="/api/media/misplaced/relocate" hx-target="#misplaced-media-result" hx-swap="innerHTML" hx-status:4xx="swap:none" hx-status:5xx="swap:none" hx-confirm="%s">`,
+		stdhtml.EscapeString(translation.SprintfForRequest(lang, "Move the selected files to the media folder and update all links?")))
+	fmt.Fprintf(&html, `<table class="misplaced-media-table"><thead><tr><th><input type="checkbox" checked onclick="%s"></th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		toggleAllCheckboxesJS,
 		translation.SprintfForRequest(lang, "file"),
 		translation.SprintfForRequest(lang, "detected as"),
 		translation.SprintfForRequest(lang, "new path"))
 
 	movable := 0
 	for _, item := range items {
+		escaped := stdhtml.EscapeString(item.Path)
+		checkbox := ""
 		target := translation.SprintfForRequest(lang, "not an allowed media type, stays in place")
 		if item.Target != "" {
+			checkbox = fmt.Sprintf(`<input type="checkbox" name="path" value="%s" checked>`, escaped)
 			target = stdhtml.EscapeString("media/" + item.Target)
 			movable++
 		}
@@ -719,16 +725,15 @@ func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 		if item.DetectedBy == "extension" {
 			detectedBy = translation.SprintfForRequest(lang, "by extension")
 		}
-		fmt.Fprintf(&html, `<tr><td>%s</td><td>%s (%s)</td><td>%s</td></tr>`, stdhtml.EscapeString(item.Path), stdhtml.EscapeString(item.DetectedAs), detectedBy, target)
+		fmt.Fprintf(&html, `<tr><td>%s</td><td>%s</td><td>%s (%s)</td><td>%s</td></tr>`, checkbox, escaped, stdhtml.EscapeString(item.DetectedAs), detectedBy, target)
 	}
 	html.WriteString(`</tbody></table>`)
 
 	if movable > 0 {
-		fmt.Fprintf(&html, `<button type="button" class="btn-danger" hx-post="/api/media/misplaced/relocate" hx-target="#misplaced-media-result" hx-swap="innerHTML" hx-confirm="%s"><i class="fa fa-folder-open"></i> %s</button>`,
-			stdhtml.EscapeString(translation.SprintfForRequest(lang, "Move %d files to the media folder and update all links?", movable)),
-			translation.SprintfForRequest(lang, "Move to Media Folder"))
+		fmt.Fprintf(&html, `<button type="submit" class="btn-danger"><i class="fa fa-folder-open"></i> %s</button>`,
+			translation.SprintfForRequest(lang, "Move Selected to Media Folder"))
 	}
-	html.WriteString(`</div>`)
+	html.WriteString(`</form></div>`)
 	return html.String()
 }
 

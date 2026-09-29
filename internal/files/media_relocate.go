@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -43,11 +44,11 @@ func ScanMisplacedMedia() ([]MisplacedMedia, error) {
 	return items, err
 }
 
-// RelocateMisplacedMedia moves every allowed-type media file from the docs folder into the
+// RelocateMisplacedMedia moves the selected allowed-type media files from the docs folder into the
 // media folder (mirroring its docs folder) and rewrites all links in markdown docs pointing
 // to it - relative, docs-root ("/folder/img.png", as wiki.js writes them), markdown, wiki and
 // html src/href - to its /media/ URL. Non-allowed binaries are left in place.
-func RelocateMisplacedMedia(key logging.Key) (MediaRelocateResult, error) {
+func RelocateMisplacedMedia(key logging.Key, selected []string) (MediaRelocateResult, error) {
 	items, paths, err := listMisplacedMedia()
 	if err != nil {
 		return MediaRelocateResult{}, err
@@ -58,7 +59,7 @@ func RelocateMisplacedMedia(key logging.Key) (MediaRelocateResult, error) {
 	var result MediaRelocateResult
 	moved := make(map[string]string, len(items))
 	for _, item := range items {
-		if item.Target == "" {
+		if item.Target == "" || !slices.Contains(selected, item.Path) {
 			continue
 		}
 		if err := moveDocsToMedia(pathutils.ToDocsPath("docs/"+item.Path), pathutils.ToMediaPath("media/"+item.Target)); err != nil {
