@@ -703,8 +703,9 @@ func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 		return html.String()
 	}
 
-	fmt.Fprintf(&html, `<table class="misplaced-media-table"><thead><tr><th>%s</th><th>%s</th></tr></thead><tbody>`,
+	fmt.Fprintf(&html, `<table class="misplaced-media-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
 		translation.SprintfForRequest(lang, "file"),
+		translation.SprintfForRequest(lang, "detected as"),
 		translation.SprintfForRequest(lang, "new path"))
 
 	movable := 0
@@ -714,7 +715,11 @@ func RenderMisplacedMedia(items []files.MisplacedMedia) string {
 			target = stdhtml.EscapeString("media/" + item.Target)
 			movable++
 		}
-		fmt.Fprintf(&html, `<tr><td>%s</td><td>%s</td></tr>`, stdhtml.EscapeString(item.Path), target)
+		detectedBy := translation.SprintfForRequest(lang, "by content")
+		if item.DetectedBy == "extension" {
+			detectedBy = translation.SprintfForRequest(lang, "by extension")
+		}
+		fmt.Fprintf(&html, `<tr><td>%s</td><td>%s (%s)</td><td>%s</td></tr>`, stdhtml.EscapeString(item.Path), stdhtml.EscapeString(item.DetectedAs), detectedBy, target)
 	}
 	html.WriteString(`</tbody></table>`)
 

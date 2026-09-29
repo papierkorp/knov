@@ -334,6 +334,10 @@ definitions:
     type: object
   files.MisplacedMedia:
     properties:
+      detectedAs:
+        type: string
+      detectedBy:
+        type: string
       path:
         type: string
       target:

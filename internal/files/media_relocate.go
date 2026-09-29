@@ -21,9 +21,12 @@ import (
 // MisplacedMedia is a non-text or allowed-extension file found in the docs folder (e.g. copied
 // in from another wiki). Target is its media-relative destination, mirroring its docs folder - empty when
 // its type isn't an allowed media type, in which case it is only reported, never moved.
+// DetectedAs is the mime type or extension it was detected by, DetectedBy "content" or "extension".
 type MisplacedMedia struct {
-	Path   string `json:"path"`
-	Target string `json:"target,omitempty"`
+	Path       string `json:"path"`
+	Target     string `json:"target,omitempty"`
+	DetectedAs string `json:"detectedAs"`
+	DetectedBy string `json:"detectedBy"`
 }
 
 // MediaRelocateResult is the outcome of a RelocateMisplacedMedia run. Failed counts both files
@@ -102,14 +105,19 @@ func listMisplacedMedia() (items []MisplacedMedia, paths []string, err error) {
 		// extension is listed in the allowed media types (e.g. .excalidraw) are moved - the content
 		// is sniffed like on upload, so binaries with unknown extensions are caught too. svg sniffs
 		// as text but is still an image
+		ext := strings.ToLower(filepath.Ext(rel))
 		mimeType := sniffMimeType(pathutils.ToDocsPath("docs/" + rel))
-		if extMime := types.MimeTypeByExtension(strings.ToLower(filepath.Ext(rel))); strings.HasPrefix(extMime, "image/") {
+		item := MisplacedMedia{Path: rel, DetectedAs: mimeType, DetectedBy: "content"}
+		if extMime := types.MimeTypeByExtension(ext); strings.HasPrefix(extMime, "image/") {
 			mimeType = extMime
+			item.DetectedAs, item.DetectedBy = extMime, "extension"
 		}
-		if (mimeType == "" || strings.HasPrefix(mimeType, "text/")) && !configmanager.IsAllowedMediaExtension(rel) {
-			continue
+		if mimeType == "" || strings.HasPrefix(mimeType, "text/") {
+			if !configmanager.IsAllowedMediaExtension(rel) {
+				continue
+			}
+			item.DetectedAs, item.DetectedBy = ext, "extension"
 		}
-		item := MisplacedMedia{Path: rel}
 		if configmanager.IsAllowedMediaType(rel, mimeType) {
 			ext := path.Ext(rel)
 			item.Target = rel

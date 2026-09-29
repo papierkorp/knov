@@ -7137,6 +7137,12 @@ const docTemplate = `{
         "files.MisplacedMedia": {
             "type": "object",
             "properties": {
+                "detectedAs": {
+                    "type": "string"
+                },
+                "detectedBy": {
+                    "type": "string"
+                },
                 "path": {
                     "type": "string"
                 },
