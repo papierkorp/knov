@@ -22,8 +22,6 @@
   - Pre-existing, not new: docs are read and written with os.ReadFile/os.WriteFile directly, bypassing contentStorage and without the docs lock. That’s the same as updateLinksInFile, so it’s consistent, but a concurrent editor save could race the rewrite.
   - Uppercase attributes. rewriteHTMLAttrRe makes only the tag name case-insensitive. <img SRC="…"> is missed. Using (?i:src|href) would fix it, if you care.
   - tests copies the live data => do we need to copy the whole data folder? so a user needs double the space if he wants to test?
-  - Files that already have two status tags keep both. Before, the sanitizer reduced them to one. Now anything in oldTags is kept unchanged, until the user adds a new valid status tag.
-  - parseJSON uses (nil, nil) to mean “ignore this value”, and only one caller checks for it. ImportSettingsJSON checks parsed != nil. BulkSetFromForm doesn’t, so it relies on parse never returning nil except for NoteSetting, whose store does nothing. If a future parse returns nil, store will panic on v.(bool). This works today but is fragile. If you touch it again, have store skip nil values.
 - test
   - remote git in mobile
   - does the import/export of settings still work?

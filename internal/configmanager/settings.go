@@ -94,6 +94,9 @@ func applySettings(p proposedSettings) error {
 
 	previous := make(proposedSettings, len(p))
 	for s, v := range p {
+		if v == nil { // parse/parseJSON returned "ignore this value"
+			continue
+		}
 		previous[s] = s.GetValue()
 		s.store(v)
 	}
@@ -177,7 +180,7 @@ func ImportSettingsJSON(data []byte) (skipped []string, err error) {
 				if err != nil {
 					logging.LogError(logging.KeySettingsImport, "ignoring invalid imported setting: %v", err)
 					skipped = append(skipped, s.Key())
-				} else if parsed != nil {
+				} else {
 					p[s] = parsed
 				}
 			}

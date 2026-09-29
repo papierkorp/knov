@@ -2,6 +2,11 @@
   "language": "en",
   "messages": [
     {
+      "id": "{Integer} files fixed, {Integer_1} failed",
+      "message": "{Integer} files fixed, {Integer_1} failed",
+      "translation": ""
+    },
+    {
       "id": "{Integer} files not shown (hidden in settings)",
       "message": "{Integer} files not shown (hidden in settings)",
       "translation": ""
@@ -279,6 +284,11 @@
     {
       "id": "Clean Test Data",
       "message": "Clean Test Data",
+      "translation": ""
+    },
+    {
+      "id": "Clean Up Kanban Tags",
+      "message": "Clean Up Kanban Tags",
       "translation": ""
     },
     {
@@ -852,6 +862,11 @@
       "translation": ""
     },
     {
+      "id": "Kanban Tags",
+      "message": "Kanban Tags",
+      "translation": ""
+    },
+    {
       "id": "Language",
       "message": "Language",
       "translation": ""
@@ -1152,11 +1167,6 @@
       "translation": ""
     },
     {
-      "id": "Repository",
-      "message": "Repository",
-      "translation": ""
-    },
-    {
       "id": "Restart System",
       "message": "Restart System",
       "translation": ""
@@ -1212,6 +1222,11 @@
       "translation": ""
     },
     {
+      "id": "Scan Kanban Tags",
+      "message": "Scan Kanban Tags",
+      "translation": ""
+    },
+    {
       "id": "Scan for Broken Links",
       "message": "Scan for Broken Links",
       "translation": ""
@@ -1244,6 +1259,11 @@
     {
       "id": "Selectable Rows",
       "message": "Selectable Rows",
+      "translation": ""
+    },
+    {
+      "id": "Set the status of {Integer} files? Untagged files in a folder sync status folder become cards.",
+      "message": "Set the status of {Integer} files? Untagged files in a folder sync status folder become cards.",
       "translation": ""
     },
     {
@@ -2747,6 +2767,11 @@
       "translation": ""
     },
     {
+      "id": "failed to clean up kanban issues",
+      "message": "failed to clean up kanban issues",
+      "translation": ""
+    },
+    {
       "id": "failed to clear notifications",
       "message": "failed to clear notifications",
       "translation": ""
@@ -3127,6 +3152,11 @@
       "translation": ""
     },
     {
+      "id": "failed to scan for kanban issues",
+      "message": "failed to scan for kanban issues",
+      "translation": ""
+    },
+    {
       "id": "failed to scan for misplaced media",
       "message": "failed to scan for misplaced media",
       "translation": ""
@@ -3357,6 +3387,11 @@
       "translation": ""
     },
     {
+      "id": "find files with several kanban status tags, statuses or kanban tags that aren't configured, cards outside any board and cards on folder sync boards whose status folder disagrees with their tag. cleanup sets the status folder (folder sync) or keeps the first valid status tag, everything else has to be fixed by hand",
+      "message": "find files with several kanban status tags, statuses or kanban tags that aren't configured, cards outside any board and cards on folder sync boards whose status folder disagrees with their tag. cleanup sets the status folder (folder sync) or keeps the first valid status tag, everything else has to be fixed by hand",
+      "translation": ""
+    },
+    {
       "id": "find in file",
       "message": "find in file",
       "translation": ""
@@ -3369,6 +3404,16 @@
     {
       "id": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
       "message": "find non-text files in the docs folder (e.g. images copied in from another wiki), move them to the media folder and update all links to them. only allowed media types are moved - add new ones (e.g. application/zip or image/*) under Settings \u003e Media Settings \u003e Allowed MIME Types",
+      "translation": ""
+    },
+    {
+      "id": "fix",
+      "message": "fix",
+      "translation": ""
+    },
+    {
+      "id": "fix by hand",
+      "message": "fix by hand",
       "translation": ""
     },
     {
@@ -4247,6 +4292,11 @@
       "translation": ""
     },
     {
+      "id": "no board covers this folder",
+      "message": "no board covers this folder",
+      "translation": ""
+    },
+    {
       "id": "no boards configured",
       "message": "no boards configured",
       "translation": ""
@@ -4334,6 +4384,11 @@
     {
       "id": "no inbound links",
       "message": "no inbound links",
+      "translation": ""
+    },
+    {
+      "id": "no kanban issues found",
+      "message": "no kanban issues found",
       "translation": ""
     },
     {
@@ -4614,6 +4669,11 @@
     {
       "id": "previous",
       "message": "previous",
+      "translation": ""
+    },
+    {
+      "id": "problem",
+      "message": "problem",
       "translation": ""
     },
     {
@@ -4957,6 +5017,11 @@
       "translation": ""
     },
     {
+      "id": "several status tags",
+      "message": "several status tags",
+      "translation": ""
+    },
+    {
       "id": "shift+tab",
       "message": "shift+tab",
       "translation": ""
@@ -5049,6 +5114,16 @@
     {
       "id": "status changed: {Arg_1} → {Arg_2}",
       "message": "status changed: {Arg_1} → {Arg_2}",
+      "translation": ""
+    },
+    {
+      "id": "status folder and tag disagree",
+      "message": "status folder and tag disagree",
+      "translation": ""
+    },
+    {
+      "id": "status is not in the status list",
+      "message": "status is not in the status list",
       "translation": ""
     },
     {
@@ -5304,6 +5379,11 @@
     {
       "id": "unknown file type",
       "message": "unknown file type",
+      "translation": ""
+    },
+    {
+      "id": "unknown kanban tag",
+      "message": "unknown kanban tag",
       "translation": ""
     },
     {
