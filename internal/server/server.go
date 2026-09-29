@@ -340,6 +340,9 @@ func NewRouter() *chi.Mux {
 			r.Post("/bulk-update", handleAPIBulkUpdateMetadata)
 			r.Get("/broken-links", handleAPIScanBrokenLinks)
 			r.Post("/broken-links/repair", handleAPIRepairBrokenLinks)
+			// under metadata, not /api/kanban, so a board slug "issues" isn't shadowed
+			r.Get("/kanban-issues", handleAPIGetKanbanIssues)
+			r.Post("/kanban-issues/cleanup", handleAPICleanupKanbanIssues)
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/editor", handleAPIGetMetadataEditor)

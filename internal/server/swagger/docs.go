@@ -4900,6 +4900,63 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/metadata/kanban-issues": {
+            "get": {
+                "description": "Lists files with several status tags, statuses not in the status list, unknown kanban-prefixed tags, cards whose foldersync status folder disagrees with their tag and cards outside any board. Issues with a fix can be cleaned up via POST /api/metadata/kanban-issues/cleanup.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Scan for kanban tag issues",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/kanban.Issue"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to scan for kanban issues",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/kanban-issues/cleanup": {
+            "post": {
+                "description": "Sets the status of every fixable kanban issue (foldersync: the status folder, several status tags: the first valid one, the column the board shows) and returns the rescanned list",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Clean up kanban tag issues",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/kanban.CleanupResult"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to clean up kanban issues",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/lastedited": {
             "get": {
                 "produces": [
@@ -7102,6 +7159,71 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "kanban.CleanupResult": {
+            "type": "object",
+            "properties": {
+                "failed": {
+                    "type": "integer"
+                },
+                "fixed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "kanban.Issue": {
+            "type": "object",
+            "properties": {
+                "board": {
+                    "type": "string"
+                },
+                "fix": {
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/definitions/kanban.IssueKind"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "kanban.IssueKind": {
+            "type": "string",
+            "enum": [
+                "multiple-status",
+                "unknown-status",
+                "unknown-tag",
+                "folder-mismatch",
+                "no-board"
+            ],
+            "x-enum-comments": {
+                "IssueFolderMismatch": "foldersync board: status folder and tag disagree",
+                "IssueMultipleStatus": "more than one status tag",
+                "IssueNoBoard": "status tag, but no board covers the file's folder",
+                "IssueUnknownStatus": "status not in the status list",
+                "IssueUnknownTag": "\u003cprefix\u003e-\u003cx\u003e tag outside the status namespace"
+            },
+            "x-enum-descriptions": [
+                "more than one status tag",
+                "status not in the status list",
+                "\u003cprefix\u003e-\u003cx\u003e tag outside the status namespace",
+                "foldersync board: status folder and tag disagree",
+                "status tag, but no board covers the file's folder"
+            ],
+            "x-enum-varnames": [
+                "IssueMultipleStatus",
+                "IssueUnknownStatus",
+                "IssueUnknownTag",
+                "IssueFolderMismatch",
+                "IssueNoBoard"
+            ]
         },
         "notificationStorage.Notification": {
             "type": "object",

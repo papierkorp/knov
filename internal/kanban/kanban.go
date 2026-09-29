@@ -337,7 +337,7 @@ func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string,
 	return candidate, fmt.Errorf("too many filename collisions in %s", dir)
 }
 
-// applyStatusTag replaces meta's kanban status tag with newStatus, returning the previous
+// applyStatusTag replaces all of meta's kanban status tags with newStatus, returning the previous
 // status (or "" if none was set). Shared by MoveCard's tag→folder sync and SyncFolderTag's
 // folder→tag sync so both directions agree on what "the" kanban tag is.
 func applyStatusTag(meta *files.Metadata, newStatus string) (oldStatus string) {
@@ -381,15 +381,9 @@ func SyncFolderTag(path string, changedAt time.Time) error {
 		dir := strings.Join(meta.Folders, "/")
 		cfgBoard := resolveBoard(dir)
 		board = cfgBoard.FolderPath
-		if board == "" {
-			return false, nil // not under any configured board
-		}
-		if !cfgBoard.FolderSync {
-			return false, nil // foldersync not enabled for this board
-		}
-		status = strings.TrimPrefix(dir, board+"/")
-		if status == dir || !slices.Contains(configmanager.GetKanbanStatuses(), status) {
-			return false, nil // not directly inside a status folder
+		status = statusFolder(cfgBoard, dir)
+		if status == "" {
+			return false, nil // not directly inside a status folder of a foldersync board
 		}
 
 		oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
@@ -424,6 +418,16 @@ func SyncFolderTag(path string, changedAt time.Time) error {
 	}
 	logging.LogInfo(logging.KeyFileSync, "kanban: foldersync set status %s for %s from physical change", status, relPath)
 	return nil
+}
+
+// statusFolder returns the status whose folder dir is on a foldersync board, or "" if board has
+// foldersync off or dir isn't directly inside one of its status folders.
+func statusFolder(board configmanager.KanbanBoard, dir string) string {
+	s, ok := strings.CutPrefix(dir, board.FolderPath+"/")
+	if !ok || !board.FolderSync || !slices.Contains(configmanager.GetKanbanStatuses(), s) {
+		return ""
+	}
+	return s
 }
 
 // GetEvents returns kanban move events with optional filters, newest first.

@@ -39,6 +39,7 @@ const (
 	KeyInAppTests      Key = "in-app-tests"
 	KeyTheme           Key = "theme"
 	KeySettingsImport  Key = "settings-import"
+	KeyKanbanCleanup   Key = "kanban-cleanup"
 )
 
 // AvailableKeys lists every valid log destination, e.g. for an admin log-viewer dropdown.
@@ -46,7 +47,7 @@ var AvailableKeys = []Key{
 	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyFullRebuild,
 	KeyMediaCleanup, KeyMediaRelocate, KeyGitRemote, KeyGitMaintenance, KeyDokuwikiExport, KeyPdfExport, KeyRepairLinks,
 	KeyDBMigration, KeyFilterDebug, KeyManualCronjob, KeyInAppTests,
-	KeyTheme, KeySettingsImport,
+	KeyTheme, KeySettingsImport, KeyKanbanCleanup,
 }
 
 // String returns the key's display/file name ("app" for the default key).

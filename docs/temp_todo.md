@@ -15,7 +15,6 @@
     - add link extraction
   - tournament editor
   - encrypt single files/folders
-  - new admin action: kanban scan + cleanup
 - fixes
   - if a `.` is in the name its not detected as markdown for new files
 - chore

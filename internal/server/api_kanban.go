@@ -63,6 +63,55 @@ func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
 	respondJobStarted(w, r, id, job.JobTypeFileSync)
 }
 
+// @Summary Scan for kanban tag issues
+// @Description Lists files with several status tags, statuses not in the status list, unknown kanban-prefixed tags, cards whose foldersync status folder disagrees with their tag and cards outside any board. Issues with a fix can be cleaned up via POST /api/metadata/kanban-issues/cleanup.
+// @Tags kanban
+// @Produce json,html
+// @Success 200 {array} kanban.Issue
+// @Failure 500 {string} string "failed to scan for kanban issues"
+// @Router /api/metadata/kanban-issues [get]
+func handleAPIGetKanbanIssues(w http.ResponseWriter, r *http.Request) {
+	issues, err := kanban.ScanIssues()
+	if err != nil {
+		logging.LogError(logging.KeyKanbanCleanup, "failed to scan for kanban issues: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for kanban issues"))
+		return
+	}
+	writeResponse(w, r, issues, render.RenderKanbanIssues(issues))
+}
+
+// @Summary Clean up kanban tag issues
+// @Description Sets the status of every fixable kanban issue (foldersync: the status folder, several status tags: the first valid one, the column the board shows) and returns the rescanned list
+// @Tags kanban
+// @Produce json,html
+// @Success 200 {object} kanban.CleanupResult
+// @Failure 500 {string} string "failed to clean up kanban issues"
+// @Router /api/metadata/kanban-issues/cleanup [post]
+func handleAPICleanupKanbanIssues(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	result, err := kanban.CleanupIssues()
+	if err != nil {
+		logging.LogError(logging.KeyKanbanCleanup, "failed to clean up kanban issues: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to clean up kanban issues"))
+		return
+	}
+
+	level := notify.LevelSuccess
+	if result.Failed > 0 {
+		level = notify.LevelError
+	}
+	notify.SetHeader(w, level, translation.SprintfForRequest(lang, "%d files fixed, %d failed", result.Fixed, result.Failed))
+
+	// the cleanup itself succeeded, so a failed rescan only replaces the list
+	html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(lang, "failed to scan for kanban issues"))
+	if issues, err := kanban.ScanIssues(); err != nil {
+		logging.LogError(logging.KeyKanbanCleanup, "failed to rescan for kanban issues: %v", err)
+	} else {
+		html = render.RenderKanbanIssues(issues)
+	}
+	writeResponse(w, r, result, html)
+}
+
 // @Summary Get kanban board for a folder
 // @Description Returns all kanban cards grouped by status column for the given board
 // @Tags kanban

@@ -392,3 +392,51 @@ func formatCardDate(isoDate string) string {
 	}
 	return configmanager.FormatDate(t)
 }
+
+// RenderKanbanIssues renders the result of kanban.ScanIssues as a table (file, problem, tags,
+// fix) with a button cleaning up the fixable ones. Issues without a fix are only reported.
+func RenderKanbanIssues(issues []kanban.Issue) string {
+	lang := configmanager.GetLanguage()
+	var html strings.Builder
+	html.WriteString(`<div id="component-kanban-issues">`)
+
+	if len(issues) == 0 {
+		fmt.Fprintf(&html, `<p class="no-items">%s</p></div>`, translation.SprintfForRequest(lang, "no kanban issues found"))
+		return html.String()
+	}
+
+	problems := map[kanban.IssueKind]string{
+		kanban.IssueMultipleStatus: translation.SprintfForRequest(lang, "several status tags"),
+		kanban.IssueUnknownStatus:  translation.SprintfForRequest(lang, "status is not in the status list"),
+		kanban.IssueUnknownTag:     translation.SprintfForRequest(lang, "unknown kanban tag"),
+		kanban.IssueFolderMismatch: translation.SprintfForRequest(lang, "status folder and tag disagree"),
+		kanban.IssueNoBoard:        translation.SprintfForRequest(lang, "no board covers this folder"),
+	}
+
+	fmt.Fprintf(&html, `<table class="kanban-issues-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		translation.SprintfForRequest(lang, "file"),
+		translation.SprintfForRequest(lang, "problem"),
+		translation.SprintfForRequest(lang, "tags"),
+		translation.SprintfForRequest(lang, "fix"))
+
+	fixable := 0
+	for _, issue := range issues {
+		fix := translation.SprintfForRequest(lang, "fix by hand")
+		if issue.Fix != "" {
+			fix = template.HTMLEscapeString(configmanager.KanbanStatusTag(issue.Fix))
+			fixable++
+		}
+		fmt.Fprintf(&html, `<tr><td><a href="%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			template.HTMLEscapeString(pathutils.ToFileURL(issue.Path)), template.HTMLEscapeString(issue.Path), problems[issue.Kind],
+			template.HTMLEscapeString(strings.Join(issue.Tags, ", ")), fix)
+	}
+	html.WriteString(`</tbody></table>`)
+
+	if fixable > 0 {
+		fmt.Fprintf(&html, `<button type="button" class="btn-danger" hx-post="/api/metadata/kanban-issues/cleanup" hx-target="#kanban-issues-result" hx-swap="innerHTML" hx-confirm="%s"><i class="fa fa-broom"></i> %s</button>`,
+			template.HTMLEscapeString(translation.SprintfForRequest(lang, "Set the status of %d files? Untagged files in a folder sync status folder become cards.", fixable)),
+			translation.SprintfForRequest(lang, "Clean Up Kanban Tags"))
+	}
+	html.WriteString(`</div>`)
+	return html.String()
+}
