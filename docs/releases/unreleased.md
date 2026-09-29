@@ -1,6 +1,6 @@
 # unreleased
 
-_88 commits since last release_
+_89 commits since last release_
 
 ## upgrading from v1.0.0 to next release
 
