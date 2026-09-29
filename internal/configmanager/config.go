@@ -581,7 +581,8 @@ func GetGitRemote() string {
 
 // SetGitRemoteForTest sets the in-memory git remote without touching the .env file.
 // Test-only: lets git remote tests point EnsureRemote at a throwaway repo and restore
-// the original afterward, without a restart.
+// the original afterward, without a restart, and lets test.PrepareIsolatedStorage clear
+// the remote for the isolated test run.
 func SetGitRemoteForTest(value string) {
 	appConfig.GitRemote = value
 }

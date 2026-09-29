@@ -7,20 +7,23 @@ import (
 	"strings"
 
 	"knov/internal/backup"
+	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 )
 
 // TempRoot is the knov_temp_test scratch directory (sibling to the executable) that
-// PrepareIsolatedStorage copies into and RemoveIsolatedStorage deletes.
+// PrepareIsolatedStorage sets up and RemoveIsolatedStorage deletes.
 func TempRoot() string {
 	return filepath.Join(logging.ResolveBaseDir(), "knov_temp_test")
 }
 
-// PrepareIsolatedStorage points every storage path at a fresh copy of the live data/storage
-// directories under TempRoot, so `knov --start-tests` - run as its own separate process
-// alongside a live `knov` - never touches the user's real docs, git history or databases.
+// PrepareIsolatedStorage points every storage path at fresh, empty data/storage directories
+// under TempRoot, so `knov --start-tests` - run as its own separate process alongside a live
+// `knov` - never touches the user's real docs, git history or databases. Only the config
+// storage (settings) is copied over; each suite seeds its own sample data. The git remote is
+// cleared so the empty data dir never clones the real remote or pushes test commits to it.
 // Must run before any storage backend is initialized (see main.go).
 func PrepareIsolatedStorage() error {
 	live := configmanager.GetAppConfig()
@@ -30,7 +33,7 @@ func PrepareIsolatedStorage() error {
 	tempStorage := filepath.Join(tempRoot, "storage")
 
 	// KNOV_DATA_PATH/KNOV_STORAGE_PATH may be configured as a relative path (resolved against
-	// cwd, same as backup.RestoreFile's own os.Stat/WalkDir calls below), while tempData/
+	// cwd, same as the backup.RestoreFile config copy below), while tempData/
 	// tempStorage are always absolute - resolve both sides the same way before comparing, or a
 	// relative live path could never match tempData/tempStorage and slip past the check below.
 	liveData, err := filepath.Abs(live.DataPath)
@@ -42,7 +45,7 @@ func PrepareIsolatedStorage() error {
 		return fmt.Errorf("failed to resolve storage path: %w", err)
 	}
 
-	// backup.RestoreFile clears its destination before copying into it - refuse to proceed if
+	// tempData/tempStorage are cleared below - refuse to proceed if
 	// that would ever reach into a live path (equal to it, containing it, or contained by it -
 	// e.g. a misconfigured KNOV_DATA_PATH pointing inside knov_temp_test), rather than risk
 	// RemoveAll deleting real data.
@@ -51,14 +54,23 @@ func PrepareIsolatedStorage() error {
 		return fmt.Errorf("knov_temp_test path collides with live data/storage path, refusing to run")
 	}
 
-	if err := backup.RestoreFile(live.DataPath, tempData); err != nil {
-		return fmt.Errorf("failed to copy data into knov_temp_test: %w", err)
+	if err := os.RemoveAll(tempData); err != nil {
+		return fmt.Errorf("failed to clear knov_temp_test data: %w", err)
 	}
-	if err := backup.RestoreFile(live.StoragePath, tempStorage); err != nil {
-		return fmt.Errorf("failed to copy storage into knov_temp_test: %w", err)
+	if err := os.RemoveAll(tempStorage); err != nil {
+		return fmt.Errorf("failed to clear knov_temp_test storage: %w", err)
+	}
+	if err := backup.RestoreFile(configStorage.Dir(liveStorage), configStorage.Dir(tempStorage)); err != nil {
+		return fmt.Errorf("failed to copy config into knov_temp_test: %w", err)
 	}
 
 	configmanager.SetDataAndStoragePaths(tempData, tempStorage)
+	configmanager.SetGitRemoteForTest("")
+	// InitAppConfig already ran InitGitRepository against the live data path - init the
+	// isolated data dir too so git works before any suite seeds its sample data
+	if err := configmanager.InitGitRepository(); err != nil {
+		return fmt.Errorf("failed to init git repository in knov_temp_test: %w", err)
+	}
 	return nil
 }
 
@@ -70,7 +82,7 @@ func RemoveIsolatedStorage() error {
 
 // RunAllTestsAndLog runs the named suite, or every registered suite if name is empty (see
 // RunAllTests), and logs the aggregated pass/fail summary to logging.KeyInAppTests - used by
-// `knov --start-tests` once every storage backend is initialized against the isolated copy
+// `knov --start-tests` once every storage backend is initialized against the isolated storage
 // PrepareIsolatedStorage already switched to.
 func RunAllTestsAndLog(name string) (*SuiteResult, error) {
 	result, err := RunAllTests(name)

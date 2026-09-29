@@ -16,7 +16,6 @@
   - in admin export/import add a export to pdf
 - fixes
 - chore
-  - do tests copie the live data folder? if so do we need to copy the whole data folder? so a user needs double the space if he wants to test?
 - test
   - remote git in mobile
   - does the import/export of settings still work?

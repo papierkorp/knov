@@ -19,9 +19,14 @@ type jsonStorage struct {
 	mutex    sync.RWMutex
 }
 
+// Dir returns the directory the json config storage keeps its files in under storagePath
+func Dir(storagePath string) string {
+	return filepath.Join(storagePath, "config")
+}
+
 // newJSONStorage creates a new JSON config storage instance
 func newJSONStorage(storagePath string) (*jsonStorage, error) {
-	fullPath := filepath.Join(storagePath, "config")
+	fullPath := Dir(storagePath)
 	if err := os.MkdirAll(fullPath, 0755); err != nil {
 		return nil, err
 	}

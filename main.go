@@ -101,7 +101,7 @@ func main() {
 	}
 
 	// docs dir doesn't exist yet - nothing has ever been stored, so seed starter content below.
-	// Checked after PrepareIsolatedStorage so a --start-tests run stats the isolated copy, not
+	// Checked after PrepareIsolatedStorage so a --start-tests run stats the isolated data, not
 	// the live one.
 	_, statErr := os.Stat(pathutils.DocsRoot())
 	firstStart := os.IsNotExist(statErr)
