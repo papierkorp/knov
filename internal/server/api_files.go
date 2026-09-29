@@ -340,7 +340,8 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if filepath.Ext(filePath) == "" {
+	// new files need a markdown extension, a dot in the name (e.g. "v1.2 notes") is not one
+	if _, err := os.Stat(pathutils.ToDocsPath(filePath)); os.IsNotExist(err) && !parser.IsMarkdownExtension(filePath) {
 		filePath = filePath + configmanager.ExtensionForEditor(formEditor)
 	}
 

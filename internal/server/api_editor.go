@@ -310,7 +310,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ensure the default extension for the selected mode
-	if filepath.Ext(filePath) == "" {
+	if !parser.IsMarkdownExtension(filePath) {
 		filePath = filePath + configmanager.ExtensionForEditor(extensionKey)
 	}
 	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
