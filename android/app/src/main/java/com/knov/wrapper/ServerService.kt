@@ -173,8 +173,8 @@ class ServerService : Service() {
             if (stopping) {
                 proc?.destroy()
             } else {
-                process = proc
                 if (restarting) proc?.destroy()
+                process = proc
             }
         }
     }
