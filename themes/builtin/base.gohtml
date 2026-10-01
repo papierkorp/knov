@@ -22,6 +22,7 @@
 </head>
 <body
     x-data="{}"
+    hx-disable:inherited="closest button, findAll :scope:is(form) button:not([type=button])"
     data-theme="{{ .CurrentTheme }}"
     data-dark-mode="{{ .DarkMode }}"
     data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"

@@ -290,3 +290,19 @@ func ToFileEditTableURL(rel string) string { return "/files/edittable/" + escape
 
 // ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
 func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelPath(rel) }
+
+// FileFromURL returns the docs-relative path of the file a page URL shows (the reverse of
+// ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page.
+func FileFromURL(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil || strings.HasPrefix(u.Path, "/files/new/") {
+		return ""
+	}
+	// ToFileURL("") is a prefix of the other routes, so it has to be checked last
+	for _, prefix := range []string{ToFileEditURL(""), ToFileEditTableURL(""), ToFileHistoryURL(""), ToFileURL("")} {
+		if rel, ok := strings.CutPrefix(u.Path, prefix); ok {
+			return rel
+		}
+	}
+	return ""
+}

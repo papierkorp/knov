@@ -5,3 +5,38 @@
 @import url("panels.css");
 @import url("layout.css");
 @import url("mobile.css");
+
+/* in-flight htmx request: buttons disabled by the inherited hx-disable on <body> get a
+   spinner, shown after a short delay so fast requests don't flicker. it's positioned out
+   of the flow so the button doesn't change size */
+:is(button.htmx-request, form.htmx-request button:not([type="button"])):disabled {
+  position: relative;
+  cursor: progress;
+}
+
+:is(button.htmx-request, form.htmx-request button:not([type="button"])):disabled::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.3em;
+  width: 0.8em;
+  height: 0.8em;
+  margin-top: -0.4em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  visibility: hidden;
+  animation: btn-busy-spin 0.7s linear infinite, btn-busy-show 0s 0.3s forwards;
+}
+
+@keyframes btn-busy-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes btn-busy-show {
+  to {
+    visibility: visible;
+  }
+}

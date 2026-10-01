@@ -6,22 +6,46 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"knov/internal/cacheStorage"
+	"knov/internal/chatStorage"
+	"knov/internal/configStorage"
+	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
+	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
+	"knov/internal/parser"
+	"knov/internal/searchStorage"
 )
 
-// writeAPIError reaches notify.SetHeader, which persists every notification, so
-// the storage backend has to exist before any test in this package runs.
+// writeAPIError reaches notify.SetHeader, which persists every notification, and the
+// file handlers need the content storages, so the backends have to exist before any
+// test in this package runs - and outlive it, since background cache refreshes may
+// still write after a test returns.
 func TestMain(m *testing.M) {
 	dir, err := os.MkdirTemp("", "knov-server-test")
 	if err != nil {
 		panic(err)
 	}
-	if err := notificationStorage.Init(dir); err != nil {
-		panic(err)
+	storage := filepath.Join(dir, "storage")
+	configmanager.SetDataAndStoragePaths(filepath.Join(dir, "data"), storage)
+	parser.Init()
+	for _, err := range []error{
+		notificationStorage.Init(dir),
+		searchStorage.Init("sqlite", storage),
+		chatStorage.Init(storage),
+		contentStorage.Init(),
+		configStorage.Init("json", storage),
+		metadataStorage.Init("json", storage),
+		cacheStorage.Init("json", storage),
+	} {
+		if err != nil {
+			panic(err)
+		}
 	}
 	code := m.Run()
 	os.RemoveAll(dir)

@@ -690,7 +690,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Rename a file
-// @Description Renames a file and updates all links pointing to it
+// @Description Renames a file and updates all links pointing to it. Sends HX-Redirect to the new file only when the HX-Current-URL header shows the renamed file, otherwise the result is an HX-Trigger notify toast
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Param filepath path string true "Current file path"
@@ -742,18 +742,22 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
-	// redirect to the new file location
-	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
+	message := translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed")
 	if files.FolderFromPath(currentPath) != files.FolderFromPath(newPath) {
-		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved"))
+		message = translation.SprintfForRequest(configmanager.GetLanguage(), "file moved")
+	}
+	// only navigate away when the current page shows the moved file, otherwise toast in place
+	if viewedFile(r) == currentPath {
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
+		notify.SetFlash(notify.LevelSuccess, message)
 	} else {
-		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
+		notify.SetHeader(w, notify.LevelSuccess, message)
 	}
 	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
 }
 
 // @Summary Move a folder into another folder
-// @Description Moves a folder to a new parent, updating all internal links
+// @Description Moves a folder to a new parent, updating all internal links. Sends HX-Redirect when the HX-Current-URL header shows a file inside the moved folder, otherwise the result is an HX-Trigger notify toast
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Param folderpath path string true "Current folder path (relative, no docs/ prefix)"
@@ -826,7 +830,14 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo(logging.KeyApp, "successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, result.Updated)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved"))
+	message := translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved")
+	// follow a file of the moved folder that the current page shows, otherwise toast in place
+	if rel, ok := strings.CutPrefix(viewedFile(r), currentPath+"/"); ok {
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath+"/"+rel))
+		notify.SetFlash(notify.LevelSuccess, message)
+	} else {
+		notify.SetHeader(w, notify.LevelSuccess, message)
+	}
 	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 }
 

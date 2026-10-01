@@ -2071,7 +2071,7 @@ const docTemplate = `{
         },
         "/api/files/move-folder/{folderpath}": {
             "post": {
-                "description": "Moves a folder to a new parent, updating all internal links",
+                "description": "Moves a folder to a new parent, updating all internal links. Sends HX-Redirect when the HX-Current-URL header shows a file inside the moved folder, otherwise the result is an HX-Trigger notify toast",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -2176,7 +2176,7 @@ const docTemplate = `{
         },
         "/api/files/rename/{filepath}": {
             "post": {
-                "description": "Renames a file and updates all links pointing to it",
+                "description": "Renames a file and updates all links pointing to it. Sends HX-Redirect to the new file only when the HX-Current-URL header shows the renamed file, otherwise the result is an HX-Trigger notify toast",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

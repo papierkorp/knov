@@ -33,6 +33,12 @@ func wantsHTML(r *http.Request) bool {
 	return strings.Contains(accept, "text/html") || strings.Contains(accept, "*/*")
 }
 
+// viewedFile returns the docs-relative path of the file shown on the page an htmx request came
+// from (read from the HX-Current-URL header), or "".
+func viewedFile(r *http.Request) string {
+	return pathutils.FileFromURL(r.Header.Get("HX-Current-URL"))
+}
+
 func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
 	if wantsHTML(r) {
 		w.Header().Set("Content-Type", "text/html")

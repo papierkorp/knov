@@ -23,8 +23,6 @@ function initTreeRename() {
     const type = renameBtn.dataset.type;
     const currentName = path.split("/").pop();
     const parentDir = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
-    // reload the specific snippet instance this happened in, not the whole group
-    const panelId = renameBtn.closest(".rail-tab-panel")?.id;
 
     const row = renameBtn.closest(".browse-item-row");
     const labelEl = type === "folder"
@@ -59,35 +57,24 @@ function initTreeRename() {
       committed = true;
 
       const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-      let url, body;
+      let url, values;
       if (type === "file") {
-        const newPath = parentDir ? parentDir + "/" + newName : newName;
         url = "/api/files/rename/" + encodedPath;
-        body = new URLSearchParams({ name: newPath });
+        values = { name: parentDir ? parentDir + "/" + newName : newName };
       } else {
         url = "/api/files/move-folder/" + encodedPath;
-        body = new URLSearchParams({ target: parentDir || ".", name: newName });
+        values = { target: parentDir || ".", name: newName };
       }
 
-      fetch(url, { method: "POST", body }).then((res) => {
-        if (res.ok) {
-          const redirect = res.headers.get("HX-Redirect");
-          const curPath = window.location.pathname;
-          if (type === "file" && redirect && curPath.includes(path)) {
-            window.location.href = redirect;
-          } else if (panelId) {
-            reloadPanel(panelId);
-          }
-        } else {
-          committed = false;
-          res.text().then((html) => {
-            const tmp = document.createElement("div");
-            tmp.innerHTML = html;
-            window.showToast("error", tmp.textContent.trim());
-            cancel();
-          });
-        }
-      });
+      // htmx handles the redirect, the notify toast and the panel reload (rail-core.js);
+      // the row is the source (not the input) so it's still attached for the error toast;
+      // finally also fires on network errors, which have no response
+      row.addEventListener("htmx:finally:request", (e) => {
+        if (e.detail.ctx.response?.status < 400) return;
+        committed = false;
+        cancel();
+      }, { once: true });
+      htmx.ajax("POST", url, { source: row, swap: "none", values });
     }
 
     input.addEventListener("keydown", (e) => {
@@ -151,7 +138,6 @@ function initTreeDragDrop() {
     if (!payload) return;
     e.preventDefault();
     btn.classList.remove("drag-over");
-    const panelId = btn.closest(".rail-tab-panel")?.id;
 
     const { path: srcPath, type } = JSON.parse(payload);
     const targetDir = btn.dataset.path;
@@ -164,42 +150,11 @@ function initTreeDragDrop() {
 
     const encodedSrc = srcPath.split("/").map(encodeURIComponent).join("/");
 
+    // htmx handles the redirect, the notify toast and the panel reload (rail-core.js)
     if (type === "folder") {
-      fetch("/api/files/move-folder/" + encodedSrc, {
-        method: "POST",
-        body: new URLSearchParams({ target: targetDir }),
-      }).then((res) => {
-        if (res.ok) {
-          if (panelId) reloadPanel(panelId);
-        } else {
-          res.text().then((html) => {
-            const tmp = document.createElement("div");
-            tmp.innerHTML = html;
-            window.showToast("error", tmp.textContent.trim());
-          });
-        }
-      });
+      htmx.ajax("POST", "/api/files/move-folder/" + encodedSrc, { source: btn, swap: "none", values: { target: targetDir } });
     } else {
-      fetch("/api/files/rename/" + encodedSrc, {
-        method: "POST",
-        body: new URLSearchParams({ name: newPath }),
-      }).then((res) => {
-        if (res.ok) {
-          const redirect = res.headers.get("HX-Redirect");
-          const curPath = window.location.pathname;
-          if (redirect && curPath.startsWith("/files/") && curPath.includes(srcPath)) {
-            window.location.href = redirect;
-          } else if (panelId) {
-            reloadPanel(panelId);
-          }
-        } else {
-          res.text().then((html) => {
-            const tmp = document.createElement("div");
-            tmp.innerHTML = html;
-            window.showToast("error", tmp.textContent.trim());
-          });
-        }
-      });
+      htmx.ajax("POST", "/api/files/rename/" + encodedSrc, { source: btn, swap: "none", values: { name: newPath } });
     }
   });
 }

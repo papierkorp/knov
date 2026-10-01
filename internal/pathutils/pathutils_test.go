@@ -171,3 +171,24 @@ func TestCheckNewDocsPath(t *testing.T) {
 		t.Errorf("existing file should stay writable: %v", err)
 	}
 }
+
+func TestFileFromURL(t *testing.T) {
+	cases := []struct {
+		url  string
+		want string
+	}{
+		{"http://localhost/files/notes/a.md", "notes/a.md"},
+		{"http://localhost/files/edit/notes/a.md?x=1#h", "notes/a.md"},
+		{"http://localhost/files/edittable/t.md", "t.md"},
+		{"http://localhost/files/history/notes/a.md", "notes/a.md"},
+		{"http://localhost/files/n%C3%B6tes/a%20b.md", "nötes/a b.md"},
+		{"http://localhost/files/new/codemirror", ""},
+		{"http://localhost/dashboard/home", ""},
+		{"", ""},
+	}
+	for _, c := range cases {
+		if got := FileFromURL(c.url); got != c.want {
+			t.Errorf("FileFromURL(%q) = %q, want %q", c.url, got, c.want)
+		}
+	}
+}
