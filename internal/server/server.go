@@ -228,6 +228,7 @@ func NewRouter() *chi.Mux {
 		r.Get("/exports/files", handleAPIExportFiles)
 		r.Get("/exports/markdown", handleAPIExportMarkdown)
 		r.Get("/exports/pdf", handleAPIDownloadPDFExport)
+		r.Get("/exports/stats", handleAPIExportStats)
 		r.Delete("/exports/pdf", handleAPIDeleteExport)
 
 		// ----------------------------------------------------------------------------------------

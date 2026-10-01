@@ -1500,6 +1500,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/exports/stats": {
+            "get": {
+                "description": "Returns the file count and total size of the export folder",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Get export folder storage statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/export.StorageStats"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to get storage stats",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/autocomplete": {
             "get": {
                 "description": "Returns files matching a query string for use in wiki link autocomplete",
@@ -6963,6 +6990,17 @@ const docTemplate = `{
                 "WidgetTypeCollections",
                 "WidgetTypeFolders"
             ]
+        },
+        "export.StorageStats": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
         },
         "files.BrokenLink": {
             "type": "object",

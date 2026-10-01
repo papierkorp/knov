@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"html/template"
 
+	"knov/internal/export"
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // RenderJobStatus renders the current status of an async job (started via job.StartAsync) for
@@ -58,4 +60,16 @@ func RenderExportDone(lang string) string {
 		template.HTMLEscapeString(translation.SprintfForRequest(lang, "download export")),
 		template.HTMLEscapeString(translation.SprintfForRequest(lang, "delete export?")),
 		template.HTMLEscapeString(translation.SprintfForRequest(lang, "delete export")))
+}
+
+// RenderExportStats renders the storage used by the export folder.
+func RenderExportStats(lang string, stats export.StorageStats) string {
+	files := translation.SprintfForRequest(lang, "%d files", stats.Files)
+	if stats.Files == 1 {
+		files = translation.SprintfForRequest(lang, "1 file")
+	}
+	return fmt.Sprintf(`<i class="fa fa-hard-drive"></i> %s: %s · %s`,
+		template.HTMLEscapeString(translation.SprintfForRequest(lang, "export folder")),
+		template.HTMLEscapeString(utils.FormatFileSize(stats.Size)),
+		template.HTMLEscapeString(files))
 }

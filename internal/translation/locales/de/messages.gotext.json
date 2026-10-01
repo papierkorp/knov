@@ -2,6 +2,11 @@
   "language": "de",
   "messages": [
     {
+      "id": "{Integer} files",
+      "message": "{Integer} files",
+      "translation": "{Integer} Dateien"
+    },
+    {
       "id": "{Integer} files fixed, {Integer_1} failed",
       "message": "{Integer} files fixed, {Integer_1} failed",
       "translation": "{Integer} Dateien behoben, {Integer_1} fehlgeschlagen"
@@ -70,6 +75,11 @@
       "id": "(default)",
       "message": "(default)",
       "translation": "(Standard)"
+    },
+    {
+      "id": "1 file",
+      "message": "1 file",
+      "translation": "1 Datei"
     },
     {
       "id": "24h",
@@ -2807,6 +2817,11 @@
       "translation": "Export abgeschlossen"
     },
     {
+      "id": "export folder",
+      "message": "export folder",
+      "translation": "Export-Ordner"
+    },
+    {
       "id": "export metadata",
       "message": "export metadata",
       "translation": "Metadaten exportieren"
@@ -5505,11 +5520,6 @@
       "id": "unknown board",
       "message": "unknown board",
       "translation": "unbekanntes Board"
-    },
-    {
-      "id": "unknown export kind",
-      "message": "unknown export kind",
-      "translation": "unbekannte Exportart"
     },
     {
       "id": "unknown file type",

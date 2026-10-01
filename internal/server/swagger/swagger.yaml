@@ -154,6 +154,13 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
+  export.StorageStats:
+    properties:
+      files:
+        type: integer
+      size:
+        type: integer
+    type: object
   files.BrokenLink:
     properties:
       sourceFile:
@@ -1615,6 +1622,24 @@ paths:
           schema:
             type: string
       summary: Start the pdf export
+      tags:
+      - exports
+  /api/exports/stats:
+    get:
+      description: Returns the file count and total size of the export folder
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/export.StorageStats'
+        "500":
+          description: failed to get storage stats
+          schema:
+            type: string
+      summary: Get export folder storage statistics
       tags:
       - exports
   /api/files/autocomplete:

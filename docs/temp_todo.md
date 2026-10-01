@@ -17,8 +17,6 @@
   - remove emtpy folders
 - fixes
 - chore
-  - add a storage statistic for the export folder to the admin export/import panel
-  - add streaming to export?
   - .txt conversion: in the markdown kind, every .txt is treated as DokuWiki and converted, including ordinary text files. The old handler probably did the same, but it’s worth confirming.
 - test
   - remote git in mobile

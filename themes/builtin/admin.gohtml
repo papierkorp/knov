@@ -108,7 +108,7 @@
                         <a href="/api/exports/markdown" class="btn-secondary"><i class="fa fa-file-zipper"></i> {{T "export all files (DokuWiki to Markdown)"}}</a>
                     </div>
                     {{/* the pdf export runs as a job, errors (e.g. 409 while it runs) only toast so they don't replace its polling spinner */}}
-                    <div class="export-actions">
+                    <div class="export-actions" id="export-pdf">
                         <button class="btn-secondary" hx-post="/api/exports/pdf"
                                 hx-target="#export-pdf-status" hx-swap="innerHTML"
                                 hx-status:4xx="swap:none" hx-status:5xx="swap:none"
@@ -117,6 +117,8 @@
                         </button>
                         <span id="export-pdf-status">{{.Data.ExportStatus}}</span>
                     </div>
+                    {{/* reloads after every request of the pdf export row (start, status polling, delete) */}}
+                    <div id="export-stats" hx-get="/api/exports/stats" hx-trigger="load, htmx:after:request from:#export-pdf">{{T "loading..."}}</div>
                 </div>
             </section>
             <section class="settings-section">

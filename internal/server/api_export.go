@@ -11,6 +11,7 @@ import (
 	"knov/internal/export"
 	"knov/internal/job"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/translation"
 )
 
@@ -108,4 +109,21 @@ func handleAPIDeleteExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeResponse(w, r, map[string]string{"kind": export.KindPDF}, "")
+}
+
+// @Summary Get export folder storage statistics
+// @Description Returns the file count and total size of the export folder
+// @Tags exports
+// @Produce json,html
+// @Success 200 {object} export.StorageStats
+// @Failure 500 {string} string "failed to get storage stats"
+// @Router /api/exports/stats [get]
+func handleAPIExportStats(w http.ResponseWriter, r *http.Request) {
+	stats, err := export.Stats()
+	if err != nil {
+		logging.LogError(logging.KeyExport, "failed to get export storage stats: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get storage stats"))
+		return
+	}
+	writeResponse(w, r, stats, render.RenderExportStats(configmanager.GetLanguage(), stats))
 }

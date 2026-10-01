@@ -61,6 +61,33 @@ func Remove() error {
 	return nil
 }
 
+// StorageStats holds the file count and total size of the export folder.
+type StorageStats struct {
+	Files int   `json:"files"`
+	Size  int64 `json:"size"`
+}
+
+// Stats returns the storage used by the export folder (incl. temp files of a running export), a
+// missing folder counts as empty.
+func Stats() (StorageStats, error) {
+	var stats StorageStats
+	err := filepath.WalkDir(dir(), func(_ string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() {
+			var info os.FileInfo
+			if info, err = d.Info(); err == nil {
+				stats.Files++
+				stats.Size += info.Size()
+			}
+		}
+		// e.g. a temp file removed while walking
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	})
+	return stats, err
+}
+
 // Create creates the pdf archive and returns how many files were skipped because they failed to
 // convert. It is written to a temp file first, so a failed or canceled run keeps the previous
 // archive. report receives the progress, ctx cancels between files. Callers must not run Create
