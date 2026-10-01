@@ -224,6 +224,12 @@ func NewRouter() *chi.Mux {
 		r.Get("/jobs/{id}", handleAPIGetJobStatus)
 		r.Delete("/jobs/{id}", handleAPIDeleteJob)
 
+		r.Post("/exports/pdf", handleAPIStartExport)
+		r.Get("/exports/files", handleAPIExportFiles)
+		r.Get("/exports/markdown", handleAPIExportMarkdown)
+		r.Get("/exports/pdf", handleAPIDownloadPDFExport)
+		r.Delete("/exports/pdf", handleAPIDeleteExport)
+
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- SETTINGS ----------------------------------------
 		// ----------------------------------------------------------------------------------------
@@ -294,8 +300,6 @@ func NewRouter() *chi.Mux {
 			r.Get("/headers", handleAPIFilesHeaders)
 			r.Get("/export/markdown", handleAPIExportToMarkdown)
 			r.Get("/export/pdf", handleAPIExportToPDF)
-			r.Post("/export/zip", handleAPIExportAllFiles)
-			r.Post("/export/markdown-converted", handleAPIExportAllFilesWithMarkdownConversion)
 
 			// file version routes
 			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)

@@ -6,7 +6,10 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
+	"knov/internal/export"
+	"knov/internal/job"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/thememanager"
 )
 
@@ -43,6 +46,12 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewSettingsTemplateData()
 	data.Title = "Admin"
+	// a running pdf export keeps polling after a page reload, otherwise show its archive
+	if id := job.RunningExport(); id != "" {
+		_, data.Data.ExportStatus = renderRunningJob(configmanager.GetLanguage(), id, job.JobTypeExport)
+	} else if export.Available() {
+		data.Data.ExportStatus = render.RenderExportDone(configmanager.GetLanguage())
+	}
 
 	err := tm.Render(w, "admin", data)
 	if err != nil {

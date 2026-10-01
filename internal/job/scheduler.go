@@ -50,6 +50,7 @@ var (
 	deleteFolderMu       sync.Mutex
 	moveFolderMu         sync.Mutex
 	bulkUpdateMetadataMu sync.Mutex
+	exportMu             sync.Mutex
 
 	// backupMu also guards restore, since restore starts with a full backup - the two must not
 	// run concurrently, or two same-second-precision set names could race on the same target.

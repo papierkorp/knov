@@ -13,9 +13,14 @@
   - system/structure for startup warnings
   - tournament editor
   - encrypt single files/folders
-  - in admin export/import add a export to pdf
+  - reset/copy todo list
+  - remove emtpy folders
 - fixes
 - chore
+  - no feedback on filemove
+  - add a storage statistic for the export folder to the admin export/import panel
+  - add streaming to export?
+  - .txt conversion: in the markdown kind, every .txt is treated as DokuWiki and converted, including ordinary text files. The old handler probably did the same, but it’s worth confirming.
 - test
   - remote git in mobile
   - does the import/export of settings still work?
@@ -63,6 +68,7 @@ what do you think is the root of the problem and could fix this mess dont make a
 ```bash
 give me an overview of the current git changes, dont make any changes yet just give me your opinion
 
+- explain the feature like im five
 - does it use the same principles as the rest of the application/packages?
 - is it easy to understand code without overcomplicating it? it should be a easy to follow solution
 - is there overengineering going on which could easily be simplified?
@@ -70,6 +76,7 @@ give me an overview of the current git changes, dont make any changes yet just g
 - if you could refactor it - are there better ways to implement it?
 - are there some serious problems with the current solution?
 - what is it doing exactly?
+- keep the anwser small, precise and conicse
 ```
 
 ## analyze

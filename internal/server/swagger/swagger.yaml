@@ -1529,6 +1529,94 @@ paths:
       summary: Save table data
       tags:
       - editor
+  /api/exports/files:
+    get:
+      description: Streams all files of the data folder as a zip archive
+      produces:
+      - application/zip
+      responses:
+        "200":
+          description: zip archive
+          schema:
+            type: file
+      summary: Download all files
+      tags:
+      - exports
+  /api/exports/markdown:
+    get:
+      description: Streams all files of the data folder as a zip archive, dokuwiki
+        files converted to markdown
+      produces:
+      - application/zip
+      responses:
+        "200":
+          description: zip archive
+          schema:
+            type: file
+      summary: Download all files converted to markdown
+      tags:
+      - exports
+  /api/exports/pdf:
+    delete:
+      description: Deletes the pdf export zip archive to free its storage space
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: deleted export kind
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: failed to delete export
+          schema:
+            type: string
+      summary: Delete the pdf export
+      tags:
+      - exports
+    get:
+      description: Downloads the zip archive created by the last POST /api/exports/pdf
+        run
+      produces:
+      - application/zip
+      responses:
+        "200":
+          description: zip archive
+          schema:
+            type: file
+        "404":
+          description: no pdf export available
+          schema:
+            type: string
+      summary: Download the pdf export
+      tags:
+      - exports
+    post:
+      description: |-
+        Starts rendering every markdown file and book to pdf into a zip archive in the
+        background. Returns a polling status fragment - see GET /api/jobs/{id}. Download the
+        finished archive via GET /api/exports/pdf.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jobStorage.JobRecord'
+        "409":
+          description: an export is already running
+          schema:
+            type: string
+        "500":
+          description: failed to start export
+          schema:
+            type: string
+      summary: Start the pdf export
+      tags:
+      - exports
   /api/files/autocomplete:
     get:
       description: Returns files matching a query string for use in wiki link autocomplete
@@ -1730,26 +1818,6 @@ paths:
       summary: Export file to markdown
       tags:
       - files
-  /api/files/export/markdown-converted:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: Export all files from data directory as a zip archive, converting
-        dokuwiki files to markdown
-      produces:
-      - application/zip
-      responses:
-        "200":
-          description: zip archive
-          schema:
-            type: file
-        "500":
-          description: export failed
-          schema:
-            type: string
-      summary: Export all files with dokuwiki to markdown conversion
-      tags:
-      - files
   /api/files/export/pdf:
     get:
       description: Renders a file's markdown source (or one section of it, or a `.book`
@@ -1780,25 +1848,6 @@ paths:
           schema:
             type: string
       summary: Export file to pdf
-      tags:
-      - files
-  /api/files/export/zip:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: Export all files from data directory as a zip archive
-      produces:
-      - application/zip
-      responses:
-        "200":
-          description: zip archive
-          schema:
-            type: file
-        "500":
-          description: export failed
-          schema:
-            type: string
-      summary: Export all files as zip
       tags:
       - files
   /api/files/folder:

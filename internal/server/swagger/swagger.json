@@ -1368,6 +1368,131 @@
                 }
             }
         },
+        "/api/exports/files": {
+            "get": {
+                "description": "Streams all files of the data folder as a zip archive",
+                "produces": [
+                    "application/zip"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Download all files",
+                "responses": {
+                    "200": {
+                        "description": "zip archive",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/exports/markdown": {
+            "get": {
+                "description": "Streams all files of the data folder as a zip archive, dokuwiki files converted to markdown",
+                "produces": [
+                    "application/zip"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Download all files converted to markdown",
+                "responses": {
+                    "200": {
+                        "description": "zip archive",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/exports/pdf": {
+            "get": {
+                "description": "Downloads the zip archive created by the last POST /api/exports/pdf run",
+                "produces": [
+                    "application/zip"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Download the pdf export",
+                "responses": {
+                    "200": {
+                        "description": "zip archive",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "no pdf export available",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Starts rendering every markdown file and book to pdf into a zip archive in the\nbackground. Returns a polling status fragment - see GET /api/jobs/{id}. Download the\nfinished archive via GET /api/exports/pdf.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Start the pdf export",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "409": {
+                        "description": "an export is already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to start export",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the pdf export zip archive to free its storage space",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Delete the pdf export",
+                "responses": {
+                    "200": {
+                        "description": "deleted export kind",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to delete export",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/autocomplete": {
             "get": {
                 "description": "Returns files matching a query string for use in wiki link autocomplete",
@@ -1665,35 +1790,6 @@
                 }
             }
         },
-        "/api/files/export/markdown-converted": {
-            "post": {
-                "description": "Export all files from data directory as a zip archive, converting dokuwiki files to markdown",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/zip"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Export all files with dokuwiki to markdown conversion",
-                "responses": {
-                    "200": {
-                        "description": "zip archive",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "500": {
-                        "description": "export failed",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/files/export/pdf": {
             "get": {
                 "description": "Renders a file's markdown source (or one section of it, or a `.book` file's composed document) to a downloadable pdf",
@@ -1730,35 +1826,6 @@
                         "description": "invalid request",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "export failed",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/files/export/zip": {
-            "post": {
-                "description": "Export all files from data directory as a zip archive",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/zip"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Export all files as zip",
-                "responses": {
-                    "200": {
-                        "description": "zip archive",
-                        "schema": {
-                            "type": "file"
                         }
                     },
                     "500": {

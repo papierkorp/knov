@@ -24,6 +24,7 @@ const (
 	JobTypeFullRebuild     = "metadata-full-rebuild"
 	JobTypeRestore         = "restore"
 	JobTypeFileSync        = "file-sync"
+	JobTypeExport          = "export"
 )
 
 // resumers maps a resumable job's Name() to a constructor that rebuilds it (and returns its
@@ -74,7 +75,7 @@ var resumers = map[string]func(args string) (Job, *sync.Mutex, error){
 // (file-sync) or are unsafe to abort mid-run (restore).
 func IsCancellable(jobType string) bool {
 	switch jobType {
-	case JobTypeBulkDeleteFiles, JobTypeDeleteFolder, JobTypeFullRebuild:
+	case JobTypeBulkDeleteFiles, JobTypeDeleteFolder, JobTypeFullRebuild, JobTypeExport:
 		return true
 	default:
 		return false

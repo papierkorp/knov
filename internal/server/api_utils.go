@@ -54,18 +54,23 @@ func setAttachmentFilename(w http.ResponseWriter, filename string) {
 
 // respondJobStarted writes the initial htmx polling-spinner response for a just-started async
 // job (job.StartAsync), collapsing the identical record-build + render block every StartAsync
-// handler otherwise repeats. Delete-folder is the lone browse-tree caller, whose hx-target is a
-// tree row rather than a bare span, so its span is wrapped in <li>.
+// handler otherwise repeats.
 func respondJobStarted(w http.ResponseWriter, r *http.Request, id, jobType string) {
-	lang := configmanager.GetLanguage()
+	rec, html := renderRunningJob(configmanager.GetLanguage(), id, jobType)
+	writeResponse(w, r, rec, html)
+}
+
+// renderRunningJob builds the record and polling spinner of the running async job id, e.g. for
+// a page that shows a job still running after a reload. Delete-folder is the lone browse-tree
+// caller, whose hx-target is a tree row rather than a bare span, so its span is wrapped in <li>.
+func renderRunningJob(lang, id, jobType string) (*jobStorage.JobRecord, string) {
 	rec := &jobStorage.JobRecord{ID: id, Type: jobType, Status: jobStorage.StatusRunning}
 	cancellable := job.IsCancellable(jobType)
 	progress := job.GetProgress(id)
 	if jobType == job.JobTypeDeleteFolder {
-		writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec, cancellable, progress))
-		return
+		return rec, render.RenderJobStatusListItem(lang, id, rec, cancellable, progress)
 	}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, cancellable, progress))
+	return rec, render.RenderJobStatus(lang, id, rec, cancellable, progress)
 }
 
 // writeAPIError writes an honest status-coded error response whose body honours the

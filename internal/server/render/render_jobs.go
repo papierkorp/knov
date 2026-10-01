@@ -50,3 +50,12 @@ func RenderJobStatus(lang, id string, rec *jobStorage.JobRecord, cancellable boo
 func RenderJobStatusListItem(lang, id string, rec *jobStorage.JobRecord, cancellable bool, progress job.ProgressSnapshot) string {
 	return "<li>" + RenderJobStatus(lang, id, rec, cancellable, progress) + "</li>"
 }
+
+// RenderExportDone renders the existing pdf export archive: a link to download it and a button to
+// delete it. Shown on the admin page and after the export job finished.
+func RenderExportDone(lang string) string {
+	return fmt.Sprintf(`<span class="job-status-done"><a href="/api/exports/pdf" class="btn-secondary"><i class="fa fa-download"></i> %s</a> <button type="button" class="btn-secondary" hx-delete="/api/exports/pdf" hx-confirm="%s" hx-target="closest span" hx-swap="outerHTML" hx-status:4xx="swap:none" hx-status:5xx="swap:none"><i class="fa fa-trash"></i> %s</button></span>`,
+		template.HTMLEscapeString(translation.SprintfForRequest(lang, "download export")),
+		template.HTMLEscapeString(translation.SprintfForRequest(lang, "delete export?")),
+		template.HTMLEscapeString(translation.SprintfForRequest(lang, "delete export")))
+}

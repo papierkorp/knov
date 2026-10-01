@@ -1912,6 +1912,43 @@ blockquote p blockquote p,
   margin-top: 0;
 }
 
+/* admin export/import */
+#component-export-import .setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#component-export-import strong {
+  margin-top: 6px;
+}
+
+#component-export-import .export-actions,
+#component-export-import .export-actions form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+/* the upload label is a .setting-item label (column flex with margin) */
+#component-export-import .btn-secondary {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: inherit;
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+#component-export-import .form-select {
+  width: auto;
+  padding: 0 8px;
+  font-size: 0.9em;
+}
+
 /* wide sections in admin grid */
 .page-admin .settings-section-wide {
   grid-column: 1 / -1;

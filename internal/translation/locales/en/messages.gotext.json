@@ -1002,13 +1002,13 @@
       "translation": ""
     },
     {
-      "id": "Move {Integer} files to the media folder and update all links?",
-      "message": "Move {Integer} files to the media folder and update all links?",
+      "id": "Move Selected to Media Folder",
+      "message": "Move Selected to Media Folder",
       "translation": ""
     },
     {
-      "id": "Move to Media Folder",
-      "message": "Move to Media Folder",
+      "id": "Move the selected files to the media folder and update all links?",
+      "message": "Move the selected files to the media folder and update all links?",
       "translation": ""
     },
     {
@@ -1462,6 +1462,11 @@
       "translation": ""
     },
     {
+      "id": "The export is first created on the server and needs up to twice as much free storage as the exported data while a previous export is replaced. It is kept until you delete it or start a new export. Continue?",
+      "message": "The export is first created on the server and needs up to twice as much free storage as the exported data while a previous export is replaced. It is kept until you delete it or start a new export. Continue?",
+      "translation": ""
+    },
+    {
       "id": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
       "message": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
       "translation": ""
@@ -1827,6 +1832,11 @@
       "translation": ""
     },
     {
+      "id": "an export is already running",
+      "message": "an export is already running",
+      "translation": ""
+    },
+    {
       "id": "ancestor filter status {Arg_1} is not in the status list",
       "message": "ancestor filter status {Arg_1} is not in the status list",
       "translation": ""
@@ -1997,8 +2007,18 @@
       "translation": ""
     },
     {
+      "id": "by content",
+      "message": "by content",
+      "translation": ""
+    },
+    {
       "id": "by day",
       "message": "by day",
+      "translation": ""
+    },
+    {
+      "id": "by extension",
+      "message": "by extension",
       "translation": ""
     },
     {
@@ -2412,6 +2432,16 @@
       "translation": ""
     },
     {
+      "id": "delete export",
+      "message": "delete export",
+      "translation": ""
+    },
+    {
+      "id": "delete export?",
+      "message": "delete export?",
+      "translation": ""
+    },
+    {
       "id": "delete file",
       "message": "delete file",
       "translation": ""
@@ -2454,6 +2484,11 @@
     {
       "id": "details",
       "message": "details",
+      "translation": ""
+    },
+    {
+      "id": "detected as",
+      "message": "detected as",
       "translation": ""
     },
     {
@@ -2539,6 +2574,11 @@
     {
       "id": "download csv",
       "message": "download csv",
+      "translation": ""
+    },
+    {
+      "id": "download export",
+      "message": "download export",
       "translation": ""
     },
     {
@@ -2742,6 +2782,11 @@
       "translation": ""
     },
     {
+      "id": "export all files as pdf",
+      "message": "export all files as pdf",
+      "translation": ""
+    },
+    {
       "id": "export composed markdown",
       "message": "export composed markdown",
       "translation": ""
@@ -2754,6 +2799,11 @@
     {
       "id": "export failed",
       "message": "export failed",
+      "translation": ""
+    },
+    {
+      "id": "export finished",
+      "message": "export finished",
       "translation": ""
     },
     {
@@ -2812,6 +2862,11 @@
       "translation": ""
     },
     {
+      "id": "failed to delete export",
+      "message": "failed to delete export",
+      "translation": ""
+    },
+    {
       "id": "failed to delete file",
       "message": "failed to delete file",
       "translation": ""
@@ -2844,11 +2899,6 @@
     {
       "id": "failed to encode json",
       "message": "failed to encode json",
-      "translation": ""
-    },
-    {
-      "id": "failed to export files",
-      "message": "failed to export files",
       "translation": ""
     },
     {
@@ -3194,6 +3244,11 @@
     {
       "id": "failed to search git history",
       "message": "failed to search git history",
+      "translation": ""
+    },
+    {
+      "id": "failed to start export",
+      "message": "failed to start export",
       "translation": ""
     },
     {
@@ -4387,6 +4442,11 @@
       "translation": ""
     },
     {
+      "id": "no export available",
+      "message": "no export available",
+      "translation": ""
+    },
+    {
       "id": "no file selected",
       "message": "no file selected",
       "translation": ""
@@ -5444,6 +5504,11 @@
     {
       "id": "unknown board",
       "message": "unknown board",
+      "translation": ""
+    },
+    {
+      "id": "unknown export kind",
+      "message": "unknown export kind",
       "translation": ""
     },
     {

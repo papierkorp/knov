@@ -2,8 +2,6 @@
 package server
 
 import (
-	"archive/zip"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"knov/internal/book"
 	"knov/internal/configmanager"
@@ -590,184 +587,6 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(markdown))
 
 	logging.LogInfo(logging.KeyApp, "exported file to markdown: %s", filePath)
-}
-
-// @Summary Export all files as zip
-// @Description Export all files from data directory as a zip archive
-// @Tags files
-// @Accept application/x-www-form-urlencoded
-// @Produce application/zip
-// @Success 200 {file} file "zip archive"
-// @Failure 500 {string} string "export failed"
-// @Router /api/files/export/zip [post]
-func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
-	dataPath := configmanager.GetAppConfig().DataPath
-
-	// create zip in memory
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-
-	// walk through data directory
-	err := filepath.Walk(dataPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// skip .git directory
-		if info.IsDir() && info.Name() == ".git" {
-			return filepath.SkipDir
-		}
-
-		// skip directories
-		if info.IsDir() {
-			return nil
-		}
-
-		// get relative path
-		relPath, err := filepath.Rel(dataPath, path)
-		if err != nil {
-			return err
-		}
-
-		// read file content
-		content, err := os.ReadFile(path)
-		if err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to read file %s: %v", path, err)
-			return nil // skip this file but continue
-		}
-
-		// add file to zip
-		zipFile, err := zipWriter.Create(relPath)
-		if err != nil {
-			return err
-		}
-
-		_, err = zipFile.Write(content)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
-		return
-	}
-
-	// close zip writer
-	err = zipWriter.Close()
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
-		return
-	}
-
-	// prepare download
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	filename := fmt.Sprintf("knov-export_%s.zip", timestamp)
-
-	w.Header().Set("Content-Type", "application/zip")
-	setAttachmentFilename(w, filename)
-	w.Write(buf.Bytes())
-
-	logging.LogInfo(logging.KeyApp, "exported all files as zip: %s", filename)
-}
-
-// @Summary Export all files with dokuwiki to markdown conversion
-// @Description Export all files from data directory as a zip archive, converting dokuwiki files to markdown
-// @Tags files
-// @Accept application/x-www-form-urlencoded
-// @Produce application/zip
-// @Success 200 {file} file "zip archive"
-// @Failure 500 {string} string "export failed"
-// @Router /api/files/export/markdown-converted [post]
-func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *http.Request) {
-	dataPath := configmanager.GetAppConfig().DataPath
-
-	// create zip in memory
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-
-	logging.LogInfo(logging.KeyDokuwikiExport, "export started: %s", dataPath)
-
-	// walk through data directory
-	err := filepath.Walk(dataPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// skip .git directory
-		if info.IsDir() && info.Name() == ".git" {
-			return filepath.SkipDir
-		}
-
-		// skip directories
-		if info.IsDir() {
-			return nil
-		}
-
-		// get relative path
-		relPath, err := filepath.Rel(dataPath, path)
-		if err != nil {
-			return err
-		}
-
-		// read file content
-		content, err := os.ReadFile(path)
-		if err != nil {
-			logging.LogWarning(logging.KeyDokuwikiExport, "skip (read error): %s — %v", relPath, err)
-			return nil // skip this file but continue
-		}
-
-		// convert dokuwiki files to markdown
-		ext := strings.ToLower(filepath.Ext(path))
-		if ext == ".dokuwiki" || ext == ".txt" {
-			markdown := dokuwikiconverter.NewWithFilePath(relPath).ConvertToMarkdown(string(content))
-			content = []byte(markdown)
-			oldRelPath := relPath
-			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
-			logging.LogDebug(logging.KeyDokuwikiExport, "converted: %s -> %s", oldRelPath, relPath)
-		}
-
-		// add file to zip
-		zipFile, err := zipWriter.Create(relPath)
-		if err != nil {
-			return err
-		}
-
-		_, err = zipFile.Write(content)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
-		return
-	}
-
-	// close zip writer
-	err = zipWriter.Close()
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
-		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"))
-		return
-	}
-
-	// prepare download
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	filename := fmt.Sprintf("knov-export-markdown_%s.zip", timestamp)
-
-	w.Header().Set("Content-Type", "application/zip")
-	setAttachmentFilename(w, filename)
-	w.Write(buf.Bytes())
-
-	logging.LogInfo(logging.KeyApp, "exported all files as zip with markdown conversion: %s", filename)
 }
 
 // @Summary Browse files by single metadata field

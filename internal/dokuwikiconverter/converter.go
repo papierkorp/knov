@@ -1,10 +1,14 @@
 package dokuwikiconverter
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"path/filepath"
 	"regexp"
 	"strings"
 
+	"knov/internal/logging"
 	"knov/internal/pathutils"
 )
 
@@ -12,6 +16,24 @@ type Converter struct {
 	// fileDir is the directory of the source file being converted, used to resolve
 	// relative media paths (e.g. {{image.png}} → /media/<fileDir>/image.png)
 	fileDir string
+}
+
+// ConvertExportEntry converts a dokuwiki file (.dokuwiki, .txt) of an export to markdown
+// and renames it to .md - other files are passed through unchanged (still streamed). Used by the
+// dokuwiki->markdown export to rewrite each entry of files.ExportData.
+func ConvertExportEntry(relPath string, r io.Reader) (string, io.Reader, error) {
+	ext := strings.ToLower(filepath.Ext(relPath))
+	if ext != ".dokuwiki" && ext != ".txt" {
+		return relPath, r, nil
+	}
+	content, err := io.ReadAll(r)
+	if err != nil {
+		return "", nil, err
+	}
+	markdown := NewWithFilePath(relPath).ConvertToMarkdown(string(content))
+	newPath := strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
+	logging.LogDebug(logging.KeyExport, "dokuwiki export: converted: %s -> %s", relPath, newPath)
+	return newPath, bytes.NewReader([]byte(markdown)), nil
 }
 
 func New() *Converter {

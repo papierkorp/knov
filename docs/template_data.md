@@ -45,6 +45,7 @@ See [docs/create_your_own_theme.md](create_your_own_theme.md) for how theme temp
 | ThemeSettingsSchema | `map[string]ThemeSetting` | the active theme's declared setting definitions (type, default, options) |
 | AppConfig | `configmanager.AppConfig` | full app configuration, shown on the admin environment panel |
 | CustomFaviconExt | `string` | file extension of the user's uploaded custom favicon, if any |
+| ExportStatus | `string` | rendered running pdf export spinner or download/delete buttons of its archive (admin page) |
 
 ## FileViewData
 

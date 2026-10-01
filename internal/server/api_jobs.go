@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"knov/internal/configmanager"
+	"knov/internal/export"
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
@@ -75,6 +76,10 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 		// itself (see #view-kanban-board-wrap's hx-trigger in kanban.gohtml), which is
 		// feedback enough.
 		w.Header().Set("HX-Trigger", "kanban-sync-done")
+	case rec.Status == jobStorage.StatusDone && rec.Type == job.JobTypeExport:
+		// no auto-download via HX-Redirect - it cancels the swap, so the polling spinner would
+		// stay and re-trigger the download every second. the download link is appended below.
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "export finished"))
 	case rec.Status == jobStorage.StatusDone:
 		// generic fallback for any future StartAsync job type not special-cased above.
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "done"))
@@ -98,7 +103,12 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(lang, "job failed: %s", rec.Error))
 	}
 
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type), job.GetProgress(id)))
+	html := render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type), job.GetProgress(id))
+	// a finished, canceled or failed export still has an archive (new or previous) to download
+	if rec.Type == job.JobTypeExport && rec.Status != jobStorage.StatusRunning && export.Available() {
+		html += render.RenderExportDone(lang)
+	}
+	writeResponse(w, r, rec, html)
 }
 
 // @Summary Cancel a running async job

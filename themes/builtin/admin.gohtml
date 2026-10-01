@@ -75,49 +75,47 @@
                     </button>
                 </div>
             </section>
-            <section class="settings-section">
+            <section class="settings-section" id="component-export-import">
                 <h2>{{T "Export / Import"}}</h2>
                 <div class="setting-item">
                     <div class="help-text">{{T "export settings or data for backup and migration, or import a previously exported settings file"}}</div>
-                    <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
-                        <div>
-                            <strong>{{T "Settings"}}</strong>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-                                <a href="/api/config/export" download="knov-settings.json" class="btn-secondary">
-                                    <i class="fa fa-download"></i> {{T "export settings"}}
-                                </a>
-                                <form hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none" style="display:flex;">
-                                    <label for="import-settings-file" class="btn-secondary" style="cursor:pointer;margin:0;">
-                                        <i class="fa fa-upload"></i> {{T "import settings"}}
-                                    </label>
-                                    <input type="file" id="import-settings-file" name="file" accept=".json" required
-                                           style="display:none;" onchange="this.closest('form').requestSubmit()"/>
-                                </form>
-                            </div>
-                        </div>
-                        <div>
-                            <strong>{{T "Metadata"}}</strong>
-                            <form action="/api/metadata/export" method="post" style="display:flex;gap:6px;align-items:center;margin-top:6px;">
-                                <select name="format" id="export-format" class="form-select" style="width:auto;">
-                                    <option value="json">JSON</option>
-                                    <option value="csv">CSV</option>
-                                </select>
-                                <button type="submit" class="btn-secondary">
-                                    <i class="fa fa-download"></i> {{T "export metadata"}}
-                                </button>
-                            </form>
-                        </div>
-                        <div>
-                            <strong>{{T "Files"}}</strong>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-                                <form action="/api/files/export/zip" method="post">
-                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files"}}</button>
-                                </form>
-                                <form action="/api/files/export/markdown-converted" method="post">
-                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files (DokuWiki to Markdown)"}}</button>
-                                </form>
-                            </div>
-                        </div>
+                    <strong>{{T "Settings"}}</strong>
+                    <div class="export-actions">
+                        <a href="/api/config/export" download="knov-settings.json" class="btn-secondary">
+                            <i class="fa fa-download"></i> {{T "export settings"}}
+                        </a>
+                        <form hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none">
+                            <label for="import-settings-file" class="btn-secondary">
+                                <i class="fa fa-upload"></i> {{T "import settings"}}
+                            </label>
+                            <input type="file" id="import-settings-file" name="file" accept=".json" required
+                                   hidden onchange="this.closest('form').requestSubmit()"/>
+                        </form>
+                    </div>
+                    <strong>{{T "Metadata"}}</strong>
+                    <form action="/api/metadata/export" method="post" class="export-actions">
+                        <select name="format" id="export-format" class="form-select">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                        <button type="submit" class="btn-secondary">
+                            <i class="fa fa-download"></i> {{T "export metadata"}}
+                        </button>
+                    </form>
+                    <strong>{{T "Files"}}</strong>
+                    <div class="export-actions">
+                        <a href="/api/exports/files" class="btn-secondary"><i class="fa fa-file-zipper"></i> {{T "export all files"}}</a>
+                        <a href="/api/exports/markdown" class="btn-secondary"><i class="fa fa-file-zipper"></i> {{T "export all files (DokuWiki to Markdown)"}}</a>
+                    </div>
+                    {{/* the pdf export runs as a job, errors (e.g. 409 while it runs) only toast so they don't replace its polling spinner */}}
+                    <div class="export-actions">
+                        <button class="btn-secondary" hx-post="/api/exports/pdf"
+                                hx-target="#export-pdf-status" hx-swap="innerHTML"
+                                hx-status:4xx="swap:none" hx-status:5xx="swap:none"
+                                hx-confirm="{{T "The export is first created on the server and needs up to twice as much free storage as the exported data while a previous export is replaced. It is kept until you delete it or start a new export. Continue?"}}">
+                            <i class="fa fa-file-pdf"></i> {{T "export all files as pdf"}}
+                        </button>
+                        <span id="export-pdf-status">{{.Data.ExportStatus}}</span>
                     </div>
                 </div>
             </section>
