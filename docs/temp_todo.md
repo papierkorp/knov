@@ -14,10 +14,9 @@
   - tournament editor
   - encrypt single files/folders
   - reset/copy todo list
-  - remove emtpy folders
+  - 
 - fixes
 - chore
-  - .txt conversion: in the markdown kind, every .txt is treated as DokuWiki and converted, including ordinary text files. The old handler probably did the same, but it’s worth confirming.
 - test
   - remote git in mobile
   - does the import/export of settings still work?
@@ -73,6 +72,7 @@ give me an overview of the current git changes, dont make any changes yet just g
 - if you could refactor it - are there better ways to implement it?
 - are there some serious problems with the current solution?
 - what is it doing exactly?
+- does it fit in the app?
 - keep the anwser small, precise and conicse
 ```
 

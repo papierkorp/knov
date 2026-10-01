@@ -532,6 +532,12 @@ var (
 		Label: "Home Dashboard",
 		Desc:  "set a dashboard ID to use as the home page",
 	})
+	RemoveEmptyFolders = register(&BoolSetting{
+		key: "removeEmptyFolders", Default: false,
+		Section: SectionGeneral, Group: GroupNone,
+		Label: "Remove Empty Folders",
+		Desc:  "periodically delete empty folders in the docs folder via the file sync cronjob (except dot folders, kanban board and status folders and folders changed in the last 10 minutes), including empty folders created on purpose",
+	})
 	// ── Appearance ────────────────────────────────────────────────────────────
 	DarkMode = register(&BoolSetting{
 		key: "darkMode", Default: true,

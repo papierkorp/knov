@@ -68,7 +68,16 @@ func (fs *filesystemStorage) WriteFile(path string, data []byte, perm os.FileMod
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, perm)
+	err := os.WriteFile(path, data, perm)
+	// a concurrent empty folder cleanup may remove dir between MkdirAll and WriteFile -
+	// recreate it and retry once
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		err = os.WriteFile(path, data, perm)
+	}
+	return err
 }
 
 // DeleteFile removes a file

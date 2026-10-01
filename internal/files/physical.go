@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 )
@@ -170,6 +173,66 @@ func RemoveEmptyDirTree(fullPath string) error {
 		}
 	}
 	return removeDirPhysical(fullPath)
+}
+
+// emptyFolderGracePeriod keeps recently modified folders out of RemoveEmptyFolders, so a folder
+// that was just created (by a git pull, a file write or the user) isn't removed before its
+// content lands.
+const emptyFolderGracePeriod = 10 * time.Minute
+
+// RemoveEmptyFolders removes every empty folder below the docs root bottom-up, keeping the
+// root itself, dot folders (e.g. syncthing's .stfolder marker), configured kanban board folders
+// (otherwise flagged as missing) and their status folders, and folders modified within
+// emptyFolderGracePeriod. A folder that gets content between the read and the removal just
+// survives, and an unreadable folder is skipped (its error returned) without stopping the rest of
+// the walk. Unlike RemoveEmptyDirTree, which refuses a non-empty tree, this leaves non-empty
+// folders alone.
+func RemoveEmptyFolders() error {
+	var keep []string
+	for _, b := range configmanager.GetKanbanBoards() {
+		keep = append(keep, pathutils.ToDocsPath(b.FolderPath))
+	}
+	_, err := removeEmptySubdirs(pathutils.DocsRoot(), time.Now().Add(-emptyFolderGracePeriod), keep)
+	return err
+}
+
+// removeEmptySubdirs prunes the empty subdirectories of dir last modified before cutoff (except
+// the ones in keep and their direct children) and reports whether dir is empty afterwards.
+func removeEmptySubdirs(dir string, cutoff time.Time, keep []string) (bool, error) {
+	entries, err := os.ReadDir(dir)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	empty := true
+	var errs []error
+	for _, entry := range entries {
+		sub := filepath.Join(dir, entry.Name())
+		if !entry.IsDir() || strings.HasPrefix(entry.Name(), ".") {
+			empty = false
+			continue
+		}
+		// stat before pruning, since removing its children bumps the folder's mtime
+		info, err := entry.Info()
+		if err != nil {
+			errs = append(errs, err)
+			empty = false
+			continue
+		}
+		subEmpty, err := removeEmptySubdirs(sub, cutoff, keep)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if !subEmpty || info.ModTime().After(cutoff) || slices.Contains(keep, sub) || slices.Contains(keep, dir) {
+			empty = false
+		} else if err := removeDirPhysical(sub); err != nil {
+			logging.LogDebug(logging.KeyFileSync, "failed to remove empty folder %s: %v", sub, err)
+			empty = false
+		}
+	}
+	return empty, errors.Join(errs...)
 }
 
 // removeDirPhysical removes an already-confirmed-empty docs directory under the docs

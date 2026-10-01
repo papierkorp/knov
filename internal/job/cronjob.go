@@ -182,6 +182,12 @@ func (j *fileJob) Run(_ context.Context) error {
 		}
 	}
 
+	if configmanager.RemoveEmptyFolders.Get() {
+		if err := files.RemoveEmptyFolders(); err != nil {
+			logging.LogWarning(logging.KeyFileSync, "failed to remove empty folders: %v", err)
+		}
+	}
+
 	if err := files.RebuildAllCaches(); err != nil {
 		logging.LogError(logging.KeyFileSync, "failed to save system data to cache: %v", err)
 	}

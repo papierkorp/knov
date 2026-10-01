@@ -16,6 +16,7 @@ import (
 	"knov/internal/cacheStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
@@ -1115,11 +1116,7 @@ func RestoreFileToCommit(filePath, commit string) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
-		return err
-	}
-	err = os.WriteFile(filePath, []byte(content), 0644)
-	if err != nil {
+	if err := contentStorage.WriteFile(filePath, []byte(content), 0644); err != nil {
 		return err
 	}
 

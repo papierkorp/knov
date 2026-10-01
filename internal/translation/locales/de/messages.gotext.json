@@ -1177,6 +1177,11 @@
       "translation": "Release"
     },
     {
+      "id": "Remove Empty Folders",
+      "message": "Remove Empty Folders",
+      "translation": "Leere Ordner entfernen"
+    },
+    {
       "id": "Rename",
       "message": "Rename",
       "translation": "Umbenennen"
@@ -4780,6 +4785,11 @@
       "id": "path/to/folder",
       "message": "path/to/folder",
       "translation": "pfad/zu/ordner"
+    },
+    {
+      "id": "periodically delete empty folders in the docs folder via the file sync cronjob (except dot folders, kanban board and status folders and folders changed in the last 10 minutes), including empty folders created on purpose",
+      "message": "periodically delete empty folders in the docs folder via the file sync cronjob (except dot folders, kanban board and status folders and folders changed in the last 10 minutes), including empty folders created on purpose",
+      "translation": ""
     },
     {
       "id": "please save the document first to enable file uploads.",
