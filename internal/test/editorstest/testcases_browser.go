@@ -143,10 +143,10 @@ func caseCodeMirrorToolbarBold() test.CaseResult {
 	var before, after string
 	err = chromedp.Run(ctx,
 		chromedp.Navigate(harness.URL),
-		chromedp.WaitVisible(".cm-content"),
-		chromedp.Text(".cm-content", &before, chromedp.NodeVisible),
-		chromedp.Click(`#component-codemirror-toolbar button[data-cmd="bold"]`),
-		chromedp.Text(".cm-content", &after, chromedp.NodeVisible),
+		chromedp.WaitVisible(".cm-content", chromedp.ByQuery),
+		chromedp.Text(".cm-content", &before, chromedp.ByQuery),
+		chromedp.Click(`#component-codemirror-toolbar button[data-cmd="bold"]`, chromedp.ByQuery),
+		chromedp.Text(".cm-content", &after, chromedp.ByQuery),
 	)
 	if err != nil {
 		return errCase(name, err)

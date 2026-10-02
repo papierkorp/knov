@@ -1,6 +1,6 @@
 # unreleased
 
-_5 commits since last release_
+_6 commits since last release_
 
 ## upgrading from v1.1.1 to next release
 
@@ -12,4 +12,7 @@ _5 commits since last release_
 
 ## changes
 - add optional setting to remove empty folders in the file sync cronjob
+
+## features
+- live table of contents in the codemirror editor
 

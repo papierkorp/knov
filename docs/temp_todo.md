@@ -15,6 +15,7 @@
   - reset/copy todo list
 - fixes
 - chore
+  - can we highlight the current selected header in the sidebar toc? (maybe based on the url?)
   - The render package relies on builtin-theme DOM and functions (theme-agnostic rule). #fp-toc-nav, #fp-toc-filter, setupTocFolding and filterTocItems exist only in themes/builtin. The null and typeof guards make it a clean no-op in the example theme, so nothing breaks. But it’s another implicit render↔builtin dependency. There is precedent (fp-menu-wrap in render_editor_listtodo.go), so this is consistent, just not ideal.
 - test
   - remote git in mobile
