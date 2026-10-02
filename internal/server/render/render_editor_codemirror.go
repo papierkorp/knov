@@ -248,9 +248,9 @@ func jsCodeMirrorSaveShortcut() string {
 	});`
 }
 
-// jsCodeMirrorToc fills the file panel's TOC (#fp-toc-nav) from the editor's headings and
-// keeps it current while typing; clicking an entry jumps the editor to that heading. Hooks
-// in via cmOptions.onChange, which createCodeMirror reads on every update, so it survives
+// jsCodeMirrorToc dispatches a cancelable "knov:editor-toc" event with the editor's headings whenever
+// they change; themes listen for it to render their TOC, call preventDefault() once rendered (otherwise
+// it's re-sent on the next edit) and call detail.jump(idx) to move the editor to a heading. Hooks in via cmOptions.onChange, which createCodeMirror reads on every update, so it survives
 // reinitCodeMirror.
 func jsCodeMirrorToc() string {
 	return `
@@ -284,31 +284,21 @@ func jsCodeMirrorToc() string {
 		return items;
 	}
 	function updateCodeMirrorToc() {
-		var nav = document.getElementById('fp-toc-nav');
-		if (!nav) return;
 		var items = scanCodeMirrorHeadings();
-		// line numbers stay out of the signature so inserting lines doesn't rebuild the nav (and reset its folds)
+		// line numbers stay out of the signature so inserting lines doesn't rebuild the toc (and reset its folds)
 		var sig = JSON.stringify(items.map(function(h) { return [h.level, h.text]; }));
 		if (sig === tocSig) return;
-		tocSig = sig;
-		nav.innerHTML = '';
-		items.forEach(function(h, idx) {
-			var a = document.createElement('a');
-			a.href = '#';
-			a.dataset.level = h.level;
-			a.textContent = h.text;
-			a.addEventListener('click', function(e) {
-				e.preventDefault();
+		// only remember the signature once a theme rendered it, so a late listener still gets the toc
+		var handled = !document.dispatchEvent(new CustomEvent('knov:editor-toc', {cancelable: true, detail: {
+			items: items.map(function(h) { return {level: h.level, text: h.text}; }),
+			jump: function(idx) {
 				var cur = scanCodeMirrorHeadings()[idx];
 				if (!cur) return;
 				view.dispatch({selection: {anchor: view.state.doc.line(cur.line).from}, scrollIntoView: true});
 				view.focus();
-			});
-			nav.appendChild(a);
-		});
-		if (typeof setupTocFolding === 'function') setupTocFolding();
-		var filter = document.getElementById('fp-toc-filter');
-		if (filter && filter.value && typeof filterTocItems === 'function') filterTocItems(filter.value);
+			}
+		}}));
+		if (handled) tocSig = sig;
 	}
 	// chain any earlier onChange so other features can share the single hook
 	var prevOnChange = cmOptions.onChange;

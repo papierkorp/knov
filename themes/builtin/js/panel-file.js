@@ -381,6 +381,28 @@ function highlightTocFromHash() {
 }
 window.addEventListener("hashchange", highlightTocFromHash);
 
+// live toc from the codemirror editor (see render.jsCodeMirrorToc)
+document.addEventListener("knov:editor-toc", (e) => {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  e.preventDefault();
+  nav.innerHTML = "";
+  e.detail.items.forEach((h, idx) => {
+    const a = document.createElement("a");
+    a.href = "#";
+    a.dataset.level = h.level;
+    a.textContent = h.text;
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      e.detail.jump(idx);
+    });
+    nav.appendChild(a);
+  });
+  setupTocFolding();
+  const filter = document.getElementById("fp-toc-filter");
+  if (filter && filter.value) filterTocItems(filter.value);
+});
+
 // ================================================================
 // toc filter — client-side, no API call
 // matches stay in the DOM (just hidden) and auto-unfold their

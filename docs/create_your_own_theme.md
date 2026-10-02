@@ -38,6 +38,7 @@ On page load, htmx requests `/api/themes` and the server answers with ready-made
 - If `KNOV_MOTD` is set, a `<div id="site-motd">` banner is injected as the first element inside `<body>`, unconditionally — no template changes needed, and none possible: you can only hide it (`#site-motd { display: none }`), not reposition it. It's a fixed overlay at the very top of the viewport, so a full-viewport-height layout (like the builtin theme's `#wrapper`) will want `height: calc(100vh - var(--motd-height, 0px))` instead of a flat `100vh` to avoid it overlapping your own content — `--motd-height` is `0px` whenever no banner is shown, so this is a no-op otherwise.
 - Bundled and served offline from `/static/` — no CDNs: htmx, SortableJS, Font Awesome, and the editor libraries. You link the ones you use from `base.gohtml` yourself.
 - System pages (`/system/*` — changelog, logs, and so on) render their fixed content inside your `base.gohtml`; style them via the `.system-page*` classes.
+- The CodeMirror editor dispatches a cancelable `knov:editor-toc` event on `document` whenever its headings change. `event.detail.items` is a list of `{level, text}` and `event.detail.jump(index)` moves the editor to that heading. Call `event.preventDefault()` once you rendered it, otherwise it's sent again on the next edit. See `themes/builtin/js/panel-file.js` for an example.
 
 # Best Practices
 
