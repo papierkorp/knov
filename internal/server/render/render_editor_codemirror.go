@@ -133,10 +133,10 @@ func codeMirrorSettingsMenuHTML(lang string) string {
 		return translation.SprintfForRequest(lang, key, args...)
 	}
 	var sb strings.Builder
-	sb.WriteString(`<div id="component-codemirror-settings" class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
-	fmt.Fprintf(&sb, `<button type="button" class="fp-menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>`,
+	sb.WriteString(`<div id="component-codemirror-settings" class="menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
+	fmt.Fprintf(&sb, `<button type="button" class="menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>`,
 		t("editor settings"))
-	sb.WriteString(`<div class="fp-menu" x-ref="menu" :hidden="!open">`)
+	sb.WriteString(`<div class="menu" x-ref="menu" :hidden="!open">`)
 	for _, s := range configmanager.SettingsBySection(configmanager.SectionEditor) {
 		if s.GetMeta().Group == configmanager.GroupCodeMirror && s.Key() != configmanager.CodeMirrorShowToolbar.Key() {
 			sb.WriteString(renderSettingItem(s, t))

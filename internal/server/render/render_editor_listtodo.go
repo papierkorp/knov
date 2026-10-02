@@ -77,10 +77,10 @@ func RenderListEditor(filepath string, todoMode bool) string {
 	}
 
 	settingsMenuHTML := fmt.Sprintf(`
-		<div id="list-editor-settings" class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
-			<button type="button" class="fp-menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>
-			<div class="fp-menu" x-ref="menu" :hidden="!open">
-				<label class="fp-menu-item"><input type="checkbox" id="todo-mode-toggle"%s /> %s</label>
+		<div id="list-editor-settings" class="menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
+			<button type="button" class="menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>
+			<div class="menu" x-ref="menu" :hidden="!open">
+				<label class="menu-item"><input type="checkbox" id="todo-mode-toggle"%s /> %s</label>
 			</div>
 		</div>`,
 		translation.SprintfForRequest(lang, "editor settings"),

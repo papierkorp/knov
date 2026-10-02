@@ -25,10 +25,10 @@ func tableEditorSettingsMenuHTML(lang string) string {
 		return translation.SprintfForRequest(lang, key, args...)
 	}
 	var sb strings.Builder
-	sb.WriteString(`<div id="component-table-editor-settings" class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
+	sb.WriteString(`<div id="component-table-editor-settings" class="menu-wrap" x-data="dropdownMenu()" @click.outside="close()">`)
 	fmt.Fprintf(&sb, `<button type="button" class="btn-secondary" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-gear"></i></button>`,
 		t("editor settings"))
-	sb.WriteString(`<div class="fp-menu" x-ref="menu" :hidden="!open">`)
+	sb.WriteString(`<div class="menu" x-ref="menu" :hidden="!open">`)
 	for _, s := range configmanager.SettingsBySection(configmanager.SectionEditor) {
 		if s.GetMeta().Group == configmanager.GroupTableEditor && s.Key() != configmanager.TableEditorShowSettingsMenu.Key() {
 			sb.WriteString(renderSettingItem(s, t))

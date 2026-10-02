@@ -85,7 +85,7 @@ func FileViewLinks(relPath, viewID string) []FileViewLink {
 func RenderFileViewLinks(links []FileViewLink) string {
 	var h strings.Builder
 	for _, l := range links {
-		cls := "fp-menu-item"
+		cls := "menu-item"
 		if l.Active {
 			cls += " active"
 		}

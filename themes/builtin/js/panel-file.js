@@ -346,7 +346,7 @@ function loadReferences(fp) {
 
 // file panel overflow menu (rename / move / rebuild / export / delete) uses
 // the shared dropdownMenu() component (rail-core.js) via x-data on
-// .fp-menu-wrap in base.gohtml.
+// .menu-wrap in base.gohtml.
 
 // builds the new full path for the move modal from the folder input plus
 // the filename stashed on the form when the file panel opened

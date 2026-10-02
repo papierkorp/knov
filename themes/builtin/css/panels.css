@@ -101,12 +101,12 @@
   border-color: var(--primary);
 }
 
-#fp-file-actions .fp-menu-wrap {
+#fp-file-actions .menu-wrap {
   position: relative;
   flex-shrink: 0;
 }
 
-#fp-file-actions .fp-menu-btn {
+#fp-file-actions .menu-btn {
   width: 26px;
   height: 26px;
   border-radius: 3px;
@@ -124,57 +124,10 @@
     border-color 0.12s;
 }
 
-#fp-file-actions .fp-menu-btn:hover,
-#fp-file-actions .fp-menu-btn:focus-visible {
+#fp-file-actions .menu-btn:hover,
+#fp-file-actions .menu-btn:focus-visible {
   background: var(--bg-secondary);
   color: var(--text);
-}
-
-.fp-menu {
-  position: fixed;
-  z-index: 30;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 150px;
-}
-
-.fp-menu[hidden] {
-  display: none;
-}
-
-.fp-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 0.85em;
-  text-align: left;
-  text-decoration: none;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.fp-menu-item:hover,
-.fp-menu-item:focus-visible {
-  background: var(--bg-secondary);
-}
-
-.fp-menu-item[hidden] {
-  display: none;
-}
-
-.fp-menu-item i {
-  width: 14px;
-  text-align: center;
 }
 
 #fp-views-menu:not(:empty) {
@@ -186,12 +139,8 @@
   border-bottom: 1px solid var(--border);
 }
 
-#fp-views-menu .fp-menu-item.active {
+#fp-views-menu .menu-item.active {
   color: var(--primary);
-}
-
-.fp-menu-item--danger {
-  color: var(--danger);
 }
 
 .fp-file-modes {

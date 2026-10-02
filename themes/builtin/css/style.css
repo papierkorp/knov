@@ -40,3 +40,55 @@
     visibility: visible;
   }
 }
+
+/* shared dropdown menu (dropdownMenu() in rail-core.js), also used by the editor settings menus */
+.menu {
+  position: fixed;
+  z-index: 30;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85em;
+  text-align: left;
+  text-decoration: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--bg-secondary);
+}
+
+.menu-item[hidden] {
+  display: none;
+}
+
+.menu-item i {
+  width: 14px;
+  text-align: center;
+}
+
+.menu-item--danger {
+  color: var(--danger);
+}
