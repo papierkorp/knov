@@ -415,7 +415,7 @@ var (
 		Default:  []string{},
 		Section:  SectionKanban,
 		Label:    "Boards",
-		Desc:     "comma-separated folder/path:Display Name entries; each board covers that folder and its subfolders, the URL slug is derived from the folder path, e.g. projects/work:Work Board, personal/todo:Personal Todo. the folder must be relative to docs and can't start with docs/, media/ or files/",
+		Desc:     "required - kanban shows nothing until at least one board is added here. comma-separated folder/path:Display Name entries, e.g. projects/work:Work Board, personal/todo:Personal Todo. every file in that folder and its subfolders that has a status tag (<prefix>-status-<status>, e.g. kb-status-inbox) shows up as a card in the matching column; files without a status tag are not shown. the URL slug is derived from the folder path. the folder must be relative to docs and can't start with docs/, media/ or files/",
 		Validate: ValidateKanbanBoards,
 	})
 	KanbanFolderSync = register(&StringSliceSetting{
@@ -423,7 +423,7 @@ var (
 		Default:  []string{},
 		Section:  SectionKanban,
 		Label:    "Folder Sync",
-		Desc:     "comma-separated board folder paths (subset of Boards) that keep card status and file location in sync: moving a card moves the file into folder/path/<status>/, and moving the file on disk into an existing folder/path/<status>/ folder sets the tag (picked up by the file-sync cronjob). after moving files by hand, run a manual file-sync before dragging their cards. the folder must be relative to docs and can't start with docs/, media/ or files/",
+		Desc:     "optional - comma-separated board folder paths (each must also be listed in Boards) whose files are physically sorted into one subfolder per status. warning: this creates folders and moves files - dragging a card to a column moves its file into folder/path/<status>/ (the folder is created if missing), e.g. projects/work/inbox/note.md. the other way round works too: moving a file on disk into an existing folder/path/<status>/ folder sets its status tag on the next file-sync cronjob run. after moving files by hand, run a manual file-sync before dragging their cards. leave empty to keep files where they are and only change tags. the folder must be relative to docs and can't start with docs/, media/ or files/",
 		Validate: ValidateKanbanFolderSync,
 	})
 	KanbanStatuses = register(&StringSliceSetting{
@@ -431,7 +431,7 @@ var (
 		Default:  []string{"inbox", "inprogress", "blocked", "archive"},
 		Section:  SectionKanban,
 		Label:    "Statuses",
-		Desc:     "comma-separated list of all valid kanban statuses (letters, digits and _ only). removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
+		Desc:     "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag <prefix>-status-<status>, e.g. kb-status-inbox. removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
 		Validate: validateKanbanNames,
 	})
 	KanbanColumns = register(&StringSliceSetting{

@@ -14,9 +14,9 @@
   - tournament editor
   - encrypt single files/folders
   - reset/copy todo list
-  - 
 - fixes
 - chore
+  - 
 - test
   - remote git in mobile
   - does the import/export of settings still work?
