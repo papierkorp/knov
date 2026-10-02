@@ -8,7 +8,6 @@
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
-  - toc in codemirror edit all
   - book/index editor - drag and drop
   - system/structure for startup warnings
   - tournament editor
@@ -16,7 +15,7 @@
   - reset/copy todo list
 - fixes
 - chore
-  - 
+  - The render package relies on builtin-theme DOM and functions (theme-agnostic rule). #fp-toc-nav, #fp-toc-filter, setupTocFolding and filterTocItems exist only in themes/builtin. The null and typeof guards make it a clean no-op in the example theme, so nothing breaks. But it’s another implicit render↔builtin dependency. There is precedent (fp-menu-wrap in render_editor_listtodo.go), so this is consistent, just not ideal.
 - test
   - remote git in mobile
   - does the import/export of settings still work?

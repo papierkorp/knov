@@ -248,6 +248,79 @@ func jsCodeMirrorSaveShortcut() string {
 	});`
 }
 
+// jsCodeMirrorToc fills the file panel's TOC (#fp-toc-nav) from the editor's headings and
+// keeps it current while typing; clicking an entry jumps the editor to that heading. Hooks
+// in via cmOptions.onChange, which createCodeMirror reads on every update, so it survives
+// reinitCodeMirror.
+func jsCodeMirrorToc() string {
+	return `
+	var tocTimer, tocSig;
+	// strips common inline markdown so entries read like the view page TOC: [[t|alias]], [text](url), ` + "`" + `, **, __, ~~
+	function stripTocInline(s) {
+		return s.replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
+			.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+			.replace(/` + "`" + `|\*\*|__|~~/g, '');
+	}
+	// mirrors markdown.ScanHeadings: skips front matter and fenced code, drops the closing # sequence
+	function scanCodeMirrorHeadings() {
+		var doc = view.state.doc, items = [], fence = null, ln = 1;
+		// same as markdown.SplitFrontMatter: exact "---\n" opener, closed by "\n---\n" (so not on line 2 or the last line)
+		if (doc.line(1).text === '---') {
+			for (var i = 3; i < doc.lines; i++) {
+				if (doc.line(i).text === '---') { ln = i + 1; break; }
+			}
+		}
+		for (; ln <= doc.lines; ln++) {
+			var text = doc.line(ln).text.trim();
+			var f = text.match(/^(` + "`" + `{3,}|~{3,})/);
+			if (fence) {
+				if (f && text === f[0] && f[0][0] === fence[0] && f[0].length >= fence.length) fence = null;
+				continue;
+			}
+			if (f) { fence = f[0]; continue; }
+			var m = text.match(/^(#{1,6})(?:[ \t]+(.*))?$/);
+			if (m) items.push({level: m[1].length, text: stripTocInline((m[2] || '').replace(/(^|[ \t]+)#+$/, '')), line: ln});
+		}
+		return items;
+	}
+	function updateCodeMirrorToc() {
+		var nav = document.getElementById('fp-toc-nav');
+		if (!nav) return;
+		var items = scanCodeMirrorHeadings();
+		// line numbers stay out of the signature so inserting lines doesn't rebuild the nav (and reset its folds)
+		var sig = JSON.stringify(items.map(function(h) { return [h.level, h.text]; }));
+		if (sig === tocSig) return;
+		tocSig = sig;
+		nav.innerHTML = '';
+		items.forEach(function(h, idx) {
+			var a = document.createElement('a');
+			a.href = '#';
+			a.dataset.level = h.level;
+			a.textContent = h.text;
+			a.addEventListener('click', function(e) {
+				e.preventDefault();
+				var cur = scanCodeMirrorHeadings()[idx];
+				if (!cur) return;
+				view.dispatch({selection: {anchor: view.state.doc.line(cur.line).from}, scrollIntoView: true});
+				view.focus();
+			});
+			nav.appendChild(a);
+		});
+		if (typeof setupTocFolding === 'function') setupTocFolding();
+		var filter = document.getElementById('fp-toc-filter');
+		if (filter && filter.value && typeof filterTocItems === 'function') filterTocItems(filter.value);
+	}
+	// chain any earlier onChange so other features can share the single hook
+	var prevOnChange = cmOptions.onChange;
+	cmOptions.onChange = function(u) {
+		if (prevOnChange) prevOnChange(u);
+		if (!u.docChanged) return;
+		clearTimeout(tocTimer);
+		tocTimer = setTimeout(updateCodeMirrorToc, 300);
+	};
+	updateCodeMirrorToc();`
+}
+
 // codeMirrorFileInputHTML renders the hidden multi-file input used by the upload toolbar button.
 func codeMirrorFileInputHTML() string {
 	return `<input type="file" id="codemirror-file-input" multiple hidden />`
@@ -438,6 +511,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		el.style.height = Math.max(300, available) + 'px';
 	})();
 	%s
+	%s
 	var fpInput = document.getElementById('filepath-input');
 	if (fpInput) {
 		fpInput.addEventListener('keydown', function(e) {
@@ -450,7 +524,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
 })();
-</script>`, codeMirrorInitScript(content, filePath))
+</script>`, codeMirrorInitScript(content, filePath), jsCodeMirrorToc())
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">

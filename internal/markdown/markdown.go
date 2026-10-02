@@ -38,6 +38,8 @@ type RawHeading struct {
 // lines): 1-6 leading '#' followed by a space (or end of line), outside fenced
 // code blocks and outside a leading "---" front matter block. This approximates
 // the CommonMark ATX rule - see ATXHeading for the corners it does not cover.
+// jsCodeMirrorToc (render/render_editor_codemirror.go) has a JS copy of these rules
+// (front matter, fences, ATX) for the live editor TOC - keep both in sync.
 func ScanHeadings(lines []string) []RawHeading {
 	mask := FenceMask(lines)
 	bodyStart := frontMatterBodyLine(lines)
