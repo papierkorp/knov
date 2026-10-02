@@ -367,7 +367,19 @@ function restoreTocFromData() {
   if (!tocData || !tocNav) return;
   tocNav.innerHTML = tocData.innerHTML;
   setupTocFolding();
+  highlightTocFromHash();
 }
+
+// marks the toc entry matching the url hash (#heading-id) as active
+function highlightTocFromHash() {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  const hash = window.location.hash;
+  nav.querySelectorAll("a[data-level]").forEach((a) => {
+    a.classList.toggle("fp-toc-active", !!hash && a.hash === hash);
+  });
+}
+window.addEventListener("hashchange", highlightTocFromHash);
 
 // ================================================================
 // toc filter — client-side, no API call

@@ -374,7 +374,8 @@
 .fp-toc-nav a[data-level="5"] { padding-left: 60px; }
 .fp-toc-nav a[data-level="6"] { padding-left: 72px; }
 
-.fp-toc-nav a:hover {
+.fp-toc-nav a:hover,
+.fp-toc-nav a.fp-toc-active {
   color: var(--primary);
   border-left-color: var(--primary);
 }
