@@ -178,6 +178,15 @@ window.reindexEntries = function() {
 		if (downBtn) downBtn.setAttribute('onclick', 'moveEntry(' + i + ', 1)');
 	});
 };
+
+if (window.Sortable) {
+	new Sortable(document.getElementById('entries-container'), {
+		animation: 150,
+		handle: '.drag-handle',
+		ghostClass: 'sortable-ghost',
+		onEnd: window.reindexEntries
+	});
+}
 </script>`
 }
 
@@ -194,6 +203,7 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 
 	// controls on the left
 	html.WriteString(`<div class="entry-controls">`)
+	html.WriteString(`<span class="drag-handle">⋮⋮</span>`)
 	fmt.Fprintf(&html, `<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index)
 	fmt.Fprintf(&html, `<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index)
 	html.WriteString(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`)

@@ -153,3 +153,19 @@
     font-size: 16px;
   }
 }
+
+.entry-controls .drag-handle {
+  cursor: move;
+  padding: 2px 5px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.entry-controls .drag-handle:hover {
+  color: var(--text);
+}
+
+.entries-container .sortable-ghost {
+  opacity: 0.4;
+  background: var(--primary);
+}
