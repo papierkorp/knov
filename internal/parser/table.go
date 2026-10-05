@@ -139,28 +139,14 @@ func FilterTable(data *types.TableData, column int, value string) *types.TableDa
 	}
 }
 
-// columnFilterNumericStrip matches currency symbols, thousands separators and
-// whitespace so numeric-looking cell values can be recognized regardless of
-// formatting (e.g. "1.500,50 €").
-var columnFilterNumericStrip = regexp.MustCompile(`[$€£¥,\s]`)
-
-// isNumericValue reports whether s looks like a number once common currency
-// formatting is stripped.
-func isNumericValue(s string) bool {
-	if s == "" {
-		return false
-	}
-	_, err := strconv.ParseFloat(columnFilterNumericStrip.ReplaceAllString(s, ""), 64)
-	return err == nil
-}
+// numericStrip matches currency symbols, thousands separators and whitespace
+// so numeric cell values can be parsed regardless of formatting (e.g. "1,500 €").
+var numericStrip = regexp.MustCompile(`[$€£¥,\s]`)
 
 // ColumnFilterValues returns the sorted, lowercased, de-duplicated set of
 // values found in the given column of the (unfiltered) table. It returns nil
-// when the column isn't worth offering as a filter:
-//   - no value repeats, so filtering wouldn't group anything (a filter is
-//     offered as soon as the same value is found at least twice),
-//   - the column is mostly numeric (quantities/prices are better sorted than
-//     filtered by exact value).
+// when no value repeats, so filtering wouldn't group anything (a filter is
+// offered as soon as the same value is found at least twice).
 func ColumnFilterValues(data *types.TableData, column int) []string {
 	if column < 0 || column >= len(data.Headers) {
 		return nil
@@ -168,8 +154,6 @@ func ColumnFilterValues(data *types.TableData, column int) []string {
 
 	seen := make(map[string]int)
 	var values []string
-	numericCount := 0
-	nonEmptyCount := 0
 	hasRepeat := false
 
 	for _, row := range data.Rows {
@@ -180,11 +164,6 @@ func ColumnFilterValues(data *types.TableData, column int) []string {
 		if raw == "" {
 			continue
 		}
-		nonEmptyCount++
-		if isNumericValue(raw) {
-			numericCount++
-		}
-
 		v := strings.ToLower(raw)
 		seen[v]++
 		if seen[v] == 2 {
@@ -196,10 +175,7 @@ func ColumnFilterValues(data *types.TableData, column int) []string {
 		values = append(values, v)
 	}
 
-	if nonEmptyCount == 0 || !hasRepeat {
-		return nil
-	}
-	if float64(numericCount)/float64(nonEmptyCount) > 0.8 {
+	if !hasRepeat {
 		return nil
 	}
 
@@ -208,7 +184,7 @@ func ColumnFilterValues(data *types.TableData, column int) []string {
 }
 
 func parseNumber(s string) float64 {
-	s = regexp.MustCompile(`[$â‚¬Â£Â¥,\s]`).ReplaceAllString(s, "")
+	s = numericStrip.ReplaceAllString(s, "")
 	num, _ := strconv.ParseFloat(s, 64)
 	return num
 }

@@ -15,7 +15,6 @@
   - reset/copy todo list
 - fixes
 - chore
-  - table with numbers - why is there no filter?
 - test
   - remote git in mobile
   - does the import/export of settings still work?
