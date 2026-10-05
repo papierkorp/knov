@@ -15,7 +15,6 @@
   - reset/copy todo list
 - fixes
 - chore
-  - table editor select + delete multiple rows (only deletes one at the moment)
   - ctrl +s in table editor
   - table with numbers - why is there no filter?
 - test
@@ -65,7 +64,7 @@ what do you think is the root of the problem and could fix this mess dont make a
 ```bash
 give me an overview of the current git changes, dont make any changes yet just give me your opinion
 
-- explain the feature like im five
+- explain the feature for a non tech person
 - does it use the same principles as the rest of the application/packages?
 - is it easy to understand code without overcomplicating it? it should be a easy to follow solution
 - is there overengineering going on which could easily be simplified?

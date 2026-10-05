@@ -107,8 +107,16 @@ function headerContextMenuItems() {
 		{ label: %s, action: function(e, column) { setColumnAlign(column, 'center'); } },
 		{ label: %s, action: function(e, column) { setColumnAlign(column, 'right'); } },
 		{ separator: true },
-		{ label: %s, action: function(e, column) { column.delete(); } },
+		{ label: %s, action: function(e, column) { deleteColumns(column); } },
 	];
+}
+
+// deletes every column of the selected ranges if the clicked column is part of them,
+// otherwise just the clicked column (see deleteRows)
+function deleteColumns(column) {
+	var columns = tableOptions.selectableCellRange ? table.getRanges().flatMap(function(r) { return r.getColumns(); }).filter(function(c) { return c.getField(); }) : [];
+	columns = columns.includes(column) ? Array.from(new Set(columns)) : [column];
+	columns.forEach(function(c) { c.delete(); });
 }
 
 function columnDefinition(field, title) {
@@ -158,8 +166,18 @@ function rowContextMenuItems() {
 		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), true, row); } },
 		{ label: %s, action: function(e, row) { table.addRow(emptyRowData(), false, row); } },
 		{ separator: true },
-		{ label: %s, action: function(e, row) { row.delete(); } },
+		{ label: %s, action: function(e, row) { deleteRows(row); } },
 	];
+}
+
+// deletes every row of the selected ranges if the clicked row is part of them,
+// otherwise just the clicked row - as a single undo step
+function deleteRows(row) {
+	var rows = tableOptions.selectableCellRange ? table.getRanges().flatMap(function(r) { return r.getRows(); }) : [];
+	rows = rows.includes(row) ? Array.from(new Set(rows)) : [row];
+	withGroupedHistory(function() {
+		rows.forEach(function(r) { r.delete(); });
+	});
 }`, insertAbove, insertBelow, removeRow)
 }
 

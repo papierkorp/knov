@@ -1,6 +1,6 @@
 # unreleased
 
-_10 commits since last release_
+_11 commits since last release_
 
 ## upgrading from v1.1.1 to next release
 
@@ -16,5 +16,6 @@ _10 commits since last release_
 - add optional setting to remove empty folders in the file sync cronjob
 
 ## features
+- rename a kanban status everywhere from the settings page (tags, foldersync folders, card order, history)
 - live table of contents in the codemirror editor
 
