@@ -13,6 +13,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/jobStorage"
+	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
@@ -530,6 +531,34 @@ func (j *moveFolderJob) Output() any { return j.result }
 
 func (j *moveFolderJob) Message() string {
 	return fmt.Sprintf("moved %s -> %s (%d files updated)", j.currentPath, j.newPath, j.result.Updated)
+}
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------- kanbanRenameStatusJob -----------------------------------
+// ----------------------------------------------------------------------------------------
+
+// kanbanRenameStatusJob renames a kanban status everywhere it's stored. The actual work lives
+// in kanban.RenameStatus - this is just the history-tracking wrapper.
+type kanbanRenameStatusJob struct {
+	oldStatus, newStatus string
+	result               kanban.RenameResult
+}
+
+func (j *kanbanRenameStatusJob) Name() string { return "kanban-rename-status" }
+
+func (j *kanbanRenameStatusJob) Run(_ context.Context) (err error) {
+	j.result, err = kanban.RenameStatus(j.oldStatus, j.newStatus)
+	return err
+}
+
+func (j *kanbanRenameStatusJob) Output() any { return j.result }
+
+func (j *kanbanRenameStatusJob) Message() string {
+	msg := fmt.Sprintf("renamed kanban status %s -> %s (%d files, %d folders)", j.oldStatus, j.newStatus, j.result.Retagged, j.result.Folders)
+	if j.result.LinksFailed > 0 {
+		msg += fmt.Sprintf(", links of %d files not updated", j.result.LinksFailed)
+	}
+	return msg
 }
 
 // ----------------------------------------------------------------------------------------

@@ -89,9 +89,19 @@ type proposedSettings map[StorableSetting]interface{}
 
 // applySettings stores and saves all proposed values - if the save fails nothing changes.
 func applySettings(p proposedSettings) error {
+	return applySettingsFunc(func() (proposedSettings, error) { return p, nil })
+}
+
+// applySettingsFunc is applySettings for values derived from the current settings: build runs
+// under settingsMu, so a concurrent save can't land between reading and storing them.
+func applySettingsFunc(build func() (proposedSettings, error)) error {
 	settingsMu.Lock()
 	defer settingsMu.Unlock()
 
+	p, err := build()
+	if err != nil {
+		return err
+	}
 	previous := make(proposedSettings, len(p))
 	for s, v := range p {
 		if v == nil { // parse/parseJSON returned "ignore this value"

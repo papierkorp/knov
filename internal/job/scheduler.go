@@ -12,6 +12,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/jobStorage"
+	"knov/internal/kanban"
 	"knov/internal/logging"
 )
 
@@ -49,6 +50,7 @@ var (
 	bulkDeleteFilesMu    sync.Mutex
 	deleteFolderMu       sync.Mutex
 	moveFolderMu         sync.Mutex
+	kanbanRenameMu       sync.Mutex
 	bulkUpdateMetadataMu sync.Mutex
 	exportMu             sync.Mutex
 
@@ -411,6 +413,16 @@ func RunMoveFolder(currentPath, newPath string) (BulkUpdateResult, error) {
 	j := &moveFolderJob{currentPath: currentPath, newPath: newPath}
 	if err := execute(&moveFolderMu, j); err != nil {
 		return BulkUpdateResult{}, err
+	}
+	return j.result, nil
+}
+
+// RunKanbanRenameStatus renames a kanban status (settings, tags, foldersync folders, card order,
+// events) with dedup protection.
+func RunKanbanRenameStatus(oldStatus, newStatus string) (kanban.RenameResult, error) {
+	j := &kanbanRenameStatusJob{oldStatus: oldStatus, newStatus: newStatus}
+	if err := execute(&kanbanRenameMu, j); err != nil {
+		return kanban.RenameResult{}, err
 	}
 	return j.result, nil
 }

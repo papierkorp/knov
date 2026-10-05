@@ -2,9 +2,13 @@ package kanbantest
 
 import (
 	"fmt"
+	"os"
+	"slices"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/pathutils"
@@ -375,6 +379,75 @@ func caseKanbanHelpers() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "one or more pure kanban tag helpers did not behave as expected"
+	}
+	return cr
+}
+
+// caseRenameStatusFolderSync renames a throwaway status on a temporary foldersync board and checks
+// the status folder, the file's tag and the stored card order all follow the new name.
+func caseRenameStatusFolderSync() test.CaseResult {
+	name := "rename-status-foldersync"
+	const oldStatus, newStatus = "kbrenameold", "kbrenamenew"
+	oldPath := testDir + "/" + oldStatus + "/kanban-rename.md"
+	newPath := testDir + "/" + newStatus + "/kanban-rename.md"
+
+	original := map[string][]string{}
+	for _, s := range []*configmanager.StringSliceSetting{configmanager.KanbanFolderSync, configmanager.KanbanBoards, configmanager.KanbanStatuses} {
+		original[s.Key()] = []string{strings.Join(s.Get(), ",")}
+	}
+	defer func() {
+		// folder sync first, its validation requires its folders to still be listed in boards
+		configmanager.SetSetting(configmanager.KanbanFolderSync, original["kanbanFolderSync"][0])
+		configmanager.BulkSetFromForm(original)
+		kanban.SaveOrder(testFolder, kanban.Order{})
+	}()
+
+	if errs := configmanager.BulkSetFromForm(map[string][]string{
+		"kanbanBoards":   {testFolder + ":Kanban Tests"},
+		"kanbanStatuses": {original["kanbanStatuses"][0] + "," + oldStatus},
+	}); len(errs) > 0 {
+		return errCase(name, errs[0])
+	}
+	if err := configmanager.SetSetting(configmanager.KanbanFolderSync, testFolder); err != nil {
+		return errCase(name, err)
+	}
+	if err := writeCard(oldPath, "Rename Card", []string{kanbanTag(oldStatus)}, time.Now()); err != nil {
+		return errCase(name, err)
+	}
+	movedAt := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
+	if err := files.MetaDataMutate(pathutils.ToWithPrefix(oldPath), func(m *files.Metadata, _ bool) (bool, error) {
+		m.KanbanMovedAt = movedAt
+		return true, nil
+	}); err != nil {
+		return errCase(name, err)
+	}
+	files.InvalidateFileListCache()
+	if err := kanban.SaveOrder(testFolder, kanban.Order{oldStatus: {oldPath}}); err != nil {
+		return errCase(name, err)
+	}
+
+	if _, err := kanban.RenameStatus(oldStatus, newStatus); err != nil {
+		return errCase(name, err)
+	}
+
+	_, statErr := os.Stat(pathutils.ToDocsPath(newPath))
+	meta, _ := files.MetaDataGet(pathutils.ToWithPrefix(newPath))
+	tagged := meta != nil && slices.Contains(meta.Tags, kanbanTag(newStatus)) && !slices.Contains(meta.Tags, kanbanTag(oldStatus))
+	keptMovedAt := meta != nil && meta.KanbanMovedAt.Equal(movedAt)
+	order, _ := kanban.GetOrder(testFolder)
+	ordered := slices.Equal(order[newStatus], []string{newPath}) && order[oldStatus] == nil
+	statuses := configmanager.GetKanbanStatuses()
+	configured := slices.Contains(statuses, newStatus) && !slices.Contains(statuses, oldStatus)
+
+	success := statErr == nil && tagged && keptMovedAt && ordered && configured
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "file moved to " + newStatus + "/, tagged " + kanbanTag(newStatus) + ", movedAt kept, order key and status setting renamed",
+		Actual:   fmt.Sprintf("moved=%v tagged=%v keptMovedAt=%v order=%v statuses=%v", statErr == nil, tagged, keptMovedAt, order, statuses),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "RenameStatus did not rename the status folder, tag, card order and setting or changed KanbanMovedAt"
 	}
 	return cr
 }

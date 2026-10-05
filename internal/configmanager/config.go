@@ -534,6 +534,81 @@ func IsKanbanTag(tag string) bool {
 	return strings.HasPrefix(tag, GetKanbanPrefix()+"-status-")
 }
 
+// ValidateKanbanStatusRename checks that oldStatus is a known status and newStatus a valid,
+// unused status name.
+func ValidateKanbanStatusRename(oldStatus, newStatus string) error {
+	statuses := GetKanbanStatuses()
+	if !slices.Contains(statuses, oldStatus) {
+		return fmt.Errorf("unknown status %q", oldStatus)
+	}
+	return validateKanbanNames(append(slices.Clone(statuses), newStatus))
+}
+
+// RenameKanbanStatus replaces oldStatus with newStatus in every kanban setting referencing it
+// (statuses, columns, archive status, ancestor filter statuses, card styles, tag colors,
+// auto-create tags, hide files by tag) and saves them at once - all or nothing. The values aren't
+// run through parse/Validate again: they're derived from the stored (already valid) values and
+// newStatus, which ValidateKanbanStatusRename checks.
+func RenameKanbanStatus(oldStatus, newStatus string) error {
+	rename := func(entries []string, fn func(string) string) []string {
+		out := make([]string, len(entries))
+		for i, e := range entries {
+			out[i] = fn(e)
+		}
+		return out
+	}
+	renameStatus := func(s string) string {
+		if s == oldStatus {
+			return newStatus
+		}
+		return s
+	}
+	// renames the key of "key:value" entries
+	renameKey := func(from, to string) func(string) string {
+		return func(e string) string {
+			if k, v, ok := strings.Cut(e, ":"); ok && strings.TrimSpace(k) == from {
+				return to + ":" + v
+			}
+			return e
+		}
+	}
+	oldTag, newTag := KanbanStatusTag(oldStatus), KanbanStatusTag(newStatus)
+	return applySettingsFunc(func() (proposedSettings, error) {
+		if err := ValidateKanbanStatusRename(oldStatus, newStatus); err != nil {
+			return nil, err
+		}
+		autoCreateTags := rename(AutoCreateTags.Get(), func(e string) string {
+			if folder, tag, ok := strings.Cut(e, ":"); ok && strings.TrimSpace(tag) == oldTag {
+				return folder + ":" + newTag
+			}
+			if strings.TrimSpace(e) == oldTag {
+				return newTag
+			}
+			return e
+		})
+		// hide patterns are case-insensitive, only the exact old tag is renamed, not wildcards
+		hideFilesByTag := rename(HideFilesByTag.Get(), func(e string) string {
+			if pattern, scopes, ok := strings.Cut(e, "::"); strings.EqualFold(strings.TrimSpace(pattern), oldTag) {
+				if ok {
+					return newTag + "::" + scopes
+				}
+				return newTag
+			}
+			return e
+		})
+		return proposedSettings{
+			KanbanStatuses:              rename(GetKanbanStatuses(), renameStatus),
+			KanbanColumns:               rename(GetKanbanColumns(), renameStatus),
+			KanbanArchiveStatus:         renameStatus(GetKanbanArchiveStatus()),
+			KanbanAncestorAllowedStatus: rename(GetKanbanAncestorAllowedStatus(), renameStatus),
+			KanbanCardStyles:            rename(KanbanCardStyles.Get(), renameKey(oldStatus, newStatus)),
+			KanbanTagColors:             rename(KanbanTagColors.Get(), renameKey(oldTag, newTag)),
+			AutoCreateTags:              autoCreateTags,
+			HideFilesByTag:              hideFilesByTag,
+		}, nil
+	})
+}
+
 func initLogLevel() {
 	const key = "KNOV_LOG_LEVEL"
 	logLevel := getEnv(key, envVarDefault(key))

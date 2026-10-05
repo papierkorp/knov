@@ -8,7 +8,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/job"
 	"knov/internal/kanban"
+	"knov/internal/logging"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -82,7 +85,7 @@ func renderSettingsSection(s configmanager.SettingSection, t func(string, ...any
 	case configmanager.SectionAppearance.Key:
 		return render.RenderSettingsSection(s, t, render.RenderFaviconItem(t))
 	case configmanager.SectionKanban.Key:
-		return render.RenderSettingsSection(s, t, render.RenderKanbanConfigWarnings(kanban.ConfigWarnings(t), t))
+		return render.RenderSettingsSection(s, t, render.RenderKanbanConfigWarnings(kanban.ConfigWarnings(t), t), render.RenderKanbanStatusRenameItem(configmanager.GetKanbanStatuses(), t))
 	default:
 		return render.RenderSettingsSection(s, t)
 	}
@@ -101,6 +104,46 @@ func handleAPIGetKanbanConfigWarnings(w http.ResponseWriter, r *http.Request) {
 	}
 	warnings := kanban.ConfigWarnings(t)
 	writeResponse(w, r, warnings, render.RenderKanbanConfigWarnings(warnings, t))
+}
+
+// @Summary Rename a kanban status
+// @Description Renames a kanban status everywhere it's stored: the kanban settings, the status tag of every file, the status folders of foldersync boards, the stored card order and the logged events. Runs as the kanban-rename-status job.
+// @Tags settings
+// @Accept x-www-form-urlencoded
+// @Produce json,html
+// @Param from formData string true "Current status name"
+// @Param to formData string true "New status name"
+// @Success 200 {object} kanban.RenameResult
+// @Failure 400 {string} string "invalid status"
+// @Failure 409 {string} string "job already running"
+// @Failure 500 {string} string "failed to rename status"
+// @Router /api/settings/kanban/statuses/rename [post]
+func handleAPIRenameKanbanStatus(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	oldStatus, newStatus := strings.TrimSpace(r.FormValue("from")), strings.TrimSpace(r.FormValue("to"))
+	result, err := job.RunKanbanRenameStatus(oldStatus, newStatus)
+	if errors.Is(err, job.ErrAlreadyRunning) {
+		writeAPIError(w, r, http.StatusConflict, translation.SprintfForRequest(lang, "job already running"))
+		return
+	}
+	if errors.Is(err, kanban.ErrInvalidRename) {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "%s", err.Error()))
+		return
+	}
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to rename kanban status %s to %s: %v", oldStatus, newStatus, err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to rename status: %s", err.Error()))
+		return
+	}
+
+	// full reload so every kanban setting shows its renamed value
+	if result.LinksFailed > 0 {
+		notify.SetFlash(notify.LevelWarning, translation.SprintfForRequest(lang, "renamed status %s to %s (%d files, %d folders) - the links of %d moved files couldn't be updated", oldStatus, newStatus, result.Retagged, result.Folders, result.LinksFailed))
+	} else {
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(lang, "renamed status %s to %s (%d files, %d folders)", oldStatus, newStatus, result.Retagged, result.Folders))
+	}
+	w.Header().Set("HX-Refresh", "true")
+	writeResponse(w, r, result, "")
 }
 
 // @Summary Get all settings

@@ -5797,6 +5797,64 @@
                 }
             }
         },
+        "/api/settings/kanban/statuses/rename": {
+            "post": {
+                "description": "Renames a kanban status everywhere it's stored: the kanban settings, the status tag of every file, the status folders of foldersync boards, the stored card order and the logged events. Runs as the kanban-rename-status job.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Rename a kanban status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Current status name",
+                        "name": "from",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New status name",
+                        "name": "to",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/kanban.RenameResult"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "job already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to rename status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/settings/kanban/warnings": {
             "get": {
                 "description": "Returns inconsistencies in the kanban settings (e.g. missing board folders, columns not in the status list)",
@@ -7472,6 +7530,23 @@
                 "IssueFolderMismatch",
                 "IssueNoBoard"
             ]
+        },
+        "kanban.RenameResult": {
+            "type": "object",
+            "properties": {
+                "folders": {
+                    "description": "foldersync status folders renamed",
+                    "type": "integer"
+                },
+                "linksFailed": {
+                    "description": "moved files whose links couldn't be updated",
+                    "type": "integer"
+                },
+                "retagged": {
+                    "description": "files whose status tag was renamed",
+                    "type": "integer"
+                }
+            }
         },
         "notificationStorage.Notification": {
             "type": "object",

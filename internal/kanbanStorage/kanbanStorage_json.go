@@ -118,6 +118,26 @@ func (s *jsonKanbanStorage) GetEvents(boardFolder, filePath string, from, to *ti
 	return filtered, nil
 }
 
+// RenameStatus rewrites oldStatus to newStatus in the from/to status of every event.
+func (s *jsonKanbanStorage) RenameStatus(oldStatus, newStatus string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	events, err := s.readEvents()
+	if err != nil {
+		return err
+	}
+	for i := range events {
+		if events[i].FromStatus == oldStatus {
+			events[i].FromStatus = newStatus
+		}
+		if events[i].ToStatus == oldStatus {
+			events[i].ToStatus = newStatus
+		}
+	}
+	return s.writeEvents(events)
+}
+
 // GetBackendType returns the backend type.
 func (s *jsonKanbanStorage) GetBackendType() string {
 	return "json"

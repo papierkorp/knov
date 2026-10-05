@@ -431,7 +431,7 @@ var (
 		Default:  []string{"inbox", "inprogress", "blocked", "archive"},
 		Section:  SectionKanban,
 		Label:    "Statuses",
-		Desc:     "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag <prefix>-status-<status>, e.g. kb-status-inbox. removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
+		Desc:     "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag <prefix>-status-<status>, e.g. kb-status-inbox. removing or renaming a status here keeps the existing tags, but those cards drop off the board until they're retagged - use Rename Status below to also rename the tags, foldersync folders, card order and the status names in the history",
 		Validate: validateKanbanNames,
 	})
 	KanbanColumns = register(&StringSliceSetting{

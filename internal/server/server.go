@@ -237,6 +237,7 @@ func NewRouter() *chi.Mux {
 		r.Get("/settings", handleAPIGetAllSettings)
 		r.Post("/settings", handleAPIBulkSetSettings)
 		r.Get("/settings/kanban/warnings", handleAPIGetKanbanConfigWarnings)
+		r.Post("/settings/kanban/statuses/rename", handleAPIRenameKanbanStatus)
 		r.Get("/settings/{section}", handleAPIGetSettingsSection)
 		r.Post("/settings/{key}", handleAPISetSetting)
 

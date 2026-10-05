@@ -15,7 +15,9 @@
   - reset/copy todo list
 - fixes
 - chore
-  - The render package relies on builtin-theme DOM and functions (theme-agnostic rule). #fp-toc-nav, #fp-toc-filter, setupTocFolding and filterTocItems exist only in themes/builtin. The null and typeof guards make it a clean no-op in the example theme, so nothing breaks. But it’s another implicit render↔builtin dependency. There is precedent (fp-menu-wrap in render_editor_listtodo.go), so this is consistent, just not ideal.
+  - table editor select + delete multiple rows (only deletes one at the moment)
+  - ctrl +s in table editor
+  - table with numbers - why is there no filter?
 - test
   - remote git in mobile
   - does the import/export of settings still work?

@@ -12,6 +12,8 @@ func (n *noopStorage) GetEvents(_, _ string, _, _ *time.Time, _ int) ([]Event, e
 	return []Event{}, nil
 }
 
+func (n *noopStorage) RenameStatus(_, _ string) error { return nil }
+
 func (n *noopStorage) insertEvents(_ []Event) error { return nil }
 
 func (n *noopStorage) GetBackendType() string { return "noop" }

@@ -31,6 +31,8 @@ type Event struct {
 type KanbanStorage interface {
 	LogEvent(filePath, boardFolder, fromStatus, toStatus string) error
 	GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]Event, error)
+	// RenameStatus rewrites oldStatus to newStatus in the from/to status of every event.
+	RenameStatus(oldStatus, newStatus string) error
 	// insertEvents bulk-inserts events verbatim, preserving their original timestamps. Used
 	// only by the provider-migration path below, since LogEvent always stamps time.Now().
 	insertEvents(events []Event) error
@@ -324,6 +326,13 @@ func GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]
 	storageMu.RLock()
 	defer storageMu.RUnlock()
 	return storage.GetEvents(boardFolder, filePath, from, to, limit)
+}
+
+// RenameStatus rewrites oldStatus to newStatus in the from/to status of every logged event.
+func RenameStatus(oldStatus, newStatus string) error {
+	storageMu.RLock()
+	defer storageMu.RUnlock()
+	return storage.RenameStatus(oldStatus, newStatus)
 }
 
 // GetBackendType returns the backend type currently active ("sqlite", "json", or "noop" if

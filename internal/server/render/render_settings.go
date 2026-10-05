@@ -113,6 +113,25 @@ func RenderKanbanConfigWarnings(warnings []string, t func(string, ...any) string
 	return html.String()
 }
 
+// RenderKanbanStatusRenameItem renders the kanban settings item renaming a status everywhere it's
+// stored (tags, foldersync folders, card order, history), not only in the status list.
+func RenderKanbanStatusRenameItem(statuses []string, t func(string, ...any) string) string {
+	var html strings.Builder
+	html.WriteString(`<div class="setting-item">`)
+	fmt.Fprintf(&html, `<label>%s</label>`, t("Rename Status"))
+	fmt.Fprintf(&html, `<div class="help-text">%s</div>`, t("renames a status in all kanban settings, the status tag of every file, the status folders of foldersync boards, the card order and the status names in the history - saved filters, dashboards and links in file content that use the old status tag are not updated"))
+	fmt.Fprintf(&html, `<form hx-post="/api/settings/kanban/statuses/rename" hx-target="#kanban-status-rename-result" hx-confirm="%s">`, t("rename this status everywhere? this moves files on foldersync boards"))
+	html.WriteString(`<select name="from" class="form-select" required>`)
+	for _, s := range statuses {
+		fmt.Fprintf(&html, `<option value="%s">%s</option>`, template.HTMLEscapeString(s), template.HTMLEscapeString(s))
+	}
+	html.WriteString(`</select>`)
+	fmt.Fprintf(&html, `<input type="text" name="to" class="form-input" required pattern="[A-Za-z0-9_]+" placeholder="%s" />`, t("new name"))
+	fmt.Fprintf(&html, `<button type="submit" class="btn-primary">%s</button>`, t("rename"))
+	html.WriteString(`</form><div id="kanban-status-rename-result"></div></div>`)
+	return html.String()
+}
+
 // RenderFaviconItem renders the favicon upload setting item for the General settings section.
 func RenderFaviconItem(t func(string, ...any) string) string {
 	var html strings.Builder

@@ -178,6 +178,21 @@ func (s *sqliteKanbanStorage) GetEvents(boardFolder, filePath string, from, to *
 	return events, rows.Err()
 }
 
+// RenameStatus rewrites oldStatus to newStatus in the from/to status of every event.
+func (s *sqliteKanbanStorage) RenameStatus(oldStatus, newStatus string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	_, err := s.db.Exec(
+		`UPDATE kanban_events SET
+			from_status = CASE WHEN from_status = ? THEN ? ELSE from_status END,
+			to_status   = CASE WHEN to_status   = ? THEN ? ELSE to_status   END
+		WHERE from_status = ? OR to_status = ?`,
+		oldStatus, newStatus, oldStatus, newStatus, oldStatus, oldStatus,
+	)
+	return err
+}
+
 // GetBackendType returns the backend type.
 func (s *sqliteKanbanStorage) GetBackendType() string {
 	return "sqlite"

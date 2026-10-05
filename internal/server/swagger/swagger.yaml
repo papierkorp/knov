@@ -493,6 +493,18 @@ definitions:
     - IssueUnknownTag
     - IssueFolderMismatch
     - IssueNoBoard
+  kanban.RenameResult:
+    properties:
+      folders:
+        description: foldersync status folders renamed
+        type: integer
+      linksFailed:
+        description: moved files whose links couldn't be updated
+        type: integer
+      retagged:
+        description: files whose status tag was renamed
+        type: integer
+    type: object
   notificationStorage.Notification:
     properties:
       created_at:
@@ -4654,6 +4666,48 @@ paths:
           schema:
             type: string
       summary: Get settings section
+      tags:
+      - settings
+  /api/settings/kanban/statuses/rename:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 'Renames a kanban status everywhere it''s stored: the kanban settings,
+        the status tag of every file, the status folders of foldersync boards, the
+        stored card order and the logged events. Runs as the kanban-rename-status
+        job.'
+      parameters:
+      - description: Current status name
+        in: formData
+        name: from
+        required: true
+        type: string
+      - description: New status name
+        in: formData
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/kanban.RenameResult'
+        "400":
+          description: invalid status
+          schema:
+            type: string
+        "409":
+          description: job already running
+          schema:
+            type: string
+        "500":
+          description: failed to rename status
+          schema:
+            type: string
+      summary: Rename a kanban status
       tags:
       - settings
   /api/settings/kanban/warnings:

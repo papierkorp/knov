@@ -1,7 +1,9 @@
 package configmanager
 
 import (
+	"slices"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -95,5 +97,70 @@ func TestBulkSetAllOrNothing(t *testing.T) {
 	}
 	if pageSize.Get() != original {
 		t.Errorf("pageSize = %d after a rejected bulk update, want unchanged %d", pageSize.Get(), original)
+	}
+}
+
+func TestRenameKanbanStatus(t *testing.T) {
+	settings := []*StringSliceSetting{KanbanStatuses, KanbanColumns, KanbanAncestorAllowedStatus, KanbanCardStyles, KanbanTagColors, AutoCreateTags, HideFilesByTag}
+	for _, s := range settings {
+		defer s.store(s.Get())
+	}
+	defer KanbanArchiveStatus.store(KanbanArchiveStatus.Get())
+
+	tag := KanbanStatusTag("inbox")
+	errs := BulkSetFromForm(map[string][]string{
+		"kanbanStatuses":              {"inbox,done"},
+		"kanbanColumns":               {"inbox"},
+		"kanbanArchiveStatus":         {"inbox"},
+		"kanbanAncestorAllowedStatus": {"inbox,done"},
+		"kanbanCardStyles":            {"inbox:italic,done:deleted"},
+		"kanbanTagColors":             {tag + ":red,urgent:orange"},
+		"autoCreateTags":              {tag + ",projects:" + tag + ",starred"},
+		"hideFilesByTag":              {strings.ToUpper(tag) + "::kanban," + tag + "*,private"},
+	})
+	if len(errs) > 0 {
+		t.Fatalf("setup failed: %v", errs)
+	}
+
+	for _, bad := range [][2]string{{"missing", "x"}, {"inbox", "inbox"}, {"inbox", "done"}, {"inbox", "bad name"}} {
+		if err := RenameKanbanStatus(bad[0], bad[1]); err == nil {
+			t.Errorf("rename %q -> %q accepted", bad[0], bad[1])
+		}
+	}
+
+	if err := RenameKanbanStatus("inbox", "todo"); err != nil {
+		t.Fatalf("rename failed: %v", err)
+	}
+	newTag := KanbanStatusTag("todo")
+	want := map[string][]string{
+		"statuses":   {"todo", "done"},
+		"columns":    {"todo"},
+		"ancestor":   {"todo", "done"},
+		"cardStyles": {"todo:italic", "done:deleted"},
+		"tagColors":  {newTag + ":red", "urgent:orange"},
+		"autoCreate": {newTag, "projects:" + newTag, "starred"},
+		"hide":       {newTag + "::kanban", tag + "*", "private"},
+	}
+	got := map[string][]string{
+		"statuses":   KanbanStatuses.Get(),
+		"columns":    KanbanColumns.Get(),
+		"ancestor":   KanbanAncestorAllowedStatus.Get(),
+		"cardStyles": KanbanCardStyles.Get(),
+		"tagColors":  KanbanTagColors.Get(),
+		"autoCreate": AutoCreateTags.Get(),
+		"hide":       HideFilesByTag.Get(),
+	}
+	for k := range want {
+		if !slices.Equal(got[k], want[k]) {
+			t.Errorf("%s = %v, want %v", k, got[k], want[k])
+		}
+	}
+	if a := KanbanArchiveStatus.Get(); a != "todo" {
+		t.Errorf("archive status = %q, want todo", a)
+	}
+
+	// the settings step runs last, so once it ran the old name is unknown
+	if err := RenameKanbanStatus("inbox", "todo"); err == nil {
+		t.Error("second rename of the already renamed status accepted")
 	}
 }
