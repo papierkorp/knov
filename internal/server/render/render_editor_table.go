@@ -509,6 +509,15 @@ function withGroupedHistory(fn) {
 	}
 }
 
+// Ctrl/Cmd+S saves instead of triggering the browser's "Save Page" dialog - blurring
+// first commits a cell that is still being edited
+container.addEventListener('keydown', function(e) {
+	if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 's') return;
+	e.preventDefault();
+	document.activeElement.blur();
+	saveTable();
+});
+
 container.addEventListener('keydown', function(e) {
 	if ((e.key !== 'Delete' && e.key !== 'Backspace') || !tableOptions.selectableCellRange) return;
 	if (table.modules.edit && table.modules.edit.currentCell) return;

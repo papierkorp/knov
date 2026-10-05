@@ -1,6 +1,6 @@
 # unreleased
 
-_11 commits since last release_
+_12 commits since last release_
 
 ## upgrading from v1.1.1 to next release
 
@@ -12,6 +12,7 @@ _11 commits since last release_
 - themes: the dropdown menu classes `fp-menu-wrap`, `fp-menu-btn`, `fp-menu`, `fp-menu-item` and `fp-menu-item--danger` were renamed to `menu-wrap`, `menu-btn`, `menu`, `menu-item` and `menu-item--danger`. update custom css and custom themes that target the old names
 
 ## changes
+- remove all selected rows/columns in table editor
 - highlight the toc entry matching the url hash in the sidebar
 - add optional setting to remove empty folders in the file sync cronjob
 

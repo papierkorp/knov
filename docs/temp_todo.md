@@ -15,7 +15,6 @@
   - reset/copy todo list
 - fixes
 - chore
-  - ctrl +s in table editor
   - table with numbers - why is there no filter?
 - test
   - remote git in mobile
