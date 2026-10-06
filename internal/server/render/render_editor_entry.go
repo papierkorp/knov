@@ -234,7 +234,7 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		inputID := fmt.Sprintf("entry-file-%d", entryRowCounter.Add(1))
 		html.WriteString(`<div class="entry-file">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, t("file"))
-		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, placeholder, "/api/files/autocomplete", false))
+		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), book.DecodeFileRef(entry.Value), placeholder, "/api/files/autocomplete", false))
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
 		if p, _ := parser.ResolveWikiTarget(entry.Value); p != "" {

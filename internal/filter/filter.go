@@ -15,6 +15,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
@@ -351,7 +352,7 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	var sb strings.Builder
 	for _, file := range result.Files {
 		rel := pathutils.ToRelative(file.Path)
-		fmt.Fprintf(&sb, "- [%s](%s)\n", rel, rel)
+		fmt.Fprintf(&sb, "- [%s](%s)\n", rel, parser.EncodeLinkPath(rel, parser.LinkMarkdown))
 	}
 
 	pairedPath := store.PairedPath(filterID)

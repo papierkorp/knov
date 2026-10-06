@@ -3,14 +3,12 @@ package utils
 
 import (
 	"fmt"
-	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
-
-	"knov/internal/pathutils/crosspath"
 )
 
 func CleanseID(input string) string {
@@ -26,13 +24,10 @@ func CleanseID(input string) string {
 	return result
 }
 
-// CleanLink normalizes a link by removing anchors, aliases, and adding extensions
-func CleanLink(link string) string {
-	cleanLink := crosspath.ToSlash(link)
-	cleanLink = strings.Split(cleanLink, "#")[0]
-	// "?" always starts a query - it isn't a valid filename char on windows
-	cleanLink = strings.Split(cleanLink, "?")[0]
-	cleanLink = strings.Split(cleanLink, "|")[0]
+// NormalizeLinkPath maps a link path to its metadata path (/files/ url prefix, missing
+// extension). Takes a plain path - one from parser.DecodeLinkPath (ExtractLinks / RewriteLinks)
+// or a picked one like a parent - so a "#", "?", "|" or "\" in it is part of the filename.
+func NormalizeLinkPath(cleanLink string) string {
 	cleanLink = strings.TrimSpace(cleanLink)
 	// map URL path prefixes to metadata path prefixes
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
@@ -45,23 +40,16 @@ func CleanLink(link string) string {
 		}
 	}
 
-	// decode percent-encoding so paths like "docs/foo%20bar.md" become "docs/foo bar.md"
-	if decoded, err := url.PathUnescape(cleanLink); err == nil {
-		cleanLink = decoded
+	return WithDefaultLinkExt(cleanLink)
+}
+
+// WithDefaultLinkExt adds ".md" to a link path without extension, the way links to a note are
+// written - not to a media file or a folder ("docs/"). The one rule for rendering and link metadata.
+func WithDefaultLinkExt(p string) string {
+	if strings.HasPrefix(strings.TrimPrefix(p, "/"), "media/") || strings.HasSuffix(p, "/") || strings.Contains(path.Base(p), ".") {
+		return p
 	}
-
-	// don't add .md extension to media files or files with existing extensions
-	if strings.HasPrefix(cleanLink, "media/") ||
-		strings.HasSuffix(cleanLink, ".md") ||
-		strings.HasSuffix(cleanLink, ".txt") ||
-		strings.Contains(filepath.Base(cleanLink), ".") {
-		return cleanLink
-	}
-
-	// only add .md if no extension is present
-	cleanLink = cleanLink + ".md"
-
-	return cleanLink
+	return p + ".md"
 }
 
 // SanitizeFilename creates a sanitized filename with configurable options

@@ -1,10 +1,12 @@
 package parser
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
 	"knov/internal/pathutils"
+	"knov/internal/utils"
 )
 
 func TestProcessMarkdownLinks(t *testing.T) {
@@ -15,6 +17,24 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		{"fallback label plain path", "[](note.md)", "[note](" + pathutils.ToFileURL("note.md") + ")"},
 		// empty link text falls back to "filename - Header Text".
 		{"fallback label path plus anchor", "[](note.md#todo-vorlage)", "[note - Todo Vorlage](" + pathutils.ToFileURL("note.md") + "#todo-vorlage)"},
+		// media links are decoded once and re-encoded as a /media/ url
+		{"files media url", "[x](/files/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
+		{"media path", "[x](<media/a b.png>)", "[x](" + pathutils.ToMediaURL("a b.png") + "?mode=detail)"},
+		// query, anchor and title are kept for media links too
+		{"files media url query", "[x](/files/media/a.png?raw=1#p)", "[x](" + pathutils.ToMediaURL("a.png") + "?raw=1#p)"},
+		{"media path query", `[x](media/a.png?raw=1#p "t")`, "[x](" + pathutils.ToMediaURL("a.png") + `?raw=1&mode=detail#p "t")`},
+		// any scheme is external, like for link metadata - a one-letter one is a windows drive
+		{"mailto external", "[x](mailto:a@b.c)", "[x](mailto:a@b.c)"},
+		{"protocol-relative external", "[x](//cdn.example.com/a)", "[x](//cdn.example.com/a)"},
+		{"external bad escape", "[x](https://example.com/100%)", "[x](https://example.com/100%)"},
+		{"unc external", `[x](\\server\share)`, `[x](\\server\share)`},
+		// query and title are split off like RewriteLinks does, one level of (...) is part of the path
+		{"query", "[x](a.md?view=raw#sec)", "[x](" + pathutils.ToFileURL("a.md") + "?view=raw#sec)"},
+		{"title", `[x](a.md "t")`, "[x](" + pathutils.ToFileURL("a.md") + ` "t")`},
+		{"parens", "[x](a(1).md)", "[x](" + pathutils.ToFileURL("a(1).md") + ")"},
+		{"angled title", `[x](<a b.md#sec> "t")`, "[x](" + pathutils.ToFileURL("a b.md") + `#sec "t")`},
+		{"angled external", "[x](<https://example.com/a b>)", "[x](<https://example.com/a b>)"},
+		{"media no ext", "[x](media/a)", "[x](" + pathutils.ToMediaURL("a") + "?mode=detail)"},
 		// a same-page link: empty link text falls back to just the humanized header text, no
 		// filename prefix.
 		{"fallback label pure anchor", "[](#todo-vorlage)", "[Todo Vorlage](#todo-vorlage)"},
@@ -136,11 +156,11 @@ func TestWikiLinkPureAnchor(t *testing.T) {
 }
 
 func TestExtractLinksDestination(t *testing.T) {
-	in := `![x](</media/a%20b.png> "title") [y](note.md 'title') ![z](img/c.png) <img src="/media/d.png"> <a href='#top'> <a href="mailto:a@b.c"> <img src="data:image/png;base64,AAAA"> <img data-src="lazy.png"> <script src="//cdn.example.com/x.js"> <a href="/dashboard"> set src="prose.png" [[ns:page]] [[https://example.com]] ![w](C:\x.png) [e](a\_b.md) [f](sub\_res\a.md)
+	in := `![x](</media/a%20b.png> "title") [y](note.md 'title') ![z](img/c.png) <img src="/media/d.png"> <a href='#top'> <a href="mailto:a@b.c"> <img src="data:image/png;base64,AAAA"> <img data-src="lazy.png"> <script src="//cdn.example.com/x.js"> <a href="/dashboard"> set src="prose.png" [[ns:page]] [[https://example.com]] [[\\server\share]] ![w](C:\x.png) [e](a\_b.md) [f](sub\_res\a.md)
 [ref]: <ref img.png> "title"
 [note]: remember this
 [^1]: footnote text`
-	want := []string{"/media/a%20b.png", "note.md", "img/c.png", "C:/x.png", "a_b.md", "sub/_res/a.md", "ns:page", "/media/d.png", "ref img.png"}
+	want := []string{"/media/a b.png", "note.md", "img/c.png", "C:/x.png", "a_b.md", "sub/_res/a.md", "ns:page", "/media/d.png", "ref img.png"}
 	if got := NewMarkdownHandler().ExtractLinks([]byte(in)); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
 	}
@@ -177,5 +197,54 @@ func TestRewriteLinksBackslashes(t *testing.T) {
 	want := []string{"sub/_res/x.md", "a_b.md", "sub/_res/y"}
 	if strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("RewriteLinks paths = %q, want %q", got, want)
+	}
+}
+
+// every path EncodeLinkPath writes is read back unchanged by every link reader
+func TestEncodeLinkPathRoundTrip(t *testing.T) {
+	for _, p := range []string{"a%41.md", "100%.md", "my file (1).md", `it's "x".md`, "a<b>c.md", "a#b.md", "a?b.md", `a\b.md`, "a[1]|b.md", "ö ü.md", "ns:page.md"} {
+		md := "[x](" + EncodeLinkPath(p, LinkMarkdown) + ")\n[y](<" + EncodeLinkPath(p, LinkMarkdown) + ">)\n[[" + EncodeLinkPath(p, LinkWiki) + "]]"
+		if got := (&MarkdownHandler{}).ExtractLinks([]byte(md)); !slices.Equal(got, []string{p, p, p}) {
+			t.Errorf("ExtractLinks(%q) = %q, want 3x %q", md, got, p)
+		}
+		if got, want := ProcessMarkdownLinks("[x]("+EncodeLinkPath(p, LinkMarkdown)+")"), "[x]("+pathutils.ToFileURL(p)+")"; got != want {
+			t.Errorf("ProcessMarkdownLinks(%q) = %q, want %q", p, got, want)
+		}
+		if got, _ := ResolveWikiTarget(EncodeLinkPath(p, LinkWiki)); got != p {
+			t.Errorf("ResolveWikiTarget(%q) = %q, want %q", p, got, p)
+		}
+	}
+}
+
+// a ":" is only encoded before the first "/", where it would read as a scheme
+func TestEncodeLinkPathColon(t *testing.T) {
+	if got := EncodeLinkPath("ns:a/b:c.md", LinkMarkdown); got != "ns%3Aa/b:c.md" {
+		t.Errorf("EncodeLinkPath = %q, want ns%%3Aa/b:c.md", got)
+	}
+}
+
+// an encoded ":" is part of the path, not a scheme
+func TestExtractLinksEncodedColon(t *testing.T) {
+	if got := (&MarkdownHandler{}).ExtractLinks([]byte("[x](ns%3Apage.md) [y](mailto:a@b.c)")); !slices.Equal(got, []string{"ns:page.md"}) {
+		t.Errorf("ExtractLinks = %q, want [ns:page.md]", got)
+	}
+}
+
+// a callback returning the path it got, written encoded, leaves the link unchanged
+func TestRewriteLinksUnchangedEncoded(t *testing.T) {
+	in := "[x](a%20b.md) [[a%25b]]"
+	got, changed := RewriteLinks(in, func(p string, kind LinkKind) (string, bool) { return EncodeLinkPath(p, kind), true })
+	if changed || got != in {
+		t.Errorf("RewriteLinks = %q, %v, want %q unchanged", got, changed, in)
+	}
+}
+
+// a hand-written wikilink resolves to the same file for rendering and link metadata
+func TestWikiLinkRenderMatchesExtract(t *testing.T) {
+	for _, in := range []string{"page?x", "a b", "a%41", "dir/page.md#sec", "media/a"} {
+		want, _ := ResolveWikiTarget(in)
+		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[[" + in + "]]")); len(got) != 1 || utils.NormalizeLinkPath(got[0]) != want {
+			t.Errorf("[[%s]]: ExtractLinks = %q, ResolveWikiTarget = %q", in, got, want)
+		}
 	}
 }

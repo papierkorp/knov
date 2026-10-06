@@ -8,6 +8,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 )
 
@@ -105,5 +106,20 @@ func TestExpandFilters(t *testing.T) {
 	}
 	if last := got[len(got)-1]; last.Type != EntryUnknown || !strings.Contains(last.Value, "no files match filter `empty`") {
 		t.Errorf("empty filter = %+v, want empty-state note", last)
+	}
+}
+
+// a picked file path is stored encoded so the wikilink reads back as that file, and is shown
+// decoded again in the editor
+func TestFileRefRoundTrip(t *testing.T) {
+	for _, v := range []string{"a%41.md", "docs/a[1].md#My Section", "a b.md|alias"} {
+		stored := EncodeFileRef(v)
+		if got := DecodeFileRef(stored); got != v {
+			t.Errorf("DecodeFileRef(EncodeFileRef(%q)) = %q", v, got)
+		}
+		path, _ := parser.ResolveWikiTarget(stored)
+		if want, _, _ := strings.Cut(strings.Split(v, "|")[0], "#"); path != want {
+			t.Errorf("ResolveWikiTarget(%q) = %q, want %q", stored, path, want)
+		}
 	}
 }

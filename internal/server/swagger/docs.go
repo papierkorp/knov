@@ -1138,7 +1138,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "file path (path or path#section) or title text",
+                        "description": "plain file path (path or path#section, not url-encoded) or title text",
                         "name": "entries[][value]",
                         "in": "formData"
                     },
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "file path or title text",
+                        "description": "plain file path (not url-encoded) or title text",
                         "name": "entries[][value]",
                         "in": "formData"
                     }

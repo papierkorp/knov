@@ -8,6 +8,8 @@ import (
 
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
+	"knov/internal/parser"
+	"knov/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -93,5 +95,19 @@ func TestSanitizeKanbanTagsKeepsExisting(t *testing.T) {
 	got, err = SanitizeKanbanTags([]string{"a", orphan}, []string{"a", orphan, inbox})
 	if err != nil || !slices.Equal(got, []string{"a", inbox}) {
 		t.Errorf("new status: got %v, %v, want [a %s] and no error", got, err, inbox)
+	}
+}
+
+// a renamed file's link is written so link metadata reads it back as the same file - also with
+// characters that end a link or are decoded on read
+func TestRenamedLinkReadsBack(t *testing.T) {
+	h := &parser.MarkdownHandler{}
+	for _, p := range []string{"docs/a%41.md", "docs/my file (1).md", "docs/a#b.md", "docs/a?b.md", `docs/a\b.md`, "docs/a|b.md", "docs/ns:page.md", "docs/v1.2 notes.md"} {
+		for _, link := range []string{"[x](old.md)", "[[old.md]]", "[[old]]"} {
+			content, ok := parser.RewriteLinks(link, renameLinkFunc("old.md", p))
+			if got := h.ExtractLinks([]byte(content)); !ok || len(got) != 1 || utils.NormalizeLinkPath(got[0]) != p {
+				t.Errorf("%q renamed to %q = %q, links %q", link, p, content, got)
+			}
+		}
 	}
 }

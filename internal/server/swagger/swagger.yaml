@@ -1378,7 +1378,8 @@ paths:
         in: formData
         name: entries[][type]
         type: string
-      - description: file path (path or path#section) or title text
+      - description: plain file path (path or path#section, not url-encoded) or title
+          text
         in: formData
         name: entries[][value]
         type: string
@@ -1441,7 +1442,7 @@ paths:
         in: formData
         name: entries[][type]
         type: string
-      - description: file path or title text
+      - description: plain file path (not url-encoded) or title text
         in: formData
         name: entries[][value]
         type: string

@@ -17,6 +17,7 @@ import (
 	"knov/internal/pathutils"
 	"knov/internal/pathutils/crosspath"
 	"knov/internal/translation"
+	"knov/internal/utils"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/yuin/goldmark"
@@ -93,31 +94,29 @@ func ResolveWikiLinks(content string) string {
 
 // ResolveWikiTarget normalizes a wikilink body ("path", "path#anchor", "path|text", ...)
 // into a docs-relative path and a leading "#anchor" (empty when absent): drop the "|alias",
-// split off the "#anchor", default a missing extension to ".md", URL-decode the path. A
-// bare "#anchor" yields an empty path. Shared with internal/book so a book entry resolves
+// split off the "#anchor", decode the path (DecodeLinkPath), default a missing extension to
+// ".md". A bare "#anchor" yields an empty path. Shared with internal/book so a book entry resolves
 // its reference the same way the link renderer does.
 func ResolveWikiTarget(inner string) (linkPath, anchor string) {
-	if i := strings.Index(inner, "|"); i != -1 {
-		inner = inner[:i]
+	linkPath, rest := SplitWikiTarget(inner)
+	linkPath = strings.TrimSpace(linkPath)
+	if strings.HasPrefix(rest, "#") {
+		anchor, _, _ = strings.Cut(rest, "|")
+		anchor = strings.TrimSpace(anchor)
 	}
-	linkPath = strings.TrimSpace(inner)
-
-	if idx := strings.Index(linkPath, "#"); idx != -1 {
-		anchor = linkPath[idx:]
-		linkPath = linkPath[:idx]
-	}
-	linkPath = crosspath.ToSlash(linkPath)
 	if linkPath == "" {
 		return "", anchor
 	}
+	return utils.WithDefaultLinkExt(DecodeLinkPath(linkPath, LinkWiki)), anchor
+}
 
-	if !strings.Contains(filepath.Base(linkPath), ".") {
-		linkPath += ".md"
+// SplitWikiTarget splits a wikilink body into its path, as written, and the rest starting at
+// the "#anchor" or "|alias" - the path ends at the first "#" or "|".
+func SplitWikiTarget(inner string) (path, rest string) {
+	if i := strings.IndexAny(inner, "#|"); i != -1 {
+		return inner[:i], inner[i:]
 	}
-	if decoded, err := url.PathUnescape(linkPath); err == nil {
-		linkPath = decoded
-	}
-	return linkPath, anchor
+	return inner, ""
 }
 
 // wrapRawHTMLBlocks wraps bare HTML blocks in fenced code blocks so goldmark
@@ -712,11 +711,10 @@ func (h *MarkdownHandler) restoreHTMLBlocks(html, tag string, blocks []htmlWrapp
 // Post-processing (kept as-is — parser-agnostic custom features)
 // ---------------------------------------------------------------------------
 
-// resolveMediaPath returns a clean relative media path from a markdown image destination.
+// resolveMediaPath returns a clean relative media path from a markdown image destination
+// (goldmark already resolved its markdown escapes, so it's decoded like a non-markdown link).
 func resolveMediaPath(dest string) string {
-	if decoded, err := url.PathUnescape(dest); err == nil {
-		dest = decoded
-	}
+	dest = DecodeLinkPath(dest, LinkHTML)
 	if pathutils.IsMedia(dest) {
 		return pathutils.ToRelative(dest)
 	}
@@ -829,25 +827,22 @@ func (s *sectionWriter) closeSection() {
 // Link processing and helpers
 // ---------------------------------------------------------------------------
 
+// [text](dest) or ![alt](dest), the destination read like RewriteLinks does
+var processMdLinkRe = regexp.MustCompile(`(!)?\[([^\]]*)\]\(` + mdLinkDestPattern + `\)`)
+
 // ProcessMarkdownLinks rewrites internal [text](url) links to /files/ routes.
 // This is also where every empty-text "[](url)" link (including ones
 // ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
 // fallback label - keep that logic here only, see the note on ResolveWikiLinks.
 func ProcessMarkdownLinks(content string) string {
-	re := regexp.MustCompile(`(!)?\[([^\]]*)\]\(([^)]+)\)`)
-	return re.ReplaceAllStringFunc(content, func(match string) string {
-		matches := re.FindStringSubmatch(match)
+	return processMdLinkRe.ReplaceAllStringFunc(content, func(match string) string {
+		matches := processMdLinkRe.FindStringSubmatch(match)
 		if len(matches) < 4 {
 			return match
 		}
 		isImage := matches[1] == "!"
 		text := strings.TrimSpace(matches[2])
 		u := strings.TrimSpace(matches[3])
-
-		// strip CommonMark angle-bracket link destination syntax: <url with spaces>
-		if strings.HasPrefix(u, "<") && strings.HasSuffix(u, ">") {
-			u = u[1 : len(u)-1]
-		}
 
 		if isImage {
 			// escapes stay for goldmark, only windows separators are converted - in the path,
@@ -858,15 +853,18 @@ func ProcessMarkdownLinks(content string) string {
 			return matches[1] + "[" + text + "](" + u + ")"
 		}
 
-		// external links — leave as-is
-		if strings.Contains(u, "://") {
+		p, query, anchor, title := splitMarkdownLinkDest(u)
+
+		// external links (a scheme like https:/mailto: or a //host, same check as ExtractLinks) — leave as-is,
+		// a javascript: link is removed by sanitizeHTML
+		if isExternalLink(p, LinkMarkdown) {
 			return match
 		}
 
 		// pure anchor (same-page link) — fall back to the header text if empty
-		if strings.HasPrefix(u, "#") {
+		if p == "" {
 			if text == "" {
-				slug := strings.TrimPrefix(u, "#")
+				slug := strings.TrimPrefix(anchor, "#")
 				if decoded, err := url.PathUnescape(slug); err == nil {
 					slug = decoded
 				}
@@ -875,24 +873,15 @@ func ProcessMarkdownLinks(content string) string {
 			return "[" + text + "](" + u + ")"
 		}
 
-		// split off anchor fragment before any path processing
-		anchor := ""
-		if idx := strings.Index(u, "#"); idx != -1 {
-			anchor = u[idx:]
-			u = u[:idx]
-		}
-		u = markdownLinkPath(u)
+		u = DecodeLinkPath(p, LinkMarkdown)
 
 		// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
 		if text == "" {
-			decodedU, decodedAnchor := u, anchor
-			if decoded, err := url.PathUnescape(u); err == nil {
-				decodedU = decoded
-			}
+			decodedAnchor := anchor
 			if decoded, err := url.PathUnescape(anchor); err == nil {
 				decodedAnchor = decoded
 			}
-			text = autoLinkText(decodedU, decodedAnchor)
+			text = autoLinkText(u, decodedAnchor)
 		}
 		// "#My Section" -> the heading id, so a visible heading text (with spaces) works as
 		// anchor; an anchor that already is an id stays as written (e.g. percent-encoded). only
@@ -903,35 +892,30 @@ func ProcessMarkdownLinks(content string) string {
 			}
 		}
 
-		// media links
-		if strings.HasPrefix(u, "/files/media/") {
-			return "[" + text + "](/media/" + u[len("/files/media/"):] + ")"
-		}
 		if strings.HasPrefix(u, "/media/") {
 			// already an absolute, directly-servable media route — leave untouched
 			return match
 		}
-		if strings.HasPrefix(u, "media/") {
-			return "[" + text + "](/" + u + "?mode=detail)"
-		}
 
-		// already routed /files/ links — re-encode so goldmark accepts spaces/unicode
-		if strings.HasPrefix(u, "/files/") {
-			rel := u[len("/files/"):]
-			if decoded, err := url.PathUnescape(rel); err == nil {
-				rel = decoded
+		// u is decoded, so re-encode so goldmark accepts spaces/unicode; query, anchor and title
+		// are kept for every target
+		target := ""
+		if rel, ok := strings.CutPrefix(u, "/files/media/"); ok {
+			target = pathutils.ToMediaURL(rel)
+		} else if rel, ok := strings.CutPrefix(u, "media/"); ok {
+			target = pathutils.ToMediaURL(rel)
+			if query == "" {
+				query = "?mode=detail"
+			} else {
+				query += "&mode=detail"
 			}
-			return "[" + text + "](" + pathutils.ToFileURL(rel) + anchor + ")"
+		} else if rel, ok := strings.CutPrefix(u, "/files/"); ok {
+			target = pathutils.ToFileURL(rel)
+		} else {
+			// internal doc links — route to /files/
+			target = pathutils.ToFileURL(utils.WithDefaultLinkExt(u))
 		}
-
-		// internal doc links — route to /files/
-		if decoded, err := url.PathUnescape(u); err == nil {
-			u = decoded
-		}
-		if !strings.HasSuffix(u, ".md") {
-			u += ".md"
-		}
-		return "[" + text + "](" + pathutils.ToFileURL(u) + anchor + ")"
+		return "[" + text + "](" + target + query + anchor + title + ")"
 	})
 }
 
@@ -958,10 +942,10 @@ func humanizeSlug(slug string) string {
 	return strings.Join(words, " ")
 }
 
-// ExtractLinks returns the path of every link RewriteLinks sees, except external ones (with a
+// ExtractLinks returns the path of every link RewriteLinks passes on (it skips external ones: with a
 // scheme like http:/mailto:/data: or a host like //cdn...), pure anchors and html root links to
 // app routes (/dashboard, /search?q=...) - for html only /media/ and /files/ are files.
-// A wiki link is only external with "//" ([[ns:page]] is a path), a one-letter scheme is a
+// A wiki link is only external with "//" or a leading unc "\\" ([[ns:page]] is a path), a one-letter scheme is a
 // windows drive (C:\x.png), so both are still reported as (broken) links.
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	var links []string
@@ -969,7 +953,7 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	// never replaces one, so the (unchanged) content it returns is discarded
 	RewriteLinks(string(content), func(p string, kind LinkKind) (string, bool) {
 		p = strings.TrimSpace(p)
-		if p == "" || isExternalLink(p, kind) || IsAppRouteLink(p, kind) {
+		if p == "" || IsAppRouteLink(p, kind) {
 			return "", false
 		}
 		links = append(links, p)
@@ -978,12 +962,16 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	return links
 }
 
+// externalLinkRe matches a scheme (more than one letter, a single one is a windows drive) or a
+// //host or a windows \\server unc path - not url.Parse, which fails on an external url with a
+// bad escape like "100%"
+var externalLinkRe = regexp.MustCompile(`^([a-zA-Z][a-zA-Z0-9+.-]+:|//|\\\\)`)
+
 func isExternalLink(p string, kind LinkKind) bool {
 	if kind == LinkWiki {
-		return strings.Contains(p, "//")
+		return strings.Contains(p, "//") || strings.HasPrefix(p, `\\`)
 	}
-	u, err := url.Parse(p)
-	return err == nil && (len(u.Scheme) > 1 || u.Host != "")
+	return externalLinkRe.MatchString(p)
 }
 
 func (h *MarkdownHandler) Name() string {

@@ -111,7 +111,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept x-www-form-urlencoded
 // @Param filepath formData string true "file path"
 // @Param entries[][type] formData string false "entry type (file, title, separator)"
-// @Param entries[][value] formData string false "file path or title text"
+// @Param entries[][value] formData string false "plain file path (not url-encoded) or title text"
 // @Produce html
 // @Router /api/editor/indexeditor [post]
 func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 // @Accept x-www-form-urlencoded
 // @Param filepath formData string true "file path"
 // @Param entries[][type] formData string false "entry type (file, title, separator)"
-// @Param entries[][value] formData string false "file path (path or path#section) or title text"
+// @Param entries[][value] formData string false "plain file path (path or path#section, not url-encoded) or title text"
 // @Param entries[][subheaders] formData string false "include subheaders for a section entry"
 // @Produce html
 // @Router /api/editor/bookeditor [post]
@@ -207,6 +207,9 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		if entryType == book.EntryTitle {
 			lvl, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("entries[%d][level]", i)))
 			entry.Level = book.ClampLevel(lvl)
+		}
+		if entryType == book.EntryFile {
+			entry.Value = book.EncodeFileRef(entry.Value)
 		}
 		entries = append(entries, entry)
 	}

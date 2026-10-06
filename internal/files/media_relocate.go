@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -213,7 +212,7 @@ func (idx *relocateIndex) relinkFunc(doc string) func(p string, kind parser.Link
 			return "", false
 		}
 		if wiki {
-			return "media/" + idx.moved[src], true
+			return parser.EncodeLinkPath("media/"+idx.moved[src], kind), true
 		}
 		return pathutils.ToMediaURL(idx.moved[src]), true
 	}
@@ -226,9 +225,6 @@ func (idx *relocateIndex) relinkFunc(doc string) func(p string, kind parser.Link
 // alone. Stops at the first candidate that is an existing, not moved file, so a link never
 // gets redirected to a same-named file higher up.
 func (idx *relocateIndex) resolve(doc, link string, wiki bool) string {
-	if decoded, err := url.PathUnescape(link); err == nil {
-		link = decoded
-	}
 	root := strings.HasPrefix(link, "/")
 	if root && strings.HasPrefix(link, "/media/") {
 		if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {

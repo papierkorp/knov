@@ -146,6 +146,21 @@ func parseFileRef(body string) (ref string, sub bool, ok bool) {
 	return body[2:end], strings.Contains(body[end+2:], "<!-- subheaders -->"), true
 }
 
+// DecodeFileRef turns a file entry's Value (the [[...]] body as written) into the plain
+// "path#anchor" the editor shows; EncodeFileRef is the inverse for a picked or typed value.
+// The path is split off with parser.SplitWikiTarget, like parser.ResolveWikiTarget reads it, so a file
+// with "#" in its name can't be an entry; the "#anchor" is stored as typed.
+func DecodeFileRef(v string) string {
+	path, rest := parser.SplitWikiTarget(v)
+	return parser.DecodeLinkPath(path, parser.LinkWiki) + rest
+}
+
+// EncodeFileRef writes a plain "path#anchor" as a file entry Value - see DecodeFileRef.
+func EncodeFileRef(v string) string {
+	path, rest := parser.SplitWikiTarget(v)
+	return parser.EncodeLinkPath(path, parser.LinkWiki) + rest
+}
+
 // ToMarkdown serializes entries back to `.book`/`.index` markdown (inverse of Parse). File
 // entries are written as plain "- [[path]]" wikilinks so link detection picks them up;
 // alias syntax is never produced. A title is written with its Level worth of "#". An
