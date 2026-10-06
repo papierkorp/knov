@@ -9,7 +9,6 @@ package book
 
 import (
 	"fmt"
-	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -19,7 +18,6 @@ import (
 	"knov/internal/markdown"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
-	"knov/internal/utils"
 )
 
 // entry type discriminators, as stored in a `.book` / `.index` file
@@ -258,17 +256,9 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 		}
 
 		path, anchor := parser.ResolveWikiTarget(e.Value)
-		// slugify the anchor to the id the renderer/TOC generate, so an entry can use the
-		// visible heading text ("notes.md#My Section"), not just a pre-slugified id.
-		// GenerateID is idempotent, so dedup ids ("#my-section-1") work too; a bare-text
+		// the visible heading text ("notes.md#My Section") works as anchor too; a bare-text
 		// anchor matching several headings resolves to the first.
-		section := strings.TrimPrefix(anchor, "#")
-		if decoded, decErr := url.PathUnescape(section); decErr == nil {
-			section = decoded
-		}
-		if section != "" {
-			section = utils.GenerateID(section, map[string]int{})
-		}
+		section := parser.AnchorID(anchor)
 
 		var (
 			content  string

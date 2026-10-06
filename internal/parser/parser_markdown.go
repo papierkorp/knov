@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -892,6 +893,14 @@ func ProcessMarkdownLinks(content string) string {
 				decodedAnchor = decoded
 			}
 			text = autoLinkText(decodedU, decodedAnchor)
+		}
+		// "#My Section" -> the heading id, so a visible heading text (with spaces) works as
+		// anchor; an anchor that already is an id stays as written (e.g. percent-encoded). only
+		// for markdown targets, other fragments (doc.pdf#page=3) stay as written
+		if ext := path.Ext(u); ext == "" || ext == ".md" {
+			if id := AnchorID(anchor); id != "" && id != anchorText(anchor) {
+				anchor = "#" + id
+			}
 		}
 
 		// media links

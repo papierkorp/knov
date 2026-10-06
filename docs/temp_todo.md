@@ -8,7 +8,6 @@
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - multiview in theme
   - a collection/library for books so i can download multiple books with one click
-  - book/index editor - drag and drop
   - system/structure for startup warnings
   - tournament editor
   - encrypt single files/folders
@@ -17,7 +16,6 @@
 - chore
 - test
   - remote git in mobile
-  - does the import/export of settings still work?
 
 # reserved folders refactoring
 

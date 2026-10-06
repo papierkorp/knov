@@ -18,6 +18,9 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		// a same-page link: empty link text falls back to just the humanized header text, no
 		// filename prefix.
 		{"fallback label pure anchor", "[](#todo-vorlage)", "[Todo Vorlage](#todo-vorlage)"},
+		// a visible heading text as anchor becomes the heading id, so the link stays whole
+		{"anchor text slugged", "[x](<a.md#Phase 1: Plan>)", "[x](" + pathutils.ToFileURL("a.md") + "#phase-1-plan)"},
+		{"wiki anchor text slugged", "[x](/files/a.md#Phase 1)", "[x](" + pathutils.ToFileURL("a.md") + "#phase-1)"},
 		// a percent-encoded path segment (a space in the folder name) is decoded before the
 		// fallback label is built from it.
 		{"percent-encoded path decoded before label", "[](mein%20ordner/notiz.md#eintrag-eins)", "[notiz - Eintrag Eins](" + pathutils.ToFileURL("mein ordner/notiz.md") + "#eintrag-eins)"},
@@ -33,8 +36,8 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		// transformation the image branch ever applies.
 		{"image embed backslash path normalized", `![Diagram](sub\diagram.png)`, "![Diagram](sub/diagram.png)"},
 		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + pathutils.ToFileURL("sub/note.md") + ")"},
-		// a markdown escape (\_) is no separator, and the anchor is left as written
-		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + pathutils.ToFileURL("a_b.md") + `#c\d)`},
+		// a markdown escape (\_) is no separator, the anchor becomes its heading id
+		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + pathutils.ToFileURL("a_b.md") + "#c-d)"},
 		{"image embed markdown escape kept", `![D](a\_b.png)`, `![D](a\_b.png)`},
 		// in a windows path every "\" is a separator, also before punctuation (_resources)
 		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + pathutils.ToFileURL("sub/_resources/a.md") + ")"},

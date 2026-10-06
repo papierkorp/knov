@@ -8,6 +8,8 @@ import (
 	"knov/internal/logging"
 )
 
+var nonIDCharsRe = regexp.MustCompile(`[^\p{L}\p{N}]+`)
+
 // GenerateID generates a unique ID from header text with collision handling.
 //
 // This is the one slug function for header ids: the markdown renderer/TOC
@@ -18,7 +20,7 @@ import (
 // both sides through a shared helper.
 func GenerateID(text string, usedIDs map[string]int) string {
 	id := strings.ToLower(text)
-	id = regexp.MustCompile(`[^\p{L}\p{N}]+`).ReplaceAllString(id, "-")
+	id = nonIDCharsRe.ReplaceAllString(id, "-")
 	id = strings.Trim(id, "-")
 
 	if id == "" {
