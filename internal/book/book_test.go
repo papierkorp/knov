@@ -3,13 +3,17 @@ package book
 import (
 	"errors"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/test/specialchars"
 )
 
 func TestMain(m *testing.M) {
@@ -21,6 +25,7 @@ func TestMain(m *testing.M) {
 	if err := contentStorage.Init(); err != nil {
 		panic(err)
 	}
+	contentHandler.Init()
 	code := m.Run()
 	os.RemoveAll(dir)
 	os.Exit(code)
@@ -109,17 +114,39 @@ func TestExpandFilters(t *testing.T) {
 	}
 }
 
-// a picked file path is stored encoded so the wikilink reads back as that file, and is shown
-// decoded again in the editor
+// a picked special-char file path (with or without a section) is stored encoded, read back by
+// Parse as the same file, shown decoded again in the editor and included by ComposeEntries
 func TestFileRefRoundTrip(t *testing.T) {
-	for _, v := range []string{"a%41.md", "docs/a[1].md#My Section", "a b.md|alias"} {
-		stored := EncodeFileRef(v)
-		if got := DecodeFileRef(stored); got != v {
-			t.Errorf("DecodeFileRef(EncodeFileRef(%q)) = %q", v, got)
+	for _, p := range specialchars.Names {
+		if !specialchars.ValidOn(runtime.GOOS, p) {
+			continue
 		}
-		path, _ := parser.ResolveWikiTarget(stored)
-		if want, _, _ := strings.Cut(strings.Split(v, "|")[0], "#"); path != want {
-			t.Errorf("ResolveWikiTarget(%q) = %q, want %q", stored, path, want)
+		full := pathutils.ToDocsPath(p)
+		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := contentStorage.WriteFile(full, []byte("content of "+p+"\n\n## My Section\n\nsection of "+p+"\n"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		for _, v := range []string{p, p + "#My Section"} {
+			entries := Parse(ToMarkdown([]Entry{{Type: EntryFile, Value: EncodeFileRef(v)}}))
+			if len(entries) != 1 || entries[0].Type != EntryFile {
+				t.Errorf("Parse(ToMarkdown(%q)) = %+v", v, entries)
+				continue
+			}
+			if got := DecodeFileRef(entries[0].Value); got != v {
+				t.Errorf("DecodeFileRef(%q) = %q, want %q", entries[0].Value, got, v)
+			}
+			if path, _ := parser.ResolveWikiTarget(entries[0].Value); path != p {
+				t.Errorf("ResolveWikiTarget(%q) = %q, want %q", entries[0].Value, path, p)
+			}
+			want := "content of " + p
+			if v != p {
+				want = "section of " + p
+			}
+			if got := ComposeEntries("test.book", entries); !strings.Contains(got, want) {
+				t.Errorf("ComposeEntries(%q) = %q, want %q included", entries[0].Value, got, want)
+			}
 		}
 	}
 }

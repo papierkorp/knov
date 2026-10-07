@@ -9,6 +9,7 @@ import (
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/parser"
+	"knov/internal/test/specialchars"
 	"knov/internal/utils"
 )
 
@@ -98,15 +99,21 @@ func TestSanitizeKanbanTagsKeepsExisting(t *testing.T) {
 	}
 }
 
-// a renamed file's link is written so link metadata reads it back as the same file - also with
-// characters that end a link or are decoded on read
+// a renamed file's link is written so link metadata reads it back as the same file, for every
+// special-char name - renamed to it, and renamed away from it again (the links the first rename wrote)
 func TestRenamedLinkReadsBack(t *testing.T) {
 	h := &parser.MarkdownHandler{}
-	for _, p := range []string{"docs/a%41.md", "docs/my file (1).md", "docs/a#b.md", "docs/a?b.md", `docs/a\b.md`, "docs/a|b.md", "docs/ns:page.md", "docs/v1.2 notes.md"} {
-		for _, link := range []string{"[x](old.md)", "[[old.md]]", "[[old]]"} {
-			content, ok := parser.RewriteLinks(link, renameLinkFunc("old.md", p))
+	for _, name := range specialchars.Names {
+		p := "docs/" + name
+		for _, link := range []string{"[x](docs/old.md)", "[[docs/old.md]]", "[[docs/old]]", "[x](/files/docs/old.md)", `<a href="/files/docs/old.md">x</a>`} {
+			content, ok := parser.RewriteLinks(link, renameLinkFunc("docs/old.md", p))
 			if got := h.ExtractLinks([]byte(content)); !ok || len(got) != 1 || utils.NormalizeLinkPath(got[0]) != p {
 				t.Errorf("%q renamed to %q = %q, links %q", link, p, content, got)
+				continue
+			}
+			back, ok := parser.RewriteLinks(content, renameLinkFunc(p, "docs/new.md"))
+			if got := h.ExtractLinks([]byte(back)); !ok || len(got) != 1 || utils.NormalizeLinkPath(got[0]) != "docs/new.md" {
+				t.Errorf("%q renamed from %q = %q, links %q", content, p, back, got)
 			}
 		}
 	}

@@ -1,11 +1,15 @@
 package parser
 
 import (
+	"html"
+	"net/url"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
 	"knov/internal/pathutils"
+	"knov/internal/test/specialchars"
 	"knov/internal/utils"
 )
 
@@ -200,20 +204,73 @@ func TestRewriteLinksBackslashes(t *testing.T) {
 	}
 }
 
-// every path EncodeLinkPath writes is read back unchanged by every link reader
-func TestEncodeLinkPathRoundTrip(t *testing.T) {
-	for _, p := range []string{"a%41.md", "100%.md", "my file (1).md", `it's "x".md`, "a<b>c.md", "a#b.md", "a?b.md", `a\b.md`, "a[1]|b.md", "ö ü.md", "ns:page.md"} {
-		md := "[x](" + EncodeLinkPath(p, LinkMarkdown) + ")\n[y](<" + EncodeLinkPath(p, LinkMarkdown) + ">)\n[[" + EncodeLinkPath(p, LinkWiki) + "]]"
-		if got := (&MarkdownHandler{}).ExtractLinks([]byte(md)); !slices.Equal(got, []string{p, p, p}) {
-			t.Errorf("ExtractLinks(%q) = %q, want 3x %q", md, got, p)
+// every special-char file name, written by EncodeLinkPath (or as an app url) in each link form,
+// is read back as the same file by every reader: link metadata, wikilink resolving and the
+// rendered href / media preview
+func TestSpecialCharLinksRoundTrip(t *testing.T) {
+	h := NewMarkdownHandler()
+	for _, p := range specialchars.Names {
+		md, wiki := EncodeLinkPath(p, LinkMarkdown), EncodeLinkPath(p, LinkWiki)
+		img := strings.Replace(p, ".md", ".png", 1)
+		writers := []struct{ name, link, want string }{
+			{"markdown", "[x](" + md + ")", p},
+			{"markdown <>", "[x](<" + md + ">)", p},
+			{"markdown anchor", "[x](" + md + "#sec)", p},
+			{"markdown file url", "[x](" + pathutils.ToFileURL(p) + ")", p},
+			{"wiki", "[[" + wiki + "]]", p},
+			{"wiki anchor", "[[" + wiki + "#sec]]", p},
+			{"image", "![x](" + EncodeLinkPath("media/"+img, LinkMarkdown) + ")", "media/" + img},
+			{"image media url", "![x](" + pathutils.ToMediaURL(img) + ")", "media/" + img},
+			{"markdown media url", "[x](" + pathutils.ToMediaURL(img) + ")", "media/" + img},
+			{"markdown media path", "[x](" + EncodeLinkPath("/media/"+img, LinkMarkdown) + ")", "media/" + img},
 		}
-		if got, want := ProcessMarkdownLinks("[x]("+EncodeLinkPath(p, LinkMarkdown)+")"), "[x]("+pathutils.ToFileURL(p)+")"; got != want {
-			t.Errorf("ProcessMarkdownLinks(%q) = %q, want %q", p, got, want)
+		// the extensionless form is only written when it reads as the same file (see renameLinkFunc)
+		if bare := strings.TrimSuffix(p, ".md"); utils.WithDefaultLinkExt(bare) == p {
+			writers = append(writers, struct{ name, link, want string }{"wiki no ext", "[[" + EncodeLinkPath(bare, LinkWiki) + "]]", p})
 		}
-		if got, _ := ResolveWikiTarget(EncodeLinkPath(p, LinkWiki)); got != p {
-			t.Errorf("ResolveWikiTarget(%q) = %q, want %q", p, got, p)
+		for _, w := range writers {
+			if got := h.ExtractLinks([]byte(w.link)); len(got) != 1 || pathutils.ToWithPrefix(utils.NormalizeLinkPath(got[0])) != pathutils.ToWithPrefix(w.want) {
+				t.Errorf("%s %q: ExtractLinks(%q) = %q", w.name, p, w.link, got)
+			}
+			if strings.HasPrefix(w.link, "[[") {
+				if got, _ := ResolveWikiTarget(w.link[2 : len(w.link)-2]); got != w.want {
+					t.Errorf("%s %q: ResolveWikiTarget(%q) = %q", w.name, p, w.link, got)
+				}
+			}
+			// the file view pipeline: Parse resolves the links, Render runs goldmark
+			parsed, _ := h.Parse([]byte(w.link))
+			out, err := h.Render(parsed, "", false)
+			if got := renderedTarget(string(out)); err != nil || got != w.want {
+				t.Errorf("%s %q: Render(%q) links to %q: %s", w.name, p, w.link, got, out)
+			}
 		}
 	}
+}
+
+var (
+	renderedHrefRe    = regexp.MustCompile(`<a href="([^"]*)"`)
+	renderedPreviewRe = regexp.MustCompile(`/api/media/preview\?path=([^&"]*)`)
+)
+
+// renderedTarget returns the metadata path the first link or media preview in rendered html
+// points at, as the browser would request it
+func renderedTarget(out string) string {
+	if m := renderedPreviewRe.FindStringSubmatch(out); m != nil {
+		p, _ := url.QueryUnescape(m[1])
+		return "media/" + p
+	}
+	m := renderedHrefRe.FindStringSubmatch(out)
+	if m == nil {
+		return ""
+	}
+	u, err := url.Parse(html.UnescapeString(m[1]))
+	if err != nil {
+		return ""
+	}
+	if rel, ok := strings.CutPrefix(u.Path, "/media/"); ok {
+		return "media/" + rel
+	}
+	return pathutils.FileFromURL(u.String())
 }
 
 // a ":" is only encoded before the first "/", where it would read as a scheme

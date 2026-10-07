@@ -1,0 +1,224 @@
+package linkstest
+
+import (
+	"bytes"
+	"fmt"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+
+	"knov/internal/files"
+	"knov/internal/filter"
+	"knov/internal/logging"
+	"knov/internal/parser"
+	"knov/internal/pathutils"
+	"knov/internal/server"
+	"knov/internal/test"
+)
+
+// caseUpload uploads into a doc in a folder named after each corpus name, with the context_path
+// uploadMediaBlob sends (the edit page's location.pathname), and links the result the way
+// uploadFilesToEditor inserts it - the media file has to mirror the doc's folder.
+func caseUpload() test.CaseResult {
+	var gaps []string
+	for _, n := range names {
+		folder := testDir + "/upload/" + strings.TrimSuffix(n, ".md")
+		doc := folder + "/doc.md"
+		if err := saveDoc(doc, "# doc\n"); err != nil {
+			return errCase("links-upload", err)
+		}
+		file, header, err := multipartFile("pic.png", pngMagic)
+		if err != nil {
+			return errCase("links-upload", err)
+		}
+		res, err := files.UploadMedia(file, header, strings.TrimPrefix(pathutils.ToFileEditURL(doc), "/files/edit/"))
+		if err != nil {
+			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
+			continue
+		}
+		want := "media/" + folder + "/pic.png"
+		if "media/"+res.Path != want {
+			gaps = append(gaps, fmt.Sprintf("%q: uploaded to %q", want, "media/"+res.Path))
+		}
+		if err := saveDoc(doc, "![pic.png](media/"+res.Path+")\n"); err != nil {
+			return errCase("links-upload", err)
+		}
+		gaps = append(gaps, linkGaps(doc, []string{want})...)
+	}
+	return gapsCase("links-upload", "an upload from a doc in every special-char folder lands in its media mirror and the inserted link reads back as it", gaps)
+}
+
+// caseRename renames a linked file to every corpus name and away again - the links rename wrote
+// (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file.
+func caseRename() test.CaseResult {
+	var gaps []string
+	for i, n := range names {
+		dir := fmt.Sprintf("%s/rename/c%02d", testDir, i)
+		old, renamed, back := dir+"/old.md", dir+"/"+n, dir+"/back.md"
+		if err := saveDoc(old, "# old\n"); err != nil {
+			return errCase("links-rename", err)
+		}
+		srcs, err := saveForms(dir, map[string]string{
+			"markdown":    "[x](" + old + ")",
+			"wiki":        "[[" + old + "]]",
+			"wiki no ext": "[[" + strings.TrimSuffix(old, ".md") + "]]",
+			"file url":    "[x](" + pathutils.ToFileURL(old) + ")",
+			"html":        `<a href="` + pathutils.ToFileURL(old) + `">x</a>`,
+		})
+		if err != nil {
+			return errCase("links-rename", err)
+		}
+		for _, mv := range [][2]string{{old, renamed}, {renamed, back}} {
+			if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+				gaps = append(gaps, fmt.Sprintf("rename %q -> %q: %v", mv[0], mv[1], err))
+				break
+			}
+			for form, src := range srcs {
+				for _, g := range linkGaps(src, []string{pathutils.ToWithPrefix(mv[1])}) {
+					gaps = append(gaps, fmt.Sprintf("%s link after rename to %q: %s", form, mv[1], g))
+				}
+			}
+		}
+	}
+	files.RefreshCaches()
+	return gapsCase("links-rename", "links renamed to and away from every special-char name read back as the renamed file", gaps)
+}
+
+// caseRelocate puts a misplaced image named after each corpus name into the docs folder, links it
+// (markdown, wiki, html /files/ url, doc-relative markdown) and relocates it into the media folder -
+// the rewritten links have to read back as the moved file.
+func caseRelocate() test.CaseResult {
+	var selected []string
+	var srcs []map[string]string
+	for i, n := range names {
+		dir := fmt.Sprintf("%s/relocate/c%02d", testDir, i)
+		img := dir + "/" + imgName(n)
+		if err := writeDoc(img, pngMagic); err != nil {
+			return errCase("links-relocate", err)
+		}
+		forms, err := saveForms(dir, map[string]string{
+			"markdown":          "![x](" + parser.EncodeLinkPath(img, parser.LinkMarkdown) + ")",
+			"wiki":              "[[" + parser.EncodeLinkPath(img, parser.LinkWiki) + "]]",
+			"html":              `<img src="` + pathutils.ToFileURL(img) + `">`,
+			"markdown relative": "![y](" + parser.EncodeLinkPath(imgName(n), parser.LinkMarkdown) + ")",
+		})
+		if err != nil {
+			return errCase("links-relocate", err)
+		}
+		selected = append(selected, img)
+		srcs = append(srcs, forms)
+	}
+	files.RefreshCaches()
+	res, err := files.RelocateMisplacedMedia(logging.KeyApp, selected)
+	if err != nil {
+		return errCase("links-relocate", err)
+	}
+	var gaps []string
+	if res.Moved != len(selected) || res.Failed != 0 {
+		gaps = append(gaps, fmt.Sprintf("moved %d of %d, %d failed", res.Moved, len(selected), res.Failed))
+	}
+	for i, forms := range srcs {
+		for form, src := range forms {
+			for _, g := range linkGaps(src, []string{"media/" + selected[i]}) {
+				gaps = append(gaps, form+" link: "+g)
+			}
+		}
+	}
+	return gapsCase("links-relocate", "every special-char misplaced image is moved to its media mirror and all its links read back as the moved file", gaps)
+}
+
+// caseFilterIndex saves a filter selecting every target doc - its generated index has to link
+// each one.
+func caseFilterIndex() test.CaseResult {
+	const id = "links-tests"
+	cfg := &filter.Config{
+		Criteria: []filter.Criteria{{Metadata: "folders", Operator: "equals", Value: targetsFolder, Action: "include"}},
+		Logic:    "and",
+		Display:  "list",
+	}
+	if err := filter.SaveFilterConfig(cfg, id); err != nil {
+		return errCase("links-filter-index", err)
+	}
+	return gapsCase("links-filter-index", "the generated filter index links every special-char doc", linkGaps(filter.FilterIndexPath(id), allTargets()))
+}
+
+// caseBookEditor saves a book with every target doc as entry through the real book editor api
+// (the plain path as typed or picked) - the book has to link and include each one.
+func caseBookEditor() test.CaseResult {
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+
+	book := testDir + "/links.book"
+	form := url.Values{"filepath": {book}}
+	for i := range names {
+		form.Set(fmt.Sprintf("entries[%d][type]", i), "file")
+		form.Set(fmt.Sprintf("entries[%d][value]", i), target(i))
+	}
+	resp, err := ts.Client().PostForm(ts.URL+"/api/editor/bookeditor", form)
+	if err != nil {
+		return errCase("links-book-editor", err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errCase("links-book-editor", fmt.Errorf("save status %d", resp.StatusCode))
+	}
+
+	gaps := metadataGaps(book, allTargets())
+	fc, err := files.GetFileContent(pathutils.ToDocsPath(book))
+	if err != nil {
+		return errCase("links-book-editor", err)
+	}
+	for i := range names {
+		if !strings.Contains(fc.HTML, marker(i)) {
+			gaps = append(gaps, fmt.Sprintf("%q: not included in the composed book", target(i)))
+		}
+	}
+	return gapsCase("links-book-editor", "a book of every special-char doc links and includes each one", gaps)
+}
+
+// saveForms saves each link form into its own doc in dir, so a broken form can't hide behind a
+// working one, and returns the doc per form.
+func saveForms(dir string, forms map[string]string) (map[string]string, error) {
+	srcs := make(map[string]string, len(forms))
+	for form, link := range forms {
+		srcs[form] = dir + "/src-" + strings.ReplaceAll(form, " ", "-") + ".md"
+		if err := saveDoc(srcs[form], link+"\n"); err != nil {
+			return nil, err
+		}
+	}
+	return srcs, nil
+}
+
+// allTargets returns the metadata path of every seeded doc.
+func allTargets() []string {
+	want := make([]string, len(names))
+	for i := range names {
+		want[i] = pathutils.ToWithPrefix(target(i))
+	}
+	return want
+}
+
+// multipartFile builds the multipart.File/FileHeader pair the upload handler passes on.
+func multipartFile(filename string, content []byte) (multipart.File, *multipart.FileHeader, error) {
+	buf := new(bytes.Buffer)
+	writer := multipart.NewWriter(buf)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return nil, nil, err
+	}
+	if _, err := part.Write(content); err != nil {
+		return nil, nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, nil, err
+	}
+	form, err := multipart.NewReader(buf, writer.Boundary()).ReadForm(int64(len(content)) + 1024)
+	if err != nil {
+		return nil, nil, err
+	}
+	header := form.File["file"][0]
+	file, err := header.Open()
+	return file, header, err
+}

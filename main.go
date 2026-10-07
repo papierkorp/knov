@@ -49,6 +49,7 @@ import (
 	_ "knov/internal/test/githistorytest"
 	_ "knov/internal/test/jobstest"
 	_ "knov/internal/test/kanbantest"
+	_ "knov/internal/test/linkstest"
 	_ "knov/internal/test/logstest"
 	_ "knov/internal/test/mediatest"
 	_ "knov/internal/test/metadatatest"
