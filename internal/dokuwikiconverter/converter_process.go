@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"strings"
 
+	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/types"
 )
 
 // processDokuWikiSyntax applies unified detection and rendering for all syntax types
@@ -126,17 +128,14 @@ func (h *Converter) processMediaLinks(content string, outputFormat string) strin
 		mediaURL := pathutils.ToMediaURL(mediaPath)
 
 		// PDFs render as links, everything else as images
-		if strings.ToLower(filepath.Ext(mediaPath)) == ".pdf" {
-			if outputFormat == "html" {
-				return fmt.Sprintf(`<a href="%s">%s</a>`, mediaURL, altText)
-			}
-			return fmt.Sprintf("[%s](%s)", altText, mediaURL)
+		isPDF := strings.ToLower(filepath.Ext(mediaPath)) == ".pdf"
+		if outputFormat != "html" {
+			return parser.Link{Kind: parser.LinkMarkdown, Image: !isPDF, Text: altText, Path: "/media/" + mediaPath}.String()
 		}
-
-		if outputFormat == "html" {
-			return fmt.Sprintf(`<img src="%s" alt="%s" />`, mediaURL, altText)
+		if isPDF {
+			return fmt.Sprintf(`<a href="%s">%s</a>`, mediaURL, altText)
 		}
-		return fmt.Sprintf("![%s](%s)", altText, mediaURL)
+		return fmt.Sprintf(`<img src="%s" alt="%s" />`, mediaURL, altText)
 	})
 
 	return content
@@ -270,6 +269,8 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 			isExternal := strings.HasPrefix(originalURL, "http://") ||
 				strings.HasPrefix(originalURL, "https://") ||
 				strings.HasPrefix(originalURL, "www.")
+			// the markdown link, written by parser.Link from the decoded path
+			l := parser.Link{Kind: parser.LinkMarkdown, Text: text, Path: convertedURL, External: isExternal}
 			if !isExternal {
 				// handle dokuwiki namespaces and anchors
 				url := originalURL
@@ -287,22 +288,29 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 				url = strings.ReplaceAll(url, ">", "/")
 
 				// for internal links, create web path
+				l.Path, l.Anchor = "", anchor
 				if url != "" { // not just an anchor
 					ext := strings.ToLower(filepath.Ext(url))
-					// links pointing at binary/media files go to /media/, not /files/docs/
-					isMediaFile := ext != "" && ext != ".md" && ext != ".txt"
+					// links pointing at binary/media files go to /media/, not /files/docs/ - a dokuwiki
+					// id is a page otherwise, also with a dot in its name ("v1.2 notes")
+					isMediaFile := ext != ".md" && ext != ".txt" && types.MediaCategory(ext) != types.MediaCategoryOther
 					if isMediaFile {
 						convertedURL = pathutils.ToMediaURL(url) + anchor
+						l.Path = "/media/" + url
 					} else {
 						if !strings.HasSuffix(url, ".md") {
 							url += ".md"
 						}
 						convertedURL = pathutils.ToFileURL("docs/"+url) + anchor
+						l.Path = "/files/docs/" + url
 					}
 				} else {
 					// just an anchor link
 					convertedURL = anchor
 				}
+			}
+			if outputFormat != "html" {
+				return l.String()
 			}
 
 			element := DokuWikiElement{
@@ -482,14 +490,10 @@ func (h *Converter) convertIncludeSections(content string, outputFormat string) 
 		}
 
 		// use /files/docs/ prefix consistently
-		webPath := pathutils.ToFileURL("docs/"+url) + anchor
-
 		if outputFormat == "html" {
-			return fmt.Sprintf(`<a href="%s">%s</a>`, webPath, pathSection)
-		} else {
-			// markdown format
-			return fmt.Sprintf("[%s](%s)", pathSection, webPath)
+			return fmt.Sprintf(`<a href="%s">%s</a>`, pathutils.ToFileURL("docs/"+url)+anchor, pathSection)
 		}
+		return parser.Link{Kind: parser.LinkMarkdown, Text: pathSection, Path: "/files/docs/" + url, Anchor: anchor}.String()
 	})
 
 	return content

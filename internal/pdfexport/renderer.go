@@ -1,9 +1,10 @@
 package pdfexport
 
 import (
-	"net/url"
 	"strconv"
 	"strings"
+
+	"knov/internal/parser"
 
 	"github.com/go-pdf/fpdf"
 )
@@ -127,14 +128,10 @@ func (r *renderer) resolveLink(st style) (int, string) {
 	if !st.link {
 		return 0, ""
 	}
-	if slug, ok := strings.CutPrefix(st.href, "#"); ok {
-		// hand-typed anchors are often percent-encoded (e.g. copied from a
-		// rendered href); wiki-link-derived ones aren't. headingLinks is
-		// keyed by the decoded slug, so normalize before comparing.
-		if decoded, err := url.PathUnescape(slug); err == nil {
-			slug = decoded
-		}
-		if id, ok := r.headingLinks[slug]; ok {
+	if strings.HasPrefix(st.href, "#") {
+		// headingLinks is keyed by the heading id, the anchor may be percent-encoded or
+		// heading text - read it like the web view does
+		if id, ok := r.headingLinks[parser.AnchorID(parser.ParseLink(st.href, parser.LinkMarkdown).AnchorText())]; ok {
 			return id, ""
 		}
 		return 0, ""
@@ -251,7 +248,7 @@ func (r *renderer) drawHeader() {
 // image can't be embedded.
 func (r *renderer) drawZone(text string, st ZoneStyle, x, y, width float64, alignStr string) {
 	if m := zoneImageLinkRe.FindStringSubmatch(strings.TrimSpace(text)); m != nil {
-		if r.drawZoneImage(m[1], x, y, width, alignStr) {
+		if l := parser.ParseLink(m[1], parser.LinkMarkdown); !l.External && r.drawZoneImage(l.Path, x, y, width, alignStr) {
 			return
 		}
 	}

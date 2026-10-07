@@ -1111,7 +1111,7 @@ const docTemplate = `{
         },
         "/api/editor/bookeditor": {
             "post": {
-                "description": "Saves a .book file: an ordered list of file/title/separator entries. A file\nentry value may carry a #section suffix and a \"subheaders\" flag.",
+                "description": "Saves a .book file: an ordered list of file/title/separator entries. A file\nentry may carry a section and a \"subheaders\" flag.",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -1138,8 +1138,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "plain file path (path or path#section, not url-encoded) or title text",
+                        "description": "plain file path (not url-encoded) or title text",
                         "name": "entries[][value]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "heading text or id of a file entry, to include only that section",
+                        "name": "entries[][section]",
                         "in": "formData"
                     },
                     {
@@ -1231,6 +1237,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "plain file path (not url-encoded) or title text",
                         "name": "entries[][value]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "heading text or id of a file entry, to link a section",
+                        "name": "entries[][section]",
                         "in": "formData"
                     }
                 ],

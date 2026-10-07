@@ -40,7 +40,7 @@ const (
 var FilterResolver func(filterID string) ([]string, error)
 
 // Entry is one line of a `.book`/`.index` file, in composition order: a file/section
-// reference (EntryFile, Value "path" or "path#anchor"), a "# text" heading (EntryTitle,
+// reference (EntryFile, Value the [[...]] body "path" or "path#anchor", see DecodeFileRef), a "# text" heading (EntryTitle,
 // Level 1-6 for the "#" depth) or a "---" rule (EntrySeparator). IncludeSubheaders
 // round-trips as a trailing "<!-- subheaders -->" comment and only affects a section
 // reference.
@@ -146,23 +146,22 @@ func parseFileRef(body string) (ref string, sub bool, ok bool) {
 	return body[2:end], strings.Contains(body[end+2:], "<!-- subheaders -->"), true
 }
 
-// DecodeFileRef turns a file entry's Value (the [[...]] body as written) into the plain
-// "path#anchor" the editor shows; EncodeFileRef is the inverse for a picked or typed value.
-// The plain value ends its path at the first "#" or "|", like a wikilink, so a file with one of
-// them in its name can't be an entry; the typed path is trimmed, the "#anchor" / "|alias" is
-// stored as typed.
-func DecodeFileRef(v string) string {
+// DecodeFileRef turns a file entry's Value (the [[...]] body as written) into the plain path
+// and section ("" for a whole file) the editor shows apart, so any file name works;
+// EncodeFileRef is the inverse for a picked or typed pair. The typed path is trimmed, a typed
+// section is stored as its heading id (see parser.AnchorID) - a "|alias" isn't kept.
+func DecodeFileRef(v string) (path, section string) {
 	l := parser.ParseLink(v, parser.LinkWiki)
-	return l.Path + l.Anchor + l.Alias
+	return l.Path, l.AnchorText()
 }
 
-// EncodeFileRef writes a plain "path#anchor" as a file entry Value - see DecodeFileRef.
-func EncodeFileRef(v string) string {
-	path, rest := v, ""
-	if i := strings.IndexAny(v, "#|"); i != -1 {
-		path, rest = v[:i], v[i:]
+// EncodeFileRef writes a plain path and section as a file entry Value - see DecodeFileRef.
+func EncodeFileRef(path, section string) string {
+	l := parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSpace(path)}
+	if id := parser.AnchorID(strings.TrimSpace(section)); id != "" {
+		l.Anchor = "#" + id
 	}
-	return parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSpace(path)}.Dest() + rest
+	return l.Dest()
 }
 
 // ToMarkdown serializes entries back to `.book`/`.index` markdown (inverse of Parse). File
@@ -274,10 +273,10 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 			continue
 		}
 
-		path, anchor := parser.ResolveWikiTarget(e.Value)
+		path, _ := parser.ResolveWikiTarget(e.Value)
 		// the visible heading text ("notes.md#My Section") works as anchor too; a bare-text
 		// anchor matching several headings resolves to the first.
-		section := parser.AnchorID(anchor)
+		section := parser.AnchorID(parser.ParseLink(e.Value, parser.LinkWiki).AnchorText())
 
 		var (
 			content  string

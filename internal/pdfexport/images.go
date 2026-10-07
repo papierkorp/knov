@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 
 	"github.com/go-pdf/fpdf"
@@ -27,9 +28,8 @@ var imageExt = map[string]string{
 // media images are embedded; everything else (external URLs, unreadable or
 // unsupported files) falls back to a bracketed alt-text placeholder.
 func (r *renderer) renderImage(img *ast.Image) {
-	dest := string(img.Destination)
-	external := strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://")
-	if external || !r.embedImage(dest) {
+	l := parser.ParseLink(string(img.Destination), parser.LinkMarkdown)
+	if l.External || !r.embedImage(l.Path) {
 		alt := plainText(img, r.source)
 		r.writeParagraph(splitWords("[image: "+alt+"]", normalStyle()), 3)
 	}
@@ -86,12 +86,8 @@ const zoneImageHeightMM float64 = 8
 // drawZoneImage embeds dest as an image inside the zone spanning
 // [x, x+width) at row y..y+10, aligned per alignStr ("L", "C" or "R") and
 // scaled to zoneImageHeightMM tall (or narrower, if that would overflow the
-// zone width). Returns false if dest can't be embedded — including external
-// URLs, which don't resolve under the local media root.
+// zone width). Returns false if dest (a decoded local media path) can't be embedded.
 func (r *renderer) drawZoneImage(dest string, x, y, width float64, alignStr string) bool {
-	if strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://") {
-		return false
-	}
 	name, tp, ok := r.resolveImage(dest)
 	if !ok {
 		return false

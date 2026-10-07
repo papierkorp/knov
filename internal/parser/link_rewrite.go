@@ -19,16 +19,17 @@ const (
 	LinkHTML                     // <img/a/video/audio/source src/href="...">
 )
 
-// a markdown link destination: <...> plus title, or one level of (...) in it - shared by
-// RewriteLinks and ProcessMarkdownLinks so both see the same links
-const mdLinkDestPattern = `(<[^>\n]*>[^)\n]*|(?:[^()\n]|\([^()\n]*\))+)`
+// a markdown link destination: <...> plus title, or one level of (...) in it - a bare one never
+// starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link). shared by RewriteLinks and
+// ProcessMarkdownLinks so both see the same links
+const mdLinkDestPattern = `([ \t]*(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*))`
 
 var (
 	rewriteMdLinkRe   = regexp.MustCompile(`\]\(` + mdLinkDestPattern + `\)`)
 	wikiLinkRe        = regexp.MustCompile(`\[\[([^\[\]\n]+)\]\]`)
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
-	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|\S+)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
+	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	linkSuffixRe      = regexp.MustCompile(`\s+(?:=\d*x\d*|["'])`) // " =WxH" (wiki.js) or "title"
 	wikijsImageSizeRe = regexp.MustCompile(`^\s+=\d*x\d*`)
 	// a CommonMark backslash escape (\_ \( ...) - except "\.", so windows "..\" and ".hidden"
@@ -94,11 +95,9 @@ func ParseLink(dest string, kind LinkKind) Link {
 	dest = strings.TrimLeft(dest, " \t")
 	// title (and size) and trailing whitespace: after the ">" of a <...> destination, else from
 	// the first " title" / " =WxH" - what is left is "path?query#anchor"
-	if inner, ok := strings.CutPrefix(dest, "<"); ok && kind == LinkMarkdown {
-		dest = inner
-		if inner, title, ok := strings.Cut(inner, ">"); ok {
-			dest, l.Title, l.Angle = inner, wikijsImageSizeRe.ReplaceAllString(title, ""), true
-		}
+	// the angle branch only with a closing ">" - an unclosed "<" is part of the path
+	if inner, title, ok := strings.Cut(dest, ">"); ok && kind == LinkMarkdown && strings.HasPrefix(dest, "<") {
+		dest, l.Title, l.Angle = inner[1:], wikijsImageSizeRe.ReplaceAllString(title, ""), true
 	} else {
 		body := strings.TrimRight(dest, " \t\r") // \r: crlf line ending
 		l.Title = dest[len(body):]
@@ -143,6 +142,12 @@ func (l Link) Dest() string {
 		return "<" + p + l.Query + l.Anchor + ">" + l.Title
 	}
 	return p + l.Query + l.Anchor + l.Title
+}
+
+// AnchorText is the anchor without its "#", percent-decoded - the heading text or id it points
+// at ("" without anchor). The only place an anchor is decoded, see AnchorID.
+func (l Link) AnchorText() string {
+	return unescapePath(strings.TrimPrefix(strings.TrimSpace(l.Anchor), "#"))
 }
 
 // String writes a new markdown [text](dest) / ![alt](dest) or a [[wikilink]].
@@ -234,34 +239,60 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		return l.Dest()
 	}
 
+	content = replaceOutsideCode(content, func(part string, lineStart bool) string {
+		if sub := rewriteRefDefRe.FindStringSubmatch(part); lineStart && sub != nil {
+			return sub[1] + replace(sub[2], LinkMarkdown)
+		}
+		part = rewriteMdLinkRe.ReplaceAllStringFunc(part, func(m string) string {
+			return "](" + replace(m[2:len(m)-1], LinkMarkdown) + ")"
+		})
+		part = wikiLinkRe.ReplaceAllStringFunc(part, func(m string) string {
+			return "[[" + replace(m[2:len(m)-2], LinkWiki) + "]]"
+		})
+		return rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
+			// the path can't contain quotes, so the last one ends the tag prefix
+			i := strings.LastIndexAny(m, `"'`) + 1
+			return m[:i] + replace(m[i:], LinkHTML)
+		})
+	})
+	return content, changed
+}
+
+// replaceOutsideCode replaces every part of a line outside fenced code blocks and inline `code`
+// spans with fn(part, lineStart) - the link scanner of RewriteLinks and the renderer, so code is
+// never a link. lineStart is false for a part after a code span.
+func replaceOutsideCode(content string, fn func(part string, lineStart bool) string) string {
 	lines := strings.Split(content, "\n")
 	fenced := markdown.FenceMask(lines)
 	for i, line := range lines {
 		if fenced[i] {
 			continue
 		}
-		if sub := rewriteRefDefRe.FindStringSubmatch(line); sub != nil {
-			lines[i] = sub[1] + replace(sub[2], LinkMarkdown)
-			continue
-		}
 		// odd parts are inline `code` spans
 		parts := markdown.SplitCodeSpans(line)
 		for j := 0; j < len(parts); j += 2 {
-			part := rewriteMdLinkRe.ReplaceAllStringFunc(parts[j], func(m string) string {
-				return "](" + replace(m[2:len(m)-1], LinkMarkdown) + ")"
-			})
-			part = wikiLinkRe.ReplaceAllStringFunc(part, func(m string) string {
-				return "[[" + replace(m[2:len(m)-2], LinkWiki) + "]]"
-			})
-			parts[j] = rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
-				// the path can't contain quotes, so the last one ends the tag prefix
-				i := strings.LastIndexAny(m, `"'`) + 1
-				return m[:i] + replace(m[i:], LinkHTML)
-			})
+			parts[j] = fn(parts[j], j == 0)
 		}
 		lines[i] = strings.Join(parts, "")
 	}
-	return strings.Join(lines, "\n"), changed
+	return strings.Join(lines, "\n")
+}
+
+// maskCode replaces every byte of fenced code blocks and inline `code` spans with "\x00" (line
+// breaks kept), so a regex over the result never sees code and its indexes match content.
+func maskCode(content string) string {
+	lines := strings.Split(content, "\n")
+	fenced := markdown.FenceMask(lines)
+	for i, line := range lines {
+		parts := markdown.SplitCodeSpans(line)
+		for j := range parts {
+			if fenced[i] || j%2 == 1 {
+				parts[j] = strings.Repeat("\x00", len(parts[j]))
+			}
+		}
+		lines[i] = strings.Join(parts, "")
+	}
+	return strings.Join(lines, "\n")
 }
 
 // IsAppRouteLink reports whether a link is an html root link to an app route (/dashboard,

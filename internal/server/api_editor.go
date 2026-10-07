@@ -112,6 +112,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 // @Param filepath formData string true "file path"
 // @Param entries[][type] formData string false "entry type (file, title, separator)"
 // @Param entries[][value] formData string false "plain file path (not url-encoded) or title text"
+// @Param entries[][section] formData string false "heading text or id of a file entry, to link a section"
 // @Produce html
 // @Router /api/editor/indexeditor [post]
 func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
@@ -120,12 +121,13 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Save book editor
 // @Description Saves a .book file: an ordered list of file/title/separator entries. A file
-// @Description entry value may carry a #section suffix and a "subheaders" flag.
+// @Description entry may carry a section and a "subheaders" flag.
 // @Tags editor
 // @Accept x-www-form-urlencoded
 // @Param filepath formData string true "file path"
 // @Param entries[][type] formData string false "entry type (file, title, separator)"
-// @Param entries[][value] formData string false "plain file path (path or path#section, not url-encoded) or title text"
+// @Param entries[][value] formData string false "plain file path (not url-encoded) or title text"
+// @Param entries[][section] formData string false "heading text or id of a file entry, to include only that section"
 // @Param entries[][subheaders] formData string false "include subheaders for a section entry"
 // @Produce html
 // @Router /api/editor/bookeditor [post]
@@ -191,7 +193,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	}
 	fullPath := pathutils.ToDocsPath(filezpath)
 
-	// parse entries[i][type] / [value] / [subheaders]
+	// parse entries[i][type] / [value] / [section] / [subheaders]
 	var entries []book.Entry
 	for i := 0; ; i++ {
 		entryType := r.FormValue(fmt.Sprintf("entries[%d][type]", i))
@@ -209,7 +211,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 			entry.Level = book.ClampLevel(lvl)
 		}
 		if entryType == book.EntryFile {
-			entry.Value = book.EncodeFileRef(entry.Value)
+			entry.Value = book.EncodeFileRef(entry.Value, r.FormValue(fmt.Sprintf("entries[%d][section]", i)))
 		}
 		entries = append(entries, entry)
 	}

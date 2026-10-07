@@ -57,7 +57,7 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	return []byte(processed), nil
 }
 
-// ResolveWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
+// ResolveWikiLinks converts [[path]] and [[path|display]] outside code to standard markdown links.
 //
 // When there's no explicit "|display", this leaves the markdown link text
 // empty rather than deriving a label here - ProcessMarkdownLinks (which
@@ -68,19 +68,21 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 // path drift out of sync with the hand-typed path (unicode anchors
 // mis-capitalized, an anchor-only [[#some-header]] rendering as ".").
 func ResolveWikiLinks(content string) string {
-	return wikiLinkRe.ReplaceAllStringFunc(content, func(match string) string {
-		inner := match[2 : len(match)-2]
-		display := strings.TrimSpace(strings.TrimPrefix(ParseLink(inner, LinkWiki).Alias, "|"))
-		linkPath, anchor := ResolveWikiTarget(inner)
+	return replaceOutsideCode(content, func(part string, _ bool) string {
+		return wikiLinkRe.ReplaceAllStringFunc(part, func(match string) string {
+			inner := match[2 : len(match)-2]
+			display := strings.TrimSpace(strings.TrimPrefix(ParseLink(inner, LinkWiki).Alias, "|"))
+			linkPath, anchor := ResolveWikiTarget(inner)
 
-		// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
-		// same-page link instead of routing it through /files/. Leaving
-		// display empty lets ProcessMarkdownLinks fill in the header text,
-		// same as it does for a hand-typed "[](#some-header)".
-		if linkPath == "" {
-			return "[" + display + "](" + anchor + ")"
-		}
-		return "[" + display + "](" + pathutils.ToFileURL(linkPath) + anchor + ")"
+			// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
+			// same-page link instead of routing it through /files/. Leaving
+			// display empty lets ProcessMarkdownLinks fill in the header text,
+			// same as it does for a hand-typed "[](#some-header)".
+			if linkPath == "" {
+				return "[" + display + "](" + anchor + ")"
+			}
+			return "[" + display + "](" + pathutils.ToFileURL(linkPath) + anchor + ")"
+		})
 	})
 }
 
@@ -805,103 +807,114 @@ func (s *sectionWriter) closeSection() {
 // ---------------------------------------------------------------------------
 
 // [text](dest) or ![alt](dest) (the text may hold escaped brackets), the destination read like
-// RewriteLinks does
-var processMdLinkRe = regexp.MustCompile(`(!)?\[((?:[^\]\\]|\\.)*)\]\(` + mdLinkDestPattern + `\)`)
+// RewriteLinks does. The text may span lines and hold code but no unescaped "[", so a nested
+// ![img](src) or one after a stray "[" matches on its own; the outer link of nested brackets
+// matches as "](dest)" alone.
+var processMdLinkRe = regexp.MustCompile(`(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
 
-// ProcessMarkdownLinks rewrites internal [text](url) links to /files/ routes.
+// ProcessMarkdownLinks rewrites every internal [text](url) link outside code to its app url
+// (/files/, /media/), read with ParseLink and the metadata extension rule, an anchor to the
+// heading id it names (see AnchorID).
 // This is also where every empty-text "[](url)" link (including ones
 // ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
 // fallback label - keep that logic here only, see the note on ResolveWikiLinks.
 func ProcessMarkdownLinks(content string) string {
-	return processMdLinkRe.ReplaceAllStringFunc(content, func(match string) string {
-		matches := processMdLinkRe.FindStringSubmatch(match)
-		if len(matches) < 4 {
-			return match
+	// links are matched on the whole content with code blanked out, so a link text spanning
+	// lines or holding `code` keeps its "![" and brackets / destinations in code are never seen
+	masked := maskCode(content)
+	var b strings.Builder
+	last := 0
+	for _, m := range processMdLinkRe.FindAllStringSubmatchIndex(masked, -1) {
+		if strings.Contains(masked[m[4]:m[5]], "\x00") {
+			continue
 		}
-		isImage := matches[1] == "!"
-		text := strings.TrimSpace(matches[2])
-		u := strings.TrimSpace(matches[3])
-
-		l := ParseLink(u, LinkMarkdown)
-
-		// external links (a scheme like https:/mailto: or a //host, same check as ExtractLinks) — leave as-is,
-		// a javascript: link is removed by sanitizeHTML
-		if l.External {
-			return match
+		open := ""
+		if m[2] != -1 {
+			open = content[m[2]:m[3]]
 		}
+		b.WriteString(content[last:m[0]])
+		b.WriteString(processMarkdownLink(content[m[0]:m[1]], open, content[m[4]:m[5]]))
+		last = m[1]
+	}
+	b.WriteString(content[last:])
+	return b.String()
+}
 
-		// an image is rendered from its destination by goldmark, written back normalized
-		if isImage {
-			return matches[1] + "[" + text + "](" + l.Dest() + ")"
+// processMarkdownLink rewrites one processMdLinkRe match with its opening "[text" (or "") and
+// destination, see ProcessMarkdownLinks.
+func processMarkdownLink(match, open, dest string) string {
+	l := ParseLink(dest, LinkMarkdown)
+
+	// external links (a scheme like https:/mailto: or a //host, same check as ExtractLinks) — leave as-is,
+	// a javascript: link is removed by sanitizeHTML
+	if l.External {
+		return match
+	}
+	// an image is rendered from its destination by goldmark, written back normalized
+	if strings.HasPrefix(open, "!") {
+		return open + "](" + l.Dest() + ")"
+	}
+
+	text := strings.TrimSpace(strings.TrimPrefix(open, "["))
+	fallback := open != "" && text == ""
+	link := func(target string) string {
+		if open == "" {
+			return "](" + target + ")"
 		}
-		query, anchor, title := l.Query, l.Anchor, l.Title
+		return "[" + text + "](" + target + ")"
+	}
 
-		// pure anchor (same-page link) — fall back to the header text if empty
-		if l.Path == "" {
-			if text == "" {
-				slug := strings.TrimPrefix(anchor, "#")
-				if decoded, err := url.PathUnescape(slug); err == nil {
-					slug = decoded
-				}
-				text = humanizeSlug(slug)
-			}
-			return "[" + text + "](" + u + ")"
+	// "#My Section" -> the heading id, so a visible heading text (with spaces) works as
+	// anchor; an anchor that already is an id stays as written (e.g. percent-encoded). only
+	// for markdown targets, other fragments (doc.pdf#page=3) stay as written
+	anchor := l.Anchor
+	if ext := path.Ext(l.Path); ext == "" || ext == ".md" {
+		if id := AnchorID(l.AnchorText()); id != "" && id != l.AnchorText() {
+			anchor = "#" + id
 		}
+	}
 
-		u = l.Path
-
-		// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
-		if text == "" {
-			decodedAnchor := anchor
-			if decoded, err := url.PathUnescape(anchor); err == nil {
-				decodedAnchor = decoded
-			}
-			text = autoLinkText(u, decodedAnchor)
+	// pure anchor (same-page link) — fall back to the header text if empty
+	if l.Path == "" {
+		if fallback {
+			text = humanizeSlug(l.AnchorText())
 		}
-		// "#My Section" -> the heading id, so a visible heading text (with spaces) works as
-		// anchor; an anchor that already is an id stays as written (e.g. percent-encoded). only
-		// for markdown targets, other fragments (doc.pdf#page=3) stay as written
-		if ext := path.Ext(u); ext == "" || ext == ".md" {
-			if id := AnchorID(anchor); id != "" && id != anchorText(anchor) {
-				anchor = "#" + id
-			}
-		}
+		return link(l.Query + anchor + l.Title)
+	}
 
-		if strings.HasPrefix(u, "/media/") {
-			// already an absolute, directly-servable media route — leave untouched
-			return match
-		}
+	// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
+	if fallback {
+		text = autoLinkText(l.Path, l.AnchorText())
+	}
 
-		// u is decoded, so re-encode so goldmark accepts spaces/unicode; query, anchor and title
-		// are kept for every target
-		target := ""
-		if rel, ok := strings.CutPrefix(u, "/files/media/"); ok {
-			target = pathutils.ToMediaURL(rel)
-		} else if rel, ok := strings.CutPrefix(u, "media/"); ok {
-			target = pathutils.ToMediaURL(rel)
-			if query == "" {
-				query = "?mode=detail"
-			} else {
-				query += "&mode=detail"
-			}
-		} else if rel, ok := strings.CutPrefix(u, "/files/"); ok {
-			target = pathutils.ToFileURL(rel)
+	// the path is decoded, the app url encodes it so goldmark accepts spaces/unicode; query,
+	// anchor and title are kept for every target
+	query := l.Query
+	var target string
+	if rel, ok := strings.CutPrefix(l.Path, "media/"); ok {
+		target = pathutils.ToMediaURL(rel)
+		if query == "" {
+			query = "?mode=detail"
 		} else {
-			// internal doc links — route to /files/
-			target = pathutils.ToFileURL(utils.WithDefaultLinkExt(u))
+			query += "&mode=detail"
 		}
-		return "[" + text + "](" + target + query + anchor + title + ")"
-	})
+	} else if rel, ok := strings.CutPrefix(strings.TrimPrefix(l.Path, "/files"), "/media/"); ok {
+		target = pathutils.ToMediaURL(rel)
+	} else {
+		// internal doc links, bare or /files/ — route to /files/
+		target = pathutils.ToFileURL(utils.WithDefaultLinkExt(strings.TrimPrefix(l.Path, "/files/")))
+	}
+	return link(target + query + anchor + l.Title)
 }
 
 // autoLinkText builds a display label for a link left without one, e.g.
-// "escrow.md" + "#todo-vorlage" -> "escrow - Todo Vorlage".
+// "escrow.md" + "todo-vorlage" -> "escrow - Todo Vorlage".
 func autoLinkText(u, anchor string) string {
 	name := strings.TrimSuffix(filepath.Base(u), filepath.Ext(u))
 	if anchor == "" {
 		return name
 	}
-	return name + " - " + humanizeSlug(strings.TrimPrefix(anchor, "#"))
+	return name + " - " + humanizeSlug(anchor)
 }
 
 // humanizeSlug turns a header-anchor slug like "todo-vorlage" into "Todo Vorlage".

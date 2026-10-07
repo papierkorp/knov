@@ -1187,6 +1187,11 @@
       "translation": "Umbenennen"
     },
     {
+      "id": "Rename Status",
+      "message": "Rename Status",
+      "translation": ""
+    },
+    {
       "id": "Repair Broken Links",
       "message": "Repair Broken Links",
       "translation": "defekte Links reparieren"
@@ -2172,9 +2177,9 @@
       "translation": "kommagetrennte Ordnerpfad-Muster, die aus Dateilisten, Browse, Suche, Filter, Kanban und der Dateidetailansicht ausgeschlossen werden. Verwende / zum Trennen von Segmenten und * als Platzhalter für ein einzelnes Segment, z. B. blendet */todo jeden todo-Ordner aus, während test/todo nur den todo-Ordner in test ausblendet. Standardmäßig blendet ein Muster überall aus; hänge ::tree, ::browse, ::overview, ::search, ::filter, ::kanban, ::detail und/oder ::dashboard an (kombinierbar mit |, z. B. ::search|filter), um es nur in diesen Bereichen auszublenden und überall sonst sichtbar zu lassen"
     },
     {
-      "id": "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag \u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox. removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
-      "message": "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag \u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox. removing or renaming a status keeps the existing tags, but those cards drop off the board until they're retagged",
-      "translation": "kommagetrennte Liste aller gültigen Kanban-Status (nur Buchstaben, Ziffern und _). Der Status einer Datei wird als Tag \u003cpräfix\u003e-status-\u003cstatus\u003e gespeichert, z. B. kb-status-inbox. Beim Entfernen oder Umbenennen eines Status bleiben die bestehenden Tags erhalten, diese Karten verschwinden aber vom Board, bis sie neu getaggt werden"
+      "id": "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag \u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox. removing or renaming a status here keeps the existing tags, but those cards drop off the board until they're retagged - use Rename Status below to also rename the tags, foldersync folders, card order and the status names in the history",
+      "message": "comma-separated list of all valid kanban statuses (letters, digits and _ only). a file's status is stored as the tag \u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox. removing or renaming a status here keeps the existing tags, but those cards drop off the board until they're retagged - use Rename Status below to also rename the tags, foldersync folders, card order and the status names in the history",
+      "translation": ""
     },
     {
       "id": "comma-separated status:style entries; styles: normal, italic, highlighted, deleted, e.g. blocked:italic, archive:deleted",
@@ -3162,6 +3167,11 @@
       "translation": "Fehler beim Umbenennen der Datei"
     },
     {
+      "id": "failed to rename status: {Arg_1}",
+      "message": "failed to rename status: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "failed to render widget",
       "message": "failed to render widget",
       "translation": "Fehler beim Rendern des Widgets"
@@ -3877,6 +3887,11 @@
       "translation": "Element gelöscht"
     },
     {
+      "id": "job already running",
+      "message": "job already running",
+      "translation": ""
+    },
+    {
       "id": "job canceled",
       "message": "job canceled",
       "translation": "Job abgebrochen"
@@ -4365,6 +4380,11 @@
       "id": "new file path is required",
       "message": "new file path is required",
       "translation": "neuer Dateipfad ist erforderlich"
+    },
+    {
+      "id": "new name",
+      "message": "new name",
+      "translation": ""
     },
     {
       "id": "new name (optional)",
@@ -4907,6 +4927,26 @@
       "translation": "umbenennen"
     },
     {
+      "id": "rename this status everywhere? this moves files on foldersync boards",
+      "message": "rename this status everywhere? this moves files on foldersync boards",
+      "translation": ""
+    },
+    {
+      "id": "renamed status {Arg_1} to {Arg_2} ({Integer} files, {Integer_1} folders)",
+      "message": "renamed status {Arg_1} to {Arg_2} ({Integer} files, {Integer_1} folders)",
+      "translation": ""
+    },
+    {
+      "id": "renamed status {Arg_1} to {Arg_2} ({Integer} files, {Integer_1} folders) - the links of {Integer_2} moved files couldn't be updated",
+      "message": "renamed status {Arg_1} to {Arg_2} ({Integer} files, {Integer_1} folders) - the links of {Integer_2} moved files couldn't be updated",
+      "translation": ""
+    },
+    {
+      "id": "renames a status in all kanban settings, the status tag of every file, the status folders of foldersync boards, the card order and the status names in the history - saved filters, dashboards and links in file content that use the old status tag are not updated",
+      "message": "renames a status in all kanban settings, the status tag of every file, the status folders of foldersync boards, the card order and the status names in the history - saved filters, dashboards and links in file content that use the old status tag are not updated",
+      "translation": ""
+    },
+    {
       "id": "required - kanban shows nothing until at least one board is added here. comma-separated folder/path:Display Name entries, e.g. projects/work:Work Board, personal/todo:Personal Todo. every file in that folder and its subfolders that has a status tag (\u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox) shows up as a card in the matching column; files without a status tag are not shown. the URL slug is derived from the folder path. the folder must be relative to docs and can't start with docs/, media/ or files/",
       "message": "required - kanban shows nothing until at least one board is added here. comma-separated folder/path:Display Name entries, e.g. projects/work:Work Board, personal/todo:Personal Todo. every file in that folder and its subfolders that has a status tag (\u003cprefix\u003e-status-\u003cstatus\u003e, e.g. kb-status-inbox) shows up as a card in the matching column; files without a status tag are not shown. the URL slug is derived from the folder path. the folder must be relative to docs and can't start with docs/, media/ or files/",
       "translation": "Pflichtfeld - Kanban zeigt nichts an, solange hier nicht mindestens ein Board eingetragen ist. Kommagetrennte Einträge ordner/pfad:Anzeigename, z. B. projects/work:Work Board, personal/todo:Personal Todo. Jede Datei in diesem Ordner und seinen Unterordnern mit einem Status-Tag (\u003cpräfix\u003e-status-\u003cstatus\u003e, z. B. kb-status-inbox) erscheint als Karte in der passenden Spalte; Dateien ohne Status-Tag werden nicht angezeigt. Der URL-Slug wird aus dem Ordnerpfad abgeleitet. Der Ordner muss relativ zu docs sein und darf nicht mit docs/, media/ oder files/ beginnen"
@@ -5055,11 +5095,6 @@
       "id": "search files",
       "message": "search files",
       "translation": "Dateien durchsuchen"
-    },
-    {
-      "id": "search files (append #section)",
-      "message": "search files (append #section)",
-      "translation": "Dateien suchen (#Abschnitt anhängen)"
     },
     {
       "id": "search history",

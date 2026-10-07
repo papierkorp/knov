@@ -190,8 +190,8 @@ if (window.Sortable) {
 </script>`
 }
 
-// renderEntryRow renders one index/book entry row. In bookMode a file row also gets an
-// "include subheaders" checkbox and a "#section" placeholder hint.
+// renderEntryRow renders one index/book entry row. A file row has a file and a section field,
+// in bookMode also an "include subheaders" checkbox.
 func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
@@ -227,14 +227,13 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		html.WriteString(`</div>`)
 
 	case book.EntryFile:
-		placeholder := t("search files")
-		if bookMode {
-			placeholder = t("search files (append #section)")
-		}
+		// path and section in their own fields, so a "#" or "|" in a file name stays part of it
+		filePath, section := book.DecodeFileRef(entry.Value)
 		inputID := fmt.Sprintf("entry-file-%d", entryRowCounter.Add(1))
 		html.WriteString(`<div class="entry-file">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, t("file"))
-		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), book.DecodeFileRef(entry.Value), placeholder, "/api/files/autocomplete", false))
+		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), filePath, t("search files"), "/api/files/autocomplete", false))
+		fmt.Fprintf(&html, `<input type="text" name="entries[%d][section]" value="%s" class="form-input" placeholder="%s"/>`, index, htmlpkg.EscapeString(section), t("section"))
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
 		if p, _ := parser.ResolveWikiTarget(entry.Value); p != "" {

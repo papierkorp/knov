@@ -45,7 +45,7 @@ func ScanMisplacedMedia() ([]MisplacedMedia, error) {
 
 // RelocateMisplacedMedia moves the selected allowed-type media files from the docs folder into the
 // media folder (mirroring its docs folder) and rewrites all links in markdown docs pointing
-// to it - relative, docs-root ("/folder/img.png", as wiki.js writes them), markdown, wiki and
+// to it - doc-relative, docs-root ("/folder/img.png", as wiki.js writes them), markdown, wiki and
 // html src/href - to its /media/ URL. Non-allowed binaries are left in place.
 func RelocateMisplacedMedia(key logging.Key, selected []string) (MediaRelocateResult, error) {
 	items, paths, err := listMisplacedMedia()
@@ -206,25 +206,27 @@ func newRelocateIndex(paths []string, moved map[string]string) *relocateIndex {
 // /media/ link path (media/ path for wiki links) - decoded, RewriteLinks encodes it.
 func (idx *relocateIndex) relinkFunc(doc string) func(l parser.Link) (string, bool) {
 	return func(l parser.Link) (string, bool) {
-		wiki := l.Kind == parser.LinkWiki
-		src := idx.resolve(doc, l.Path, wiki)
+		src := idx.resolve(doc, l)
 		if src == "" {
 			return "", false
 		}
-		if wiki {
+		if l.Kind == parser.LinkWiki {
 			return "media/" + idx.moved[src], true
 		}
 		return "/media/" + idx.moved[src], true
 	}
 }
 
-// resolve resolves a link path written in doc to a key of moved: a wiki link relative to the
-// docs root, a relative link strictly relative to doc's folder, a root ("/", wiki.js) link relative to doc's folder first, then to
-// each parent folder up to the docs root. For root and wiki links "docs/", "/files/" or "/files/docs/" means docs root,
+// resolve resolves a link written in doc to a key of moved: a wiki or bare markdown link relative
+// to the docs root, like they render (a bare markdown one falls back to doc's folder, the way
+// imported wikis write it), a relative html link strictly relative to doc's folder, a root ("/",
+// wiki.js) link relative to doc's folder first, then to each parent folder up to the docs root.
+// For all but html relative links "docs/", "/files/" or "/files/docs/" means docs root,
 // unless a real folder of that name matches. A "/media/" link to an existing media file is left
 // alone. Stops at the first candidate that is an existing, not moved file, so a link never
 // gets redirected to a same-named file higher up.
-func (idx *relocateIndex) resolve(doc, link string, wiki bool) string {
+func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
+	link := l.Path
 	root := strings.HasPrefix(link, "/")
 	if root && strings.HasPrefix(link, "/media/") {
 		if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {
@@ -232,17 +234,27 @@ func (idx *relocateIndex) resolve(doc, link string, wiki bool) string {
 		}
 	}
 
-	// try doc's folder, then for root links each parent up to the docs root - a root link
-	// ("/upload/x.png") from a wiki imported into a subfolder is relative to that subfolder.
-	// wiki links are docs-root relative, same as parser.ResolveWikiTarget renders them
-	dir := path.Dir(doc)
-	if wiki {
-		dir = "."
+	// root links ("/upload/x.png") from a wiki imported into a subfolder are relative to that
+	// subfolder, so they try doc's folder and each parent up to the docs root
+	var dirs []string
+	switch {
+	case root:
+		for dir := path.Dir(doc); ; dir = path.Dir(dir) {
+			if dirs = append(dirs, dir); dir == "." {
+				break
+			}
+		}
+	case l.Kind == parser.LinkWiki:
+		dirs = []string{"."}
+	case l.Kind == parser.LinkMarkdown:
+		dirs = []string{".", path.Dir(doc)}
+	default:
+		dirs = []string{path.Dir(doc)}
 	}
-	for ; ; dir = path.Dir(dir) {
+	for _, dir := range dirs {
 		c := strings.TrimPrefix(path.Clean("/"+path.Join(dir, link)), "/")
 		candidates := []string{c}
-		if root || wiki {
+		if root || l.Kind != parser.LinkHTML {
 			for _, prefix := range []string{"files/docs/", "files/", "docs/"} {
 				if s, ok := strings.CutPrefix(c, prefix); ok {
 					candidates = append(candidates, s)
@@ -257,8 +269,6 @@ func (idx *relocateIndex) resolve(doc, link string, wiki bool) string {
 				return ""
 			}
 		}
-		if dir == "." || !root {
-			return ""
-		}
 	}
+	return ""
 }

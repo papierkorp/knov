@@ -32,10 +32,13 @@ func TestRewriteMediaLinks(t *testing.T) {
 		"```\n![x](img/c.jpg)\n```":          "```\n![x](img/c.jpg)\n```",
 		// a real "docs" folder wins over the docs-root prefix
 		`![x](/docs/d.png)`: `![x](/media/docs/d.png)`,
-		// wiki/img/e.png exists and isn't moved, so the link isn't redirected to img/e.png
-		`![x](img/e.png)`: `![x](img/e.png)`,
-		// relative links never walk up to a parent folder
-		`![x](uploads/a%20b.png)`: `![x](uploads/a%20b.png)`,
+		// a bare markdown path is docs-root relative like it renders, doc-relative only as fallback
+		`![x](img/e.png)`:         `![x](/media/img/e.png)`,
+		`![x](uploads/a%20b.png)`: `![x](/media/uploads/a%20b.png)`,
+		// wiki/img/e.png exists and isn't moved, so an html link isn't redirected to img/e.png
+		`<img src="img/e.png">`: `<img src="img/e.png">`,
+		// relative html links never walk up to a parent folder
+		`<img src="uploads/a%20b.png">`: `<img src="uploads/a%20b.png">`,
 		// knov's own /files/ view url
 		`![x](/files/img/e.png)`: `![x](/media/img/e.png)`,
 		// no case-insensitive match

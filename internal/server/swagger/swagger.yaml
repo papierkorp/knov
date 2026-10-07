@@ -1367,7 +1367,7 @@ paths:
       - application/x-www-form-urlencoded
       description: |-
         Saves a .book file: an ordered list of file/title/separator entries. A file
-        entry value may carry a #section suffix and a "subheaders" flag.
+        entry may carry a section and a "subheaders" flag.
       parameters:
       - description: file path
         in: formData
@@ -1378,10 +1378,13 @@ paths:
         in: formData
         name: entries[][type]
         type: string
-      - description: plain file path (path or path#section, not url-encoded) or title
-          text
+      - description: plain file path (not url-encoded) or title text
         in: formData
         name: entries[][value]
+        type: string
+      - description: heading text or id of a file entry, to include only that section
+        in: formData
+        name: entries[][section]
         type: string
       - description: include subheaders for a section entry
         in: formData
@@ -1445,6 +1448,10 @@ paths:
       - description: plain file path (not url-encoded) or title text
         in: formData
         name: entries[][value]
+        type: string
+      - description: heading text or id of a file entry, to link a section
+        in: formData
+        name: entries[][section]
         type: string
       produces:
       - text/html

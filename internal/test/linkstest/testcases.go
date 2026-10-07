@@ -76,7 +76,7 @@ func caseRename() test.CaseResult {
 				break
 			}
 			for form, src := range srcs {
-				for _, g := range linkGaps(src, []string{pathutils.ToWithPrefix(mv[1])}) {
+				for _, g := range formGaps(form, src, []string{pathutils.ToWithPrefix(mv[1])}) {
 					gaps = append(gaps, fmt.Sprintf("%s link after rename to %q: %s", form, mv[1], g))
 				}
 			}
@@ -99,10 +99,10 @@ func caseRelocate() test.CaseResult {
 			return errCase("links-relocate", err)
 		}
 		forms, err := saveForms(dir, map[string]string{
-			"markdown":          "![x](" + parser.Link{Kind: parser.LinkMarkdown, Path: img}.Dest() + ")",
-			"wiki":              "[[" + parser.Link{Kind: parser.LinkWiki, Path: img}.Dest() + "]]",
+			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: img}.String(),
+			"wiki":              parser.Link{Kind: parser.LinkWiki, Path: img}.String(),
 			"html":              `<img src="` + pathutils.ToFileURL(img) + `">`,
-			"markdown relative": "![y](" + parser.Link{Kind: parser.LinkMarkdown, Path: imgName(n)}.Dest() + ")",
+			"markdown relative": parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "y", Path: imgName(n)}.String(),
 		})
 		if err != nil {
 			return errCase("links-relocate", err)
@@ -121,7 +121,7 @@ func caseRelocate() test.CaseResult {
 	}
 	for i, forms := range srcs {
 		for form, src := range forms {
-			for _, g := range linkGaps(src, []string{"media/" + selected[i]}) {
+			for _, g := range formGaps(form, src, []string{"media/" + selected[i]}) {
 				gaps = append(gaps, form+" link: "+g)
 			}
 		}
@@ -145,16 +145,23 @@ func caseFilterIndex() test.CaseResult {
 }
 
 // caseBookEditor saves a book with every target doc as entry through the real book editor api
-// (the plain path as typed or picked) - the book has to link and include each one.
+// (the plain path as typed or picked) - the book has to link and include each one. A typed path
+// is trimmed, so a name with a trailing space can't be an entry.
 func caseBookEditor() test.CaseResult {
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()
 
 	book := testDir + "/links.book"
 	form := url.Values{"filepath": {book}}
+	var entries []int
 	for i := range names {
-		form.Set(fmt.Sprintf("entries[%d][type]", i), "file")
-		form.Set(fmt.Sprintf("entries[%d][value]", i), target(i))
+		if strings.TrimSpace(target(i)) != target(i) {
+			continue
+		}
+		n := len(entries)
+		entries = append(entries, i)
+		form.Set(fmt.Sprintf("entries[%d][type]", n), "file")
+		form.Set(fmt.Sprintf("entries[%d][value]", n), target(i))
 	}
 	resp, err := ts.Client().PostForm(ts.URL+"/api/editor/bookeditor", form)
 	if err != nil {
@@ -165,17 +172,30 @@ func caseBookEditor() test.CaseResult {
 		return errCase("links-book-editor", fmt.Errorf("save status %d", resp.StatusCode))
 	}
 
-	gaps := metadataGaps(book, allTargets())
+	want := make([]string, len(entries))
+	for n, i := range entries {
+		want[n] = pathutils.ToWithPrefix(target(i))
+	}
+	gaps := metadataGaps(book, want)
 	fc, err := files.GetFileContent(pathutils.ToDocsPath(book))
 	if err != nil {
 		return errCase("links-book-editor", err)
 	}
-	for i := range names {
+	for _, i := range entries {
 		if !strings.Contains(fc.HTML, marker(i)) {
 			gaps = append(gaps, fmt.Sprintf("%q: not included in the composed book", target(i)))
 		}
 	}
 	return gapsCase("links-book-editor", "a book of every special-char doc links and includes each one", gaps)
+}
+
+// formGaps checks the links of a form's doc - an "html" one only through link metadata, raw html
+// is never rendered (goldmark without WithUnsafe).
+func formGaps(form, src string, want []string) []string {
+	if form == "html" {
+		return metadataGaps(src, want)
+	}
+	return linkGaps(src, want)
 }
 
 // saveForms saves each link form into its own doc in dir, so a broken form can't hide behind a

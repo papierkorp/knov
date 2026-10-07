@@ -68,6 +68,26 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](a_b.png#c\d "t\x")`},
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
 		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("a/../b/.c.md") + ")"},
+		// a /files/ url gets the default extension like link metadata reads it
+		{"files url no ext", "[x](/files/docs/a)", "[x](" + pathutils.ToFileURL("docs/a.md") + ")"},
+		{"media url", "[x](/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
+		// a same-page heading text becomes the heading id too
+		{"pure anchor text slugged", "[x](<#Phase 1>)", "[x](#phase-1)"},
+		// code is never a link, an unclosed "<" is no destination
+		{"inline code", "`[x](a.md)` [y](a.md)", "`[x](a.md)` [y](" + pathutils.ToFileURL("a.md") + ")"},
+		{"fenced code", "```\n[x](a.md)\n```", "```\n[x](a.md)\n```"},
+		{"unclosed angle", "[x](<a.md) ![y](<b.png)", "[x](<a.md) ![y](<b.png)"},
+		// a link text spanning lines keeps its text
+		{"multi-line text", "[a\nb](a.md)", "[a\nb](" + pathutils.ToFileURL("a.md") + ")"},
+		// an image alt spanning lines or holding code stays an image
+		{"multi-line image alt", "![a\nb](a%20b.png)", "![a\nb](a%20b.png)"},
+		{"image alt with code", "![`x` y](a.png)", "![`x` y](a.png)"},
+		{"bracket in code text", "[`]` x](a.md)", "[`]` x](" + pathutils.ToFileURL("a.md") + ")"},
+		{"unclosed angle after space", "[x]( <a.md)", "[x]( <a.md)"},
+		// a linked image or one after a stray "[" stays an image
+		{"linked image", "[![b](img.png)](a.md)", "[![b](img.png)](" + pathutils.ToFileURL("a.md") + ")"},
+		{"linked image external", "[![b](img.png)](https://x.y)", "[![b](img.png)](https://x.y)"},
+		{"image after stray bracket", "a [stray\n\n![i](img.png)", "a [stray\n\n![i](img.png)"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -153,9 +173,12 @@ func TestWikiTargetExtraction(t *testing.T) {
 
 // ResolveWikiLinks keeps a pure "[[#header]]" as a real same-page link (empty label, filled in
 // later by ProcessMarkdownLinks) rather than routing it through /files/ or collapsing it to ".".
+// A wikilink in code stays as written.
 func TestWikiLinkPureAnchor(t *testing.T) {
-	if got, want := ResolveWikiLinks("[[#some-header]]"), "[](#some-header)"; got != want {
-		t.Errorf("ResolveWikiLinks(%q) = %q, want %q", "[[#some-header]]", got, want)
+	for in, want := range map[string]string{"[[#some-header]]": "[](#some-header)", "`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```"} {
+		if got := ResolveWikiLinks(in); got != want {
+			t.Errorf("ResolveWikiLinks(%q) = %q, want %q", in, got, want)
+		}
 	}
 }
 
@@ -296,6 +319,8 @@ func TestParseLinkDest(t *testing.T) {
 		{" a%20b#sec|Text ", LinkWiki, Link{Kind: LinkWiki, Path: "a b", Anchor: "#sec", Alias: "|Text "}, "a b#sec|Text "},
 		{"a&amp;b.png?x#y", LinkHTML, Link{Kind: LinkHTML, Path: "a&b.png", Query: "?x", Anchor: "#y"}, "a%26b.png?x#y"},
 		{"mailto:a@b.c", LinkMarkdown, Link{Kind: LinkMarkdown, Path: "mailto:a@b.c", External: true}, "mailto:a@b.c"},
+		// an unclosed "<" is part of the path
+		{"<abc.md", LinkMarkdown, Link{Kind: LinkMarkdown, Path: "<abc.md"}, "%3Cabc.md"},
 	}
 	for _, c := range cases {
 		if got := ParseLink(c.dest, c.kind); got != c.want || got.Dest() != c.out {
@@ -331,6 +356,14 @@ func TestRewriteLinksUnchangedEncoded(t *testing.T) {
 	}
 }
 
+// an unclosed "<" is no destination (CommonMark), so it isn't rewritten
+func TestRewriteLinksUnclosedAngle(t *testing.T) {
+	in := "[x](<abc.md) [y]: <abc.md"
+	if got, changed := RewriteLinks(in, func(l Link) (string, bool) { return "new name.md", true }); changed || got != in {
+		t.Errorf("RewriteLinks = %q, %v, want %q unchanged", got, changed, in)
+	}
+}
+
 // a hand-written wikilink resolves to the same file for rendering and link metadata
 func TestWikiLinkRenderMatchesExtract(t *testing.T) {
 	for _, in := range []string{"page?x", "a b", "a%41", "dir/page.md#sec", "media/a"} {
@@ -338,5 +371,13 @@ func TestWikiLinkRenderMatchesExtract(t *testing.T) {
 		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[[" + in + "]]")); len(got) != 1 || utils.NormalizeLinkPath(got[0]) != want {
 			t.Errorf("[[%s]]: ExtractLinks = %q, ResolveWikiTarget = %q", in, got, want)
 		}
+	}
+}
+
+// a "[id]: dest" after an inline code span is no reference definition
+func TestRewriteLinksRefDefAfterCode(t *testing.T) {
+	in := "`x` [id]: a.md"
+	if got, changed := RewriteLinks(in, func(l Link) (string, bool) { return "b.md", true }); changed || got != in {
+		t.Errorf("RewriteLinks = %q, %v, want %q unchanged", got, changed, in)
 	}
 }

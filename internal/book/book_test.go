@@ -129,25 +129,36 @@ func TestFileRefRoundTrip(t *testing.T) {
 		if err := contentStorage.WriteFile(full, []byte("content of "+p+"\n\n## My Section\n\nsection of "+p+"\n"), 0644); err != nil {
 			t.Fatal(err)
 		}
-		for _, v := range []string{p, p + "#My Section"} {
-			entries := Parse(ToMarkdown([]Entry{{Type: EntryFile, Value: EncodeFileRef(v)}}))
+		for _, section := range []string{"", "My Section"} {
+			entries := Parse(ToMarkdown([]Entry{{Type: EntryFile, Value: EncodeFileRef(p, section)}}))
 			if len(entries) != 1 || entries[0].Type != EntryFile {
-				t.Errorf("Parse(ToMarkdown(%q)) = %+v", v, entries)
+				t.Errorf("Parse(ToMarkdown(%q, %q)) = %+v", p, section, entries)
 				continue
 			}
-			if got := DecodeFileRef(entries[0].Value); got != v {
-				t.Errorf("DecodeFileRef(%q) = %q, want %q", entries[0].Value, got, v)
+			if gotPath, gotSection := DecodeFileRef(entries[0].Value); gotPath != p || gotSection != parser.AnchorID(section) {
+				t.Errorf("DecodeFileRef(%q) = %q, %q, want %q, %q", entries[0].Value, gotPath, gotSection, p, section)
 			}
 			if path, _ := parser.ResolveWikiTarget(entries[0].Value); path != p {
 				t.Errorf("ResolveWikiTarget(%q) = %q, want %q", entries[0].Value, path, p)
 			}
 			want := "content of " + p
-			if v != p {
+			if section != "" {
 				want = "section of " + p
 			}
 			if got := ComposeEntries("test.book", entries); !strings.Contains(got, want) {
 				t.Errorf("ComposeEntries(%q) = %q, want %q included", entries[0].Value, got, want)
 			}
 		}
+	}
+}
+
+// a "|" or "]]" in a typed section doesn't end the entry's wikilink, it is stored as heading id
+func TestFileRefSectionSpecialChars(t *testing.T) {
+	entries := Parse(ToMarkdown([]Entry{{Type: EntryFile, Value: EncodeFileRef("a.md", "x|y]]z%")}}))
+	if len(entries) != 1 {
+		t.Fatalf("Parse = %+v", entries)
+	}
+	if p, s := DecodeFileRef(entries[0].Value); p != "a.md" || s != parser.AnchorID("x|y]]z%") {
+		t.Errorf("DecodeFileRef(%q) = %q, %q", entries[0].Value, p, s)
 	}
 }

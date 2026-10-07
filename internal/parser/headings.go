@@ -1,9 +1,6 @@
 package parser
 
 import (
-	"net/url"
-	"strings"
-
 	"knov/internal/markdown"
 	"knov/internal/utils"
 )
@@ -67,21 +64,12 @@ func SlugHeading(inlineHTML string, usedIDs map[string]int) string {
 	return utils.GenerateID(stripHTMLTags(inlineHTML), usedIDs)
 }
 
-// AnchorID turns a link anchor ("#My Section", "#my-section-1", "#%C3%BC") into the heading
-// id the renderer generates, so a link can use the visible heading text. GenerateID is
-// idempotent, so an already slugged (or deduped) id stays as is. "" for an empty anchor.
-func AnchorID(anchor string) string {
-	if section := anchorText(anchor); section != "" {
-		return utils.GenerateID(section, map[string]int{})
+// AnchorID turns a link's anchor text (Link.AnchorText: "My Section", "my-section-1", "ü") into
+// the heading id the renderer generates, so a link can use the visible heading text. GenerateID
+// is idempotent, so an already slugged (or deduped) id stays as is. "" for an empty anchor.
+func AnchorID(text string) string {
+	if text == "" {
+		return ""
 	}
-	return ""
-}
-
-// anchorText is an anchor without its "#", percent-decoded
-func anchorText(anchor string) string {
-	section := strings.TrimPrefix(anchor, "#")
-	if decoded, err := url.PathUnescape(section); err == nil {
-		return decoded
-	}
-	return section
+	return utils.GenerateID(text, map[string]int{})
 }

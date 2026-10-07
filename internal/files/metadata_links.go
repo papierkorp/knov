@@ -651,13 +651,14 @@ func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) str
 }
 
 // renameLinkFunc returns the parser.RewriteLinks callback pointing links to oldPath at newPath.
-// each link path is cleaned the same way metadata links are before comparing, and the
+// each link path and oldPath are compared as metadata paths (docs/ or media/ prefixed), and the
 // original absolute/relative style is preserved on write. wiki links keep their
 // extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
-// the new name would then read as another file ([[v1.2 notes]] isn't v1.2 notes.md)
+// the new name would then read as another file ([[v1.2]] isn't v1.2.md)
 func renameLinkFunc(oldPath, newPath string) func(l parser.Link) (string, bool) {
+	oldPath = pathutils.ToWithPrefix(oldPath)
 	return func(l parser.Link) (string, bool) {
-		if parser.IsAppRouteLink(l.Path, l.Kind) || utils.NormalizeLinkPath(l.Path) != oldPath {
+		if parser.IsAppRouteLink(l.Path, l.Kind) || pathutils.ToWithPrefix(utils.NormalizeLinkPath(l.Path)) != oldPath {
 			return "", false
 		}
 		if l.Kind == parser.LinkWiki {
