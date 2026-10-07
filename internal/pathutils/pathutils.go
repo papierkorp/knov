@@ -346,7 +346,8 @@ func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelP
 func ToRouteURL(route, rel string) string { return route + escapeRelPath(rel) }
 
 // FileFromURL returns the docs-relative path of the file a page URL shows (the reverse of
-// ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page.
+// ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page
+// or a path with a ".." segment.
 func FileFromURL(rawURL string) string {
 	u, err := url.Parse(rawURL)
 	if err != nil || strings.HasPrefix(u.Path, "/files/new/") {
@@ -355,6 +356,10 @@ func FileFromURL(rawURL string) string {
 	// ToFileURL("") is a prefix of the other routes, so it has to be checked last
 	for _, prefix := range []string{ToFileEditURL(""), ToFileEditTableURL(""), ToFileHistoryURL(""), ToFileURL("")} {
 		if rel, ok := strings.CutPrefix(u.Path, prefix); ok {
+			// a ".." segment would point outside the docs folder
+			if slices.Contains(strings.Split(rel, "/"), "..") {
+				return ""
+			}
 			return rel
 		}
 	}

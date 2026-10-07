@@ -52,44 +52,39 @@ func IsMarkdownExtension(filename string) bool {
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	content = StripFrontMatter(content)
 	processed := h.wrapRawHTMLBlocks(string(content))
-	processed = ResolveWikiLinks(processed)
-	processed = ProcessMarkdownLinks(processed)
-	return []byte(processed), nil
+	return []byte(RenderLinks(processed)), nil
 }
 
-// ResolveWikiLinks converts [[path]] and [[path|display]] outside code to standard markdown links.
-//
-// When there's no explicit "|display", this leaves the markdown link text
-// empty rather than deriving a label here - ProcessMarkdownLinks (which
-// always runs right after this) owns all fallback-label generation and
-// applies it the same way regardless of whether a link started as [[wiki]]
-// or was hand-typed as [](...). Don't re-add filename/anchor-humanizing logic
-// in this function; that duplication is what previously let the wiki-link
-// path drift out of sync with the hand-typed path (unicode anchors
-// mis-capitalized, an anchor-only [[#some-header]] rendering as ".").
-// The destination is written as a decoded /files/ path, not an app url yet -
-// ProcessMarkdownLinks turns it into one, so always run it on the result.
-func ResolveWikiLinks(content string) string {
+// RenderLinks rewrites every internal markdown link, reference definition and [[wikilink]]
+// outside code to a markdown link to its app url (/files/, /media/), each read once with
+// ParseLink. markdown links go first, so the app urls written for wikilinks are never read again.
+func RenderLinks(content string) string {
+	return resolveWikiLinks(processMarkdownLinks(content))
+}
+
+// resolveWikiLinks converts [[path]] and [[path|display]] outside code to markdown links to
+// their app url, with the same destination and fallback label as a hand-typed markdown link
+// (appLinkDest, fallbackLinkText).
+func resolveWikiLinks(content string) string {
 	return replaceOutsideCode(content, func(part string, _ bool) string {
 		return wikiLinkRe.ReplaceAllStringFunc(part, func(match string) string {
 			inner := match[2 : len(match)-2]
 			wl := ParseLink(inner, LinkWiki)
-			display := strings.TrimSpace(strings.TrimPrefix(wl.Alias, "|"))
 
-			// the anchor is written as markdown too, encoded so a quote or ")" in it stays
-			// part of the anchor - ProcessMarkdownLinks decodes it (AnchorText)
+			// read as the markdown link [](/files/path#anchor) - the anchor encoded, so
+			// AnchorText reads it back; a pure same-page anchor ([[#some-header]]) has no path
 			l := Link{Kind: LinkMarkdown}
 			if text := wl.AnchorText(); text != "" {
 				l.Anchor = "#" + encodeLinkPath(text, LinkMarkdown)
 			}
-			// a pure same-page anchor (e.g. "[[#some-header]]") has no path and stays a
-			// real same-page link instead of routing it through /files/. Leaving
-			// display empty lets ProcessMarkdownLinks fill in the header text,
-			// same as it does for a hand-typed "[](#some-header)".
 			if linkPath := ResolveWikiTarget(inner); linkPath != "" {
 				l.Path = "/files/" + linkPath
 			}
-			return "[" + display + "](" + l.Dest() + ")"
+			display := strings.TrimSpace(strings.TrimPrefix(wl.Alias, "|"))
+			if display == "" {
+				display = fallbackLinkText(l)
+			}
+			return "[" + display + "](" + appLinkDest(l) + ")"
 		})
 	})
 }
@@ -816,13 +811,10 @@ func (s *sectionWriter) closeSection() {
 // matches as "](dest)" alone.
 var processMdLinkRe = regexp.MustCompile(`(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
 
-// ProcessMarkdownLinks rewrites every internal [text](url) link outside code to its app url
-// (/files/, /media/), read with ParseLink and the metadata extension rule, an anchor to the
-// heading id it names (see AnchorID), and a reference definition to a docs file the same way.
-// This is also where every empty-text "[](url)" link (including ones
-// ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
-// fallback label - keep that logic here only, see the note on ResolveWikiLinks.
-func ProcessMarkdownLinks(content string) string {
+// processMarkdownLinks rewrites every internal [text](url) link outside code to its app url
+// (appLinkDest), an empty-text "[](url)" link gets its fallback label (fallbackLinkText), and a
+// reference definition to a docs file is rewritten the same way.
+func processMarkdownLinks(content string) string {
 	// links are matched on the whole content with code blanked out, so a link text spanning
 	// lines or holding `code` keeps its "![" and brackets / destinations in code are never seen
 	masked := maskCode(content)
@@ -845,7 +837,7 @@ func ProcessMarkdownLinks(content string) string {
 }
 
 // processMarkdownLink rewrites one processMdLinkRe match with its opening "[text" (or "") and
-// destination, see ProcessMarkdownLinks.
+// destination, see processMarkdownLinks.
 func processMarkdownLink(match, open, dest string) string {
 	l := ParseLink(dest, LinkMarkdown)
 
@@ -858,44 +850,44 @@ func processMarkdownLink(match, open, dest string) string {
 	if strings.HasPrefix(open, "!") {
 		return open + "](" + l.Dest() + ")"
 	}
-
+	if open == "" {
+		return "](" + appLinkDest(l) + ")"
+	}
 	text := strings.TrimSpace(strings.TrimPrefix(open, "["))
-	fallback := open != "" && text == ""
-	link := func(target string) string {
-		if open == "" {
-			return "](" + target + ")"
-		}
-		return "[" + text + "](" + target + ")"
+	if text == "" {
+		text = fallbackLinkText(l)
 	}
+	return "[" + text + "](" + appLinkDest(l) + ")"
+}
 
-	anchor := linkAnchor(l)
-
-	// pure anchor (same-page link) — fall back to the header text if empty
+// fallbackLinkText is the label of a link written without one: the header text for a same-page
+// anchor, else filename + header ("[](path.md#anchor)").
+func fallbackLinkText(l Link) string {
 	if l.Path == "" {
-		if fallback {
-			text = humanizeSlug(l.AnchorText())
-		}
-		return link(l.Query + anchor + l.Title)
+		return humanizeSlug(l.AnchorText())
 	}
+	return autoLinkText(l.Path, l.AnchorText())
+}
 
-	// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
-	if fallback {
-		text = autoLinkText(l.Path, l.AnchorText())
+// appLinkDest writes the app url destination of an internal link: the path is decoded, the app
+// url encodes it so goldmark accepts spaces/unicode; query, anchor and title are kept for every
+// target.
+func appLinkDest(l Link) string {
+	anchor := linkAnchor(l)
+	if l.Path == "" {
+		return l.Query + anchor + l.Title
 	}
-
-	// the path is decoded, the app url encodes it so goldmark accepts spaces/unicode; query,
-	// anchor and title are kept for every target
 	if rel, ok := strings.CutPrefix(l.Path, "media/"); ok {
 		query := "?mode=detail"
 		if l.Query != "" {
 			query = l.Query + "&mode=detail"
 		}
-		return link(pathutils.ToMediaURL(rel) + query + anchor + l.Title)
+		return pathutils.ToMediaURL(rel) + query + anchor + l.Title
 	}
 	if rel, ok := strings.CutPrefix(strings.TrimPrefix(l.Path, "/files"), "/media/"); ok {
-		return link(pathutils.ToMediaURL(rel) + l.Query + anchor + l.Title)
+		return pathutils.ToMediaURL(rel) + l.Query + anchor + l.Title
 	}
-	return link(docLinkDest(l))
+	return docLinkDest(l)
 }
 
 // docLinkDest writes the app url destination of a link to a docs file (bare or /files/ path).

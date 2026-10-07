@@ -53,7 +53,7 @@ func HeadingDisplayText(text string) string {
 // headingInlineHTML resolves [[wikilinks]]/internal links and renders the inline
 // markdown, shared by HeadingID (slugged) and HeadingDisplayText (tags stripped).
 func headingInlineHTML(text string) string {
-	return RenderHeadingInline(ProcessMarkdownLinks(ResolveWikiLinks(text)))
+	return RenderHeadingInline(RenderLinks(text))
 }
 
 // SlugHeading turns a heading's rendered inline HTML into its anchor id: strip

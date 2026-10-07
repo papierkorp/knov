@@ -21,7 +21,7 @@ const (
 
 // a markdown link destination: <...> plus title, or one level of (...) in it - a bare one never
 // starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link). shared by RewriteLinks and
-// ProcessMarkdownLinks so both see the same links
+// processMarkdownLinks so both see the same links
 const mdLinkDestPattern = `([ \t]*(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*))`
 
 var (
@@ -147,7 +147,11 @@ func (l Link) Dest() string {
 // AnchorText is the anchor without its "#", percent-decoded - the heading text or id it points
 // at ("" without anchor). The only place an anchor is decoded, see AnchorID.
 func (l Link) AnchorText() string {
-	return unescapePath(strings.TrimPrefix(strings.TrimSpace(l.Anchor), "#"))
+	a := strings.TrimPrefix(strings.TrimSpace(l.Anchor), "#")
+	if decoded, err := url.PathUnescape(a); err == nil {
+		return decoded
+	}
+	return a
 }
 
 // String writes a new markdown [text](dest) / ![alt](dest) or a [[wikilink]].

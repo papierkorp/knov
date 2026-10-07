@@ -234,6 +234,9 @@ func TestFileFromURL(t *testing.T) {
 		{"http://localhost/files/history/notes/a.md", "notes/a.md"},
 		{"http://localhost/files/n%C3%B6tes/a%20b.md", "nötes/a b.md"},
 		{"http://localhost/files/new/codemirror", ""},
+		{"http://localhost/files/../../etc/a.md", ""},
+		{"http://localhost/files/edit/a/%2e%2e/%2E%2E/b.md", ""},
+		{"http://localhost/files/a..b/c.md", "a..b/c.md"},
 		{"http://localhost/dashboard/home", ""},
 		{"", ""},
 	}

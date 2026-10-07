@@ -16,39 +16,6 @@ import (
 	"knov/internal/utils"
 )
 
-// RenderMediaUploadComponent renders a media upload component
-func RenderMediaUploadComponent(contextPath string, allowedTypes []string) string {
-	allowedTypesStr := ""
-	if len(allowedTypes) > 0 {
-		for i, mimeType := range allowedTypes {
-			if i > 0 {
-				allowedTypesStr += ", "
-			}
-			allowedTypesStr += mimeType
-		}
-	}
-
-	return fmt.Sprintf(`
-		<div id="component-media-upload" class="media-upload-component">
-			<form hx-post="/api/media/upload" hx-encoding="multipart/form-data" hx-target="#upload-status">
-				<div class="form-group">
-					<label for="media-file">%s:</label>
-					<input type="file" name="file" id="media-file" accept="%s" required class="form-input">
-					<input type="hidden" name="context_path" value="%s">
-				</div>
-				<div class="form-actions">
-					<button type="submit" class="btn-primary">%s</button>
-				</div>
-			</form>
-			<div id="upload-status"></div>
-		</div>
-	`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "select file"),
-		allowedTypesStr,
-		contextPath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "upload"))
-}
-
 // RenderMediaPreview renders a preview of a media file
 func RenderMediaPreview(mediaPath, contentType string) string {
 	// ensure media path is relative (remove media/ prefix if present)

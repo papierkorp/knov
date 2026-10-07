@@ -127,6 +127,10 @@
   - ProcessMarkdownLinks rewrites a reference definition `[id]: dest` to a docs file to its /files/ url (docLinkDest / linkAnchor shared with inline links) - goldmark resolved it against the page; media, images, pure anchors and external ones stay as written
   - book ComposeEntries reads an entry once (DecodeFileRef); files.keepsInvalidName replaced by pathutils.CheckMovedName / CheckMovedDocsPath
   - left out on purpose: merging replaceOutsideCode and maskCode - a shared splitter isn't less code
+- [x] step 9: review simplifications
+  - parser.RenderLinks replaces ResolveWikiLinks + ProcessMarkdownLinks (now unexported): markdown links first, then wikilinks written straight to their app url (appLinkDest, fallbackLinkText shared with markdown links) - no intermediate `[](/files/...)` read a second time, a `[[` in a markdown destination is no wikilink anymore
+  - pathutils.FileFromURL returns "" for a path with a ".." segment (upload context_path); Link.AnchorText only percent-decodes (no "\" -> "/"); dead RenderMediaUploadComponent removed
+  - CLAUDE.md: links stay on the regex scanner on purpose, not goldmark's AST
 - open findings from the step 0 review to fix along the way
   - stale link metadata after upgrading - not an issue, see step 6
 - run `go test ./...` and `--start-tests --remove` after every step

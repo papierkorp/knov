@@ -97,8 +97,8 @@ func TestProcessMarkdownLinks(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := ProcessMarkdownLinks(c.in); got != c.want {
-				t.Errorf("ProcessMarkdownLinks(%q) = %q, want %q", c.in, got, c.want)
+			if got := processMarkdownLinks(c.in); got != c.want {
+				t.Errorf("processMarkdownLinks(%q) = %q, want %q", c.in, got, c.want)
 			}
 		})
 	}
@@ -108,10 +108,10 @@ func TestProcessMarkdownLinks(t *testing.T) {
 // rather than a naive ASCII-only uppercase, for both a single-word and a multi-word
 // (hyphenated) slug.
 func TestUnicodeHeaderSlugCapitalization(t *testing.T) {
-	if got, want := ProcessMarkdownLinks("[](#übersicht)"), "[Übersicht](#übersicht)"; got != want {
+	if got, want := processMarkdownLinks("[](#übersicht)"), "[Übersicht](#übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
-	if got, want := ProcessMarkdownLinks("[](#persönliche-übersicht)"), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
+	if got, want := processMarkdownLinks("[](#persönliche-übersicht)"), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
@@ -175,9 +175,6 @@ func TestWikiTargetExtraction(t *testing.T) {
 	}
 }
 
-// ResolveWikiLinks keeps a pure "[[#header]]" as a real same-page link (empty label, filled in
-// later by ProcessMarkdownLinks) rather than routing it through /files/ or collapsing it to ".".
-// A wikilink in code stays as written.
 // a wikilink anchor holding a quote or ")" stays the whole anchor, it isn't read as a title or
 // the end of the destination
 func TestWikiLinkAnchorSpecialChars(t *testing.T) {
@@ -186,16 +183,23 @@ func TestWikiLinkAnchorSpecialChars(t *testing.T) {
 		`[[a#x) y|z]]`:   "[z](" + pathutils.ToFileURL("a.md") + "#x-y)",
 		`[[#a "b"]]`:     `[A "b"](#a-b)`,
 	} {
-		if got := ProcessMarkdownLinks(ResolveWikiLinks(in)); got != want {
+		if got := RenderLinks(in); got != want {
 			t.Errorf("%q = %q, want %q", in, got, want)
 		}
 	}
 }
 
+// RenderLinks keeps a pure "[[#header]]" as a real same-page link (labelled with the header text)
+// rather than routing it through /files/ or collapsing it to ".". A wikilink in code stays as
+// written, a wikilink-like path in a markdown destination is no wikilink.
 func TestWikiLinkPureAnchor(t *testing.T) {
-	for in, want := range map[string]string{"[[#some-header]]": "[](#some-header)", "`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```"} {
-		if got := ResolveWikiLinks(in); got != want {
-			t.Errorf("ResolveWikiLinks(%q) = %q, want %q", in, got, want)
+	for in, want := range map[string]string{
+		"[[#some-header]]":         "[Some Header](#some-header)",
+		"`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```",
+		"[x](a[[b]].md)":           "[x](" + pathutils.ToFileURL("a[[b]].md") + ")",
+	} {
+		if got := RenderLinks(in); got != want {
+			t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
 		}
 	}
 }
@@ -353,8 +357,8 @@ func TestLinkString(t *testing.T) {
 	if got, want := l.String(), `[a/\[1\].md](a/[1].md)`; got != want {
 		t.Errorf("String = %q, want %q", got, want)
 	}
-	if got := ProcessMarkdownLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
-		t.Errorf("ProcessMarkdownLinks(%q) = %q", l.String(), got)
+	if got := processMarkdownLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
+		t.Errorf("processMarkdownLinks(%q) = %q", l.String(), got)
 	}
 }
 

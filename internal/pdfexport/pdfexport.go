@@ -93,7 +93,7 @@ type ZoneStyle struct {
 func MarkdownToPDF(markdown []byte, opts Options) ([]byte, error) {
 	logging.LogDebug(logging.KeyPdfExport, "pdf export: converting %d bytes of markdown", len(markdown))
 
-	resolved := parser.ProcessMarkdownLinks(parser.ResolveWikiLinks(string(markdown)))
+	resolved := parser.RenderLinks(string(markdown))
 	source := parser.PreprocessTodoStates([]byte(resolved))
 
 	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
