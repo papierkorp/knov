@@ -203,18 +203,18 @@ func newRelocateIndex(paths []string, moved map[string]string) *relocateIndex {
 }
 
 // relinkFunc returns the parser.RewriteLinks callback pointing doc's links to moved media at their
-// /media/ url (media/ path for wiki links).
-func (idx *relocateIndex) relinkFunc(doc string) func(p string, kind parser.LinkKind) (string, bool) {
-	return func(p string, kind parser.LinkKind) (string, bool) {
-		wiki := kind == parser.LinkWiki
-		src := idx.resolve(doc, p, wiki)
+// /media/ link path (media/ path for wiki links) - decoded, RewriteLinks encodes it.
+func (idx *relocateIndex) relinkFunc(doc string) func(l parser.Link) (string, bool) {
+	return func(l parser.Link) (string, bool) {
+		wiki := l.Kind == parser.LinkWiki
+		src := idx.resolve(doc, l.Path, wiki)
 		if src == "" {
 			return "", false
 		}
 		if wiki {
-			return parser.EncodeLinkPath("media/"+idx.moved[src], kind), true
+			return "media/" + idx.moved[src], true
 		}
-		return pathutils.ToMediaURL(idx.moved[src]), true
+		return "/media/" + idx.moved[src], true
 	}
 }
 

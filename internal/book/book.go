@@ -148,17 +148,21 @@ func parseFileRef(body string) (ref string, sub bool, ok bool) {
 
 // DecodeFileRef turns a file entry's Value (the [[...]] body as written) into the plain
 // "path#anchor" the editor shows; EncodeFileRef is the inverse for a picked or typed value.
-// The path is split off with parser.SplitWikiTarget, like parser.ResolveWikiTarget reads it, so a file
-// with "#" in its name can't be an entry; the "#anchor" is stored as typed.
+// The plain value ends its path at the first "#" or "|", like a wikilink, so a file with one of
+// them in its name can't be an entry; the typed path is trimmed, the "#anchor" / "|alias" is
+// stored as typed.
 func DecodeFileRef(v string) string {
-	path, rest := parser.SplitWikiTarget(v)
-	return parser.DecodeLinkPath(path, parser.LinkWiki) + rest
+	l := parser.ParseLink(v, parser.LinkWiki)
+	return l.Path + l.Anchor + l.Alias
 }
 
 // EncodeFileRef writes a plain "path#anchor" as a file entry Value - see DecodeFileRef.
 func EncodeFileRef(v string) string {
-	path, rest := parser.SplitWikiTarget(v)
-	return parser.EncodeLinkPath(path, parser.LinkWiki) + rest
+	path, rest := v, ""
+	if i := strings.IndexAny(v, "#|"); i != -1 {
+		path, rest = v[:i], v[i:]
+	}
+	return parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSpace(path)}.Dest() + rest
 }
 
 // ToMarkdown serializes entries back to `.book`/`.index` markdown (inverse of Parse). File

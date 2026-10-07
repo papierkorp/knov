@@ -352,7 +352,7 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	var sb strings.Builder
 	for _, file := range result.Files {
 		rel := pathutils.ToRelative(file.Path)
-		fmt.Fprintf(&sb, "- [%s](%s)\n", rel, parser.EncodeLinkPath(rel, parser.LinkMarkdown))
+		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: rel})
 	}
 
 	pairedPath := store.PairedPath(filterID)

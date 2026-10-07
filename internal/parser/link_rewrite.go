@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"html"
 	"net/url"
 	"regexp"
 	"strings"
@@ -24,7 +25,7 @@ const mdLinkDestPattern = `(<[^>\n]*>[^)\n]*|(?:[^()\n]|\([^()\n]*\))+)`
 
 var (
 	rewriteMdLinkRe   = regexp.MustCompile(`\]\(` + mdLinkDestPattern + `\)`)
-	rewriteWikiLinkRe = regexp.MustCompile(`\[\[([^\[\]|\n]+)`)
+	wikiLinkRe        = regexp.MustCompile(`\[\[([^\[\]\n]+)\]\]`)
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|\S+)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
@@ -51,65 +52,186 @@ func markdownLinkPath(p string) string {
 	return crosspath.ToSlash(p)
 }
 
-// DecodeLinkPath turns a link path as written in content (angle brackets, title, query and anchor
-// already split off) into the file path it points at: windows "\" separators as "/", for
-// markdown CommonMark escapes resolved, then percent-decoded once. The only place link text is
-// decoded - everything after it (RewriteLinks callbacks, metadata, book entries) holds decoded
-// paths, EncodeLinkPath is the inverse for writing one back.
-func DecodeLinkPath(p string, kind LinkKind) string {
-	if kind == LinkMarkdown {
-		p = markdownLinkPath(p)
-	} else {
-		p = crosspath.ToSlash(p)
+// Link is one link as written in content. Path is the decoded file path ("" for a pure "#anchor"
+// link, as written for an External one), everything else is kept as written: Query "?...",
+// Anchor "#...", Alias "|text" of a wikilink, Title the " title" after a markdown destination (a
+// wiki.js " =WxH" image size is dropped, goldmark doesn't parse it), Angle a markdown <...>
+// destination, kept so its query / anchor may hold spaces. Text and Image are only used by
+// String, for writing a new link. ParseLink reads one, Dest and String write it - the only place
+// link paths are decoded and encoded.
+type Link struct {
+	Kind     LinkKind
+	Image    bool
+	Text     string
+	Path     string
+	Query    string
+	Anchor   string
+	Alias    string
+	Title    string
+	Angle    bool
+	External bool
+}
+
+// ParseLink reads a link destination as written: the dest of a markdown ](dest) or [id]: dest,
+// the body of a [[wikilink]] or an html src/href value. The path ends at "?" (not in a
+// wikilink), "#", a wikilink's "|", the ">" of a <...> destination (a title may follow it) or a
+// markdown title; it is
+// trimmed as written, then decoded (decodeLinkPath).
+func ParseLink(dest string, kind LinkKind) Link {
+	l := Link{Kind: kind}
+	if kind == LinkWiki {
+		var rest string
+		if i := strings.IndexAny(dest, "#|"); i != -1 {
+			dest, rest = dest[:i], dest[i:]
+		}
+		if i := strings.Index(rest, "|"); i != -1 {
+			rest, l.Alias = rest[:i], rest[i:]
+		}
+		l.Anchor = rest
+		return l.withPath(strings.Trim(dest, " ")) // only spaces, like encodeLinkPath protects them
 	}
+
+	dest = strings.TrimLeft(dest, " \t")
+	// title (and size) and trailing whitespace: after the ">" of a <...> destination, else from
+	// the first " title" / " =WxH" - what is left is "path?query#anchor"
+	if inner, ok := strings.CutPrefix(dest, "<"); ok && kind == LinkMarkdown {
+		dest = inner
+		if inner, title, ok := strings.Cut(inner, ">"); ok {
+			dest, l.Title, l.Angle = inner, wikijsImageSizeRe.ReplaceAllString(title, ""), true
+		}
+	} else {
+		body := strings.TrimRight(dest, " \t\r") // \r: crlf line ending
+		l.Title = dest[len(body):]
+		if loc := linkSuffixRe.FindStringIndex(body); kind == LinkMarkdown && loc != nil {
+			body, l.Title = body[:loc[0]], wikijsImageSizeRe.ReplaceAllString(body[loc[0]:], "")+l.Title
+		}
+		dest = body
+	}
+	end := strings.IndexAny(dest, "?#")
+	if end == -1 {
+		end = len(dest)
+	}
+	p := strings.TrimRight(dest[:end], " \t\r")
+	rest := dest[len(p):]
+	if i := strings.Index(rest, "#"); i != -1 {
+		rest, l.Anchor = rest[:i], rest[i:]
+	}
+	l.Query = rest
+	return l.withPath(p)
+}
+
+// withPath sets the path as written: decoded, or kept for an external link.
+func (l Link) withPath(p string) Link {
+	if l.External = isExternalLink(p, l.Kind); l.External {
+		l.Path = p
+	} else {
+		l.Path = decodeLinkPath(p, l.Kind)
+	}
+	return l
+}
+
+// Dest writes the link destination (wikilink body) so ParseLink reads it back unchanged.
+func (l Link) Dest() string {
+	p := l.Path
+	if !l.External {
+		p = encodeLinkPath(p, l.Kind)
+	}
+	if l.Kind == LinkWiki {
+		return p + l.Anchor + l.Alias
+	}
+	if l.Angle {
+		return "<" + p + l.Query + l.Anchor + ">" + l.Title
+	}
+	return p + l.Query + l.Anchor + l.Title
+}
+
+// String writes a new markdown [text](dest) / ![alt](dest) or a [[wikilink]].
+func (l Link) String() string {
+	if l.Kind == LinkWiki {
+		return "[[" + l.Dest() + "]]"
+	}
+	prefix := ""
+	if l.Image {
+		prefix = "!"
+	}
+	return prefix + "[" + linkTextEscaper.Replace(l.Text) + "](" + l.Dest() + ")"
+}
+
+// decodeLinkPath turns a link path as written into the file path it points at, the way the
+// renderer reads it: windows "\" separators as "/", for markdown CommonMark escapes resolved,
+// for markdown and html entities resolved (goldmark and the browser do), then percent-decoded once.
+func decodeLinkPath(p string, kind LinkKind) string {
+	switch kind {
+	case LinkMarkdown:
+		p = entityRe.ReplaceAllStringFunc(markdownLinkPath(p), html.UnescapeString)
+	case LinkHTML:
+		p = entityRe.ReplaceAllStringFunc(p, html.UnescapeString)
+	}
+	return unescapePath(p)
+}
+
+// a complete html character reference - like goldmark, not the legacy ones without ";"
+var entityRe = regexp.MustCompile(`&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,31});`)
+
+// unescapePath percent-decodes a link path once, with windows "\" separators as "/".
+func unescapePath(p string) string {
+	p = crosspath.ToSlash(p)
 	if decoded, err := url.PathUnescape(p); err == nil {
 		return decoded
 	}
 	return p
 }
 
-// percent-encode what DecodeLinkPath would change or what would end the path early: "%", "\",
-// anchor, line breaks, for markdown the query and what ends a bare or <...> destination or starts a
-// title, for a wikilink its "|" / "]" (spaces stay readable there)
+// percent-encode only what decodeLinkPath would change or what would end the path early: "%",
+// "\", "&" (entity), anchor, line breaks, for markdown the query and what ends a bare or <...>
+// destination (with spaces encoded a quote can't start a title), for html also quotes, for a
+// wikilink its "|" / "[" / "]" and leading / trailing spaces (the rest of its spaces stays readable)
 var (
-	mdLinkPathEscaper   = strings.NewReplacer("%", "%25", `\`, "%5C", "#", "%23", "?", "%3F", "\r", "%0D", "\n", "%0A", " ", "%20", "\t", "%09", "(", "%28", ")", "%29", "<", "%3C", ">", "%3E", `"`, "%22", "'", "%27")
+	mdLinkPathEscaper   = strings.NewReplacer("%", "%25", `\`, "%5C", "&", "%26", "#", "%23", "?", "%3F", "\r", "%0D", "\n", "%0A", " ", "%20", "\t", "%09", "(", "%28", ")", "%29", "<", "%3C", ">", "%3E")
+	htmlLinkPathEscaper = strings.NewReplacer("%", "%25", `\`, "%5C", "&", "%26", "#", "%23", "?", "%3F", "\r", "%0D", "\n", "%0A", " ", "%20", "\t", "%09", `"`, "%22", "'", "%27", "<", "%3C", ">", "%3E")
 	wikiLinkPathEscaper = strings.NewReplacer("%", "%25", `\`, "%5C", "#", "%23", "\r", "%0D", "\n", "%0A", "|", "%7C", "[", "%5B", "]", "%5D")
+	linkTextEscaper     = strings.NewReplacer(`\`, `\\`, "[", `\[`, "]", `\]`)
 )
 
-// EncodeLinkPath writes a file path as a link path that DecodeLinkPath reads back unchanged -
-// the only place a path is encoded for link text (an html src/href gets a pathutils URL).
-func EncodeLinkPath(p string, kind LinkKind) string {
-	if kind == LinkWiki {
-		return wikiLinkPathEscaper.Replace(p)
+// encodeLinkPath writes a file path as a link path that decodeLinkPath reads back unchanged.
+func encodeLinkPath(p string, kind LinkKind) string {
+	switch kind {
+	case LinkWiki:
+		p = wikiLinkPathEscaper.Replace(p)
+		trimmed := strings.TrimLeft(p, " ")
+		p = strings.Repeat("%20", len(p)-len(trimmed)) + trimmed
+		trimmed = strings.TrimRight(p, " ")
+		return trimmed + strings.Repeat("%20", len(p)-len(trimmed))
+	case LinkHTML:
+		p = htmlLinkPathEscaper.Replace(p)
+	default:
+		p = mdLinkPathEscaper.Replace(p)
 	}
-	p = mdLinkPathEscaper.Replace(p)
 	// a ":" only reads as a scheme before the first "/"
 	seg, _, _ := strings.Cut(p, "/")
 	return strings.Replace(p, ":", "%3A", strings.Count(seg, ":"))
 }
 
 // RewriteLinks replaces, outside fenced code blocks and inline code, the path of every markdown
-// ](dest), [[wiki]], reference-style [id]: dest and html src/href link for which fn returns a new
-// path (fn gets the path without angle brackets, title, query or anchor, decoded by
-// DecodeLinkPath, and returns the new path as written - see EncodeLinkPath). External links
-// (isExternalLink, decided on the path as written, so an encoded "%3A" is no scheme) are
-// never passed to fn. Anything around the path is kept as-is, except a wiki.js " =WxH" image
-// size, which goldmark doesn't parse and would break the image. Returns the content and whether
-// anything was replaced.
+// ](dest), [[wiki]], reference-style [id]: dest and html src/href link (not external ones) for
+// which fn returns a new path: fn gets the link as read by ParseLink and returns the new decoded
+// path, the link is written back with Dest only if the path changed - the rest of the content
+// is kept as-is. Returns the content and whether anything was replaced.
 // ExtractLinks walks links through this too, so both always see the same links.
-func RewriteLinks(content string, fn func(p string, kind LinkKind) (string, bool)) (string, bool) {
+func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool) {
 	changed := false
-	replace := func(dest, stops string, kind LinkKind, titled bool) string {
-		prefix, p, suffix := splitLinkPath(dest, stops, titled)
-		if isExternalLink(p, kind) {
+	replace := func(dest string, kind LinkKind) string {
+		l := ParseLink(dest, kind)
+		if l.External {
 			return dest
 		}
-		newPath, ok := fn(DecodeLinkPath(p, kind), kind)
-		if !ok || newPath == p {
+		newPath, ok := fn(l)
+		if !ok || newPath == l.Path {
 			return dest
 		}
 		changed = true
-		return prefix + newPath + wikijsImageSizeRe.ReplaceAllString(suffix, "")
+		l.Path = newPath
+		return l.Dest()
 	}
 
 	lines := strings.Split(content, "\n")
@@ -119,22 +241,22 @@ func RewriteLinks(content string, fn func(p string, kind LinkKind) (string, bool
 			continue
 		}
 		if sub := rewriteRefDefRe.FindStringSubmatch(line); sub != nil {
-			lines[i] = sub[1] + replace(sub[2], "?#", LinkMarkdown, true)
+			lines[i] = sub[1] + replace(sub[2], LinkMarkdown)
 			continue
 		}
 		// odd parts are inline `code` spans
 		parts := markdown.SplitCodeSpans(line)
 		for j := 0; j < len(parts); j += 2 {
 			part := rewriteMdLinkRe.ReplaceAllStringFunc(parts[j], func(m string) string {
-				return "](" + replace(m[2:len(m)-1], "?#", LinkMarkdown, true) + ")"
+				return "](" + replace(m[2:len(m)-1], LinkMarkdown) + ")"
 			})
-			part = rewriteWikiLinkRe.ReplaceAllStringFunc(part, func(m string) string {
-				return "[[" + replace(m[2:], "#", LinkWiki, false)
+			part = wikiLinkRe.ReplaceAllStringFunc(part, func(m string) string {
+				return "[[" + replace(m[2:len(m)-2], LinkWiki) + "]]"
 			})
 			parts[j] = rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
 				// the path can't contain quotes, so the last one ends the tag prefix
 				i := strings.LastIndexAny(m, `"'`) + 1
-				return m[:i] + replace(m[i:], "?#", LinkHTML, false)
+				return m[:i] + replace(m[i:], LinkHTML)
 			})
 		}
 		lines[i] = strings.Join(parts, "")
@@ -146,43 +268,4 @@ func RewriteLinks(content string, fn func(p string, kind LinkKind) (string, bool
 // /search?q=...) rather than a file - for html only /media/ and /files/ are files.
 func IsAppRouteLink(p string, kind LinkKind) bool {
 	return kind == LinkHTML && strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "/media/") && !strings.HasPrefix(p, "/files/")
-}
-
-// splitLinkPath splits a link destination into leading whitespace / "<", the path and the
-// untouched rest. The path ends at the first of stops, at ">" for an angle-bracketed
-// destination, and - if titled - at a " =WxH" size or "title" (spaces inside the path stay,
-// trailing ones and a crlf "\r" go to the rest).
-func splitLinkPath(dest, stops string, titled bool) (prefix, p, suffix string) {
-	trimmed := strings.TrimLeft(dest, " \t")
-	prefix = dest[:len(dest)-len(trimmed)]
-	if rest, ok := strings.CutPrefix(trimmed, "<"); ok {
-		prefix += "<"
-		trimmed, stops, titled = rest, ">?#", false
-	}
-	end := strings.IndexAny(trimmed, stops)
-	if end == -1 {
-		end = len(trimmed)
-	}
-	if loc := linkSuffixRe.FindStringIndex(trimmed); titled && loc != nil && loc[0] < end {
-		end = loc[0]
-	}
-	p = strings.TrimRight(trimmed[:end], " \t\r") // \r: crlf line ending
-	return prefix, p, trimmed[len(p):]
-}
-
-// splitMarkdownLinkDest splits a markdown ](dest) like RewriteLinks reads it (splitLinkPath) into
-// the path as written, the "?query", the "#anchor" and the " title" / " =WxH" rest - the angle
-// brackets of a <...> destination are dropped.
-func splitMarkdownLinkDest(dest string) (p, query, anchor, title string) {
-	prefix, p, rest := splitLinkPath(dest, "?#", true)
-	if strings.HasSuffix(prefix, "<") {
-		rest = strings.Replace(rest, ">", "", 1)
-	}
-	if loc := linkSuffixRe.FindStringIndex(rest); loc != nil {
-		rest, title = rest[:loc[0]], rest[loc[0]:]
-	}
-	if i := strings.Index(rest, "#"); i != -1 {
-		rest, anchor = rest[:i], rest[i:]
-	}
-	return p, rest, anchor, title
 }

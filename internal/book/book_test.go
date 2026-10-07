@@ -118,7 +118,8 @@ func TestExpandFilters(t *testing.T) {
 // Parse as the same file, shown decoded again in the editor and included by ComposeEntries
 func TestFileRefRoundTrip(t *testing.T) {
 	for _, p := range specialchars.Names {
-		if !specialchars.ValidOn(runtime.GOOS, p) {
+		// a typed entry is trimmed, so a name with leading / trailing spaces can't be an entry
+		if !specialchars.ValidOn(runtime.GOOS, p) || strings.TrimSpace(p) != p {
 			continue
 		}
 		full := pathutils.ToDocsPath(p)

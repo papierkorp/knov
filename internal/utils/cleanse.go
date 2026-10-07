@@ -25,10 +25,10 @@ func CleanseID(input string) string {
 }
 
 // NormalizeLinkPath maps a link path to its metadata path (/files/ url prefix, missing
-// extension). Takes a plain path - one from parser.DecodeLinkPath (ExtractLinks / RewriteLinks)
-// or a picked one like a parent - so a "#", "?", "|" or "\" in it is part of the filename.
+// extension). Takes a plain path - a decoded one from parser.ParseLink (ExtractLinks /
+// RewriteLinks) or a picked one like a parent - so a "#", "?", "|", "\" or a leading / trailing
+// space in it is part of the filename.
 func NormalizeLinkPath(cleanLink string) string {
-	cleanLink = strings.TrimSpace(cleanLink)
 	// map URL path prefixes to metadata path prefixes
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
 	if strings.HasPrefix(cleanLink, "files/") {

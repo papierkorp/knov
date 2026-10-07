@@ -99,10 +99,10 @@ func caseRelocate() test.CaseResult {
 			return errCase("links-relocate", err)
 		}
 		forms, err := saveForms(dir, map[string]string{
-			"markdown":          "![x](" + parser.EncodeLinkPath(img, parser.LinkMarkdown) + ")",
-			"wiki":              "[[" + parser.EncodeLinkPath(img, parser.LinkWiki) + "]]",
+			"markdown":          "![x](" + parser.Link{Kind: parser.LinkMarkdown, Path: img}.Dest() + ")",
+			"wiki":              "[[" + parser.Link{Kind: parser.LinkWiki, Path: img}.Dest() + "]]",
 			"html":              `<img src="` + pathutils.ToFileURL(img) + `">`,
-			"markdown relative": "![y](" + parser.EncodeLinkPath(imgName(n), parser.LinkMarkdown) + ")",
+			"markdown relative": "![y](" + parser.Link{Kind: parser.LinkMarkdown, Path: imgName(n)}.Dest() + ")",
 		})
 		if err != nil {
 			return errCase("links-relocate", err)

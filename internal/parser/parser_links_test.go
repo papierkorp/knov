@@ -62,10 +62,10 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + pathutils.ToFileURL("sub/note.md") + ")"},
 		// a markdown escape (\_) is no separator, the anchor becomes its heading id
 		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + pathutils.ToFileURL("a_b.md") + "#c-d)"},
-		{"image embed markdown escape kept", `![D](a\_b.png)`, `![D](a\_b.png)`},
+		{"image embed markdown escape resolved", `![D](a\_b.png)`, `![D](a_b.png)`},
 		// in a windows path every "\" is a separator, also before punctuation (_resources)
 		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + pathutils.ToFileURL("sub/_resources/a.md") + ")"},
-		{"image embed title and anchor ignored", `![D](a\_b.png#c\d "t\x")`, `![D](a\_b.png#c\d "t\x")`},
+		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](a_b.png#c\d "t\x")`},
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
 		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("a/../b/.c.md") + ")"},
 	}
@@ -193,8 +193,8 @@ func TestMarkdownLinkPath(t *testing.T) {
 
 func TestRewriteLinksBackslashes(t *testing.T) {
 	var got []string
-	RewriteLinks(`[a](sub\_res\x.md) [b](a\_b.md) [[sub\_res\y]]`, func(p string, _ LinkKind) (string, bool) {
-		got = append(got, p)
+	RewriteLinks(`[a](sub\_res\x.md) [b](a\_b.md) [[sub\_res\y]]`, func(l Link) (string, bool) {
+		got = append(got, l.Path)
 		return "", false
 	})
 	// markdown links get their escapes or windows separators resolved, wiki links every "\" as "/"
@@ -204,13 +204,13 @@ func TestRewriteLinksBackslashes(t *testing.T) {
 	}
 }
 
-// every special-char file name, written by EncodeLinkPath (or as an app url) in each link form,
+// every special-char file name, written by Link.Dest (or as an app url) in each link form,
 // is read back as the same file by every reader: link metadata, wikilink resolving and the
 // rendered href / media preview
 func TestSpecialCharLinksRoundTrip(t *testing.T) {
 	h := NewMarkdownHandler()
 	for _, p := range specialchars.Names {
-		md, wiki := EncodeLinkPath(p, LinkMarkdown), EncodeLinkPath(p, LinkWiki)
+		md, wiki := encodeLinkPath(p, LinkMarkdown), encodeLinkPath(p, LinkWiki)
 		img := strings.Replace(p, ".md", ".png", 1)
 		writers := []struct{ name, link, want string }{
 			{"markdown", "[x](" + md + ")", p},
@@ -219,14 +219,14 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			{"markdown file url", "[x](" + pathutils.ToFileURL(p) + ")", p},
 			{"wiki", "[[" + wiki + "]]", p},
 			{"wiki anchor", "[[" + wiki + "#sec]]", p},
-			{"image", "![x](" + EncodeLinkPath("media/"+img, LinkMarkdown) + ")", "media/" + img},
+			{"image", "![x](" + encodeLinkPath("media/"+img, LinkMarkdown) + ")", "media/" + img},
 			{"image media url", "![x](" + pathutils.ToMediaURL(img) + ")", "media/" + img},
 			{"markdown media url", "[x](" + pathutils.ToMediaURL(img) + ")", "media/" + img},
-			{"markdown media path", "[x](" + EncodeLinkPath("/media/"+img, LinkMarkdown) + ")", "media/" + img},
+			{"markdown media path", "[x](" + encodeLinkPath("/media/"+img, LinkMarkdown) + ")", "media/" + img},
 		}
 		// the extensionless form is only written when it reads as the same file (see renameLinkFunc)
 		if bare := strings.TrimSuffix(p, ".md"); utils.WithDefaultLinkExt(bare) == p {
-			writers = append(writers, struct{ name, link, want string }{"wiki no ext", "[[" + EncodeLinkPath(bare, LinkWiki) + "]]", p})
+			writers = append(writers, struct{ name, link, want string }{"wiki no ext", "[[" + encodeLinkPath(bare, LinkWiki) + "]]", p})
 		}
 		for _, w := range writers {
 			if got := h.ExtractLinks([]byte(w.link)); len(got) != 1 || pathutils.ToWithPrefix(utils.NormalizeLinkPath(got[0])) != pathutils.ToWithPrefix(w.want) {
@@ -275,8 +275,43 @@ func renderedTarget(out string) string {
 
 // a ":" is only encoded before the first "/", where it would read as a scheme
 func TestEncodeLinkPathColon(t *testing.T) {
-	if got := EncodeLinkPath("ns:a/b:c.md", LinkMarkdown); got != "ns%3Aa/b:c.md" {
-		t.Errorf("EncodeLinkPath = %q, want ns%%3Aa/b:c.md", got)
+	if got := encodeLinkPath("ns:a/b:c.md", LinkMarkdown); got != "ns%3Aa/b:c.md" {
+		t.Errorf("encodeLinkPath = %q, want ns%%3Aa/b:c.md", got)
+	}
+}
+
+// ParseLink splits a destination into its parts and Dest writes it back
+func TestParseLinkDest(t *testing.T) {
+	cases := []struct {
+		dest string
+		kind LinkKind
+		want Link
+		out  string
+	}{
+		{`<a b.md?x=1#sec> "t"`, LinkMarkdown, Link{Kind: LinkMarkdown, Path: "a b.md", Query: "?x=1", Anchor: "#sec", Title: ` "t"`, Angle: true}, `<a%20b.md?x=1#sec> "t"`},
+		// spaces and quotes in a <...> anchor stay inside the brackets, a title only follows the ">"
+		{`<a b.md#My "Heading"> =100x "t"`, LinkMarkdown, Link{Kind: LinkMarkdown, Path: "a b.md", Anchor: `#My "Heading"`, Title: ` "t"`, Angle: true}, `<a%20b.md#My "Heading"> "t"`},
+		{`img.png =100x =200x "t"`, LinkMarkdown, Link{Kind: LinkMarkdown, Path: "img.png", Title: ` =200x "t"`}, `img.png =200x "t"`},
+		{`it's "x".md`, LinkMarkdown, Link{Kind: LinkMarkdown, Path: "it's", Title: ` "x".md`}, `it's "x".md`},
+		{" a%20b#sec|Text ", LinkWiki, Link{Kind: LinkWiki, Path: "a b", Anchor: "#sec", Alias: "|Text "}, "a b#sec|Text "},
+		{"a&amp;b.png?x#y", LinkHTML, Link{Kind: LinkHTML, Path: "a&b.png", Query: "?x", Anchor: "#y"}, "a%26b.png?x#y"},
+		{"mailto:a@b.c", LinkMarkdown, Link{Kind: LinkMarkdown, Path: "mailto:a@b.c", External: true}, "mailto:a@b.c"},
+	}
+	for _, c := range cases {
+		if got := ParseLink(c.dest, c.kind); got != c.want || got.Dest() != c.out {
+			t.Errorf("ParseLink(%q) = %#v, Dest %q, want %#v, %q", c.dest, got, got.Dest(), c.want, c.out)
+		}
+	}
+}
+
+// a new link escapes its text, so a "[" "]" in it can't end the link early
+func TestLinkString(t *testing.T) {
+	l := Link{Kind: LinkMarkdown, Text: "a/[1].md", Path: "a/[1].md"}
+	if got, want := l.String(), `[a/\[1\].md](a/[1].md)`; got != want {
+		t.Errorf("String = %q, want %q", got, want)
+	}
+	if got := ProcessMarkdownLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
+		t.Errorf("ProcessMarkdownLinks(%q) = %q", l.String(), got)
 	}
 }
 
@@ -287,10 +322,10 @@ func TestExtractLinksEncodedColon(t *testing.T) {
 	}
 }
 
-// a callback returning the path it got, written encoded, leaves the link unchanged
+// a callback returning the path it got leaves the link unchanged, also an equivalently encoded one
 func TestRewriteLinksUnchangedEncoded(t *testing.T) {
-	in := "[x](a%20b.md) [[a%25b]]"
-	got, changed := RewriteLinks(in, func(p string, kind LinkKind) (string, bool) { return EncodeLinkPath(p, kind), true })
+	in := "[x](a%20b.md) [[a%25b]] [y](a%41.md)"
+	got, changed := RewriteLinks(in, func(l Link) (string, bool) { return l.Path, true })
 	if changed || got != in {
 		t.Errorf("RewriteLinks = %q, %v, want %q unchanged", got, changed, in)
 	}

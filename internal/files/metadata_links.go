@@ -638,16 +638,16 @@ func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) 
 // rebuildLinkTarget reconstructs a link target for newPath, preserving whether
 // the original link used an absolute "/files/..." view URL, a "/media/..." URL or a bare
 // relative path. html src/href always get a URL, a bare path would resolve against the page.
-// A bare path is encoded (parser.EncodeLinkPath) so it reads back unchanged.
+// Returns the decoded link path, RewriteLinks encodes it (so it's no url built by hand).
 func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) string {
 	html := kind == parser.LinkHTML
 	if rel, ok := strings.CutPrefix(newPath, "media/"); ok && (html || strings.HasPrefix(originalTarget, "/media/")) {
-		return pathutils.ToMediaURL(rel)
+		return "/media/" + rel
 	}
 	if html || strings.HasPrefix(strings.TrimPrefix(originalTarget, "/"), "files/") {
-		return pathutils.ToFileURL(pathutils.ToWithPrefix(newPath))
+		return "/files/" + pathutils.ToWithPrefix(newPath)
 	}
-	return parser.EncodeLinkPath(newPath, kind)
+	return newPath
 }
 
 // renameLinkFunc returns the parser.RewriteLinks callback pointing links to oldPath at newPath.
@@ -655,18 +655,18 @@ func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) str
 // original absolute/relative style is preserved on write. wiki links keep their
 // extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
 // the new name would then read as another file ([[v1.2 notes]] isn't v1.2 notes.md)
-func renameLinkFunc(oldPath, newPath string) func(p string, kind parser.LinkKind) (string, bool) {
-	return func(p string, kind parser.LinkKind) (string, bool) {
-		if parser.IsAppRouteLink(p, kind) || utils.NormalizeLinkPath(p) != oldPath {
+func renameLinkFunc(oldPath, newPath string) func(l parser.Link) (string, bool) {
+	return func(l parser.Link) (string, bool) {
+		if parser.IsAppRouteLink(l.Path, l.Kind) || utils.NormalizeLinkPath(l.Path) != oldPath {
 			return "", false
 		}
-		if kind == parser.LinkWiki {
-			if bare := strings.TrimSuffix(newPath, ".md"); !strings.HasSuffix(p, ".md") && utils.WithDefaultLinkExt(bare) == newPath {
-				return parser.EncodeLinkPath(bare, kind), true
+		if l.Kind == parser.LinkWiki {
+			if bare := strings.TrimSuffix(newPath, ".md"); !strings.HasSuffix(l.Path, ".md") && utils.WithDefaultLinkExt(bare) == newPath {
+				return bare, true
 			}
-			return parser.EncodeLinkPath(newPath, kind), true
+			return newPath, true
 		}
-		return rebuildLinkTarget(p, newPath, kind), true
+		return rebuildLinkTarget(l.Path, newPath, l.Kind), true
 	}
 }
 
@@ -825,7 +825,7 @@ func SetParentsNoRefresh(path string, parents []string) error {
 	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
 		oldParents = append(oldParents, m.Parents...)
 		for _, parent := range parents {
-			newParents = append(newParents, utils.NormalizeLinkPath(crosspath.ToSlash(parent)))
+			newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
 		}
 		m.Parents = newParents
 		updateAncestors(m, nil)
@@ -875,7 +875,7 @@ func SetMetadataNoRefresh(path string, patch *Metadata) error {
 		if len(patch.Parents) > 0 {
 			oldParents = append(oldParents, m.Parents...)
 			for _, parent := range patch.Parents {
-				newParents = append(newParents, utils.NormalizeLinkPath(crosspath.ToSlash(parent)))
+				newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
 			}
 			m.Parents = newParents
 		}
