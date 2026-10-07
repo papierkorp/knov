@@ -22,6 +22,7 @@
   - bulk update - remove parent
   - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
   - general and centralized solution for links (link rewrite, parser..) with all of the special chars, we have multiple different solutions for different special chars
+  - index/book editor => use markdown links instead of wiki links
   - make the upgrade.md file more readable
 - test
   - remote git in mobile
