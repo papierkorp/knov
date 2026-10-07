@@ -110,17 +110,20 @@
 - step 5b: leftover from the step 5 review
   - fixed: CheckNewNames stops at the docs / media root (a missing root or a data path with `#` no longer fails every create), configeditor Kind.Set checks CleanID's id directly, pathutils TestCheckNewNames pins every corpus name (the links suite's rename skip reads the policy)
   - known: kanban moveFileUnique's collision fallback for an existing bad card name (`a#b.md` -> `a#b_2.md`) is a new name, so the card move fails with ErrInvalidName - rare (git-synced name + same name already in the status folder), fixing it needs a "keeps the old name" heuristic
-  - handleMedia (pages_browse.go, `/media/*`) still reads chi.URLParam(r, "*") - the still-encoded wildcard when the request has a RawPath, the bug fixed for the media rename / rename-form / path-display and metadata rebuild routes; switch it to r.URL.Path like them and check a media name whose encoding differs from go's (links or media suite)
-- step 6: automatic metadata rebuild on upgrade
-  - an option for me to request a one-time full metadata rebuild for certain versions/cases (e.g. a link-reading version constant bumped whenever the way links are read changes), persisted so startup compares it and runs metadata-full-rebuild once when it differs
-  - then the upgrade notes for link reading changes (step 0, 2, ...) can say "nothing to do" instead of asking for a manual rebuild
+  - handleMedia (`/media/*`) reads r.URL.Path instead of chi's still-encoded wildcard, like the media rename / rename-form / path-display and metadata rebuild routes - a media page whose url a browser encodes differently from go (`( ) '` kept raw, so the request has a RawPath) was a 404: `x (1)`, `a&copy;b`, `it's "x"` and the nested `x (1)/ö ü` folder
+  - links suite upload: requests each uploaded media page the way a browser encodes it (go's url with `( ) '` unescaped) and expects 200 - failed for those 4 names before the fix
+  - known: `/metadata/{metadata}/{value}` (pages_browse.go) still reads chi.URLParam - single segments, untouched here; `go test ./...` fails render TestHeaderContextMenuScript / TestRowContextMenuScript on main too (c30bd8cd changed the table editor's remove actions, the tests still expect `column.delete()` / `row.delete()`)
+- [x] step 6: automatic metadata rebuild on upgrade
+  - not needed: main.go already runs job.RunMetadataRebuild (MetaDataLinksRebuild - ExtractLinks on every doc, used links + linked from) about 2 minutes after every startup, so link reading changes reach the stored metadata on their own
+  - upgrade.md: the "run a full metadata rebuild" note and the rebuild sentences of the step 2 / 3 link notes removed (their behavior changes stay); CLAUDE.md says link reading changes need no manual-rebuild note
+  - left out on purpose: no version constant / one-time full rebuild - nothing beyond link metadata needs it today
 - step 7: repair media from the old upload (needs the rebuilt link metadata of step 6)
   - the old upload stored media under the still-encoded folder (`media/x%20%281%29/pic.png`) and inserted the link raw, which now reads as the missing `media/x (1)/pic.png`
   - broken links: FindBrokenLinks also suggests the file at the link path read literally (not decoded) when it exists - an exact match, unlike the unique-basename guess that misses common names like `image.png`; the existing repair rewrites the link (the encoded folder stays)
   - optional: the misplaced media scan also reports media whose folder doesn't mirror the one doc linking it, moved and relinked through the same review-then-relocate flow - fixes the folder itself and covers files copied in by hand; never automatic, a folder literally named `x%20(1)` can be intended
   - upgrade note in docs/upgrade.md: point at the broken-links repair instead of moving the media by hand
 - open findings from the step 0 review to fix along the way
-  - stale link metadata after upgrading needs a manual metadata-full-rebuild - see step 6
+  - stale link metadata after upgrading - not an issue, see step 6
 - run `go test ./...` and `--start-tests --remove` after every step
 
 # every other time

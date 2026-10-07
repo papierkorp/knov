@@ -15,6 +15,7 @@
 - no need for backwards compability since the app is not released yet - you can remove functions/routes
 - no need to update the changelogs since they are auto generated per git commits
 - for breaking changes, deprecations or removals also add a user-facing upgrade note to docs/upgrade.md (what changed, what the user has to do) - `make release` moves it into docs/releases/<version>.md as "upgrading from vPrev to vX.Y.Z", resets docs/upgrade.md to its template, and fails if there are breaking commits but no notes. the /system/release version range picker shows every release after the user's version up to the target, so each release's upgrade notes only need to cover that one step
+- link metadata (used links, linked from) is re-read from every file by the links rebuild that runs about 2 minutes after every startup (main.go, job.RunMetadataRebuild) - a change to how links or link metadata are read needs no upgrade note asking for a manual metadata rebuild
 - there is background automation on my machine that watches git commits and auto-commits changes to docs/changelogs/, docs/releases/unreleased.md and docs/temp_todo.md (and can auto-commit other pending working-tree changes along with them) - if you see commits you didn't make, or changes to those files you didn't write, that's this automation, not a bug
 
 ## Architecture
