@@ -23,8 +23,6 @@ import (
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-
-	"github.com/go-chi/chi/v5"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -249,7 +247,9 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to rebuild metadata links"
 // @Router /api/metadata/rebuild/{filepath} [post]
 func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
-	filePath := chi.URLParam(r, "*")
+	// r.URL.Path, not chi.URLParam(r, "*") - that is still percent-encoded when the request
+	// has a RawPath (see handleAPIDeleteMedia)
+	filePath := strings.TrimPrefix(r.URL.Path, "/api/metadata/rebuild/")
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return

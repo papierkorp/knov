@@ -18,9 +18,9 @@ import (
 	"knov/internal/test"
 )
 
-// caseUpload uploads into a doc in a folder named after each corpus name, with the context_path
-// uploadMediaBlob sends (the edit page's location.pathname), and links the result the way
-// uploadFilesToEditor inserts it - the media file has to mirror the doc's folder.
+// caseUpload uploads into a doc in a folder named after each corpus name, from the doc the upload
+// api reads out of the context_path uploadMediaBlob sends (the edit page's location.pathname),
+// and inserts the link it returns - the media file has to mirror the doc's folder.
 func caseUpload() test.CaseResult {
 	var gaps []string
 	for _, n := range names {
@@ -33,7 +33,7 @@ func caseUpload() test.CaseResult {
 		if err != nil {
 			return errCase("links-upload", err)
 		}
-		res, err := files.UploadMedia(file, header, strings.TrimPrefix(pathutils.ToFileEditURL(doc), "/files/edit/"))
+		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(doc)))
 		if err != nil {
 			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
 			continue
@@ -42,7 +42,7 @@ func caseUpload() test.CaseResult {
 		if "media/"+res.Path != want {
 			gaps = append(gaps, fmt.Sprintf("%q: uploaded to %q", want, "media/"+res.Path))
 		}
-		if err := saveDoc(doc, "![pic.png](media/"+res.Path+")\n"); err != nil {
+		if err := saveDoc(doc, res.Link+"\n"); err != nil {
 			return errCase("links-upload", err)
 		}
 		gaps = append(gaps, linkGaps(doc, []string{want})...)

@@ -15,6 +15,13 @@ function infoPanelParseLayout() {
   }
 }
 
+// url of a route that takes a path after its prefix (route ends with "/"):
+// each segment encoded, "/" kept - the js side of pathutils.ToRouteURL. a
+// path in a query param goes through encodeURIComponent instead.
+function pathURL(route, path) {
+  return route + path.split("/").map(encodeURIComponent).join("/");
+}
+
 // ================================================================
 // file sub-panel switching — Alpine.store since fp-file is a page-wide
 // singleton (like $store.rail, see rail-core.js) rather than an x-for'd
@@ -42,11 +49,10 @@ document.addEventListener("alpine:init", () => {
       return encodeURIComponent(this.filepath);
     },
 
-    // per-segment encoded, for building /files/edit/<path> links - unlike
-    // fp (whole-string encoded, for a ?filepath= query param) this must
-    // keep "/" as a separator rather than escaping it to %2F.
-    get editPath() {
-      return this.filepath.split("/").map(encodeURIComponent).join("/");
+    // /files/edit/<path> url - unlike fp (a ?filepath= query param) "/" stays
+    // a separator
+    get editURL() {
+      return pathURL("/files/edit/", this.filepath);
     },
 
     // an empty/unparseable layout means "show every tab, markup order" -
@@ -211,7 +217,7 @@ function setupFilePage() {
 
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
-    rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);
+    rebuildBtn.setAttribute("hx-post", pathURL("/api/metadata/rebuild/", filepath));
     rebuildBtn.setAttribute("hx-swap", "none");
     htmx.process(rebuildBtn);
   }
@@ -219,7 +225,7 @@ function setupFilePage() {
   const renameForm = document.getElementById("rename-form");
   const renameInput = document.getElementById("rename-input");
   if (renameForm) {
-    renameForm.setAttribute("hx-post", "/api/files/rename/" + filepath);
+    renameForm.setAttribute("hx-post", pathURL("/api/files/rename/", filepath));
     htmx.process(renameForm);
   }
   if (renameInput) renameInput.value = filepath;
@@ -228,7 +234,7 @@ function setupFilePage() {
   const moveFolderInput = document.getElementById("move-folder-input");
   const lastSlash = filepath.lastIndexOf("/");
   if (moveForm) {
-    moveForm.setAttribute("hx-post", "/api/files/rename/" + filepath);
+    moveForm.setAttribute("hx-post", pathURL("/api/files/rename/", filepath));
     moveForm.dataset.filename =
       lastSlash === -1 ? filepath : filepath.substring(lastSlash + 1);
     htmx.process(moveForm);
@@ -238,7 +244,7 @@ function setupFilePage() {
 
   const deleteForm = document.getElementById("delete-form");
   if (deleteForm) {
-    deleteForm.setAttribute("hx-delete", "/api/files/delete/" + filepath);
+    deleteForm.setAttribute("hx-delete", pathURL("/api/files/delete/", filepath));
     htmx.process(deleteForm);
   }
 
@@ -296,7 +302,7 @@ function setupFilePage() {
     headers: { Accept: "text/html" },
   });
 
-  htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
+  htmx.ajax("GET", pathURL("/api/files/versions/", filepath) + "?output=full", {
     source: document.getElementById("fp-versions"),
     target: document.getElementById("fp-versions"),
     swap: "innerHTML",

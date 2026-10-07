@@ -114,7 +114,7 @@ func RenderFileList(files []files.File) string {
 func RenderFileDropdown(files []files.File, limit int) string {
 	var html strings.Builder
 	html.WriteString(`<div id="filter-results">`)
-	html.WriteString(`<select class="form-select" onchange="if(this.value) window.location.href='/files/'+this.value">`)
+	html.WriteString(`<select class="form-select" onchange="if(this.value) window.location.href=this.value">`)
 	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select file...") + `</option>`)
 
 	displayLimit := limit
@@ -127,7 +127,7 @@ func RenderFileDropdown(files []files.File, limit int) string {
 			break
 		}
 		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, file.Path, displayText))
+		fmt.Fprintf(&html, `<option value="%s">%s</option>`, file.ViewURL(), displayText)
 	}
 
 	if len(files) == 0 {

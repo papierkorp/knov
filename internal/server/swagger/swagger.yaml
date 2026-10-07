@@ -1670,12 +1670,17 @@ paths:
         in: query
         name: q
         type: string
+      - description: wiki or markdown - also return each file as ready-to-insert link
+          text
+        in: query
+        name: link
+        type: string
       produces:
       - application/json
       - text/html
       responses:
         "200":
-          description: array of {value, label, detail}
+          description: array of {value, label, detail, link}
           schema:
             items:
               type: object
@@ -1980,12 +1985,17 @@ paths:
         in: query
         name: bare
         type: string
+      - description: wiki or markdown - also return each heading as ready-to-insert
+          link text
+        in: query
+        name: link
+        type: string
       produces:
       - application/json
       - text/html
       responses:
         "200":
-          description: array of {id, text, level}
+          description: array of {id, text, level, link}
           schema:
             items:
               type: object
@@ -3304,12 +3314,17 @@ paths:
         in: query
         name: q
         type: string
+      - description: wiki or markdown - also return each media file as ready-to-insert
+          link text
+        in: query
+        name: link
+        type: string
       produces:
       - application/json
       - text/html
       responses:
         "200":
-          description: array of {value, label, detail}
+          description: array of {value, label, detail, link}
           schema:
             items:
               type: object
@@ -3600,7 +3615,8 @@ paths:
         name: file
         required: true
         type: file
-      - description: Current file being edited (for directory structure)
+      - description: url path of the page the file is uploaded from (/files/edit/<path>
+          or /files/<path>) - the media file mirrors that doc's folder
         in: formData
         name: context_path
         required: true

@@ -1556,11 +1556,17 @@ const docTemplate = `{
                         "description": "search query",
                         "name": "q",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "wiki or markdown - also return each file as ready-to-insert link text",
+                        "name": "link",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "array of {value, label, detail}",
+                        "description": "array of {value, label, detail, link}",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -2012,11 +2018,17 @@ const docTemplate = `{
                         "description": "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)",
                         "name": "bare",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "wiki or markdown - also return each heading as ready-to-insert link text",
+                        "name": "link",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "array of {id, text, level}",
+                        "description": "array of {id, text, level, link}",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -3848,11 +3860,17 @@ const docTemplate = `{
                         "description": "search query",
                         "name": "q",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "wiki or markdown - also return each media file as ready-to-insert link text",
+                        "name": "link",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "array of {value, label, detail}",
+                        "description": "array of {value, label, detail, link}",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -4283,7 +4301,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Current file being edited (for directory structure)",
+                        "description": "url path of the page the file is uploaded from (/files/edit/\u003cpath\u003e or /files/\u003cpath\u003e) - the media file mirrors that doc's folder",
                         "name": "context_path",
                         "in": "formData",
                         "required": true

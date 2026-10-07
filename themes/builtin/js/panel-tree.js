@@ -56,13 +56,12 @@ function initTreeRename() {
       if (!newName || newName === currentName) { cancel(); return; }
       committed = true;
 
-      const encodedPath = path.split("/").map(encodeURIComponent).join("/");
       let url, values;
       if (type === "file") {
-        url = "/api/files/rename/" + encodedPath;
+        url = pathURL("/api/files/rename/", path);
         values = { name: parentDir ? parentDir + "/" + newName : newName };
       } else {
-        url = "/api/files/move-folder/" + encodedPath;
+        url = pathURL("/api/files/move-folder/", path);
         values = { target: parentDir || ".", name: newName };
       }
 
@@ -148,13 +147,11 @@ function initTreeDragDrop() {
     // prevent folder drop into its own subtree
     if (type === "folder" && (newPath + "/").startsWith(srcPath + "/")) return;
 
-    const encodedSrc = srcPath.split("/").map(encodeURIComponent).join("/");
-
     // htmx handles the redirect, the notify toast and the panel reload (rail-core.js)
     if (type === "folder") {
-      htmx.ajax("POST", "/api/files/move-folder/" + encodedSrc, { source: btn, swap: "none", values: { target: targetDir } });
+      htmx.ajax("POST", pathURL("/api/files/move-folder/", srcPath), { source: btn, swap: "none", values: { target: targetDir } });
     } else {
-      htmx.ajax("POST", "/api/files/rename/" + encodedSrc, { source: btn, swap: "none", values: { name: newPath } });
+      htmx.ajax("POST", pathURL("/api/files/rename/", srcPath), { source: btn, swap: "none", values: { name: newPath } });
     }
   });
 }

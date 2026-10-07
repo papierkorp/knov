@@ -13,6 +13,7 @@ import (
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -37,6 +38,18 @@ func wantsHTML(r *http.Request) bool {
 // from (read from the HX-Current-URL header), or "".
 func viewedFile(r *http.Request) string {
 	return pathutils.FileFromURL(r.Header.Get("HX-Current-URL"))
+}
+
+// linkKindParam reads the "link" query param of the autocomplete apis - the link syntax a
+// suggestion is inserted into ("wiki" or "markdown"); ok is false without one.
+func linkKindParam(r *http.Request) (kind parser.LinkKind, ok bool) {
+	switch r.URL.Query().Get("link") {
+	case "wiki":
+		return parser.LinkWiki, true
+	case "markdown":
+		return parser.LinkMarkdown, true
+	}
+	return kind, false
 }
 
 func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {

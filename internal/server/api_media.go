@@ -14,6 +14,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/job"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -28,7 +29,7 @@ import (
 // @Tags media
 // @Accept multipart/form-data
 // @Param file formData file true "Media file to upload"
-// @Param context_path formData string true "Current file being edited (for directory structure)"
+// @Param context_path formData string true "url path of the page the file is uploaded from (/files/edit/<path> or /files/<path>) - the media file mirrors that doc's folder"
 // @Produce json,html
 // @Success 200 {object} map[string]string "Upload success with file path"
 // @Failure 400 {string} string "invalid request"
@@ -37,17 +38,10 @@ import (
 // @Failure 500 {string} string "upload failed"
 // @Router /api/media/upload [post]
 func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
-	// check if context path is provided (prevent uploads for unsaved files)
-	contextPath := r.FormValue("context_path")
+	// the doc the upload comes from - none for an unsaved file (/files/new/...)
+	contextPath := pathutils.FileFromURL(r.FormValue("context_path"))
 	if contextPath == "" {
-		logging.LogWarning(logging.KeyApp, "media upload attempted without context path")
-		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"))
-		return
-	}
-
-	// prevent uploads to unsaved files (context_path like "new")
-	if contextPath == "new" || strings.HasPrefix(contextPath, "new/") {
-		logging.LogWarning(logging.KeyApp, "media upload attempted for unsaved file: %s", contextPath)
+		logging.LogWarning(logging.KeyApp, "media upload attempted without a saved file: %s", r.FormValue("context_path"))
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"))
 		return
 	}
@@ -93,6 +87,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 		"filename":    result.Filename,
 		"contentType": result.ContentType,
 		"size":        result.Size,
+		"link":        result.Link,
 	}
 
 	writeResponse(w, r, responseData, fmt.Sprintf("media uploaded: %s", result.Path))
@@ -170,11 +165,13 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 // @Description Returns media files matching a query string for use in image/media link autocomplete
 // @Tags media
 // @Param q query string false "search query"
+// @Param link query string false "wiki or markdown - also return each media file as ready-to-insert link text"
 // @Produce json,html
-// @Success 200 {array} object "array of {value, label, detail}"
+// @Success 200 {array} object "array of {value, label, detail, link}"
 // @Router /api/media/autocomplete [get]
 func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
+	linkKind, withLink := linkKindParam(r)
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
@@ -191,6 +188,9 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 	results := make([]render.AutocompleteItem, len(matches))
 	for i, rel := range matches {
 		results[i] = render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel}
+		if withLink {
+			results[i].Link = parser.Link{Kind: linkKind, Path: "media/" + rel}.Dest()
+		}
 	}
 
 	writeResponse(w, r, results, render.RenderAutocompleteList(results))

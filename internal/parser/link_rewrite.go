@@ -162,6 +162,16 @@ func (l Link) String() string {
 	return prefix + "[" + linkTextEscaper.Replace(l.Text) + "](" + l.Dest() + ")"
 }
 
+// FileLinkDest writes the destination of a new link to a docs file (docs-relative path, anchor
+// "#id" or ""), as the editor inserts it: the wikilink body or a markdown /files/ url - an empty
+// path is a same-page anchor.
+func FileLinkDest(path, anchor string, kind LinkKind) string {
+	if kind != LinkWiki && path != "" {
+		path = "/files/" + path
+	}
+	return Link{Kind: kind, Path: path, Anchor: anchor}.Dest()
+}
+
 // decodeLinkPath turns a link path as written into the file path it points at, the way the
 // renderer reads it: windows "\" separators as "/", for markdown CommonMark escapes resolved,
 // for markdown and html entities resolved (goldmark and the browser do), then percent-decoded once.

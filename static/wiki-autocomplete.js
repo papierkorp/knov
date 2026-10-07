@@ -3,8 +3,10 @@
 // The suggestion list itself is server-rendered HTML (render.RenderAutocompleteList,
 // served by the autocomplete endpoints through writeResponse). This file only
 // positions the dropdown at the caret, handles keyboard navigation and inserts
-// the selected data-value into the editor — things hx-attributes can't express
-// for a caret-anchored dropdown inside CodeMirror.
+// the selected item into the editor — things hx-attributes can't express for a
+// caret-anchored dropdown inside CodeMirror. Editor links ask the endpoints for
+// link=wiki|markdown and insert the item's data-link as is (the server writes the
+// link text), path inputs insert the plain data-value.
 
 (function (global) {
   var FILES_PREFIX = "/files/";
@@ -15,6 +17,7 @@
   var items = [];
   var activeIdx = 0;
   var fetchTimer = null;
+  var fetchSeq = 0; // only the latest fetch may show its list, see fetchList
   var onInsert = null; // set by each init function
 
   function ensureDropdown() {
@@ -34,11 +37,15 @@
     document.body.appendChild(dropdown);
   }
 
+  // also drops the items - a list fetched for one link syntax holds that syntax's link text
   function hide() {
     if (dropdown) {
       dropdown.style.display = "none";
+      dropdown.innerHTML = "";
+      items = [];
       if (dropdown.hidePopover && dropdown.matches(":popover-open")) dropdown.hidePopover();
     }
+    fetchSeq++;
     onInsert = null;
   }
 
@@ -92,12 +99,16 @@
 
   function doInsert(idx) {
     if (idx < 0 || idx >= items.length) return;
-    if (onInsert) onInsert(items[idx].getAttribute("data-value"));
+    if (onInsert)
+      onInsert(items[idx].getAttribute("data-link") || items[idx].getAttribute("data-value"));
     hide();
   }
 
   // Debounced fetch of a server-rendered suggestion list partial into the dropdown.
+  // A response that arrives after a newer fetch or a hide() is dropped - it may hold
+  // the other link syntax.
   function fetchList(url, anchorEl) {
+    var seq = ++fetchSeq;
     clearTimeout(fetchTimer);
     fetchTimer = setTimeout(function () {
       fetch(url, { headers: { Accept: "text/html" } })
@@ -105,54 +116,33 @@
           return r.text();
         })
         .then(function (html) {
-          show(html, anchorEl);
+          if (seq === fetchSeq) show(html, anchorEl);
         })
         .catch(hide);
     }, 120);
   }
 
-  function fetchHeaders(filepath, q, anchorEl, bare) {
+  // link: "wiki" / "markdown" for an editor link, "" for a path input
+  function fetchHeaders(filepath, q, anchorEl, bare, link) {
     fetchList(
       "/api/files/headers?filepath=" +
         encodeURIComponent(filepath) +
         "&q=" +
         encodeURIComponent(q) +
-        (bare ? "&bare=1" : ""),
+        (bare ? "&bare=1" : "") +
+        (link ? "&link=" + link : ""),
       anchorEl,
     );
   }
 
-  function cursorOffset(path, opts, closeLen) {
-    return opts.cursorEnd || path.indexOf("#") !== -1 ? closeLen : 0;
-  }
-
-  // Encodes each path segment (keeping "/" and "#" as separators intact) so
-  // filenames with ")", spaces, etc. don't break the surrounding "](...)" syntax.
-  function encodePathSegments(path) {
-    return path
-      .split("/")
-      .map(function (seg) {
-        return seg.split("#").map(encodeURIComponent).join("#");
-      })
-      .join("/");
-  }
-
-  // Builds the "](...)" target: a same-page anchor (e.g. "#translation") stays
-  // relative instead of being routed through FILES_PREFIX.
-  function buildTarget(path) {
-    return (path.indexOf("#") === 0 ? "" : FILES_PREFIX) + encodePathSegments(path);
-  }
-
-  // Builds the "](...)" target for a media file, matching the "media/<path>"
-  // form the media selector modal already inserts (no FILES_PREFIX).
-  function buildMediaTarget(path) {
-    return "media/" + encodePathSegments(path);
+  // the inserted link text only holds a "#" for an anchor - a "#" in a name is encoded
+  function cursorOffset(link, opts, closeLen) {
+    return opts.cursorEnd || link.indexOf("#") !== -1 ? closeLen : 0;
   }
 
   // Triggers on an unclosed "[[" (wikilink), an unclosed "![" + "](" (media/image
   // link target), or an unclosed "](" (markdown link target), whichever is open
-  // at the caret. insertFn receives the chosen path plus which one matched, so
-  // callers can build the right text.
+  // at the caret. insertFn receives the chosen link text plus which one matched.
   function triggerAutocomplete(before, anchorEl, insertFn, currentFile) {
     var wiki = before.match(/\[\[([^\]]*)$/);
     var md = !wiki && before.match(/\]\(([^)]*)$/);
@@ -160,18 +150,18 @@
     var isMedia = md && /!\[[^\[\]]*$/.test(before.slice(0, md.index));
     var m = wiki || md;
     if (m) {
-      onInsert = function (path) {
-        insertFn(path, wiki ? "wiki" : isMedia ? "media" : "md");
+      onInsert = function (link) {
+        insertFn(link, wiki ? "wiki" : "md");
       };
-      dispatchFetch(m[1], anchorEl, currentFile, isMedia);
+      dispatchFetch(m[1], anchorEl, currentFile, isMedia, wiki ? "wiki" : "markdown");
     } else {
       hide();
     }
   }
 
-  function dispatchFetch(inner, anchorEl, currentFile, isMedia) {
+  function dispatchFetch(inner, anchorEl, currentFile, isMedia, link) {
     if (isMedia) {
-      fetchList("/api/media/autocomplete?q=" + encodeURIComponent(inner), anchorEl);
+      fetchList("/api/media/autocomplete?link=markdown&q=" + encodeURIComponent(inner), anchorEl);
       return;
     }
     // Markdown links store "/files/<path>" (a real href), but the file and
@@ -193,9 +183,9 @@
         hide();
         return;
       }
-      fetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "");
+      fetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "", link);
     } else {
-      fetchList("/api/files/autocomplete?q=" + encodeURIComponent(inner), anchorEl);
+      fetchList("/api/files/autocomplete?link=" + link + "&q=" + encodeURIComponent(inner), anchorEl);
     }
   }
 
@@ -239,7 +229,7 @@
     // ToastUI variant above) it's safe to start the replacement right after
     // the "(" the user already typed instead of replacing it too.
 
-    function insertWikiLink(path) {
+    function insertWikiLink(link) {
       var cur = view.state.selection.main.head;
       var li = view.state.doc.lineAt(cur);
       var b = li.text.substring(0, cur - li.from);
@@ -248,14 +238,14 @@
       var toPos = cur;
       if (li.text.substring(cur - li.from, cur - li.from + 2) === "]]")
         toPos += 2;
-      var cursorPos = li.from + ws + 2 + path.length + cursorOffset(path, opts, 2);
+      var cursorPos = li.from + ws + 2 + link.length + cursorOffset(link, opts, 2);
       view.dispatch({
-        changes: { from: li.from + ws, to: toPos, insert: "[[" + path + "]]" },
+        changes: { from: li.from + ws, to: toPos, insert: "[[" + link + "]]" },
         selection: { anchor: cursorPos },
       });
     }
 
-    function insertMdLink(path, isMedia) {
+    function insertMdLink(link) {
       var cur = view.state.selection.main.head;
       var li = view.state.doc.lineAt(cur);
       var b = li.text.substring(0, cur - li.from);
@@ -265,10 +255,9 @@
       var toPos = cur;
       if (li.text.substring(cur - li.from, cur - li.from + 1) === ")")
         toPos += 1;
-      var target = isMedia ? buildMediaTarget(path) : buildTarget(path);
-      var cursorPos = from + target.length + cursorOffset(path, opts, 1);
+      var cursorPos = from + link.length + cursorOffset(link, opts, 1);
       view.dispatch({
-        changes: { from: from, to: toPos, insert: target + ")" },
+        changes: { from: from, to: toPos, insert: link + ")" },
         selection: { anchor: cursorPos },
       });
     }
@@ -289,9 +278,9 @@
           };
         },
       };
-      triggerAutocomplete(before, anchor, function (path, mode) {
-        if (mode === "wiki") insertWikiLink(path);
-        else insertMdLink(path, mode === "media");
+      triggerAutocomplete(before, anchor, function (link, mode) {
+        if (mode === "wiki") insertWikiLink(link);
+        else insertMdLink(link);
       }, opts.currentFile);
     }
 
@@ -388,28 +377,27 @@
     // Plain string indices, so like the CodeMirror variant it's safe to
     // start the markdown-link replacement right after the "(".
 
-    function insertWikiLink(input, path) {
+    function insertWikiLink(input, link) {
       var pos = input.selectionStart;
       var val = input.value;
       var ws = val.substring(0, pos).lastIndexOf("[[");
       if (ws === -1) return;
       var endPos = val.substring(pos, pos + 2) === "]]" ? pos + 2 : pos;
-      input.setRangeText("[[" + path + "]]", ws, endPos, "end");
-      var cursorPos = ws + 2 + path.length + cursorOffset(path, opts, 2);
+      input.setRangeText("[[" + link + "]]", ws, endPos, "end");
+      var cursorPos = ws + 2 + link.length + cursorOffset(link, opts, 2);
       input.setSelectionRange(cursorPos, cursorPos);
       input.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
-    function insertMdLink(input, path, isMedia) {
+    function insertMdLink(input, link) {
       var pos = input.selectionStart;
       var val = input.value;
       var ws = val.substring(0, pos).lastIndexOf("](");
       if (ws === -1) return;
       var start = ws + 2;
       var endPos = val.substring(pos, pos + 1) === ")" ? pos + 1 : pos;
-      var target = isMedia ? buildMediaTarget(path) : buildTarget(path);
-      input.setRangeText(target + ")", start, endPos, "end");
-      var cursorPos = start + target.length + cursorOffset(path, opts, 1);
+      input.setRangeText(link + ")", start, endPos, "end");
+      var cursorPos = start + link.length + cursorOffset(link, opts, 1);
       input.setSelectionRange(cursorPos, cursorPos);
       input.dispatchEvent(new Event("input", { bubbles: true }));
     }
@@ -426,9 +414,9 @@
       var anchor = input.tagName === "TEXTAREA"
         ? { getBoundingClientRect: function () { return getTextareaCaretRect(input); } }
         : input;
-      triggerAutocomplete(before, anchor, function (path, mode) {
-        if (mode === "wiki") insertWikiLink(input, path);
-        else insertMdLink(input, path, mode === "media");
+      triggerAutocomplete(before, anchor, function (link, mode) {
+        if (mode === "wiki") insertWikiLink(input, link);
+        else insertMdLink(input, link);
       }, opts.currentFile);
     });
   };
@@ -510,9 +498,4 @@
   } else {
     startAutoInit();
   }
-
-  // exposed so other insertion paths (e.g. the toolbar-triggered wiki-file
-  // selector modal) build the same encoded "](...)" target instead of
-  // duplicating (and potentially drifting from) the encoding logic here
-  global.buildTarget = buildTarget;
 })(window);

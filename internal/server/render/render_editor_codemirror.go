@@ -177,10 +177,8 @@ func jsCodeMirrorFileUpload() string {
 	}
 	function uploadFilesToEditor(fileList) {
 		Array.from(fileList).forEach(function(file) {
-			uploadMediaBlob(file, function(url, alt) {
-				if (!url) return;
-				var markdown = file.type.startsWith('image/') ? '![' + alt + '](' + url + ')' : '[' + alt + '](' + url + ')';
-				insertMarkdownAtCursor(markdown);
+			uploadMediaBlob(file, function(link) {
+				if (link) insertMarkdownAtCursor(link);
 			});
 		});
 	}

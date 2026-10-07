@@ -1036,8 +1036,9 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string true "relative file path"
 // @Param q query string false "filter headings by text or id"
 // @Param bare query string false "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)"
+// @Param link query string false "wiki or markdown - also return each heading as ready-to-insert link text"
 // @Produce json,html
-// @Success 200 {array} object "array of {id, text, level}"
+// @Success 200 {array} object "array of {id, text, level, link}"
 // @Failure 400 {string} string "missing filepath"
 // @Failure 404 {string} string "file not found"
 // @Router /api/files/headers [get]
@@ -1045,6 +1046,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimSpace(r.URL.Query().Get("filepath"))
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 	bare := r.URL.Query().Get("bare") != ""
+	linkKind, withLink := linkKindParam(r)
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, "missing filepath")
 		return
@@ -1061,6 +1063,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		ID    string `json:"id"`
 		Text  string `json:"text"`
 		Level int    `json:"level"`
+		Link  string `json:"link,omitempty"`
 	}
 	results := make([]headerResult, 0)
 	items := make([]render.AutocompleteItem, 0)
@@ -1075,16 +1078,24 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		if q != "" && !strings.Contains(strings.ToLower(item.Text), q) && !strings.Contains(strings.ToLower(item.ID), q) {
 			continue
 		}
-		results = append(results, headerResult{ID: item.ID, Text: item.Text, Level: item.Level})
 		value := filePath + "#" + item.ID
 		if bare {
 			value = "#" + item.ID
 		}
-		items = append(items, render.AutocompleteItem{
+		autocompleteItem := render.AutocompleteItem{
 			Value:  value,
 			Label:  strings.Repeat("#", item.Level) + " " + item.Text,
 			Detail: value,
-		})
+		}
+		if withLink {
+			linkPath := filePath
+			if bare {
+				linkPath = ""
+			}
+			autocompleteItem.Link = parser.FileLinkDest(linkPath, "#"+item.ID, linkKind)
+		}
+		results = append(results, headerResult{ID: item.ID, Text: item.Text, Level: item.Level, Link: autocompleteItem.Link})
+		items = append(items, autocompleteItem)
 	}
 
 	writeResponse(w, r, results, render.RenderAutocompleteList(items))
@@ -1094,11 +1105,13 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 // @Description Returns files matching a query string for use in wiki link autocomplete
 // @Tags files
 // @Param q query string false "search query"
+// @Param link query string false "wiki or markdown - also return each file as ready-to-insert link text"
 // @Produce json,html
-// @Success 200 {array} object "array of {value, label, detail}"
+// @Success 200 {array} object "array of {value, label, detail, link}"
 // @Router /api/files/autocomplete [get]
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
+	linkKind, withLink := linkKindParam(r)
 
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
@@ -1115,6 +1128,9 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	results := make([]render.AutocompleteItem, len(matches))
 	for i, rel := range matches {
 		results[i] = render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel}
+		if withLink {
+			results[i].Link = parser.FileLinkDest(rel, "", linkKind)
+		}
 	}
 
 	writeResponse(w, r, results, render.RenderAutocompleteList(results))

@@ -23,8 +23,8 @@ func jsEscapeString(s string) string {
 }
 
 // jsUploadMediaBlob defines the shared upload helper used by editor drag-and-drop/paste hooks.
-// Derives the context path from the current URL, shows an upload notification, then POSTs
-// to /api/media/upload and calls callback(url, alt) on success.
+// Sends the current page url as context, shows an upload notification, then POSTs to
+// /api/media/upload and calls callback(link) with the ready-to-insert markdown link on success.
 func jsUploadMediaBlob() string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
@@ -32,26 +32,11 @@ func jsUploadMediaBlob() string {
 	}
 
 	return fmt.Sprintf(`
-		// shared upload helper: derives context from URL, uploads, calls callback(url, alt)
+		// shared upload helper: uploads with the page url as context, calls callback(link)
 		function uploadMediaBlob(blob, callback) {
-			const currentPath = window.location.pathname;
-			let contextPath = null;
-
-			if (currentPath.startsWith('/files/edit/')) {
-				contextPath = currentPath.substring('/files/edit/'.length);
-			} else if (currentPath.startsWith('/files/')) {
-				contextPath = currentPath.substring('/files/'.length);
-			}
-
-			if (!contextPath) {
-				alert(%s);
-				callback('', '');
-				return;
-			}
-
 			const formData = new FormData();
 			formData.append('file', blob);
-			formData.append('context_path', contextPath);
+			formData.append('context_path', window.location.pathname);
 
 			const uploadMessage = document.createElement('div');
 			uploadMessage.className = 'upload-notification';
@@ -66,37 +51,38 @@ func jsUploadMediaBlob() string {
 			})
 			.then(function(response) {
 				if (!response.ok) {
-					return response.text().then(function(t) {
-						throw new Error(t || (%s + response.statusText));
+					return response.json().catch(function() { return {}; }).then(function(d) {
+						throw new Error(d.error || (%s + response.statusText));
 					});
 				}
 				return response.json();
 			})
 			.then(function(data) {
 				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
-				callback('media/' + data.path, data.filename || blob.name || %s);
+				callback(data.link);
 			})
 			.catch(function(error) {
 				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
 				alert(%s + error.message);
-				callback('', '');
+				callback('');
 			});
 		}`,
-		jsEscapeString(t("please save the document first to enable file uploads.")),
 		jsEscapeString(t("uploading...")),
 		jsEscapeString(t("upload failed: ")),
-		jsEscapeString(t("uploaded file")),
 		jsEscapeString(t("failed to upload file: ")),
 	)
 }
 
 // AutocompleteItem is a single suggestion in the shared autocomplete dropdown
-// (files, media, headers, folder paths). Value is what gets inserted, Label is
-// the primary display text, Detail the secondary one.
+// (files, media, headers, folder paths). Value is the path, Label is the primary
+// display text, Detail the secondary one. Link is the ready-to-insert link text
+// (wikilink body or markdown destination) when the request asked for one -
+// inserted instead of Value.
 type AutocompleteItem struct {
 	Value  string `json:"value"`
 	Label  string `json:"label"`
 	Detail string `json:"detail,omitempty"`
+	Link   string `json:"link,omitempty"`
 }
 
 // RenderAutocompleteList renders suggestions as the shared dropdown list partial
@@ -110,8 +96,8 @@ func RenderAutocompleteList(items []AutocompleteItem) string {
 	htmlBuilder.WriteString(`<ul class="autocomplete-list">`)
 	for _, item := range items {
 		fmt.Fprintf(&htmlBuilder,
-			`<li class="autocomplete-item" data-value="%s"><span class="autocomplete-item-label">%s</span><span class="autocomplete-item-detail">%s</span></li>`,
-			htmlpkg.EscapeString(item.Value), htmlpkg.EscapeString(item.Label), htmlpkg.EscapeString(item.Detail))
+			`<li class="autocomplete-item" data-value="%s" data-link="%s"><span class="autocomplete-item-label">%s</span><span class="autocomplete-item-detail">%s</span></li>`,
+			htmlpkg.EscapeString(item.Value), htmlpkg.EscapeString(item.Link), htmlpkg.EscapeString(item.Label), htmlpkg.EscapeString(item.Detail))
 	}
 	htmlBuilder.WriteString(`</ul>`)
 	return htmlBuilder.String()

@@ -4,7 +4,6 @@ package render
 import (
 	"fmt"
 	stdhtml "html"
-	"net/url"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -256,8 +255,8 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 			mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "details"))
 		fmt.Fprintf(&html, `<a href="%s" download class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> %s</a>`,
 			mediaURL, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
-		fmt.Fprintf(&html, `<button type="button" class="btn btn-sm btn-danger" hx-delete="/api/media/%s" hx-confirm="%s" hx-target="#component-media-content" hx-trigger="click"><i class="fas fa-trash"></i> %s</button>`,
-			url.PathEscape(relativePath),
+		fmt.Fprintf(&html, `<button type="button" class="btn btn-sm btn-danger" hx-delete="%s" hx-confirm="%s" hx-target="#component-media-content" hx-trigger="click"><i class="fas fa-trash"></i> %s</button>`,
+			pathutils.ToRouteURL("/api/media/", relativePath),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "are you sure you want to delete this file?"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "delete"))
 		html.WriteString(`</div>`)

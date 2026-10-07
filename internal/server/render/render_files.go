@@ -54,13 +54,13 @@ func RenderFilesList(allFiles []files.File, deletable bool) string {
 				<li class="browse-item-row">
 					<a href="%s">%s</a>
 					<button class="btn-danger-icon browse-delete-btn"
-					        hx-delete="/api/files/delete/%s?inline=true"
+					        hx-delete="%s?inline=true"
 					        hx-confirm="%s"
 					        hx-target="closest li"
 					        hx-swap="outerHTML"
 					        title="%s"><i class="fa fa-trash"></i></button>
 				</li>`,
-				file.ViewURL(), displayText, url.PathEscape(relPath), confirmMsg, deleteLabel))
+				file.ViewURL(), displayText, pathutils.ToRouteURL("/api/files/delete/", relPath), confirmMsg, deleteLabel))
 		} else {
 			html.WriteString(fmt.Sprintf(`
 				<li>
@@ -208,7 +208,7 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
 				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete folder")
 				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete folder and all its contents") + " " + child.Name + "?"
-				fmt.Fprintf(html, `<span class="browse-item-row"><button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button><button class="browse-rename-btn" data-path="%s" data-type="folder" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete-folder/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`, dirPath, child.Name, dirPath, renameLabel, url.PathEscape(dirPath), confirmMsg, deleteLabel)
+				fmt.Fprintf(html, `<span class="browse-item-row"><button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button><button class="browse-rename-btn" data-path="%s" data-type="folder" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`, dirPath, child.Name, dirPath, renameLabel, pathutils.ToRouteURL("/api/files/delete-folder/", dirPath), confirmMsg, deleteLabel)
 			} else {
 				fmt.Fprintf(html, `<button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, dirPath, child.Name)
 			}
@@ -219,8 +219,8 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
 				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + child.Name + "?"
-				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s?inline=true" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
-					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, url.PathEscape(relPath), confirmMsg, deleteLabel)
+				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="%s?inline=true" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
+					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, pathutils.ToRouteURL("/api/files/delete/", relPath), confirmMsg, deleteLabel)
 			} else {
 				relPath := strings.TrimPrefix(child.Path, "docs/")
 				fmt.Fprintf(html, `<a class="fp-tree-file" draggable="true" data-path="%s" data-type="file" href="%s">%s</a>`,

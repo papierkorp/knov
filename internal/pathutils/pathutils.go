@@ -291,6 +291,11 @@ func ToFileEditTableURL(rel string) string { return "/files/edittable/" + escape
 // ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
 func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelPath(rel) }
 
+// ToRouteURL returns a browser-safe URL for a route that takes a path after its prefix
+// (route ends with "/"), e.g. ToRouteURL("/api/files/delete/", rel) - for api routes, the
+// /files/ and /media/ page urls have their own To*URL.
+func ToRouteURL(route, rel string) string { return route + escapeRelPath(rel) }
+
 // FileFromURL returns the docs-relative path of the file a page URL shows (the reverse of
 // ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page.
 func FileFromURL(rawURL string) string {

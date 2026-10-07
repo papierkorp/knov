@@ -13,6 +13,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/types"
 	"knov/internal/utils"
@@ -24,9 +25,11 @@ type MediaUploadResult struct {
 	Filename    string `json:"filename"`
 	ContentType string `json:"contentType"`
 	Size        string `json:"size"`
+	Link        string `json:"link"` // ready-to-insert markdown link (image link for images)
 }
 
-// UploadMedia handles the core media upload logic
+// UploadMedia handles the core media upload logic - contextPath is the docs-relative path of the
+// doc the file is uploaded from, the media path mirrors its folder
 func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath string) (*MediaUploadResult, error) {
 	// get max upload size from settings
 	maxUploadSize := configmanager.GetMaxUploadSize()
@@ -79,7 +82,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	// resolve filename conflicts
-	finalMediaPath := utils.ResolveFilenameConflicts(pathutils.ToMediaPath(mediaPath), mediaPath)
+	finalMediaPath := pathutils.ToSlash(utils.ResolveFilenameConflicts(pathutils.ToMediaPath(mediaPath), mediaPath))
 
 	// get full file system path using contentStorage
 	fullMediaPath := pathutils.ToMediaPath(finalMediaPath)
@@ -117,6 +120,12 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 		Filename:    filepath.Base(finalMediaPath),
 		ContentType: contentType,
 		Size:        strconv.Itoa(len(fileBytes)),
+		Link: parser.Link{
+			Kind:  parser.LinkMarkdown,
+			Image: strings.HasPrefix(contentType, "image/"),
+			Text:  filepath.Base(finalMediaPath),
+			Path:  "media/" + finalMediaPath,
+		}.String(),
 	}, nil
 }
 
