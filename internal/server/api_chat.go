@@ -206,7 +206,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		fullPath = pathutils.ToDocsPath(target)
 	}
 
-	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(target)) {
 		return
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
@@ -321,7 +321,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		fullPath = pathutils.ToDocsPath(target)
 	}
 
-	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(target)) {
 		return
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {

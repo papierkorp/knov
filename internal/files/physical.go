@@ -77,11 +77,19 @@ func moveDocsToMedia(oldFullPath, newFullPath string) error {
 	return movePhysical(oldFullPath, newFullPath, true)
 }
 
+// keepsInvalidName reports whether err only rejects the file or folder name a move from oldFull
+// to newFull (host paths) keeps (moved to another folder) - that name isn't new (git sync,
+// manual copy), so it may still move.
+func keepsInvalidName(err error, oldFull, newFull string) bool {
+	return errors.Is(err, pathutils.ErrInvalidName) && filepath.Base(oldFull) == filepath.Base(newFull) &&
+		pathutils.CheckNewNames(filepath.Dir(newFull)) == nil
+}
+
 // MoveFileNoRefresh moves a single doc file from oldRelPath to newRelPath on disk and updates
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.
 func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
-	if err := pathutils.CheckNewDocsPath(newRelPath); err != nil {
+	if err := pathutils.CheckNewDocsPath(newRelPath); err != nil && !keepsInvalidName(err, pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath)) {
 		return err
 	}
 	if err := movePhysical(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath), false); err != nil {
@@ -105,6 +113,9 @@ func MoveMediaFileNoRefresh(oldRelPath, newRelPath string) error {
 	oldMediaPath := "media/" + oldRelPath
 	newMediaPath := "media/" + newRelPath
 
+	if err := pathutils.CheckNewNames(pathutils.ToMediaPath(newRelPath)); err != nil && !keepsInvalidName(err, pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath)) {
+		return err
+	}
 	if err := movePhysical(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath), true); err != nil {
 		return err
 	}
@@ -247,7 +258,7 @@ func removeDirPhysical(fullPath string) error {
 // was inside it, then refreshes the aggregate caches once. Returns the number of files whose
 // links were updated successfully and the number that failed.
 func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, failed int, err error) {
-	if err := pathutils.CheckNewDocsPath(newFullPath); err != nil {
+	if err := pathutils.CheckNewDocsPath(newFullPath); err != nil && !keepsInvalidName(err, pathutils.ToDocsPath(currentFullPath), pathutils.ToDocsPath(newFullPath)) {
 		return 0, 0, err
 	}
 	// collect all files before the move so we can update their links

@@ -51,7 +51,7 @@ func handleAPITrackerSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tracker.SetMeta(trackerID, r.FormValue("title"), rows); err != nil {
-		if writeReservedPathError(w, r, err) {
+		if writeNewPathError(w, r, err) {
 			return
 		}
 		logging.LogError(logging.KeyApp, "failed to save tracker config: %v", err)

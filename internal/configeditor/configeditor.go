@@ -95,13 +95,17 @@ func (k Kind) Get(id string) ([]byte, error) {
 	return configStorage.Get(key)
 }
 
-// Set stores the raw config bytes for id.
+// Set stores the raw config bytes for id, rejecting a new id whose paired file breaks the
+// filename policy (pathutils.CheckNewDocsPath).
 func (k Kind) Set(id string, data []byte) error {
-	key, err := k.key(id)
+	id, err := k.CleanID(id)
 	if err != nil {
 		return err
 	}
-	return configStorage.Set(key, data)
+	if err := pathutils.CheckNewDocsPath(k.PairedPath(id)); err != nil {
+		return err
+	}
+	return configStorage.Set(k.prefix+id, data)
 }
 
 // List returns all stored ids for this kind.

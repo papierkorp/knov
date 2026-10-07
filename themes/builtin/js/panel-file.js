@@ -15,13 +15,6 @@ function infoPanelParseLayout() {
   }
 }
 
-// url of a route that takes a path after its prefix (route ends with "/"):
-// each segment encoded, "/" kept - the js side of pathutils.ToRouteURL. a
-// path in a query param goes through encodeURIComponent instead.
-function pathURL(route, path) {
-  return route + path.split("/").map(encodeURIComponent).join("/");
-}
-
 // ================================================================
 // file sub-panel switching — Alpine.store since fp-file is a page-wide
 // singleton (like $store.rail, see rail-core.js) rather than an x-for'd

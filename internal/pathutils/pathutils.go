@@ -241,18 +241,39 @@ func FolderContains(dirPath, folderPath string) bool {
 // folder (see CheckNewDocsPath).
 var ErrReservedPath = errors.New("target is in a reserved top-level folder")
 
+// ErrInvalidName is returned when a new file or folder name breaks the filename policy (see
+// CheckNewNames).
+var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailing space")
+
+// CheckNewNames returns ErrInvalidName if a file or folder of fullPath (a host filesystem path)
+// that doesn't exist yet holds one of # ? | [ ] \ or starts/ends with a space - these break or
+// need encoding in links, so the app never creates them. Existing ones (git sync, manual copy)
+// are left alone, the link codec still reads them. The docs and media roots are never checked.
+func CheckNewNames(fullPath string) error {
+	for p := filepath.Clean(fullPath); ; p = filepath.Dir(p) {
+		if _, err := os.Stat(p); err == nil || p == filepath.Dir(p) || p == getDocsPath() || p == getMediaPath() {
+			return nil
+		}
+		name := filepath.Base(p)
+		if strings.ContainsAny(name, `#?|[]\`) || strings.TrimSpace(name) != name {
+			return ErrInvalidName
+		}
+	}
+}
+
 // CheckNewDocsPath returns ErrReservedPath if the user-given docs path doesn't exist yet and
 // lies in a top-level folder parsePath reads as a prefix (see configmanager.ReservedDocsFolders)
 // - such a file can't be resolved back to itself, so nothing may be created or moved there.
+// Otherwise it returns ErrInvalidName for a new name that breaks the filename policy (see
+// CheckNewNames).
 func CheckNewDocsPath(path string) error {
 	first, _, _ := strings.Cut(ToRelative(path), "/")
-	if !slices.Contains(configmanager.ReservedDocsFolders(), first) {
-		return nil
+	if slices.Contains(configmanager.ReservedDocsFolders(), first) {
+		if _, err := os.Stat(ToDocsPath(path)); err != nil {
+			return ErrReservedPath
+		}
 	}
-	if _, err := os.Stat(ToDocsPath(path)); err == nil {
-		return nil
-	}
-	return ErrReservedPath
+	return CheckNewNames(ToDocsPath(path))
 }
 
 // PathContains reports whether candidate is root itself or strictly beneath it on the

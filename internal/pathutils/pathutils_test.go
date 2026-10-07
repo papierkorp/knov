@@ -3,9 +3,11 @@ package pathutils
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"knov/internal/configmanager"
+	"knov/internal/test/specialchars"
 )
 
 // parsePath resolves full paths against configmanager's DataPath, so every test
@@ -169,6 +171,31 @@ func TestCheckNewDocsPath(t *testing.T) {
 	}
 	if err := CheckNewDocsPath("docs/media/existing.md"); err != nil {
 		t.Errorf("existing file should stay writable: %v", err)
+	}
+}
+
+func TestCheckNewNames(t *testing.T) {
+	// every corpus name is pinned here, so the links suite can skip what the policy rejects
+	invalid := []string{"a#b.md", "a?b.md", "a|b.md", "[1].md", `a\b.md`, " lead.md", "trail.md ", "a]b.md", "x#/a.md", "x /a.md"}
+	for _, p := range append(slices.Clone(specialchars.Names), "a]b.md", "x#/a.md", "x /a.md", "a&b.md", "a b/c d.md") {
+		want := error(nil)
+		if slices.Contains(invalid, p) {
+			want = ErrInvalidName
+		}
+		if err := CheckNewDocsPath(p); err != want {
+			t.Errorf("%q: want %v, got %v", p, want, err)
+		}
+	}
+	// an existing name (git sync, manual copy) stays usable, only the new part is checked
+	existing := filepath.Join(getDocsPath(), "a#b")
+	if err := os.MkdirAll(existing, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckNewDocsPath("a#b/new.md"); err != nil {
+		t.Errorf("new file in an existing folder: %v", err)
+	}
+	if err := CheckNewDocsPath("a#b/new?.md"); err != ErrInvalidName {
+		t.Errorf("new invalid name in an existing folder: want ErrInvalidName, got %v", err)
 	}
 }
 

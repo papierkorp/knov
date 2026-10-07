@@ -3302,6 +3302,11 @@
       "translation": "Datei"
     },
     {
+      "id": "file and folder names can't contain {Arg_1} or start or end with a space",
+      "message": "file and folder names can't contain {Arg_1} or start or end with a space",
+      "translation": "Datei- und Ordnernamen dürfen kein {Arg_1} enthalten und nicht mit einem Leerzeichen beginnen oder enden"
+    },
+    {
       "id": "file content configuration",
       "message": "file content configuration",
       "translation": "Dateiinhalt-Konfiguration"
@@ -4807,11 +4812,6 @@
       "translation": ""
     },
     {
-      "id": "please save the document first to enable file uploads.",
-      "message": "please save the document first to enable file uploads.",
-      "translation": "bitte speichere das Dokument zuerst, um Datei-Uploads zu aktivieren."
-    },
-    {
       "id": "preview results",
       "message": "preview results",
       "translation": "Ergebnisse in der Vorschau anzeigen"
@@ -5630,11 +5630,6 @@
       "id": "upload favicon",
       "message": "upload favicon",
       "translation": "Favicon hochladen"
-    },
-    {
-      "id": "uploaded file",
-      "message": "uploaded file",
-      "translation": "hochgeladene Datei"
     },
     {
       "id": "uploading...",

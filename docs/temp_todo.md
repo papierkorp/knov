@@ -22,6 +22,7 @@
   - bulk update - remove parent
   - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
   - general and centralized solution for links (link rewrite, parser..) with all of the special chars, we have multiple different solutions for different special chars
+  - make the upgrade.md file more readable
 - test
   - remote git in mobile
 
@@ -97,9 +98,19 @@
   - fixed gaps: links suite autocomplete (wiki raw path, "#" in markdown/media) and upload (every special-char folder), rename / move / delete / rebuild from the file panel for names with "#", "?" (the path was sent raw), metadata rebuild route for names whose encoding differs from go's (it read chi's still-encoded wildcard, now r.URL.Path like the other path routes), a stale dropdown list inserting the other syntax's link text (hide() now drops the items)
   - left out on purpose: dispatchFetch still decodeURIComponent()s the typed link text to build the search query (reading, not writing a link - a typed `%23` splits as anchor); RenderMediaUploadComponent is dead code and still documents the old context_path; the example theme has no js that builds path urls
   - known: the metadata suite's sanitize-kanban-tags fails on main too (unrelated); the links suite's "unable to open database" lines after the summary are the step 2 harness noise
-- step 5: filename policy
-  - reject `# ? | [ ] \` and leading/trailing spaces on create/rename/upload (pathutils, next to CheckNewDocsPath), map them on import - files from git sync/manual copy can still have them, so the codec keeps handling them
-  - upgrade note in docs/upgrade.md
+- [x] step 5: filename policy
+  - pathutils.CheckNewNames / ErrInvalidName: a file or folder name of a host path that doesn't exist yet must not hold `# ? | [ ] \` or start/end with a space - existing parts of the path (git sync, manual copy) aren't checked, so a new file in an existing `a#b/` folder is fine. CheckNewDocsPath runs it after the reserved folder check, so every create/move that already called it is covered: file save (create), rename / set path, move folder (job, kanban status rename), chat move, list / book / index editor, filter and tracker (configeditor Kind.Set checks the paired file before storing the config); MoveMediaFileNoRefresh checks the media path (media rename / set path)
+  - a move that keeps the name (to another folder: kanban card drag, move folder, set path) only checks the new folder, files.keepsInvalidName - an existing bad name can still move
+  - server: writeReservedPathError -> writeNewPathError (400 for both errors, translated message from newPathMessage), handleMoveError answers 400 for both
+  - links suite rename: a name CheckNewDocsPath rejects is written through storage (like git sync) and only renamed away, that MoveFileNoRefresh rejects it is covered by files.TestKeepsInvalidName (pure, temp dir); forms written with parser.Link instead of raw text
+  - step 4 leftovers: media rename / rename-form / path-display read r.URL.Path instead of chi's still-encoded wildcard, pathURL moved from panel-file.js to rail-core.js (shared by panel-file.js and panel-tree.js)
+  - left out on purpose: no import mapping - the dokuwiki converter is an export (zip) and dokuwiki page ids can't hold these chars, backup restore brings back existing files like git sync; upload keeps utils.SanitizeFilename (already only keeps `a-z0-9-_.`), its media folder mirrors the doc's existing folder and isn't checked, same for media relocate; convert-to-markdown keeps the existing name; kanban statuses are already `[a-zA-Z0-9_]`; the codec is unchanged
+  - book editor skip stays: the typed path is trimmed, which is right now that the app never creates a name with an edge space - only a git-synced `trail.md ` can't be a book entry
+  - known: the kanban suite fails 6 cases on main too with the copied settings (statuses like `innboxx`) plus the known sanitize-kanban-tags; the links suite's "unable to open database" lines are the step 2 harness noise
+- step 5b: leftover from the step 5 review
+  - fixed: CheckNewNames stops at the docs / media root (a missing root or a data path with `#` no longer fails every create), configeditor Kind.Set checks CleanID's id directly, pathutils TestCheckNewNames pins every corpus name (the links suite's rename skip reads the policy)
+  - known: kanban moveFileUnique's collision fallback for an existing bad card name (`a#b.md` -> `a#b_2.md`) is a new name, so the card move fails with ErrInvalidName - rare (git-synced name + same name already in the status folder), fixing it needs a "keeps the old name" heuristic
+  - handleMedia (pages_browse.go, `/media/*`) still reads chi.URLParam(r, "*") - the still-encoded wildcard when the request has a RawPath, the bug fixed for the media rename / rename-form / path-display and metadata rebuild routes; switch it to r.URL.Path like them and check a media name whose encoding differs from go's (links or media suite)
 - step 6: automatic metadata rebuild on upgrade
   - an option for me to request a one-time full metadata rebuild for certain versions/cases (e.g. a link-reading version constant bumped whenever the way links are read changes), persisted so startup compares it and runs metadata-full-rebuild once when it differs
   - then the upgrade notes for link reading changes (step 0, 2, ...) can say "nothing to do" instead of asking for a manual rebuild

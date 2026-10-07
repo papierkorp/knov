@@ -65,6 +65,14 @@ document.addEventListener("alpine:init", () => {
   });
 });
 
+// url of a route that takes a path after its prefix (route ends with "/"),
+// shared by panel-file.js and panel-tree.js:
+// each segment encoded, "/" kept - the js side of pathutils.ToRouteURL. a
+// path in a query param goes through encodeURIComponent instead.
+function pathURL(route, path) {
+  return route + path.split("/").map(encodeURIComponent).join("/");
+}
+
 function togglePanel(panelId) {
   Alpine.store("rail").toggle(panelId);
 }

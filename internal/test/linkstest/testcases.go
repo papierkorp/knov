@@ -2,6 +2,7 @@ package linkstest
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -51,26 +52,32 @@ func caseUpload() test.CaseResult {
 }
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote
-// (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file.
+// (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file. A
+// name the filename policy rejects can't be renamed to (see files.TestKeepsInvalidName), the file
+// is written directly (like git sync) and only renamed away.
 func caseRename() test.CaseResult {
 	var gaps []string
 	for i, n := range names {
 		dir := fmt.Sprintf("%s/rename/c%02d", testDir, i)
 		old, renamed, back := dir+"/old.md", dir+"/"+n, dir+"/back.md"
+		moves := [][2]string{{old, renamed}, {renamed, back}}
+		if errors.Is(pathutils.CheckNewDocsPath(renamed), pathutils.ErrInvalidName) {
+			old, moves = renamed, moves[1:]
+		}
 		if err := saveDoc(old, "# old\n"); err != nil {
 			return errCase("links-rename", err)
 		}
 		srcs, err := saveForms(dir, map[string]string{
-			"markdown":    "[x](" + old + ")",
-			"wiki":        "[[" + old + "]]",
-			"wiki no ext": "[[" + strings.TrimSuffix(old, ".md") + "]]",
+			"markdown":    parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: old}.String(),
+			"wiki":        parser.Link{Kind: parser.LinkWiki, Path: old}.String(),
+			"wiki no ext": parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSuffix(old, ".md")}.String(),
 			"file url":    "[x](" + pathutils.ToFileURL(old) + ")",
 			"html":        `<a href="` + pathutils.ToFileURL(old) + `">x</a>`,
 		})
 		if err != nil {
 			return errCase("links-rename", err)
 		}
-		for _, mv := range [][2]string{{old, renamed}, {renamed, back}} {
+		for _, mv := range moves {
 			if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
 				gaps = append(gaps, fmt.Sprintf("rename %q -> %q: %v", mv[0], mv[1], err))
 				break
@@ -146,7 +153,8 @@ func caseFilterIndex() test.CaseResult {
 
 // caseBookEditor saves a book with every target doc as entry through the real book editor api
 // (the plain path as typed or picked) - the book has to link and include each one. A typed path
-// is trimmed, so a name with a trailing space can't be an entry.
+// is trimmed, so a name with a trailing space can't be an entry - the app never creates one
+// (filename policy), only git sync or a manual copy can.
 func caseBookEditor() test.CaseResult {
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()

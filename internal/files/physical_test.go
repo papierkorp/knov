@@ -5,7 +5,33 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"knov/internal/pathutils"
 )
+
+func TestKeepsInvalidName(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Mkdir(filepath.Join(root, "dst"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	old := filepath.Join(root, "a#b.md")
+	cases := []struct {
+		err      error
+		old, new string
+		want     bool
+	}{
+		{pathutils.ErrInvalidName, old, filepath.Join(root, "dst", "a#b.md"), true},   // existing bad name moves
+		{pathutils.ErrInvalidName, old, filepath.Join(root, "new", "a#b.md"), true},   // into a valid new folder
+		{pathutils.ErrInvalidName, old, filepath.Join(root, "x#", "a#b.md"), false},   // into an invalid new folder
+		{pathutils.ErrInvalidName, filepath.Join(root, "a.md"), old, false},           // renamed to a bad name
+		{pathutils.ErrReservedPath, old, filepath.Join(root, "dst", "a#b.md"), false}, // other errors stay
+	}
+	for _, c := range cases {
+		if got := keepsInvalidName(c.err, c.old, c.new); got != c.want {
+			t.Errorf("keepsInvalidName(%v, %q, %q) = %v, want %v", c.err, c.old, c.new, got, c.want)
+		}
+	}
+}
 
 func TestRemoveEmptySubdirs(t *testing.T) {
 	root := t.TempDir()

@@ -1,6 +1,6 @@
 # unreleased
 
-_20 commits since last release_
+_21 commits since last release_
 
 ## upgrading from v1.1.1 to next release
 
@@ -22,6 +22,7 @@ _20 commits since last release_
 - links: quotes in a markdown link rewritten by rename or media relocation stay unencoded
 - api: `POST /api/media/upload` reads `context_path` as the url path of the page the file is uploaded from (`/files/edit/<path>` or `/files/<path>`, percent-encoded like the browser's `location.pathname`) instead of the bare file path, and a page that isn't a saved file (`/files/new/...`) is answered with `400`. the media file now lands in the doc's real folder (`media/x (1)/pic.png`, before `media/x%20%281%29/pic.png`) - move media uploaded from a doc in a folder with spaces or special characters by hand if needed. the response has a new `link` field, the ready-to-insert markdown link
 - api: `GET /api/files/autocomplete`, `GET /api/media/autocomplete` and `GET /api/files/headers` take an optional `link=wiki|markdown` and then also return each suggestion as ready-to-insert link text (`link` in json, `data-link` on the html list item) - insert that instead of building the link from the plain path (`value` / `data-value`), which isn't encoded for a link
+- files: new file and folder names can't contain `#`, `?`, `|`, `[`, `]` or `\` or start or end with a space anymore - creating, renaming or moving a file or folder, renaming media and saving a filter or tracker with such a name is answered with `400`. existing files with these characters (git sync, copied in by hand) keep working and can still be moved to another folder or renamed to a valid name - rename them if you want to link them without encoding
 
 ## changes
 - remove all selected rows/columns in table editor

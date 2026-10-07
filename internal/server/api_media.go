@@ -20,8 +20,6 @@ import (
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
 // @Summary Upload media file
@@ -514,7 +512,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentRel := chi.URLParam(r, "*")
+	currentRel := strings.TrimPrefix(r.URL.Path, "/api/media/rename/")
 	if currentRel == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
@@ -560,7 +558,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/media/rename-form/{filepath} [get]
 func handleAPIMediaRenameForm(w http.ResponseWriter, r *http.Request) {
-	relativePath := chi.URLParam(r, "*")
+	relativePath := strings.TrimPrefix(r.URL.Path, "/api/media/rename-form/")
 	writeResponse(w, r, nil, render.RenderMediaRenameForm(relativePath))
 }
 
@@ -570,6 +568,6 @@ func handleAPIMediaRenameForm(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/media/path-display/{filepath} [get]
 func handleAPIMediaPathDisplay(w http.ResponseWriter, r *http.Request) {
-	relativePath := chi.URLParam(r, "*")
+	relativePath := strings.TrimPrefix(r.URL.Path, "/api/media/path-display/")
 	writeResponse(w, r, nil, render.RenderMediaPathDisplay(relativePath))
 }

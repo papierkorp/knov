@@ -342,7 +342,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		filePath = filePath + configmanager.ExtensionForEditor(formEditor)
 	}
 
-	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
 		return
 	}
 	fullPath := pathutils.ToDocsPath(filePath)
@@ -816,7 +816,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := job.RunMoveFolder(currentPath, newPath)
-	if writeReservedPathError(w, r, err) {
+	if writeNewPathError(w, r, err) {
 		return
 	}
 	if err != nil {

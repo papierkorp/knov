@@ -3302,6 +3302,11 @@
       "translation": ""
     },
     {
+      "id": "file and folder names can't contain {Arg_1} or start or end with a space",
+      "message": "file and folder names can't contain {Arg_1} or start or end with a space",
+      "translation": ""
+    },
+    {
       "id": "file content configuration",
       "message": "file content configuration",
       "translation": ""
@@ -4807,11 +4812,6 @@
       "translation": ""
     },
     {
-      "id": "please save the document first to enable file uploads.",
-      "message": "please save the document first to enable file uploads.",
-      "translation": ""
-    },
-    {
       "id": "preview results",
       "message": "preview results",
       "translation": ""
@@ -5629,11 +5629,6 @@
     {
       "id": "upload favicon",
       "message": "upload favicon",
-      "translation": ""
-    },
-    {
-      "id": "uploaded file",
-      "message": "uploaded file",
       "translation": ""
     },
     {

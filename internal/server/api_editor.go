@@ -188,7 +188,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	if !parser.IsMarkdownExtension(filezpath) {
 		filezpath = filezpath + configmanager.ExtensionForEditor(kind.extKey)
 	}
-	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filezpath)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filezpath)) {
 		return
 	}
 	fullPath := pathutils.ToDocsPath(filezpath)
@@ -318,7 +318,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	if !parser.IsMarkdownExtension(filePath) {
 		filePath = filePath + configmanager.ExtensionForEditor(extensionKey)
 	}
-	if writeReservedPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
 		return
 	}
 
