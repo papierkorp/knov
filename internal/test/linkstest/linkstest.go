@@ -26,6 +26,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseAutocomplete,
 		caseUpload,
+		caseRepairOldUpload,
 		caseRename,
 		caseRelocate,
 		caseFilterIndex,

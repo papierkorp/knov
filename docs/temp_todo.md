@@ -117,11 +117,11 @@
   - not needed: main.go already runs job.RunMetadataRebuild (MetaDataLinksRebuild - ExtractLinks on every doc, used links + linked from) about 2 minutes after every startup, so link reading changes reach the stored metadata on their own
   - upgrade.md: the "run a full metadata rebuild" note and the rebuild sentences of the step 2 / 3 link notes removed (their behavior changes stay); CLAUDE.md says link reading changes need no manual-rebuild note
   - left out on purpose: no version constant / one-time full rebuild - nothing beyond link metadata needs it today
-- step 7: repair media from the old upload (needs the rebuilt link metadata of step 6)
-  - the old upload stored media under the still-encoded folder (`media/x%20%281%29/pic.png`) and inserted the link raw, which now reads as the missing `media/x (1)/pic.png`
-  - broken links: FindBrokenLinks also suggests the file at the link path read literally (not decoded) when it exists - an exact match, unlike the unique-basename guess that misses common names like `image.png`; the existing repair rewrites the link (the encoded folder stays)
-  - optional: the misplaced media scan also reports media whose folder doesn't mirror the one doc linking it, moved and relinked through the same review-then-relocate flow - fixes the folder itself and covers files copied in by hand; never automatic, a folder literally named `x%20(1)` can be intended
-  - upgrade note in docs/upgrade.md: point at the broken-links repair instead of moving the media by hand
+- [x] step 7: repair media from the old upload
+  - FindBrokenLinks also suggests the media file whose path, read as link text (parser.ParseLink + NormalizeLinkPath), is the broken link - the old upload's raw `media/x%20(1)/pic.png` link reads as the missing `media/x (1)/pic.png`, the file is at the literal path; an exact match, checked before the unique-basename guess (which misses `pic.png` / `image.png`). the existing repair rewrites the link encoded (`x%2520(1)`), the encoded folder stays
+  - links suite repair-old-upload: media at the folder as the browser encoded it (`( ) '` raw) plus the raw link, for every corpus folder whose encoding differs - suggested and repaired, the link reads back as the media file (failed without the fix)
+  - upgrade.md: the upload note points at "Repair Broken Links" instead of moving media by hand
+  - left out on purpose: only media files get the exact match (only the upload wrote encoded names); the optional misplaced media scan for media whose folder doesn't mirror its doc - not needed to repair the links, a folder named `x%20(1)` can be intended
 - open findings from the step 0 review to fix along the way
   - stale link metadata after upgrading - not an issue, see step 6
 - run `go test ./...` and `--start-tests --remove` after every step

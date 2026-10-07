@@ -1160,8 +1160,10 @@ type BrokenLink struct {
 }
 
 // FindBrokenLinks scans link metadata (no file content is read) for outbound
-// links pointing to paths that no longer exist. A repair is suggested when
-// exactly one existing file shares the broken link's basename.
+// links pointing to paths that no longer exist. A repair is suggested when an
+// existing media file's path, read as link text, is the broken link (the old upload
+// inserted the still-encoded media path raw, `media/x%20(1)/pic.png`), or else
+// when exactly one existing file shares the broken link's basename.
 func FindBrokenLinks() ([]BrokenLink, error) {
 	docFiles, err := GetAllPhysicalFiles()
 	if err != nil {
@@ -1174,6 +1176,7 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 
 	validPaths := make(map[string]bool, len(docFiles)+len(mediaFiles))
 	byBasename := make(map[string][]string)
+	byLinkText := make(map[string]string)
 	for _, f := range docFiles {
 		// links may be written either relative ("note.md") or with the docs/
 		// prefix ("docs/note.md", as produced by the app's own file-view URLs)
@@ -1184,6 +1187,7 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 	for _, f := range mediaFiles {
 		validPaths[f.Path] = true
 		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
+		byLinkText[utils.NormalizeLinkPath(parser.ParseLink(f.Path, parser.LinkMarkdown).Path)] = f.Path
 	}
 
 	var broken []BrokenLink
@@ -1197,7 +1201,9 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 				continue
 			}
 			bl := BrokenLink{SourceFile: metadata.Path, Target: target}
-			if candidates := byBasename[filepath.Base(target)]; len(candidates) == 1 {
+			if p, ok := byLinkText[target]; ok {
+				bl.Suggested = p
+			} else if candidates := byBasename[filepath.Base(target)]; len(candidates) == 1 {
 				bl.Suggested = candidates[0]
 			}
 			broken = append(broken, bl)

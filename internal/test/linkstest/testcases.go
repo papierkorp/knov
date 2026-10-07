@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
@@ -63,6 +66,69 @@ func caseUpload() test.CaseResult {
 		gaps = append(gaps, linkGaps(doc, []string{want})...)
 	}
 	return gapsCase("links-upload", "an upload from a doc in every special-char folder lands in its media mirror, is served and the inserted link reads back as it", gaps)
+}
+
+// caseRepairOldUpload rebuilds what the old upload left behind for a doc in every special-char
+// folder: media stored under the folder as the browser encoded it (location.pathname, `( ) '`
+// kept raw) and the raw `media/<path>` link, which now reads as the missing decoded folder. The
+// broken-links check has to suggest the media file at the literal link path, and its repair has
+// to make the link read back as that file.
+func caseRepairOldUpload() test.CaseResult {
+	browserURL := strings.NewReplacer("%28", "(", "%29", ")", "%27", "'")
+	broken, err := func() (map[string]string, error) {
+		links := map[string]string{}
+		for _, n := range names {
+			folder := testDir + "/repair/" + strings.TrimSuffix(n, ".md")
+			literal := strings.TrimPrefix(browserURL.Replace(pathutils.ToRouteURL("/", folder)), "/") + "/pic.png"
+			if literal == folder+"/pic.png" {
+				continue
+			}
+			full := pathutils.ToMediaPath(literal)
+			if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+				return nil, err
+			}
+			if err := contentStorage.WriteFile(full, pngMagic, 0644); err != nil {
+				return nil, err
+			}
+			if err := files.MetaDataSync("media/" + literal); err != nil {
+				return nil, err
+			}
+			if err := saveDoc(folder+"/doc.md", "![pic.png](media/"+literal+")\n"); err != nil {
+				return nil, err
+			}
+			links[pathutils.ToWithPrefix(folder+"/doc.md")] = "media/" + literal
+		}
+		return links, nil
+	}()
+	if err != nil {
+		return errCase("links-repair-old-upload", err)
+	}
+	files.RefreshCaches()
+	found, err := files.FindBrokenLinks()
+	if err != nil {
+		return errCase("links-repair-old-upload", err)
+	}
+	var gaps []string
+	for _, bl := range found {
+		want, ok := broken[bl.SourceFile]
+		if !ok {
+			continue
+		}
+		delete(broken, bl.SourceFile)
+		if bl.Suggested != want {
+			gaps = append(gaps, fmt.Sprintf("%q: suggested %q for %q", want, bl.Suggested, bl.Target))
+			continue
+		}
+		if ok, err := files.RepairBrokenLink(bl.SourceFile, bl.Target, bl.Suggested); err != nil || !ok {
+			gaps = append(gaps, fmt.Sprintf("%q: repair failed (%v)", want, err))
+			continue
+		}
+		gaps = append(gaps, linkGaps(strings.TrimPrefix(bl.SourceFile, "docs/"), []string{want})...)
+	}
+	for src, want := range broken {
+		gaps = append(gaps, fmt.Sprintf("%q in %q: not reported as broken", want, src))
+	}
+	return gapsCase("links-repair-old-upload", "every link the old upload inserted into a special-char folder is suggested and repaired to its media file", gaps)
 }
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote
