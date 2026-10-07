@@ -138,7 +138,7 @@ func TestFileRefRoundTrip(t *testing.T) {
 			if gotPath, gotSection := DecodeFileRef(entries[0].Value); gotPath != p || gotSection != parser.AnchorID(section) {
 				t.Errorf("DecodeFileRef(%q) = %q, %q, want %q, %q", entries[0].Value, gotPath, gotSection, p, section)
 			}
-			if path, _ := parser.ResolveWikiTarget(entries[0].Value); path != p {
+			if path := parser.ResolveWikiTarget(entries[0].Value); path != p {
 				t.Errorf("ResolveWikiTarget(%q) = %q, want %q", entries[0].Value, path, p)
 			}
 			want := "content of " + p

@@ -249,8 +249,8 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		return l.Dest()
 	}
 
-	content = replaceOutsideCode(content, func(part string, lineStart bool) string {
-		if sub := rewriteRefDefRe.FindStringSubmatch(part); lineStart && sub != nil {
+	content = replaceOutsideCode(content, func(part string, wholeLine bool) string {
+		if sub := rewriteRefDefRe.FindStringSubmatch(part); wholeLine && sub != nil {
 			return sub[1] + replace(sub[2], LinkMarkdown)
 		}
 		part = rewriteMdLinkRe.ReplaceAllStringFunc(part, func(m string) string {
@@ -269,9 +269,9 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 }
 
 // replaceOutsideCode replaces every part of a line outside fenced code blocks and inline `code`
-// spans with fn(part, lineStart) - the link scanner of RewriteLinks and the renderer, so code is
-// never a link. lineStart is false for a part after a code span.
-func replaceOutsideCode(content string, fn func(part string, lineStart bool) string) string {
+// spans with fn(part, wholeLine) - the link scanner of RewriteLinks and the renderer, so code is
+// never a link. wholeLine is false for a line with a code span, so it's never a reference definition.
+func replaceOutsideCode(content string, fn func(part string, wholeLine bool) string) string {
 	lines := strings.Split(content, "\n")
 	fenced := markdown.FenceMask(lines)
 	for i, line := range lines {
@@ -281,7 +281,7 @@ func replaceOutsideCode(content string, fn func(part string, lineStart bool) str
 		// odd parts are inline `code` spans
 		parts := markdown.SplitCodeSpans(line)
 		for j := 0; j < len(parts); j += 2 {
-			parts[j] = fn(parts[j], j == 0)
+			parts[j] = fn(parts[j], len(parts) == 1)
 		}
 		lines[i] = strings.Join(parts, "")
 	}

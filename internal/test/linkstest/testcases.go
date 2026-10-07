@@ -133,7 +133,7 @@ func caseRepairOldUpload() test.CaseResult {
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote
 // (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file. A
-// name the filename policy rejects can't be renamed to (see files.TestKeepsInvalidName), the file
+// name the filename policy rejects can't be renamed to (see pathutils.TestCheckMovedName), the file
 // is written directly (like git sync) and only renamed away.
 func caseRename() test.CaseResult {
 	var gaps []string

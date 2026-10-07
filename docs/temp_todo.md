@@ -100,9 +100,9 @@
   - known: the metadata suite's sanitize-kanban-tags fails on main too (unrelated); the links suite's "unable to open database" lines after the summary are the step 2 harness noise
 - [x] step 5: filename policy
   - pathutils.CheckNewNames / ErrInvalidName: a file or folder name of a host path that doesn't exist yet must not hold `# ? | [ ] \` or start/end with a space - existing parts of the path (git sync, manual copy) aren't checked, so a new file in an existing `a#b/` folder is fine. CheckNewDocsPath runs it after the reserved folder check, so every create/move that already called it is covered: file save (create), rename / set path, move folder (job, kanban status rename), chat move, list / book / index editor, filter and tracker (configeditor Kind.Set checks the paired file before storing the config); MoveMediaFileNoRefresh checks the media path (media rename / set path)
-  - a move that keeps the name (to another folder: kanban card drag, move folder, set path) only checks the new folder, files.keepsInvalidName - an existing bad name can still move
+  - a move that keeps the name (to another folder: kanban card drag, move folder, set path) only checks the new folder, pathutils.CheckMovedName / CheckMovedDocsPath - an existing bad name can still move
   - server: writeReservedPathError -> writeNewPathError (400 for both errors, translated message from newPathMessage), handleMoveError answers 400 for both
-  - links suite rename: a name CheckNewDocsPath rejects is written through storage (like git sync) and only renamed away, that MoveFileNoRefresh rejects it is covered by files.TestKeepsInvalidName (pure, temp dir); forms written with parser.Link instead of raw text
+  - links suite rename: a name CheckNewDocsPath rejects is written through storage (like git sync) and only renamed away, that MoveFileNoRefresh rejects it is covered by pathutils.TestCheckMovedName (pure, temp dir); forms written with parser.Link instead of raw text
   - step 4 leftovers: media rename / rename-form / path-display read r.URL.Path instead of chi's still-encoded wildcard, pathURL moved from panel-file.js to rail-core.js (shared by panel-file.js and panel-tree.js)
   - left out on purpose: no import mapping - the dokuwiki converter is an export (zip) and dokuwiki page ids can't hold these chars, backup restore brings back existing files like git sync; upload keeps utils.SanitizeFilename (already only keeps `a-z0-9-_.`), its media folder mirrors the doc's existing folder and isn't checked, same for media relocate; convert-to-markdown keeps the existing name; kanban statuses are already `[a-zA-Z0-9_]`; the codec is unchanged
   - book editor skip stays: the typed path is trimmed, which is right now that the app never creates a name with an edge space - only a git-synced `trail.md ` can't be a book entry
@@ -122,6 +122,11 @@
   - links suite repair-old-upload: media at the folder as the browser encoded it (`( ) '` raw) plus the raw link, for every corpus folder whose encoding differs - suggested and repaired, the link reads back as the media file (failed without the fix)
   - upgrade.md: the upload note points at "Repair Broken Links" instead of moving media by hand
   - left out on purpose: only media files get the exact match (only the upload wrote encoded names); the optional misplaced media scan for media whose folder doesn't mirror its doc - not needed to repair the links, a folder named `x%20(1)` can be intended
+- [x] step 8: final review fixes
+  - ResolveWikiLinks writes its intermediate markdown link with Link.Dest and the anchor encoded - `[[a#Say "hi"]]` was read with ` "hi"` as title, `[[a#x)]]` ended the destination
+  - ProcessMarkdownLinks rewrites a reference definition `[id]: dest` to a docs file to its /files/ url (docLinkDest / linkAnchor shared with inline links) - goldmark resolved it against the page; media, images, pure anchors and external ones stay as written
+  - book ComposeEntries reads an entry once (DecodeFileRef); files.keepsInvalidName replaced by pathutils.CheckMovedName / CheckMovedDocsPath
+  - left out on purpose: merging replaceOutsideCode and maskCode - a shared splitter isn't less code
 - open findings from the step 0 review to fix along the way
   - stale link metadata after upgrading - not an issue, see step 6
 - run `go test ./...` and `--start-tests --remove` after every step

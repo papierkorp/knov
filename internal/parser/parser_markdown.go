@@ -67,35 +67,39 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 // in this function; that duplication is what previously let the wiki-link
 // path drift out of sync with the hand-typed path (unicode anchors
 // mis-capitalized, an anchor-only [[#some-header]] rendering as ".").
+// The destination is written as a decoded /files/ path, not an app url yet -
+// ProcessMarkdownLinks turns it into one, so always run it on the result.
 func ResolveWikiLinks(content string) string {
 	return replaceOutsideCode(content, func(part string, _ bool) string {
 		return wikiLinkRe.ReplaceAllStringFunc(part, func(match string) string {
 			inner := match[2 : len(match)-2]
-			display := strings.TrimSpace(strings.TrimPrefix(ParseLink(inner, LinkWiki).Alias, "|"))
-			linkPath, anchor := ResolveWikiTarget(inner)
+			wl := ParseLink(inner, LinkWiki)
+			display := strings.TrimSpace(strings.TrimPrefix(wl.Alias, "|"))
 
-			// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
-			// same-page link instead of routing it through /files/. Leaving
+			// the anchor is written as markdown too, encoded so a quote or ")" in it stays
+			// part of the anchor - ProcessMarkdownLinks decodes it (AnchorText)
+			l := Link{Kind: LinkMarkdown}
+			if text := wl.AnchorText(); text != "" {
+				l.Anchor = "#" + encodeLinkPath(text, LinkMarkdown)
+			}
+			// a pure same-page anchor (e.g. "[[#some-header]]") has no path and stays a
+			// real same-page link instead of routing it through /files/. Leaving
 			// display empty lets ProcessMarkdownLinks fill in the header text,
 			// same as it does for a hand-typed "[](#some-header)".
-			if linkPath == "" {
-				return "[" + display + "](" + anchor + ")"
+			if linkPath := ResolveWikiTarget(inner); linkPath != "" {
+				l.Path = "/files/" + linkPath
 			}
-			return "[" + display + "](" + pathutils.ToFileURL(linkPath) + anchor + ")"
+			return "[" + display + "](" + l.Dest() + ")"
 		})
 	})
 }
 
 // ResolveWikiTarget normalizes a wikilink body ("path", "path#anchor", "path|text", ...)
-// into a docs-relative path and a leading "#anchor" (empty when absent): read with ParseLink,
-// default a missing extension to ".md". A bare "#anchor" yields an empty path. Shared with
-// internal/book so a book entry resolves its reference the same way the link renderer does.
-func ResolveWikiTarget(inner string) (linkPath, anchor string) {
-	l := ParseLink(inner, LinkWiki)
-	if anchor = strings.TrimSpace(l.Anchor); l.Path == "" {
-		return "", anchor
-	}
-	return utils.WithDefaultLinkExt(l.Path), anchor
+// into a docs-relative path: read with ParseLink, default a missing extension to ".md". A bare
+// "#anchor" yields an empty path. Shared with internal/book so a book entry resolves its
+// reference the same way the link renderer does.
+func ResolveWikiTarget(inner string) string {
+	return utils.WithDefaultLinkExt(ParseLink(inner, LinkWiki).Path)
 }
 
 // wrapRawHTMLBlocks wraps bare HTML blocks in fenced code blocks so goldmark
@@ -814,7 +818,7 @@ var processMdLinkRe = regexp.MustCompile(`(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLin
 
 // ProcessMarkdownLinks rewrites every internal [text](url) link outside code to its app url
 // (/files/, /media/), read with ParseLink and the metadata extension rule, an anchor to the
-// heading id it names (see AnchorID).
+// heading id it names (see AnchorID), and a reference definition to a docs file the same way.
 // This is also where every empty-text "[](url)" link (including ones
 // ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
 // fallback label - keep that logic here only, see the note on ResolveWikiLinks.
@@ -837,7 +841,7 @@ func ProcessMarkdownLinks(content string) string {
 		last = m[1]
 	}
 	b.WriteString(content[last:])
-	return b.String()
+	return processRefDefs(b.String())
 }
 
 // processMarkdownLink rewrites one processMdLinkRe match with its opening "[text" (or "") and
@@ -864,15 +868,7 @@ func processMarkdownLink(match, open, dest string) string {
 		return "[" + text + "](" + target + ")"
 	}
 
-	// "#My Section" -> the heading id, so a visible heading text (with spaces) works as
-	// anchor; an anchor that already is an id stays as written (e.g. percent-encoded). only
-	// for markdown targets, other fragments (doc.pdf#page=3) stay as written
-	anchor := l.Anchor
-	if ext := path.Ext(l.Path); ext == "" || ext == ".md" {
-		if id := AnchorID(l.AnchorText()); id != "" && id != l.AnchorText() {
-			anchor = "#" + id
-		}
-	}
+	anchor := linkAnchor(l)
 
 	// pure anchor (same-page link) — fall back to the header text if empty
 	if l.Path == "" {
@@ -889,22 +885,53 @@ func processMarkdownLink(match, open, dest string) string {
 
 	// the path is decoded, the app url encodes it so goldmark accepts spaces/unicode; query,
 	// anchor and title are kept for every target
-	query := l.Query
-	var target string
 	if rel, ok := strings.CutPrefix(l.Path, "media/"); ok {
-		target = pathutils.ToMediaURL(rel)
-		if query == "" {
-			query = "?mode=detail"
-		} else {
-			query += "&mode=detail"
+		query := "?mode=detail"
+		if l.Query != "" {
+			query = l.Query + "&mode=detail"
 		}
-	} else if rel, ok := strings.CutPrefix(strings.TrimPrefix(l.Path, "/files"), "/media/"); ok {
-		target = pathutils.ToMediaURL(rel)
-	} else {
-		// internal doc links, bare or /files/ — route to /files/
-		target = pathutils.ToFileURL(utils.WithDefaultLinkExt(strings.TrimPrefix(l.Path, "/files/")))
+		return link(pathutils.ToMediaURL(rel) + query + anchor + l.Title)
 	}
-	return link(target + query + anchor + l.Title)
+	if rel, ok := strings.CutPrefix(strings.TrimPrefix(l.Path, "/files"), "/media/"); ok {
+		return link(pathutils.ToMediaURL(rel) + l.Query + anchor + l.Title)
+	}
+	return link(docLinkDest(l))
+}
+
+// docLinkDest writes the app url destination of a link to a docs file (bare or /files/ path).
+func docLinkDest(l Link) string {
+	return pathutils.ToFileURL(utils.WithDefaultLinkExt(strings.TrimPrefix(l.Path, "/files/"))) + l.Query + linkAnchor(l) + l.Title
+}
+
+// linkAnchor is l's anchor as the heading id it names: "#My Section" -> "#my-section", so a
+// visible heading text (with spaces) works as anchor; an anchor that already is an id stays as
+// written (e.g. percent-encoded). only for markdown targets, other fragments (doc.pdf#page=3)
+// stay as written
+func linkAnchor(l Link) string {
+	if ext := path.Ext(l.Path); ext == "" || ext == ".md" {
+		if id := AnchorID(l.AnchorText()); id != "" && id != l.AnchorText() {
+			return "#" + id
+		}
+	}
+	return l.Anchor
+}
+
+// processRefDefs rewrites the destination of every reference definition [id]: dest outside code
+// to a docs file to its /files/ url, like processMarkdownLink - goldmark would resolve it against
+// the page. media and images stay as written, an image may use them (rendered from the
+// destination like an inline image).
+func processRefDefs(content string) string {
+	return replaceOutsideCode(content, func(part string, wholeLine bool) string {
+		sub := rewriteRefDefRe.FindStringSubmatch(part)
+		if !wholeLine || sub == nil {
+			return part
+		}
+		l := ParseLink(sub[2], LinkMarkdown)
+		if l.External || l.Path == "" || pathutils.IsMedia(l.Path) || configmanager.IsImageExtension(strings.ToLower(path.Ext(l.Path))) {
+			return part
+		}
+		return sub[1] + docLinkDest(l)
+	})
 }
 
 // autoLinkText builds a display label for a link left without one, e.g.

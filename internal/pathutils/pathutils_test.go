@@ -1,6 +1,7 @@
 package pathutils
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -196,6 +197,29 @@ func TestCheckNewNames(t *testing.T) {
 	}
 	if err := CheckNewDocsPath("a#b/new?.md"); err != ErrInvalidName {
 		t.Errorf("new invalid name in an existing folder: want ErrInvalidName, got %v", err)
+	}
+}
+
+func TestCheckMovedName(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Mkdir(filepath.Join(root, "dst"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	old := filepath.Join(root, "a#b.md")
+	cases := []struct {
+		old, new string
+		want     error
+	}{
+		{old, filepath.Join(root, "dst", "a#b.md"), nil},                       // existing bad name moves
+		{old, filepath.Join(root, "new", "a#b.md"), nil},                       // into a valid new folder
+		{old, filepath.Join(root, "x#", "a#b.md"), ErrInvalidName},             // into an invalid new folder
+		{filepath.Join(root, "a.md"), old, ErrInvalidName},                     // renamed to a bad name
+		{filepath.Join(root, "a.md"), filepath.Join(root, "dst", "b.md"), nil}, // valid rename
+	}
+	for _, c := range cases {
+		if got := CheckMovedName(c.old, c.new); !errors.Is(got, c.want) {
+			t.Errorf("CheckMovedName(%q, %q) = %v, want %v", c.old, c.new, got, c.want)
+		}
 	}
 }
 

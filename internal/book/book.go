@@ -273,7 +273,7 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 			continue
 		}
 
-		path, _ := parser.ResolveWikiTarget(e.Value)
+		path := parser.ResolveWikiTarget(e.Value)
 		// the visible heading text ("notes.md#My Section") works as anchor too; a bare-text
 		// anchor matching several headings resolves to the first.
 		section := parser.AnchorID(parser.ParseLink(e.Value, parser.LinkWiki).AnchorText())

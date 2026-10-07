@@ -267,13 +267,41 @@ func CheckNewNames(fullPath string) error {
 // Otherwise it returns ErrInvalidName for a new name that breaks the filename policy (see
 // CheckNewNames).
 func CheckNewDocsPath(path string) error {
+	if err := checkReservedDocsPath(path); err != nil {
+		return err
+	}
+	return CheckNewNames(ToDocsPath(path))
+}
+
+// CheckMovedDocsPath is CheckNewDocsPath for moving the docs file or folder oldPath to newPath,
+// see CheckMovedName.
+func CheckMovedDocsPath(oldPath, newPath string) error {
+	if err := checkReservedDocsPath(newPath); err != nil {
+		return err
+	}
+	return CheckMovedName(ToDocsPath(oldPath), ToDocsPath(newPath))
+}
+
+// CheckMovedName is CheckNewNames for moving oldFull to newFull (host paths): a name the move
+// keeps (moved to another folder) isn't new (git sync, manual copy), so an existing bad name
+// can still move - only the new folders are checked.
+func CheckMovedName(oldFull, newFull string) error {
+	if filepath.Base(oldFull) == filepath.Base(newFull) {
+		return CheckNewNames(filepath.Dir(newFull))
+	}
+	return CheckNewNames(newFull)
+}
+
+// checkReservedDocsPath returns ErrReservedPath for a docs path that doesn't exist yet in a
+// reserved top-level folder, see CheckNewDocsPath.
+func checkReservedDocsPath(path string) error {
 	first, _, _ := strings.Cut(ToRelative(path), "/")
 	if slices.Contains(configmanager.ReservedDocsFolders(), first) {
 		if _, err := os.Stat(ToDocsPath(path)); err != nil {
 			return ErrReservedPath
 		}
 	}
-	return CheckNewNames(ToDocsPath(path))
+	return nil
 }
 
 // PathContains reports whether candidate is root itself or strictly beneath it on the

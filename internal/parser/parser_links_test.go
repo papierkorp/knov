@@ -88,6 +88,12 @@ func TestProcessMarkdownLinks(t *testing.T) {
 		{"linked image", "[![b](img.png)](a.md)", "[![b](img.png)](" + pathutils.ToFileURL("a.md") + ")"},
 		{"linked image external", "[![b](img.png)](https://x.y)", "[![b](img.png)](https://x.y)"},
 		{"image after stray bracket", "a [stray\n\n![i](img.png)", "a [stray\n\n![i](img.png)"},
+		// a reference definition to a docs file gets its /files/ url like an inline link, media,
+		// images, pure anchors and external ones stay as written
+		{"ref def doc", "[r][id]\n\n[id]: <a b#Phase 1> \"t\"", "[r][id]\n\n[id]: " + pathutils.ToFileURL("a b.md") + "#phase-1 \"t\""},
+		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y"},
+		{"ref def in code", "```\n[id]: a.md\n```", "```\n[id]: a.md\n```"},
+		{"ref def like text with code span", "[id]: a.md `x`", "[id]: a.md `x`"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -146,26 +152,24 @@ func TestTodoDateNoDuplication(t *testing.T) {
 }
 
 // ResolveWikiTarget - the wikilink-body normalizer shared with internal/book: drop the
-// "|alias", split off the "#anchor", default a missing extension to ".md", URL-decode the
+// "|alias" and "#anchor", default a missing extension to ".md", URL-decode the
 // path, and yield an empty path for a pure "[[#header]]" anchor.
 func TestWikiTargetExtraction(t *testing.T) {
 	cases := []struct {
-		in, wantPath, wantAnchor string
+		in, wantPath string
 	}{
-		{"note", "note.md", ""},
-		{"note.md", "note.md", ""},
-		{"sub/note.md#section", "sub/note.md", "#section"},
-		{"note#section|Display Text", "note.md", "#section"},
-		{"#header", "", "#header"},
-		{"mein%20ordner/notiz", "mein ordner/notiz.md", ""},
-		{`sub.d\note`, "sub.d/note.md", ""},
-		{`note#a\b`, "note.md", `#a\b`},
+		{"note", "note.md"},
+		{"note.md", "note.md"},
+		{"sub/note.md#section", "sub/note.md"},
+		{"note#section|Display Text", "note.md"},
+		{"#header", ""},
+		{"mein%20ordner/notiz", "mein ordner/notiz.md"},
+		{`sub.d\note`, "sub.d/note.md"},
 	}
 	for _, c := range cases {
 		t.Run(c.in, func(t *testing.T) {
-			gotPath, gotAnchor := ResolveWikiTarget(c.in)
-			if gotPath != c.wantPath || gotAnchor != c.wantAnchor {
-				t.Errorf("ResolveWikiTarget(%q) = (%q, %q), want (%q, %q)", c.in, gotPath, gotAnchor, c.wantPath, c.wantAnchor)
+			if got := ResolveWikiTarget(c.in); got != c.wantPath {
+				t.Errorf("ResolveWikiTarget(%q) = %q, want %q", c.in, got, c.wantPath)
 			}
 		})
 	}
@@ -174,6 +178,20 @@ func TestWikiTargetExtraction(t *testing.T) {
 // ResolveWikiLinks keeps a pure "[[#header]]" as a real same-page link (empty label, filled in
 // later by ProcessMarkdownLinks) rather than routing it through /files/ or collapsing it to ".".
 // A wikilink in code stays as written.
+// a wikilink anchor holding a quote or ")" stays the whole anchor, it isn't read as a title or
+// the end of the destination
+func TestWikiLinkAnchorSpecialChars(t *testing.T) {
+	for in, want := range map[string]string{
+		`[[a#Say "hi"]]`: "[a - Say \"hi\"](" + pathutils.ToFileURL("a.md") + "#say-hi)",
+		`[[a#x) y|z]]`:   "[z](" + pathutils.ToFileURL("a.md") + "#x-y)",
+		`[[#a "b"]]`:     `[A "b"](#a-b)`,
+	} {
+		if got := ProcessMarkdownLinks(ResolveWikiLinks(in)); got != want {
+			t.Errorf("%q = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestWikiLinkPureAnchor(t *testing.T) {
 	for in, want := range map[string]string{"[[#some-header]]": "[](#some-header)", "`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```"} {
 		if got := ResolveWikiLinks(in); got != want {
@@ -256,7 +274,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 				t.Errorf("%s %q: ExtractLinks(%q) = %q", w.name, p, w.link, got)
 			}
 			if strings.HasPrefix(w.link, "[[") {
-				if got, _ := ResolveWikiTarget(w.link[2 : len(w.link)-2]); got != w.want {
+				if got := ResolveWikiTarget(w.link[2 : len(w.link)-2]); got != w.want {
 					t.Errorf("%s %q: ResolveWikiTarget(%q) = %q", w.name, p, w.link, got)
 				}
 			}
@@ -367,7 +385,7 @@ func TestRewriteLinksUnclosedAngle(t *testing.T) {
 // a hand-written wikilink resolves to the same file for rendering and link metadata
 func TestWikiLinkRenderMatchesExtract(t *testing.T) {
 	for _, in := range []string{"page?x", "a b", "a%41", "dir/page.md#sec", "media/a"} {
-		want, _ := ResolveWikiTarget(in)
+		want := ResolveWikiTarget(in)
 		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[[" + in + "]]")); len(got) != 1 || utils.NormalizeLinkPath(got[0]) != want {
 			t.Errorf("[[%s]]: ExtractLinks = %q, ResolveWikiTarget = %q", in, got, want)
 		}
