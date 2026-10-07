@@ -21,8 +21,14 @@ import (
 
 // caseUpload uploads into a doc in a folder named after each corpus name, from the doc the upload
 // api reads out of the context_path uploadMediaBlob sends (the edit page's location.pathname),
-// and inserts the link it returns - the media file has to mirror the doc's folder.
+// and inserts the link it returns - the media file has to mirror the doc's folder. The media page
+// is requested the way a browser encodes the url: it keeps ( ) ' raw where go escapes them, so the
+// request has a RawPath and the route must not read chi's still-encoded wildcard.
 func caseUpload() test.CaseResult {
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	browserURL := strings.NewReplacer("%28", "(", "%29", ")", "%27", "'")
+
 	var gaps []string
 	for _, n := range names {
 		folder := testDir + "/upload/" + strings.TrimSuffix(n, ".md")
@@ -43,12 +49,20 @@ func caseUpload() test.CaseResult {
 		if "media/"+res.Path != want {
 			gaps = append(gaps, fmt.Sprintf("%q: uploaded to %q", want, "media/"+res.Path))
 		}
+		resp, err := ts.Client().Get(ts.URL + browserURL.Replace(pathutils.ToMediaURL(res.Path)))
+		if err != nil {
+			return errCase("links-upload", err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			gaps = append(gaps, fmt.Sprintf("%q: media page status %d", want, resp.StatusCode))
+		}
 		if err := saveDoc(doc, res.Link+"\n"); err != nil {
 			return errCase("links-upload", err)
 		}
 		gaps = append(gaps, linkGaps(doc, []string{want})...)
 	}
-	return gapsCase("links-upload", "an upload from a doc in every special-char folder lands in its media mirror and the inserted link reads back as it", gaps)
+	return gapsCase("links-upload", "an upload from a doc in every special-char folder lands in its media mirror, is served and the inserted link reads back as it", gaps)
 }
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote

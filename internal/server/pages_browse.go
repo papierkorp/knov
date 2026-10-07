@@ -78,7 +78,9 @@ func handleRedirectToBrowseFiles(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMedia(w http.ResponseWriter, r *http.Request) {
-	mediaPath := chi.URLParam(r, "*")
+	// r.URL.Path, not chi.URLParam(r, "*") - that is still percent-encoded when the request
+	// has a RawPath (see handleAPIDeleteMedia)
+	mediaPath := strings.TrimPrefix(r.URL.Path, "/media/")
 	if mediaPath == "" {
 		http.NotFound(w, r)
 		return
