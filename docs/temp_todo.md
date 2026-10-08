@@ -82,7 +82,7 @@ follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..40
 - 4. `../` above the docs root (decision 3: both) - done: pathutils.LinkClimbsAboveRoot, FindBrokenLinks reads the docs' content for them (BrokenLink.AboveRoot), no metadata field
   - keep resolving it clamped to the docs root (renders like a url), and also list it in the broken links scan as "climbs above the docs root" with the clamped path as suggestion, so "Repair Broken Links" can rewrite it
   - ResolveRelativeLink has to report the clamping (e.g. a second return value); FindBrokenLinks only reads metadata, so either store the info in link metadata or scan content for it - decide
-- 5. warning noise in folder moves
+- 5. warning noise in folder moves - done
   - `could not get metadata for linked file docs/` (a folder link, now valid in UsedLinks) and `... <file moved along>` (metadata not moved yet, MoveFolder resyncs it afterwards) in files/metadata_links.go (step 3 of updateLinksForMovedFile, MetaDataMutate on movedMetadata.UsedLinks) - skip folder targets (trailing "/") and moved-along files there
 - 6. leftovers not on the codec yet
   - table cells bypass the link renderer: server/api_tables.go:132,138 renders headers and cells with parser.RenderInlineMarkdown (plain goldmark), not through RenderLinks - in the interactive table view a `[[note]]` stays literal text, `[x](a b.md)` / `./` links / anchors aren't routed to /files/ and a special-char link breaks. run cells through RenderLinks with the doc's path first (or give RenderInlineMarkdown a docPath), and add a table case to the links suite

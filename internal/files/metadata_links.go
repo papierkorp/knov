@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -598,6 +599,10 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 		logging.LogInfo(key, "updating LinksToHere in %d files that moved file links to", len(movedMetadata.UsedLinks))
 
 		for _, linkedPath := range movedMetadata.UsedLinks {
+			// a folder has no metadata, a file moved along has none yet - MoveFolder resyncs it afterwards
+			if strings.HasSuffix(linkedPath, "/") || slices.Contains(slices.Collect(maps.Values(movedAlong)), linkedPath) {
+				continue
+			}
 			linkedPath := linkedPath
 			err := MetaDataMutate(linkedPath, func(m *Metadata, existed bool) (bool, error) {
 				if !existed {
