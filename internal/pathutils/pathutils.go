@@ -101,6 +101,14 @@ func parsePath(inputPath string) *PathInfo {
 	}
 }
 
+// DocsPath is the docs file or folder at the docs-relative path rel (user input, a /files/<rel>
+// url, a docs listing), taken literally: "media/x.md" is data/docs/media/x.md, not a media file.
+// A docs-relative path goes through it before any other function here - they read a leading
+// docs/, media/ or files/ as prefix.
+func DocsPath(rel string) string {
+	return "docs/" + strings.TrimPrefix(rel, "/")
+}
+
 // ToRelative strips any prefix and data path to return clean relative path
 func ToRelative(path string) string {
 	return parsePath(path).Relative

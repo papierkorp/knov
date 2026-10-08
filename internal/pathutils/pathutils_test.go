@@ -25,6 +25,28 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// a docs-relative path starting with a prefix name is a docs path through DocsPath
+func TestDocsPath(t *testing.T) {
+	for _, rel := range []string{"media/x.md", "docs/x.md", "files/x.md", "media", "a/b.md", "media/sub/"} {
+		p := DocsPath(rel)
+		if got, want := ToDocsPath(p), filepath.Join(DocsRoot(), rel); got != want {
+			t.Errorf("ToDocsPath(DocsPath(%q)) = %q, want %q", rel, got, want)
+		}
+		if got := ToFullPath(p); got != filepath.Join(DocsRoot(), rel) {
+			t.Errorf("ToFullPath(DocsPath(%q)) = %q", rel, got)
+		}
+		if got := ToWithPrefix(p); got != "docs/"+rel {
+			t.Errorf("ToWithPrefix(DocsPath(%q)) = %q", rel, got)
+		}
+		if got := ToRelative(p); got != strings.Trim(rel, "/") {
+			t.Errorf("ToRelative(DocsPath(%q)) = %q", rel, got)
+		}
+		if IsMedia(p) {
+			t.Errorf("IsMedia(DocsPath(%q)) = true", rel)
+		}
+	}
+}
+
 func TestURLHelpers(t *testing.T) {
 	cases := []struct {
 		name string
