@@ -30,6 +30,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseRename,
 		caseRelative,
 		caseBare,
+		caseTable,
 		caseRelocate,
 		caseFilterIndex,
 		caseBookEditor,

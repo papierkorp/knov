@@ -260,8 +260,6 @@ func (h *Converter) renderAsMarkdown(element DokuWikiElement) string {
 		return fmt.Sprintf("_%s_", element.Content)
 	case "code":
 		return fmt.Sprintf("`%s`", element.Content)
-	case "link":
-		return fmt.Sprintf("[%s](%s)", element.Text, element.URL)
 	case "code-block":
 		if element.Language != "" {
 			return fmt.Sprintf("```%s\n%s\n```", element.Language, element.Content)

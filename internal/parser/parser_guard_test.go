@@ -51,7 +51,6 @@ var guardRules = []guardRule{
 		allowed: map[string]int{
 			"internal/parser/link_rewrite.go":                 1, // Link.String
 			"internal/parser/parser_markdown.go":              4, // RenderLinks writes app urls
-			"internal/dokuwikiconverter/converter.go":         1, // dead markdown branch, link refactor cleanup step 6
 			"internal/dokuwikiconverter/converter_process.go": 1, // dokuwiki namespace -> /browse/folders link
 		},
 	},
@@ -59,9 +58,6 @@ var guardRules = []guardRule{
 		name: "hand-rolled %20 encoding",
 		re:   regexp.MustCompile(`(?i)replace(?:all)?\([^)]*%20`),
 		exts: []string{".go", ".js", ".gohtml"},
-		allowed: map[string]int{
-			"internal/thememanager/template_data.go": 1, // urlPathSegment, link refactor cleanup step 6
-		},
 	},
 	{
 		name: "encodeURIComponent (link paths go through the server, pathutils)",
@@ -88,7 +84,7 @@ var guardRules = []guardRule{
 			// and <summary> text, whose links RenderLinks already rewrote)
 			"internal/parser/parser_markdown.go": 7,
 			"internal/pdfexport/pdfexport.go":    1, // runs RenderLinks first
-			"internal/server/api_tables.go":      2, // table cells, link refactor cleanup step 6
+			"internal/server/api_tables.go":      2, // table cells, after RenderLinks
 		},
 	},
 }

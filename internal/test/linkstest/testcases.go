@@ -428,6 +428,48 @@ func caseBookEditor() test.CaseResult {
 	return gapsCase("links-book-editor", "a book of every special-char doc links and includes each one", gaps)
 }
 
+// caseTable links every target doc from the cells of a table (wiki and "/" markdown links, a "|"
+// in a markdown link destination would end the cell) and a "./" link - the interactive table
+// component has to link each one like the rendered page.
+func caseTable() test.CaseResult {
+	dir := testDir + "/table"
+	doc, near := dir+"/t.md", dir+"/near.md"
+	table := "| wiki | markdown |\n|---|---|\n| [y](./near.md) | |\n"
+	want := []string{pathutils.ToWithPrefix(near)}
+	for i := range names {
+		md := ""
+		if !strings.Contains(target(i), "|") {
+			md = parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: "/" + target(i)}.String()
+		}
+		table += "| " + parser.Link{Kind: parser.LinkWiki, Path: target(i)}.String() + " | " + md + " |\n"
+		want = append(want, pathutils.ToWithPrefix(target(i)))
+	}
+	if err := saveDoc(near, "# near\n"); err != nil {
+		return errCase("links-table", err)
+	}
+	if err := saveDoc(doc, table); err != nil {
+		return errCase("links-table", err)
+	}
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(doc), nil)
+	req.Header.Set("Accept", "text/html")
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		return errCase("links-table", err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	rendered := renderedTargets(string(body))
+	var gaps []string
+	for _, w := range want {
+		if !slices.Contains(rendered, w) {
+			gaps = append(gaps, fmt.Sprintf("%q: not linked in the table component (status %d)", w, resp.StatusCode))
+		}
+	}
+	return gapsCase("links-table", "the interactive table links every special-char doc from its cells", gaps)
+}
+
 // formGaps checks the links of a form's doc - an "html" one only through link metadata, raw html
 // is never rendered (goldmark without WithUnsafe).
 func formGaps(form, src string, want []string) []string {

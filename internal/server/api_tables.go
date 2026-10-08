@@ -95,7 +95,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	// keep a reference to the full, unfiltered table so filter dropdown
 	// options stay complete regardless of the currently active search/filters
-	fullTableData := simpleToTableData(headers, rows, aligns)
+	fullTableData := simpleToTableData(headers, rows, aligns, filepath)
 
 	tableData := fullTableData
 
@@ -119,8 +119,9 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 }
 
 // simpleToTableData converts plain string table data into the typed TableData structure
-// used by the sort/search/paginate helpers.
-func simpleToTableData(headers []string, rows [][]string, aligns []string) *types.TableData {
+// used by the sort/search/paginate helpers. links in headers and cells are read against the
+// table's doc docPath (parser.RenderLinks) before the inline markdown is rendered.
+func simpleToTableData(headers []string, rows [][]string, aligns []string, docPath string) *types.TableData {
 	align := func(col int) string {
 		if col < len(aligns) && aligns[col] != "" {
 			return aligns[col]
@@ -129,13 +130,13 @@ func simpleToTableData(headers []string, rows [][]string, aligns []string) *type
 	}
 	tHeaders := make([]types.TableHeader, len(headers))
 	for i, h := range headers {
-		tHeaders[i] = types.TableHeader{Content: parser.RenderInlineMarkdown(h), DataType: "text", Align: align(i), Sortable: true, ColumnIdx: i}
+		tHeaders[i] = types.TableHeader{Content: parser.RenderInlineMarkdown(parser.RenderLinks(h, docPath)), DataType: "text", Align: align(i), Sortable: true, ColumnIdx: i}
 	}
 	tRows := make([][]types.TableCell, len(rows))
 	for i, row := range rows {
 		tRow := make([]types.TableCell, len(row))
 		for j, cell := range row {
-			tRow[j] = types.TableCell{Content: parser.RenderInlineMarkdown(cell), DataType: "text", Align: align(j), RawValue: cell}
+			tRow[j] = types.TableCell{Content: parser.RenderInlineMarkdown(parser.RenderLinks(cell, docPath)), DataType: "text", Align: align(j), RawValue: cell}
 		}
 		tRows[i] = tRow
 	}

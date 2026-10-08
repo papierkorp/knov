@@ -3957,7 +3957,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "default",
-                        "description": "Mode: default, select",
+                        "description": "Mode: default, compact",
                         "name": "mode",
                         "in": "query"
                     }

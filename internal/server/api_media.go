@@ -96,7 +96,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 // @Tags media
 // @Produce json,html
 // @Param filter query string false "Filter: all, used, orphaned" default(all)
-// @Param mode query string false "Mode: default, select" default(default)
+// @Param mode query string false "Mode: default, compact" default(default)
 // @Success 200 {object} map[string]interface{} "List of media files"
 // @Failure 500 {string} string "internal error"
 // @Router /api/media/list [get]
@@ -107,7 +107,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		filter = "all" // default
 	}
 
-	// get mode parameter (default, select)
+	// get mode parameter (default, compact)
 	mode := r.URL.Query().Get("mode")
 
 	mediaFiles, err := files.GetAllMediaFiles()
@@ -146,8 +146,6 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 
 	var html string
 	switch mode {
-	case "select":
-		html = render.RenderMediaListSelect(filteredMedia)
 	case "compact":
 		html = render.RenderMediaListCompact(filteredMedia, "detail")
 		if hiddenCount > 0 {

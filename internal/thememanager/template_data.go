@@ -236,15 +236,8 @@ func CreateFuncMap() template.FuncMap {
 		"urlPath": func(s string) string {
 			return pathutils.ToFileURL(s)
 		},
-		// urlPathSegment encodes a single path value for embedding in a URL path
-		// e.g. href="/files/history/{{urlPathSegment .FilePath}}"
-		"urlPathSegment": func(s string) string {
-			s = strings.ReplaceAll(s, " ", "%20")
-			s = strings.ReplaceAll(s, "#", "%23")
-			s = strings.ReplaceAll(s, "?", "%3F")
-			s = strings.ReplaceAll(s, "&", "%26")
-			return s
-		},
+		// fileHistoryURL is the /files/history/ url of a docs file
+		"fileHistoryURL": pathutils.ToFileHistoryURL,
 		"marshalJSON": func(v interface{}) string {
 			data, err := json.MarshalIndent(v, "", "  ")
 			if err != nil {

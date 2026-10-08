@@ -7,7 +7,7 @@
             <h1>{{T "History"}}: <a href="/files/{{.Data.FilePath}}" class="file-link">{{.Data.FilePath}}</a></h1>
             {{if or .Data.SelectedVersion (and .Data.CompareFrom .Data.CompareTo)}}
                 <div class="version-actions">
-                    <a href="/files/history/{{urlPathSegment .Data.FilePath}}" class="action-link">{{T "view all versions"}}</a>
+                    <a href="{{fileHistoryURL .Data.FilePath}}" class="action-link">{{T "view all versions"}}</a>
                     {{if and .Data.SelectedVersion (or .Data.FileDeleted (ne .Data.SelectedVersion .Data.CurrentVersion))}}
                         <form hx-post="/api/files/versions/restore/{{urlQuery .Data.FilePath}}"
                               hx-swap="none"

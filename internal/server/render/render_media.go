@@ -552,59 +552,6 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	return fmt.Sprintf(`<div class="%s">%s</div>`, containerClass, content)
 }
 
-// RenderMediaListSelect renders a simple list of media files for selection in the editor
-func RenderMediaListSelect(mediaFiles []files.File) string {
-	var html strings.Builder
-
-	html.WriteString(`<div id="component-media-select" class="media-select">`)
-
-	if len(mediaFiles) == 0 {
-		fmt.Fprintf(&html, `<p class="no-media">%s</p>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "no media files found"))
-		html.WriteString(`</div>`)
-		return html.String()
-	}
-
-	html.WriteString(`<div class="media-select-list">`)
-	for _, file := range mediaFiles {
-		relativePath := strings.TrimPrefix(file.Path, "media/")
-		filename := filepath.Base(relativePath)
-		fileExt := strings.ToLower(filepath.Ext(relativePath))
-		escPath := stdhtml.EscapeString(relativePath)
-		escFilename := stdhtml.EscapeString(filename)
-
-		html.WriteString(`<div class="media-select-item" onclick="insertMediaIntoEditor(this)">`)
-		fmt.Fprintf(&html, `<input type="hidden" class="media-path" value="%s">`, escPath)
-		fmt.Fprintf(&html, `<input type="hidden" class="media-filename" value="%s">`, escFilename)
-
-		// media icon/thumbnail
-		html.WriteString(`<div class="media-select-icon">`)
-		if files.IsImageFile(fileExt) {
-			fmt.Fprintf(&html, `<img src="%s" alt="%s" class="media-select-thumbnail">`,
-				pathutils.ToMediaURL(relativePath), escFilename)
-		} else {
-			icon := files.GetFileTypeIcon(fileExt)
-			fmt.Fprintf(&html, `<i class="fas %s"></i>`, icon)
-		}
-		html.WriteString(`</div>`)
-
-		// filename
-		fmt.Fprintf(&html, `<div class="media-select-name" title="%s">%s</div>`, escFilename, escFilename)
-
-		// file size if available
-		if file.Metadata != nil && file.Metadata.Size > 0 {
-			sizeStr := utils.FormatFileSize(file.Metadata.Size)
-			fmt.Fprintf(&html, `<div class="media-select-size">%s</div>`, sizeStr)
-		}
-
-		html.WriteString(`</div>`)
-	}
-	html.WriteString(`</div>`)
-	html.WriteString(`</div>`)
-
-	return html.String()
-}
-
 // RenderMediaStorageStats renders storage statistics for the admin dashboard, one row per
 // media category plus a total row
 func RenderMediaStorageStats(stats *files.MediaStorageStats) string {

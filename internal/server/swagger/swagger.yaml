@@ -3394,7 +3394,7 @@ paths:
         name: filter
         type: string
       - default: default
-        description: 'Mode: default, select'
+        description: 'Mode: default, compact'
         in: query
         name: mode
         type: string
