@@ -23,8 +23,9 @@ type Parser interface {
 	// for editors with no inline section editing (list, todo, tracker, filter, index, book).
 	Render(content []byte, filePath string, editableSections bool) ([]byte, error)
 
-	// ExtractLinks extracts internal links from content
-	ExtractLinks(content []byte) []string
+	// ExtractLinks returns the target (LinkTarget) of every internal link in content, read
+	// against the doc docPath
+	ExtractLinks(content []byte, docPath string) []string
 
 	// Name returns the handler identifier
 	Name() string

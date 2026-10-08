@@ -28,7 +28,7 @@ func (h *PlaintextHandler) Render(content []byte, filePath string, editableSecti
 	return []byte(html), nil
 }
 
-func (h *PlaintextHandler) ExtractLinks(content []byte) []string {
+func (h *PlaintextHandler) ExtractLinks(content []byte, docPath string) []string {
 	return []string{}
 }
 

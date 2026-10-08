@@ -128,11 +128,9 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		if err == nil {
 			handler := parser.GetParserRegistry().GetHandler(fullPath)
 			if handler != nil {
-				links := handler.ExtractLinks(contentData)
-				for _, link := range links {
-					cleanLink := resolveMediaLink(utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(metadata.Path, link)))
-					if cleanLink != "" && cleanLink != metadata.Path && !slices.Contains(metadata.UsedLinks, cleanLink) {
-						metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
+				for _, target := range handler.ExtractLinks(contentData, metadata.Path) {
+					if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
+						metadata.UsedLinks = append(metadata.UsedLinks, target)
 					}
 				}
 			}
@@ -359,20 +357,6 @@ func findTopAncestor(filePath string, visited map[string]bool, cache map[string]
 	return filePath
 }
 
-// resolveMediaLink promotes a link lacking the "media/" prefix to its prefixed
-// form when it matches an existing media file. The media detail page displays
-// paths without that prefix, so links copied from there would otherwise never
-// match stored media metadata and silently fail to register in LinksToHere.
-func resolveMediaLink(link string) string {
-	if link == "" || strings.HasPrefix(link, "media/") || strings.HasPrefix(link, "docs/") {
-		return link
-	}
-	if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {
-		return "media/" + link
-	}
-	return link
-}
-
 // updateUsedLinks recomputes metadata.UsedLinks from file content (in-memory only, no other
 // path is touched here) and returns closures that push the resulting add/remove onto the
 // linked files' LinksToHere. The caller must run those closures only after releasing
@@ -399,7 +383,7 @@ func updateUsedLinks(metadata *Metadata) []func() {
 		return nil
 	}
 
-	links := handler.ExtractLinks(contentData)
+	links := handler.ExtractLinks(contentData, metadata.Path)
 	logging.LogInfo(logging.KeyApp, "extracted %d links from %s", len(links), metadata.Path)
 
 	// store old links to detect removals
@@ -408,15 +392,9 @@ func updateUsedLinks(metadata *Metadata) []func() {
 
 	metadata.UsedLinks = []string{}
 
-	for _, link := range links {
-		cleanLink := resolveMediaLink(utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(metadata.Path, link)))
-
-		if cleanLink == "" || cleanLink == metadata.Path {
-			continue
-		}
-
-		if !slices.Contains(metadata.UsedLinks, cleanLink) {
-			metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
+	for _, target := range links {
+		if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
+			metadata.UsedLinks = append(metadata.UsedLinks, target)
 		}
 	}
 
@@ -682,12 +660,11 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 		return
 	}
 	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
-		resolved, newResolved := pathutils.ResolveRelativeLink(oldPath, l.Path), pathutils.ResolveRelativeLink(newPath, l.Path)
-		target := resolveMediaLink(utils.NormalizeLinkPath(resolved))
-		if resolved == l.Path || (newResolved != l.Path && resolveMediaLink(utils.NormalizeLinkPath(newResolved)) == target) || !fileExists(pathutils.ToFullPath(target)) {
+		resolved, target := pathutils.ResolveRelativeLink(oldPath, l.Path), parser.LinkTarget(oldPath, l)
+		if resolved == l.Path || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target)) {
 			return "", false
 		}
-		// html src/href aren't read relative on render, so they get a url; resolved has no media/
+		// html src/href get a url (rebuildLinkTarget), like rename writes them; resolved has no media/
 		// prefix, a relative link to it reads as media anyway
 		if l.Kind == parser.LinkHTML {
 			return rebuildLinkTarget(l.Path, target, l.Kind), true
@@ -713,10 +690,10 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (string, bool) {
 	oldPath = pathutils.ToWithPrefix(oldPath)
 	return func(l parser.Link) (string, bool) {
-		resolved := pathutils.ResolveRelativeLink(filePath, l.Path)
-		if parser.IsAppRouteLink(l.Path, l.Kind) || pathutils.ToWithPrefix(utils.NormalizeLinkPath(resolved)) != oldPath {
+		if parser.LinkTarget(filePath, l) != oldPath {
 			return "", false
 		}
+		resolved := pathutils.ResolveRelativeLink(filePath, l.Path)
 		if l.Kind == parser.LinkHTML || (l.Kind == parser.LinkMarkdown && resolved == l.Path) {
 			return rebuildLinkTarget(l.Path, newPath, l.Kind), true
 		}
@@ -1249,7 +1226,7 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 	for _, f := range mediaFiles {
 		validPaths[f.Path] = true
 		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
-		byLinkText[utils.NormalizeLinkPath(parser.ParseLink(f.Path, parser.LinkMarkdown).Path)] = f.Path
+		byLinkText[parser.LinkTarget(parser.PathlessRender, parser.ParseLink(f.Path, parser.LinkMarkdown))] = f.Path
 	}
 
 	var broken []BrokenLink

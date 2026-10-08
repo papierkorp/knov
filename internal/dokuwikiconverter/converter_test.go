@@ -7,7 +7,6 @@ import (
 
 	"knov/internal/parser"
 	"knov/internal/test/specialchars"
-	"knov/internal/utils"
 )
 
 func TestConvertExportEntry(t *testing.T) {
@@ -47,7 +46,7 @@ func TestSpecialCharLinks(t *testing.T) {
 		}
 		for in, want := range cases {
 			out := New().ConvertToMarkdown(in)
-			if got := h.ExtractLinks([]byte(out)); len(got) != 1 || utils.NormalizeLinkPath(got[0]) != want {
+			if got := h.ExtractLinks([]byte(out), ""); len(got) != 1 || got[0] != want {
 				t.Errorf("ConvertToMarkdown(%q) = %q, links %q, want %q", in, out, got, want)
 			}
 		}

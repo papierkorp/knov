@@ -79,7 +79,7 @@ func TestRenderLinks(t *testing.T) {
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
 		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("a/../b/.c.md") + ")"},
 		// a /files/ url gets the default extension like link metadata reads it
-		{"files url no ext", "[x](/files/docs/a)", "[x](" + pathutils.ToFileURL("docs/a.md") + ")"},
+		{"files url no ext", "[x](/files/docs/a)", "[x](" + pathutils.ToFileURL("a.md") + ")"},
 		{"media url", "[x](/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
 		// a same-page heading text becomes the heading id too
 		{"pure anchor text slugged", "[x](<#Phase 1>)", "[x](#phase-1)"},
@@ -103,6 +103,12 @@ func TestRenderLinks(t *testing.T) {
 		{"ref def doc", "[r][id]\n\n[id]: <a b#Phase 1> \"t\"", "[r][id]\n\n[id]: " + pathutils.ToFileURL("a b.md") + "#phase-1 \"t\""},
 		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y"},
 		{"ref def in code", "```\n[id]: a.md\n```", "```\n[id]: a.md\n```"},
+		// html src/href get their app url like markdown links, app routes, anchors and external ones stay
+		{"html href", `<a href="a b.md">x</a> <img src='/files/media/p.png'>`, `<a href="` + pathutils.ToFileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
+		{"html app route anchor external", `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`, `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`},
+		{"html entity", `<a href="a&amp;b.md">`, `<a href="/files/a&amp;b.md">`},
+		// an external wikilink links its url
+		{"wiki external", "[[https://example.com/a]]", "[a](<https://example.com/a>)"},
 		{"ref def like text with code span", "[id]: a.md `x`", "[id]: a.md `x`"},
 	}
 	for _, c := range cases {
@@ -219,8 +225,8 @@ func TestExtractLinksDestination(t *testing.T) {
 [ref]: <ref img.png> "title"
 [note]: remember this
 [^1]: footnote text`
-	want := []string{"/media/a b.png", "note.md", "img/c.png", "ns:page", "C:/x.png", "a_b.md", "sub/_res/a.md", "/media/d.png", "ref img.png"}
-	if got := NewMarkdownHandler().ExtractLinks([]byte(in)); strings.Join(got, ",") != strings.Join(want, ",") {
+	want := []string{"media/a b.png", "docs/note.md", "docs/img/c.png", "docs/ns:page.md", "docs/C:/x.png", "docs/a_b.md", "docs/sub/_res/a.md", "media/d.png", "docs/ref img.png"}
+	if got := NewMarkdownHandler().ExtractLinks([]byte(in), PathlessRender); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
 	}
 }
@@ -284,7 +290,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			writers = append(writers, struct{ name, link, want string }{"wiki no ext", "[[" + encodeLinkPath(bare, LinkWiki) + "]]", p})
 		}
 		for _, w := range writers {
-			if got := h.ExtractLinks([]byte(w.link)); len(got) != 1 || pathutils.ToWithPrefix(utils.NormalizeLinkPath(got[0])) != pathutils.ToWithPrefix(w.want) {
+			if got := h.ExtractLinks([]byte(w.link), PathlessRender); len(got) != 1 || got[0] != pathutils.ToWithPrefix(w.want) {
 				t.Errorf("%s %q: ExtractLinks(%q) = %q", w.name, p, w.link, got)
 			}
 			if strings.HasPrefix(w.link, "[[") {
@@ -374,7 +380,7 @@ func TestLinkString(t *testing.T) {
 
 // an encoded ":" is part of the path, not a scheme
 func TestExtractLinksEncodedColon(t *testing.T) {
-	if got := (&MarkdownHandler{}).ExtractLinks([]byte("[x](ns%3Apage.md) [y](mailto:a@b.c)")); !slices.Equal(got, []string{"ns:page.md"}) {
+	if got := (&MarkdownHandler{}).ExtractLinks([]byte("[x](ns%3Apage.md) [y](mailto:a@b.c)"), PathlessRender); !slices.Equal(got, []string{"docs/ns:page.md"}) {
 		t.Errorf("ExtractLinks = %q, want [ns:page.md]", got)
 	}
 }
@@ -400,7 +406,7 @@ func TestRewriteLinksUnclosedAngle(t *testing.T) {
 func TestWikiLinkRenderMatchesExtract(t *testing.T) {
 	for _, in := range []string{"page?x", "a b", "a%41", "dir/page.md#sec", "media/a"} {
 		want := ResolveWikiTarget(in)
-		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[[" + in + "]]")); len(got) != 1 || utils.NormalizeLinkPath(got[0]) != want {
+		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[["+in+"]]"), PathlessRender); len(got) != 1 || got[0] != pathutils.ToWithPrefix(want) {
 			t.Errorf("[[%s]]: ExtractLinks = %q, ResolveWikiTarget = %q", in, got, want)
 		}
 	}
@@ -422,7 +428,7 @@ func TestWikiLinkFollowedByParens(t *testing.T) {
 	if got := RenderLinks(in, PathlessRender); got != want {
 		t.Errorf("RenderLinks = %q, want %q", got, want)
 	}
-	if got := (&MarkdownHandler{}).ExtractLinks([]byte(in)); !slices.Equal(got, []string{"note", "c.md"}) {
+	if got := (&MarkdownHandler{}).ExtractLinks([]byte(in), PathlessRender); !slices.Equal(got, []string{"docs/note.md", "docs/c.md"}) {
 		t.Errorf("ExtractLinks = %q, want [note c.md]", got)
 	}
 }

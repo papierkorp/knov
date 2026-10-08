@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"fmt"
+	stdhtml "html"
 	"net/url"
 	"path"
 	"path/filepath"
@@ -56,8 +57,9 @@ func (h *MarkdownHandler) Parse(content []byte, filePath string) ([]byte, error)
 }
 
 // wikiLinkMarkdown converts the [[path]] / [[path|display]] body inner to a markdown link to its
-// app url, with the same destination and fallback label as a hand-typed markdown link
-// (appLinkDest, fallbackLinkText), a "./" or "../" path read relative to docPath.
+// app url (appLinkDest of its LinkTarget), with the same fallback label as a hand-typed markdown
+// link (fallbackLinkText), a "./" or "../" path read relative to docPath. an external one
+// ([[https://...]]) links its url.
 func wikiLinkMarkdown(inner, docPath string) string {
 	wl := ParseLink(inner, LinkWiki)
 
@@ -71,7 +73,10 @@ func wikiLinkMarkdown(inner, docPath string) string {
 	if display == "" {
 		display = fallbackLinkText(l)
 	}
-	return "[" + display + "](" + appLinkDest(l) + ")"
+	if wl.External {
+		return "[" + display + "](" + Link{Kind: LinkMarkdown, Path: wl.Path, Anchor: wl.Anchor, Angle: true, External: true}.Dest() + ")"
+	}
+	return "[" + display + "](" + appLinkDest(l, LinkTarget(docPath, wl)) + ")"
 }
 
 // ResolveWikiTarget normalizes a wikilink body ("path", "path#anchor", "path|text", ...)
@@ -797,11 +802,11 @@ func (s *sectionWriter) closeSection() {
 // link of nested brackets matches as "](dest)" alone.
 var processMdLinkRe = regexp.MustCompile(wikiLinkPattern + `|(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
 
-// RenderLinks rewrites every internal [text](url) link and [[wikilink]] outside code to a markdown
-// link to its app url (appLinkDest, /files/, /media/), each read once with ParseLink - an
-// empty-text "[](url)" link gets its fallback label (fallbackLinkText), and a reference
-// definition to a docs file is rewritten the same way. A "./" or "../" link is read relative to
-// the folder of docPath, the doc the content belongs to (PathlessRender: the docs root).
+// RenderLinks rewrites every internal [text](url) link, [[wikilink]], reference definition and
+// html src/href outside code to its app url (appLinkDest of its LinkTarget, /files/, /media/), each
+// read once with ParseLink - an empty-text "[](url)" link gets its fallback label
+// (fallbackLinkText). A "./" or "../" link is read relative to the folder of docPath, the doc the
+// content belongs to (PathlessRender: the docs root).
 func RenderLinks(content, docPath string) string {
 	// links are matched on the whole content with code blanked out, so a link text spanning
 	// lines or holding `code` keeps its "![" and brackets / destinations in code are never seen
@@ -825,32 +830,33 @@ func RenderLinks(content, docPath string) string {
 		last = m[1]
 	}
 	b.WriteString(content[last:])
-	return processRefDefs(b.String(), docPath)
+	return processLineLinks(b.String(), docPath)
 }
 
 // processMarkdownLink rewrites one processMdLinkRe match with its opening "[text" (or "") and
 // destination, see RenderLinks.
 func processMarkdownLink(match, open, dest, docPath string) string {
 	l := ParseLink(dest, LinkMarkdown)
-	l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
 
 	// external links (a scheme like https:/mailto: or a //host, same check as ExtractLinks) — leave as-is,
 	// a javascript: link is removed by sanitizeHTML
 	if l.External {
 		return match
 	}
+	target := LinkTarget(docPath, l)
+	l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
 	// an image is rendered from its destination by goldmark, written back normalized
 	if strings.HasPrefix(open, "!") {
 		return open + "](" + l.Dest() + ")"
 	}
 	if open == "" {
-		return "](" + appLinkDest(l) + ")"
+		return "](" + appLinkDest(l, target) + ")"
 	}
 	text := strings.TrimSpace(strings.TrimPrefix(open, "["))
 	if text == "" {
 		text = fallbackLinkText(l)
 	}
-	return "[" + text + "](" + appLinkDest(l) + ")"
+	return "[" + text + "](" + appLinkDest(l, target) + ")"
 }
 
 // fallbackLinkText is the label of a link written without one: the header text for a same-page
@@ -862,38 +868,40 @@ func fallbackLinkText(l Link) string {
 	return autoLinkText(l.Path, l.AnchorText())
 }
 
-// appLinkDest writes the app url destination of an internal link: the path is decoded, the app
-// url encodes it so goldmark accepts spaces/unicode; query, anchor and title are kept for every
-// target.
-func appLinkDest(l Link) string {
-	anchor := linkAnchor(l)
-	if l.Path == "" {
+// appLinkDest writes the app url destination of the link l to target (its LinkTarget, "" for a
+// pure anchor): a docs file its /files/ url, a media file its detail page - the file itself for
+// a link written as url (/media/, /files/media/) and in html. The path is decoded, the app url
+// encodes it so goldmark accepts spaces/unicode; query, anchor and title are kept for every target.
+func appLinkDest(l Link, target string) string {
+	anchor := linkAnchor(l, target)
+	rel, media := strings.CutPrefix(target, "media/")
+	var u string
+	switch {
+	case target == "":
 		return l.Query + anchor + l.Title
-	}
-	if rel, ok := strings.CutPrefix(l.Path, "media/"); ok {
+	case !media:
+		u = pathutils.ToFileURL(strings.TrimPrefix(target, "docs/"))
+	case strings.HasPrefix(l.Path, "/") || l.Kind == LinkHTML:
+		u = pathutils.ToMediaURL(rel)
+	default:
 		query := "?mode=detail"
 		if l.Query != "" {
 			query = l.Query + "&mode=detail"
 		}
 		return pathutils.ToMediaURL(rel) + query + anchor + l.Title
 	}
-	if rel, ok := strings.CutPrefix(strings.TrimPrefix(l.Path, "/files"), "/media/"); ok {
-		return pathutils.ToMediaURL(rel) + l.Query + anchor + l.Title
+	if l.Kind == LinkHTML {
+		u = stdhtml.EscapeString(u) // an attribute value, "&" would start an entity
 	}
-	return docLinkDest(l)
-}
-
-// docLinkDest writes the app url destination of a link to a docs file (bare or /files/ path).
-func docLinkDest(l Link) string {
-	return pathutils.ToFileURL(utils.WithDefaultLinkExt(strings.TrimPrefix(l.Path, "/files/"))) + l.Query + linkAnchor(l) + l.Title
+	return u + l.Query + anchor + l.Title
 }
 
 // linkAnchor is l's anchor as the heading id it names: "#My Section" -> "#my-section", so a
 // visible heading text (with spaces) works as anchor; an anchor that already is an id stays as
 // written (e.g. percent-encoded). only for markdown targets, other fragments (doc.pdf#page=3)
 // stay as written
-func linkAnchor(l Link) string {
-	if ext := path.Ext(l.Path); ext == "" || ext == ".md" {
+func linkAnchor(l Link, target string) string {
+	if ext := path.Ext(target); ext == "" || ext == ".md" {
 		if id := AnchorID(l.AnchorText()); id != "" && id != l.AnchorText() {
 			return "#" + id
 		}
@@ -901,29 +909,37 @@ func linkAnchor(l Link) string {
 	return l.Anchor
 }
 
-// processRefDefs rewrites the destination of every reference definition [id]: dest outside code
-// to a docs file to its /files/ url, like processMarkdownLink - goldmark would resolve it against
-// the page. media and images stay as written, a "./" or "../" one only resolved to its docs-root
-// path - an image may use them (rendered from the destination like an inline image).
-func processRefDefs(content, docPath string) string {
+// processLineLinks rewrites, outside code, the destination of every reference definition
+// [id]: dest and html src/href like processMarkdownLink - goldmark would resolve a reference
+// definition against the page. an image reference definition stays as written, a "./" or "../"
+// one only resolved to its docs-root path (rendered from the destination like an inline image).
+func processLineLinks(content, docPath string) string {
 	return replaceOutsideCode(content, func(part string, wholeLine bool) string {
-		sub := rewriteRefDefRe.FindStringSubmatch(part)
-		if !wholeLine || sub == nil {
-			return part
-		}
-		l := ParseLink(sub[2], LinkMarkdown)
-		written := l.Path
-		l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
-		if l.External || l.Path == "" {
-			return part
-		}
-		if pathutils.IsMedia(l.Path) || configmanager.IsImageExtension(strings.ToLower(path.Ext(l.Path))) {
-			if l.Path == written {
+		if sub := rewriteRefDefRe.FindStringSubmatch(part); wholeLine && sub != nil {
+			l := ParseLink(sub[2], LinkMarkdown)
+			target := LinkTarget(docPath, l)
+			if target == "" {
 				return part
 			}
-			return sub[1] + l.Dest()
+			written := l.Path
+			l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
+			if configmanager.IsImageExtension(strings.ToLower(path.Ext(target))) {
+				if l.Path == written {
+					return part
+				}
+				return sub[1] + l.Dest()
+			}
+			return sub[1] + appLinkDest(l, target)
 		}
-		return sub[1] + docLinkDest(l)
+		return rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
+			// the path can't contain quotes, so the last one ends the tag prefix
+			i := strings.LastIndexAny(m, `"'`) + 1
+			l := ParseLink(m[i:], LinkHTML)
+			if target := LinkTarget(docPath, l); target != "" {
+				return m[:i] + appLinkDest(l, target)
+			}
+			return m
+		})
 	})
 }
 
@@ -950,18 +966,18 @@ func humanizeSlug(slug string) string {
 	return strings.Join(words, " ")
 }
 
-// ExtractLinks returns the path of every link RewriteLinks passes on (it skips external ones: with a
-// scheme like http:/mailto:/data: or a host like //cdn...), pure anchors and html root links to
-// app routes (/dashboard, /search?q=...) - for html only /media/ and /files/ are files.
+// ExtractLinks returns the target (LinkTarget) of every link RewriteLinks passes on, read against
+// docPath - without external ones (a scheme like http:/mailto:/data: or a host like //cdn...),
+// pure anchors and html root links to app routes (/dashboard, /search?q=...).
 // A wiki link is only external with "//" or a leading unc "\\" ([[ns:page]] is a path), a one-letter scheme is a
 // windows drive (C:\x.png), so both are still reported as (broken) links.
-func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
+func (h *MarkdownHandler) ExtractLinks(content []byte, docPath string) []string {
 	var links []string
-	// RewriteLinks is only used as the link walker here: the callback collects every path and
+	// RewriteLinks is only used as the link walker here: the callback collects every target and
 	// never replaces one, so the (unchanged) content it returns is discarded
 	RewriteLinks(string(content), func(l Link) (string, bool) {
-		if l.Path != "" && !IsAppRouteLink(l.Path, l.Kind) {
-			links = append(links, l.Path)
+		if target := LinkTarget(docPath, l); target != "" {
+			links = append(links, target)
 		}
 		return "", false
 	})

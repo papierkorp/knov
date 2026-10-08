@@ -217,60 +217,43 @@ func (idx *relocateIndex) relinkFunc(doc string) func(l parser.Link) (string, bo
 	}
 }
 
-// resolve resolves a link written in doc to a key of moved: a "./" or "../" link strictly relative
-// to doc's folder (pathutils.ResolveRelativeLink, like they render), a wiki or bare markdown link relative
-// to the docs root, like they render (a bare markdown one falls back to doc's folder, the way
-// imported wikis write it), a relative html link strictly relative to doc's folder, a root ("/",
-// wiki.js) link relative to doc's folder first, then to each parent folder up to the docs root.
-// For all but html relative links "docs/", "/files/" or "/files/docs/" means docs root,
-// unless a real folder of that name matches. A "/media/" link to an existing media file is left
-// alone. Stops at the first candidate that is an existing, not moved file, so a link never
-// gets redirected to a same-named file higher up.
+// resolve resolves a link written in doc to a key of moved: its literal path (a real "docs" or
+// "files" folder wins over the docs-root prefix, and the files are already moved, so a bare path
+// may read as the moved media file) and its docs LinkTarget, and the way imported wikis write
+// them: a root ("/", wiki.js) link from doc's folder and each parent folder before those, a bare
+// markdown or html link from doc's folder after them. A "/media/" link to an existing media file
+// is left alone. Stops at the first candidate that is an existing, not moved file, so a link
+// never gets redirected to a same-named file higher up.
 func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
-	link := l.Path
-	root := strings.HasPrefix(link, "/")
-	if root && strings.HasPrefix(link, "/media/") {
-		if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {
+	if l.External || l.Path == "" {
+		return ""
+	}
+	if strings.HasPrefix(l.Path, "/media/") {
+		if _, err := os.Stat(pathutils.ToMediaPath(l.Path)); err == nil {
 			return ""
 		}
 	}
-
-	// root links ("/upload/x.png") from a wiki imported into a subfolder are relative to that
-	// subfolder, so they try doc's folder and each parent up to the docs root
-	var dirs []string
-	switch resolved := pathutils.ResolveRelativeLink("docs/"+doc, link); {
-	case resolved != link:
-		link, dirs = resolved, []string{"."}
-	case root:
-		for dir := path.Dir(doc); ; dir = path.Dir(dir) {
-			if dirs = append(dirs, dir); dir == "." {
-				break
-			}
+	resolved := pathutils.ResolveRelativeLink("docs/"+doc, l.Path)
+	var candidates []string
+	if strings.HasPrefix(l.Path, "/") {
+		for dir := path.Dir(doc); dir != "."; dir = path.Dir(dir) {
+			candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+path.Join(dir, l.Path)), "/"))
 		}
-	case l.Kind == parser.LinkWiki:
-		dirs = []string{"."}
-	case l.Kind == parser.LinkMarkdown:
-		dirs = []string{".", path.Dir(doc)}
-	default:
-		dirs = []string{path.Dir(doc)}
 	}
-	for _, dir := range dirs {
-		c := strings.TrimPrefix(path.Clean("/"+path.Join(dir, link)), "/")
-		candidates := []string{c}
-		if root || l.Kind != parser.LinkHTML {
-			for _, prefix := range []string{"files/docs/", "files/", "docs/"} {
-				if s, ok := strings.CutPrefix(c, prefix); ok {
-					candidates = append(candidates, s)
-				}
-			}
+	// an html root link has no LinkTarget (read as app route), only its literal path
+	candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+resolved), "/"))
+	if rel, ok := strings.CutPrefix(parser.LinkTarget("docs/"+doc, l), "docs/"); ok {
+		candidates = append(candidates, rel)
+	}
+	if resolved == l.Path && !strings.HasPrefix(l.Path, "/") && l.Kind != parser.LinkWiki {
+		candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+path.Join(path.Dir(doc), l.Path)), "/"))
+	}
+	for _, p := range candidates {
+		if _, ok := idx.moved[p]; ok {
+			return p
 		}
-		for _, p := range candidates {
-			if _, ok := idx.moved[p]; ok {
-				return p
-			}
-			if idx.existing[p] {
-				return ""
-			}
+		if idx.existing[p] {
+			return ""
 		}
 	}
 	return ""

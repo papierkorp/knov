@@ -38,12 +38,62 @@
   - fix:
     - docs paths always carry an explicit "docs/" prefix internally (listing, metadata keys, File.Path)
     - user input (form paths, rename/move targets) and /files/<rel> URLs are treated as literal docs-relative paths - no prefix stripping (e.g. a separate docs-rel => full path function next to ToDocsPath). this includes pathutils.FileFromURL (upload context_path, viewedFile / HX-Current-URL) and the path routes that read r.URL.Path (rename, delete, move-folder, metadata rebuild, versions) - today their rel goes through ToDocsPath, so /files/media/x.md resolves to the media folder
+    - do this after "link refactor cleanup" steps 1-2 (one link target resolver, one link walker) - then the link part below is a change in that one resolver instead of three places
     - keep the prefix guessing only where it's really needed (old metadata) - for links in content that's one place since the link refactor: utils.NormalizeLinkPath (after parser.ParseLink decoded the path), used by metadata, rename (renameLinkFunc) and FindBrokenLinks; the renderer has its own branch in parser.appLinkDest (media/ and /media/ -> ToMediaURL, the rest -> docLinkDest) and media relocate its candidates in relocateIndex.resolve - change all three together, the links suite (internal/test/linkstest) covers them
     - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this (in NormalizeLinkPath + appLinkDest), add a docs/media/ case to the links suite
   - migration: metadata keys of docs files that currently collide with media keys, and filter/tracker configStorage ids starting with docs/, media/ or files/ (see configeditor.CleanID)
   - afterwards delete: ReservedDocsFolders, the reserved check in CheckTarget, ErrReservedPath (+ its case in server newPathMessage / handleMoveError), the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn the reserved cases of TestCheckNewDocsPath (pathutils_test.go) into "these paths now resolve correctly" tests
   - keep: the filename policy from the link refactor (CheckTarget / ErrInvalidName, writeNewPathError / newPathMessage)
   - touches many ToDocsPath/ToWithPrefix/ToRelative callers - do it as its own refactor, run `--start-tests --remove` afterwards
+
+# link refactor cleanup
+
+follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..4038feac). the codec (decode once / encode once) is done - what is left is that "link -> target file" is still resolved in several places, plus a few leftovers. order matters: do 1 and 2 first, the rest builds on them. the "reserved folders refactoring" above is a separate refactor (path model + metadata migration) that depends on 1 - keep them as separate commits/runs, don't mix the two migrations
+- work order:
+  - 1 (one resolver), 2 (one walker), the tests of 7 - then stop and report to the user
+  - then start the "reserved folders refactoring" section above as its own run (it needs the single resolver from 1, its link part is a change in that one place) - before or after 3, the user decides when reporting
+  - 3, 4, 5, 6, the rest of 7, 8
+
+- decided, nothing to do:
+  - keep the filename policy (pathutils.CheckTarget / ErrInvalidName)
+  - keep the title fallback removal (titles only from stored metadata, files/metadata_cache.go)
+- 1. one link target resolver - done: parser.LinkTarget (renderer, ExtractLinks, rename, relinkMovedDoc, FindBrokenLinks, relocate). left: markdown images still render through renderImage/resolveMediaPath (see report)
+  - problem: the link path -> target file mapping is put together by hand at ~9 call sites, each combining pathutils.ResolveRelativeLink + utils.NormalizeLinkPath / WithDefaultLinkExt + files.resolveMediaLink slightly differently: parser_markdown.go (wikiLinkMarkdown, processMarkdownLink, processRefDefs, docLinkDest), book.resolveRelativeLinks, files/metadata_links.go (MetaDataLinksRebuild, updateUsedLinks, relinkMovedDoc, renameLinkFunc, FindBrokenLinks), files/media_relocate.go relocateIndex.resolve
+  - existing divergence: a bare `[x](pic.png)` to the media file media/pic.png - link metadata says media/pic.png (resolveMediaLink stats the media folder), the renderer links /files/pic.png (404, /files/ has no media fallback) - so it's neither shown in the broken links scan nor working
+  - fix: one function (e.g. parser.LinkTarget(docPath string, l parser.Link) string -> metadata path "docs/a.md" / "media/x.png" / "docs/sub/" for folders) used by all of them; the renderer builds its url from that result (appLinkDest) instead of its own branches
+  - add a links suite / go test case: for every specialchars name and link kind, the rendered href and the link metadata point at the same file
+  - include html src/href: a bare `<img src="pic.png">` in sub/n.md has three meanings today - link metadata reads it from the docs root (NormalizeLinkPath), media relocate from the doc's folder (relocateIndex.resolve default case), and the renderer leaves it untouched (RenderLinks has no LinkHTML handling), so the browser resolves it against the page url /files/sub/n.md. the resolver decides once and RenderLinks rewrites html src/href to that url like markdown links
+- 2. one link walker
+  - problem: RewriteLinks (rewriteLinkRe, per non-code line part) and RenderLinks (processMdLinkRe on the whole masked content, then processRefDefs as a second replaceOutsideCode pass = second maskCode) are two scanners sharing sub-patterns - they can drift
+  - fix: one walker (masked once) that yields each link (parser.Link, its span, its "[text" / "![alt" opening, kind incl. ref defs and html attrs) and lets the caller replace it; RewriteLinks, ExtractLinks and RenderLinks become thin users of it
+- 3. bare links relative to the doc (decision 2B) + admin migration action
+  - do after 1 (then it is a change in one place)
+  - change: a bare markdown link (`[x](a.md)` in sub/n.md) is read from the doc's folder like `./a.md` (CommonMark / GitHub behaviour), a leading "/" (`[x](/a.md)`) or `/files/` stays docs-root
+  - decided: wikilinks stay docs-root (`[[a]]` in sub/n.md -> a.md) - wikilinks are page names like in dokuwiki / mediawiki / wiki.js, the editor autocomplete and .book/.index entries already write them docs-root, so no wikilink migration. `[[./a]]` / `[[../a]]` stay doc-relative (already implemented). the rule for the help page:
+    - `[x](a.md)`, `[x](./a.md)`, `[x](../a.md)` -> the doc's folder
+    - `[x](/a.md)`, `[x](/files/a.md)` -> the docs root
+    - `[[a]]` -> the docs root
+    - `[[./a]]`, `[[../a]]` -> the doc's folder
+  - only hand-typed bare markdown links change meaning - the editor inserts markdown links as `/files/<path>`, so the migration action's list stays short
+  - admin action "scan links for relative migration" (like Repair Broken Links): scan every doc for bare links whose target changes with the new rule, list source file / link / old target / new target, let the user select and apply - the apply rewrites them to the docs-root form (`/a.md`) so they keep their old target. business logic in files, thin job/handler wrappers, writeResponse / writeAPIError, translations
+  - update ResolveRelativeLink / RelativeLink, rename (renameLinkFunc keeps the written style), relinkMovedDoc (a move now changes bare links too), media relocate (drop the "docs root first, then doc folder" fallback for bare markdown links), book resolveRelativeLinks, help page docs
+  - upgrade note: bare links now read from the doc's folder, run the new admin action to keep the old targets
+  - links suite cases for the new rule and the migration action
+- 4. `../` above the docs root (decision 3: both)
+  - keep resolving it clamped to the docs root (renders like a url), and also list it in the broken links scan as "climbs above the docs root" with the clamped path as suggestion, so "Repair Broken Links" can rewrite it
+  - ResolveRelativeLink has to report the clamping (e.g. a second return value); FindBrokenLinks only reads metadata, so either store the info in link metadata or scan content for it - decide
+- 5. warning noise in folder moves
+  - `could not get metadata for linked file docs/` (a folder link, now valid in UsedLinks) and `... <file moved along>` (metadata not moved yet, MoveFolder resyncs it afterwards) in files/metadata_links.go (step 3 of updateLinksForMovedFile, MetaDataMutate on movedMetadata.UsedLinks) - skip folder targets (trailing "/") and moved-along files there
+- 6. leftovers not on the codec yet
+  - table cells bypass the link renderer: server/api_tables.go:132,138 renders headers and cells with parser.RenderInlineMarkdown (plain goldmark), not through RenderLinks - in the interactive table view a `[[note]]` stays literal text, `[x](a b.md)` / `./` links / anchors aren't routed to /files/ and a special-char link breaks. run cells through RenderLinks with the doc's path first (or give RenderInlineMarkdown a docPath), and add a table case to the links suite
+  - thememanager/template_data.go "urlPathSegment": hand-rolled url encoder (misses "%" and more), used in themes/builtin/history.gohtml:10 for /files/history/ - use pathutils.ToFileHistoryURL via a template func and delete urlPathSegment
+  - dokuwikiconverter/converter.go renderElement case "link" markdown branch (fmt.Sprintf("[%s](%s)")) is dead since processLinks returns parser.Link.String() for markdown - remove it
+  - server/render/render_media.go RenderMediaListSelect: onclick="insertMediaIntoEditor(this)" is defined nowhere - either delete the select list (+ its mode in handleAPIGetAllMedia) or insert a server-written data-link like the autocomplete
+- 7. guard against divergence
+  - fuzz test (go native fuzzing, seeded with the specialchars corpus) for the codec: for any path and link kind, ParseLink(Link{Path: p}.Dest()).Path == p, and RewriteLinks with an identity callback never changes content
+  - differential test scanner vs goldmark: for the corpus and a set of tricky markdown (nested brackets, link text over lines, code spans, ref defs, `<...>` destinations, a destination on the next line), the links ExtractLinks finds must match the links goldmark's AST finds (ast.Link / ast.Image destinations, decoded) - catches the scanner reading markdown differently from the renderer
+  - a go test that greps the source (internal/, static/, themes/) and fails on: url.PathUnescape / url.PathEscape outside parser/link_rewrite.go and pathutils, regexes with `\]\(` or `\[\[` outside internal/parser (allow-list dokuwiki syntax), hand-built markdown links (`"](" +`, `"[%s](%s)"`), ReplaceAll with "%20", encodeURIComponent on link paths in js, goldmark.New / .Convert outside an allow-list of render paths known to run RenderLinks first (that's how the table cells slipped through) - with an allow-list, so a new hand-rolled reader/writer fails the build instead of relying on review
+- 8. run every headless suite after the changes (`knov --start-tests --remove`), not only links - two go tests in internal/server/render (TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction) already fail before the link refactor (table editor), unrelated
 
 # every other time
 
@@ -177,3 +227,32 @@ Also give your opinion about the changes: is the current solution overengineered
 
 - run `--start-tests --remove` and check for potential bugs
 ```
+
+
+# temp
+
+Work through the "# link refactor cleanup" section of docs/temp_todo.md, step by step, in the order it gives. Read CLAUDE.md and docs/testing.md first and follow them strictly.
+
+Context:
+- The link refactor (commits 93f0bbd1..4038feac) unified how link paths are encoded and decoded. The codec lives in internal/parser/link_rewrite.go: parser.Link, ParseLink, Dest/String, RewriteLinks, ExtractLinks. Rendering goes through parser.RenderLinks in parser_markdown.go.
+- What is left is in the todo section: one link target resolver, one link walker, tests that guard against divergence, bare markdown links relative to the doc plus an admin migration action, `../` above the docs root, leftovers, and warning noise. Every decision is already made and written there. Don't reopen them; if something in the code contradicts a decision, stop and ask me.
+- The "# reserved folders refactoring" section is a separate refactor. Don't touch it in this run. Step 1 has to leave a single resolver so that refactor can change one place later.
+
+How to work:
+- One step per commit. Use honest conventional-commit types, because the changelog is generated from them: `feat:` for new behavior, `fix:` for bug fixes, `refactor:` only when behavior is unchanged, and `!` or a "BREAKING CHANGE" subject for breaking changes. The commit subject must describe what the diff actually does.
+- Every user-visible behavior change gets a note in docs/upgrade.md: what changed and what the user has to do.
+- Keep each change as small as possible and match the surrounding code. Business logic goes in the owning package; handlers and jobs stay thin wrappers. No html in handlers. Translate every string. Paths go through pathutils/crosspath, and link paths only through parser.Link.
+- Steps 1 and 2 are refactors: they must not change what links resolve to, except fixing the divergences the todo names (the bare `pic.png` media link, html src/href, table cells in step 6). Write the tests for those first, and show they fail before your fix.
+- Do the guard, fuzz and goldmark comparison tests from step 7 right after steps 1 and 2, before the behavior changes in steps 3 and 4.
+- When a step is done, tick it off or remove it in docs/temp_todo.md.
+
+Verify after each step:
+- `go build ./... && go vet ./... && go test ./...`. Two tests in internal/server/render already fail and are unrelated (TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction); don't fix them here, but nothing else may fail.
+- Build a binary to /tmp, then run `/tmp/<binary> --start-tests --remove links`. Flags go before the suite name. At the end, run every suite with `/tmp/<binary> --start-tests --remove`.
+
+Safety:
+- Never touch /media/markus/SamsungT5/knov/data or the instance on port 1325 (my real one). The headless tests use isolated storage; use only that, or the dev server on port 1324.
+- Don't push. Don't rewrite existing commits.
+- My background automation auto-commits docs/changelogs/, docs/releases/unreleased.md and docs/temp_todo.md, and may also commit pending working-tree changes along with them. Commits you didn't make are normal. Keep the working tree committed between steps so the automation doesn't sweep half-finished work into its commits.
+
+Stop and report to me after steps 1, 2 and the step 7 tests, before starting step 3 (the bare-link behavior change and migration action). The report should cover what changed, the test results, and any new divergence you found. Also ask me whether to do the "reserved folders refactoring" section next, as its own run, or to continue with step 3 first.

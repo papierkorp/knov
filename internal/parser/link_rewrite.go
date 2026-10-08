@@ -3,11 +3,14 @@ package parser
 import (
 	"html"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
 	"knov/internal/markdown"
+	"knov/internal/pathutils"
 	"knov/internal/pathutils/crosspath"
+	"knov/internal/utils"
 )
 
 // LinkKind is the syntax a link was written in.
@@ -354,4 +357,24 @@ func isATXHeading(line string) bool {
 // /search?q=...) rather than a file - for html only /media/ and /files/ are files.
 func IsAppRouteLink(p string, kind LinkKind) bool {
 	return kind == LinkHTML && strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "/media/") && !strings.HasPrefix(p, "/files/")
+}
+
+// LinkTarget is the file the link l written in the doc docPath points at, as metadata path
+// ("docs/a.md", "media/x.png", "docs/sub/" for a folder) - "" for an external link, a pure
+// anchor or an html link to an app route. The one place a link path is resolved: rendering,
+// link metadata, rename, move and media relocation all read the target from here.
+// A "./" or "../" path is read from docPath's folder, any other from the docs root (a /files/
+// url too), a "media/" or "/media/" one from the media folder; a bare path naming an existing
+// media file is that media file (links copied from the media page have no "media/" prefix).
+func LinkTarget(docPath string, l Link) string {
+	if l.External || l.Path == "" || IsAppRouteLink(l.Path, l.Kind) {
+		return ""
+	}
+	p := utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(docPath, l.Path))
+	if !strings.HasPrefix(p, "media/") && !strings.HasPrefix(p, "docs/") {
+		if _, err := os.Stat(pathutils.ToMediaPath(p)); err == nil {
+			p = "media/" + p
+		}
+	}
+	return pathutils.ToWithPrefix(p)
 }
