@@ -23,9 +23,6 @@
   - index/book editor => use markdown links instead of wiki links
   - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
   - make the upgrade.md file more readable
-- chore quick
-  - links suite (caseRelative) logs "failed to update links in file .../relative/f/p.md: no such file or directory" on the folder move f -> g - a link update still reads p.md at its old path after the folder moved
-  - docs root link target: pathutils.ResolveRelativeLink returns "/" for a relative link to the docs root, but NormalizeLinkPath("/") is "" and ToFullPath("") is "", so files.relinkMovedDoc needs a `resolved != "/"` exemption for its fileExists check - give the docs root one canonical normalized form that passes the existence check naturally and drop the special case (check metadata_links usedLinks, renameLinkFunc and media_relocate.resolve, which rely on "" being skipped)
 - test
   - remote git in mobile
 

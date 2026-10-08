@@ -11,7 +11,7 @@ Three kinds of tests live in this repo:
 - Standard layout per subpackage: `<group>test.go` (just the `Suite` type), `sampledata.go` (seed/wipe/reseed), `testcases.go` (the cases, split into `testcases_<category>.go` once there's enough to warrant it)
 - Suites self-register via `test.Register(Suite{})` in their own `init()`; adding a suite means a new subpackage plus a blank import in main.go
 - Each suite's sample files live under `docs/test/` so the admin "Clean Test Data" button clears them all at once
-- `knov --start-tests` (optionally with a suite name) is the only entry point; it runs headless against empty isolated data/storage dirs and an isolated log dir (only the settings are copied over, the git remote is disabled) so live data and the real remote are never touched and no second copy of the data is needed
+- `knov --start-tests` (optionally with a suite name) is the only entry point; it runs headless against empty isolated data/storage dirs and an isolated log dir (settings start from their defaults, the git remote is disabled) so live data and the real remote are never touched and no second copy of the data is needed
 - Suite build order and coverage gaps are tracked in `docs/temp_todo.md`
 
 ## Browser-driven cases

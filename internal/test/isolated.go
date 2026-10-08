@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"knov/internal/backup"
-	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -21,9 +19,9 @@ func TempRoot() string {
 
 // PrepareIsolatedStorage points every storage path at fresh, empty data/storage directories
 // under TempRoot, so `knov --start-tests` - run as its own separate process alongside a live
-// `knov` - never touches the user's real docs, git history or databases. Only the config
-// storage (settings) is copied over; each suite seeds its own sample data. The git remote is
-// cleared so the empty data dir never clones the real remote or pushes test commits to it.
+// `knov` - never touches the user's real docs, git history or databases. Settings start from
+// their defaults too, so a live setting can't change a suite's result; each suite seeds its own
+// sample data. The git remote is cleared so the empty data dir never clones the real remote or pushes test commits to it.
 // Must run before any storage backend is initialized (see main.go).
 func PrepareIsolatedStorage() error {
 	live := configmanager.GetAppConfig()
@@ -33,7 +31,7 @@ func PrepareIsolatedStorage() error {
 	tempStorage := filepath.Join(tempRoot, "storage")
 
 	// KNOV_DATA_PATH/KNOV_STORAGE_PATH may be configured as a relative path (resolved against
-	// cwd, same as the backup.RestoreFile config copy below), while tempData/
+	// cwd), while tempData/
 	// tempStorage are always absolute - resolve both sides the same way before comparing, or a
 	// relative live path could never match tempData/tempStorage and slip past the check below.
 	liveData, err := filepath.Abs(live.DataPath)
@@ -59,9 +57,6 @@ func PrepareIsolatedStorage() error {
 	}
 	if err := os.RemoveAll(tempStorage); err != nil {
 		return fmt.Errorf("failed to clear knov_temp_test storage: %w", err)
-	}
-	if err := backup.RestoreFile(configStorage.Dir(liveStorage), configStorage.Dir(tempStorage)); err != nil {
-		return fmt.Errorf("failed to copy config into knov_temp_test: %w", err)
 	}
 
 	configmanager.SetDataAndStoragePaths(tempData, tempStorage)

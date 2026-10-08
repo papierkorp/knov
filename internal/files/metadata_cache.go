@@ -158,11 +158,20 @@ func InvalidateFileListCache() {
 // RebuildAllCaches cron run.
 func RefreshCaches() {
 	InvalidateFileListCache()
-	go func() {
+	refreshes.Go(func() {
 		if err := RebuildAllCaches(); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to refresh caches after mutation: %v", err)
 		}
-	}()
+	})
+}
+
+// refreshes tracks the background rebuilds of RefreshCaches, see WaitForCacheRefreshes
+var refreshes sync.WaitGroup
+
+// WaitForCacheRefreshes blocks until every background rebuild started by RefreshCaches has
+// finished - before the storage they write to is removed (knov --start-tests --remove).
+func WaitForCacheRefreshes() {
+	refreshes.Wait()
 }
 
 // withRefresh runs fn and, on success, refreshes the aggregate caches - the shared shape behind

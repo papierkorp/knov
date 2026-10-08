@@ -264,6 +264,7 @@ func runHeadlessTests(name string, removeTestDir bool) {
 // code - the single exit point for runHeadlessTests so --remove is honored on every path.
 func exitHeadlessTests(removeTestDir bool, code int) {
 	if removeTestDir {
+		files.WaitForCacheRefreshes()
 		if err := test.RemoveIsolatedStorage(); err != nil {
 			fmt.Fprintf(os.Stderr, "failed to remove knov_temp_test: %v\n", err)
 		}
