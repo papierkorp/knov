@@ -304,7 +304,7 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 			parts = append(parts, "> ⚠️ could not include `"+strings.ReplaceAll(e.Value, "`", "'")+"`")
 			continue
 		}
-		parts = append(parts, strings.TrimSpace(content))
+		parts = append(parts, strings.TrimSpace(resolveRelativeLinks(path, content)))
 	}
 
 	// blank line between pieces so a "---" stays a rule, not a setext underline
@@ -344,13 +344,25 @@ func expandFilters(bookPath string, entries []Entry) []Entry {
 				out = append(out, Entry{Type: EntryUnknown, Value: "> ⚠️ could not include `" + strings.ReplaceAll(p, "`", "'") + "`"})
 				continue
 			}
-			out = append(out, Entry{Type: EntryUnknown, Value: strings.TrimSpace(string(raw))})
+			out = append(out, Entry{Type: EntryUnknown, Value: strings.TrimSpace(resolveRelativeLinks(p, string(raw)))})
 		}
 		if len(out) == before {
 			out = append(out, Entry{Type: EntryUnknown, Value: "> no files match filter `" + strings.ReplaceAll(e.Value, "`", "'") + "`"})
 		}
 	}
 	return out
+}
+
+// resolveRelativeLinks rewrites the markdown and wiki "./" and "../" links of content read from the
+// docs file p to docs-root paths, since the composed book is rendered without a path.
+func resolveRelativeLinks(p, content string) string {
+	content, _ = parser.RewriteLinks(content, func(l parser.Link) (string, bool) {
+		if l.Kind == parser.LinkHTML {
+			return "", false
+		}
+		return pathutils.ResolveRelativeLink(p, l.Path), true
+	})
+	return content
 }
 
 // isInlineableWholeFile reports whether a whole-file entry is safe to inline verbatim: a

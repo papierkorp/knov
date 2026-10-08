@@ -193,10 +193,10 @@ func closesFence(line string, ch byte, openLen int) bool {
 	return true
 }
 
-// SplitCodeSpans splits a line into alternating text and inline `code` span parts (even
-// indexes are text, odd ones code spans including their backticks), so joining the parts
-// gives the line back. A span opened by a run of N backticks closes at the next run of
-// exactly N; a run without a match is literal text. Spans across lines aren't detected.
+// SplitCodeSpans splits a line (or the lines of a paragraph) into alternating text and inline
+// `code` span parts (even indexes are text, odd ones code spans including their backticks), so
+// joining the parts gives the text back. A span opened by a run of N backticks closes at the next
+// run of exactly N; a run without a match is literal text.
 func SplitCodeSpans(line string) []string {
 	var parts []string
 	start := 0

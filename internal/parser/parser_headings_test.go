@@ -121,7 +121,7 @@ func TestHeadingScanMatchesRenderIDs(t *testing.T) {
 	}
 
 	h := NewMarkdownHandler()
-	parsed, err := h.Parse([]byte(src))
+	parsed, err := h.Parse([]byte(src), PathlessRender)
 	if err != nil {
 		t.Fatal(err)
 	}

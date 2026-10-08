@@ -106,12 +106,12 @@ func TestRenamedLinkReadsBack(t *testing.T) {
 	for _, name := range specialchars.Names {
 		p := "docs/" + name
 		for _, link := range []string{"[x](docs/old.md)", "[[docs/old.md]]", "[[docs/old]]", "[x](/files/docs/old.md)", `<a href="/files/docs/old.md">x</a>`} {
-			content, ok := parser.RewriteLinks(link, renameLinkFunc("docs/old.md", p))
+			content, ok := parser.RewriteLinks(link, renameLinkFunc("docs/src.md", "docs/old.md", p))
 			if got := h.ExtractLinks([]byte(content)); !ok || len(got) != 1 || utils.NormalizeLinkPath(got[0]) != p {
 				t.Errorf("%q renamed to %q = %q, links %q", link, p, content, got)
 				continue
 			}
-			back, ok := parser.RewriteLinks(content, renameLinkFunc(p, "docs/new.md"))
+			back, ok := parser.RewriteLinks(content, renameLinkFunc("docs/src.md", p, "docs/new.md"))
 			if got := h.ExtractLinks([]byte(back)); !ok || len(got) != 1 || utils.NormalizeLinkPath(got[0]) != "docs/new.md" {
 				t.Errorf("%q renamed from %q = %q, links %q", content, p, back, got)
 			}

@@ -89,11 +89,12 @@ type ZoneStyle struct {
 	Bold, Italic bool
 }
 
-// MarkdownToPDF renders markdown source to a PDF document.
-func MarkdownToPDF(markdown []byte, opts Options) ([]byte, error) {
+// MarkdownToPDF renders markdown source to a PDF document, reading relative links against
+// filePath (parser.PathlessRender: the docs root).
+func MarkdownToPDF(markdown []byte, filePath string, opts Options) ([]byte, error) {
 	logging.LogDebug(logging.KeyPdfExport, "pdf export: converting %d bytes of markdown", len(markdown))
 
-	resolved := parser.RenderLinks(string(markdown))
+	resolved := parser.RenderLinks(string(markdown), filePath)
 	source := parser.PreprocessTodoStates([]byte(resolved))
 
 	md := goldmark.New(goldmark.WithExtensions(extension.GFM))

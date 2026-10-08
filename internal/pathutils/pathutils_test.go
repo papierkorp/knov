@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"knov/internal/configmanager"
@@ -103,6 +104,49 @@ func TestToDocsPathAndToMediaPath(t *testing.T) {
 	}
 }
 
+func TestResolveRelativeLink(t *testing.T) {
+	cases := []struct{ doc, link, want string }{
+		{"docs/a/x/n.md", "../b.md", "a/b.md"},
+		{"a/x/n.md", "./sub/b.md", "a/x/sub/b.md"},
+		{"docs/n.md", "./b.md", "b.md"},
+		{"docs/a/n.md", "../sub/", "sub/"},
+		{"docs/a/n.md", "sub/b.md", "sub/b.md"},
+		{"docs/a/n.md", "/b.md", "/b.md"},
+		{"docs/n.md", "../../b.md", "b.md"},
+		{"docs/a/x/n.md", ".", "a/x/"},
+		{"docs/a/x/n.md", "..", "a/"},
+		{"docs/a/n.md", "..", "/"},
+		{"docs/n.md", "./", "/"},
+	}
+	for _, c := range cases {
+		if got := ResolveRelativeLink(c.doc, c.link); got != c.want {
+			t.Errorf("ResolveRelativeLink(%q, %q) = %q, want %q", c.doc, c.link, got, c.want)
+		}
+	}
+}
+
+func TestRelativeLink(t *testing.T) {
+	cases := []struct{ doc, target, want string }{
+		{"docs/a/x/n.md", "docs/a/b.md", "../b.md"},
+		{"docs/a/x/n.md", "a/x/sub/b.md", "./sub/b.md"},
+		{"docs/n.md", "b.md", "./b.md"},
+		{"docs/a/n.md", "b/c.md", "../b/c.md"},
+		{"docs/a/x/n.md", "a/x", "../x"},
+		{"docs/a/x/n.md", "a/x/sub/", "./sub/"},
+		{"docs/n.md", "a/x/b.md", "./a/x/b.md"},
+		{"docs/a/x/n.md", "/", "../../"},
+		{"docs/n.md", "/", "./"},
+	}
+	for _, c := range cases {
+		if got := RelativeLink(c.doc, c.target); got != c.want {
+			t.Errorf("RelativeLink(%q, %q) = %q, want %q", c.doc, c.target, got, c.want)
+		}
+		if got := ResolveRelativeLink(c.doc, RelativeLink(c.doc, c.target)); got != strings.TrimPrefix(c.target, "docs/") {
+			t.Errorf("ResolveRelativeLink(%q, RelativeLink) = %q, want %q", c.doc, got, strings.TrimPrefix(c.target, "docs/"))
+		}
+	}
+}
+
 func TestBaseWithoutExt(t *testing.T) {
 	cases := map[string]string{
 		"docs/notes.md": "notes",
@@ -175,7 +219,7 @@ func TestCheckNewDocsPath(t *testing.T) {
 	}
 }
 
-func TestCheckNewNames(t *testing.T) {
+func TestCheckNewDocsPathNames(t *testing.T) {
 	// every corpus name is pinned here, so the links suite can skip what the policy rejects
 	invalid := []string{"a#b.md", "a?b.md", "a|b.md", "[1].md", `a\b.md`, " lead.md", "trail.md ", "a]b.md", "x#/a.md", "x /a.md"}
 	for _, p := range append(slices.Clone(specialchars.Names), "a]b.md", "x#/a.md", "x /a.md", "a&b.md", "a b/c d.md") {
@@ -200,7 +244,7 @@ func TestCheckNewNames(t *testing.T) {
 	}
 }
 
-func TestCheckMovedName(t *testing.T) {
+func TestCheckTarget(t *testing.T) {
 	root := t.TempDir()
 	if err := os.Mkdir(filepath.Join(root, "dst"), 0755); err != nil {
 		t.Fatal(err)
@@ -215,10 +259,15 @@ func TestCheckMovedName(t *testing.T) {
 		{old, filepath.Join(root, "x#", "a#b.md"), ErrInvalidName},             // into an invalid new folder
 		{filepath.Join(root, "a.md"), old, ErrInvalidName},                     // renamed to a bad name
 		{filepath.Join(root, "a.md"), filepath.Join(root, "dst", "b.md"), nil}, // valid rename
+		{old, filepath.Join(root, "dst", "a#b_2.md"), nil},                     // keeps the old name (kanban collision)
+		{old, filepath.Join(root, "dst", "a#b#2.md"), ErrInvalidName},          // adds a bad char to it
+		{old, filepath.Join(root, "dst", "a#b final.md"), ErrInvalidName},
+		{old, filepath.Join(root, "dst", "a#b_2.txt"), ErrInvalidName},
+		{filepath.Join(root, ".env"), filepath.Join(root, " a.md"), ErrInvalidName}, // empty stem keeps nothing
 	}
 	for _, c := range cases {
-		if got := CheckMovedName(c.old, c.new); !errors.Is(got, c.want) {
-			t.Errorf("CheckMovedName(%q, %q) = %v, want %v", c.old, c.new, got, c.want)
+		if got := CheckTarget(c.old, c.new); !errors.Is(got, c.want) {
+			t.Errorf("CheckTarget(%q, %q) = %v, want %v", c.old, c.new, got, c.want)
 		}
 	}
 }

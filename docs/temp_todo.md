@@ -23,13 +23,6 @@
   - index/book editor => use markdown links instead of wiki links
   - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
   - make the upgrade.md file more readable
-- chore quick
-  - links: `./` and `../` links - `[y](../a.md)` renders `/files/../a.md` (browser normalizes to `/a.md`, 404), metadata stores `./sub/a.md` uncleaned (broken link), media relocate falls back to doc-relative but render never does - decide one policy for doc-relative paths and apply it in NormalizeLinkPath + render
-  - links: inline code spanning a line break isn't masked by replaceOutsideCode / maskCode (both split code spans per line), so links inside it are read - low priority
-  - tests: `--start-tests --remove` logs ~70 "disk I/O error" / "unable to open database" lines after the summary - background RefreshCaches goroutines still run while the isolated storage is deleted; cancel/await them before exitHeadlessTests removes the dir (can hide real errors, and on windows the remove may fail on locked files)
-  - kanban: moveFileUnique's collision fallback for an existing bad card name (`a#b.md` -> `a#b_2.md`) is a new name, so the card move fails with ErrInvalidName - needs a "keeps the old name" rule
-  - simplify: after the reserved folders refactoring, merge CheckNewNames / CheckMovedName / CheckNewDocsPath / CheckMovedDocsPath / checkReservedDocsPath into one "check target, optionally keeping the old name" function
-  - simplify: FindBrokenLinks' byLinkText exact match only repairs links of the old media upload - remove it once the own data is repaired
 - test
   - remote git in mobile
 
@@ -37,7 +30,7 @@
 
 - todo: make docs paths unambiguous so no top-level docs folder name has to be reserved
   - problem: pathutils.parsePath guesses the type from free text - a leading "files/" is stripped, "media/..." is read as a media file and "docs/..." as a docs file. a docs file at data/docs/media/x.md (or docs/docs/..., docs/files/...) therefore can't be resolved back to itself
-    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.checkReservedDocsPath/ErrReservedPath (run inside CheckNewDocsPath / CheckMovedDocsPath, before the filename policy CheckNewNames / CheckMovedName) reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
+    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.ErrReservedPath (checked first in pathutils.CheckTarget, before the filename policy) reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
     - the workaround only covers files created by the app - files that arrive via git pull/sync or are copied into the filesystem are still broken:
       - contentStorage.ListFiles + files.pathsToFiles list them as "media/x.md" without a docs/ prefix
       - File.ViewURL points to /files/x.md => docs/x.md (404 or the wrong file)
@@ -48,8 +41,8 @@
     - keep the prefix guessing only where it's really needed (old metadata) - for links in content that's one place since the link refactor: utils.NormalizeLinkPath (after parser.ParseLink decoded the path), used by metadata, rename (renameLinkFunc) and FindBrokenLinks; the renderer has its own branch in parser.appLinkDest (media/ and /media/ -> ToMediaURL, the rest -> docLinkDest) and media relocate its candidates in relocateIndex.resolve - change all three together, the links suite (internal/test/linkstest) covers them
     - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this (in NormalizeLinkPath + appLinkDest), add a docs/media/ case to the links suite
   - migration: metadata keys of docs files that currently collide with media keys, and filter/tracker configStorage ids starting with docs/, media/ or files/ (see configeditor.CleanID)
-  - afterwards delete: ReservedDocsFolders, checkReservedDocsPath, ErrReservedPath (+ its case in server newPathMessage / handleMoveError), the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn the reserved cases of TestCheckNewDocsPath into "these paths now resolve correctly" tests
-  - keep: the filename policy from the link refactor (CheckNewNames / CheckMovedName / ErrInvalidName, writeNewPathError / newPathMessage) - CheckNewDocsPath / CheckMovedDocsPath stay as its docs entry points (or merge the five check functions into one, see the chore point)
+  - afterwards delete: ReservedDocsFolders, the reserved check in CheckTarget, ErrReservedPath (+ its case in server newPathMessage / handleMoveError), the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn the reserved cases of TestCheckNewDocsPath (pathutils_test.go) into "these paths now resolve correctly" tests
+  - keep: the filename policy from the link refactor (CheckTarget / ErrInvalidName, writeNewPathError / newPathMessage)
   - touches many ToDocsPath/ToWithPrefix/ToRelative callers - do it as its own refactor, run `--start-tests --remove` afterwards
 
 # every other time

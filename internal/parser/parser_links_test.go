@@ -13,6 +13,16 @@ import (
 	"knov/internal/utils"
 )
 
+// "./" and "../" links are relative to the rendered doc's folder, bare ones to the docs root
+func TestRenderRelativeLinks(t *testing.T) {
+	in := "[y](../a.md) [[./b]] ![i](./c.png) [z](sub/d.md)\n\n[r]: ./e.md\n[s]: ./f.png"
+	want := "[y](" + pathutils.ToFileURL("x/a.md") + ") [b](" + pathutils.ToFileURL("x/sub/b.md") + ") ![i](x/sub/c.png) [z](" +
+		pathutils.ToFileURL("sub/d.md") + ")\n\n[r]: " + pathutils.ToFileURL("x/sub/e.md") + "\n[s]: x/sub/f.png"
+	if got := RenderLinks(in, "docs/x/sub/n.md"); got != want {
+		t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
+	}
+}
+
 func TestRenderLinks(t *testing.T) {
 	cases := []struct {
 		name, in, want string
@@ -97,7 +107,7 @@ func TestRenderLinks(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := RenderLinks(c.in); got != c.want {
+			if got := RenderLinks(c.in, PathlessRender); got != c.want {
 				t.Errorf("RenderLinks(%q) = %q, want %q", c.in, got, c.want)
 			}
 		})
@@ -108,10 +118,10 @@ func TestRenderLinks(t *testing.T) {
 // rather than a naive ASCII-only uppercase, for both a single-word and a multi-word
 // (hyphenated) slug.
 func TestUnicodeHeaderSlugCapitalization(t *testing.T) {
-	if got, want := RenderLinks("[](#übersicht)"), "[Übersicht](#übersicht)"; got != want {
+	if got, want := RenderLinks("[](#übersicht)", PathlessRender), "[Übersicht](#übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
-	if got, want := RenderLinks("[](#persönliche-übersicht)"), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
+	if got, want := RenderLinks("[](#persönliche-übersicht)", PathlessRender), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
@@ -183,7 +193,7 @@ func TestWikiLinkAnchorSpecialChars(t *testing.T) {
 		`[[a#x) y|z]]`:   "[z](" + pathutils.ToFileURL("a.md") + "#x-y)",
 		`[[#a "b"]]`:     `[A "b"](#a-b)`,
 	} {
-		if got := RenderLinks(in); got != want {
+		if got := RenderLinks(in, PathlessRender); got != want {
 			t.Errorf("%q = %q, want %q", in, got, want)
 		}
 	}
@@ -198,7 +208,7 @@ func TestWikiLinkPureAnchor(t *testing.T) {
 		"`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```",
 		"[x](a[[b]].md)":           "[x](" + pathutils.ToFileURL("a[[b]].md") + ")",
 	} {
-		if got := RenderLinks(in); got != want {
+		if got := RenderLinks(in, PathlessRender); got != want {
 			t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
 		}
 	}
@@ -283,7 +293,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 				}
 			}
 			// the file view pipeline: Parse resolves the links, Render runs goldmark
-			parsed, _ := h.Parse([]byte(w.link))
+			parsed, _ := h.Parse([]byte(w.link), PathlessRender)
 			out, err := h.Render(parsed, "", false)
 			if got := renderedTarget(string(out)); err != nil || got != w.want {
 				t.Errorf("%s %q: Render(%q) links to %q: %s", w.name, p, w.link, got, out)
@@ -357,7 +367,7 @@ func TestLinkString(t *testing.T) {
 	if got, want := l.String(), `[a/\[1\].md](a/[1].md)`; got != want {
 		t.Errorf("String = %q, want %q", got, want)
 	}
-	if got := RenderLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
+	if got := RenderLinks(l.String(), PathlessRender); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
 		t.Errorf("RenderLinks(%q) = %q", l.String(), got)
 	}
 }
@@ -409,7 +419,7 @@ func TestRewriteLinksRefDefAfterCode(t *testing.T) {
 func TestWikiLinkFollowedByParens(t *testing.T) {
 	in := "see [[note]](draft) and [a [b]](c.md)"
 	want := "see [note](" + pathutils.ToFileURL("note.md") + ")(draft) and [a [b]](" + pathutils.ToFileURL("c.md") + ")"
-	if got := RenderLinks(in); got != want {
+	if got := RenderLinks(in, PathlessRender); got != want {
 		t.Errorf("RenderLinks = %q, want %q", got, want)
 	}
 	if got := (&MarkdownHandler{}).ExtractLinks([]byte(in)); !slices.Equal(got, []string{"note", "c.md"}) {
@@ -419,7 +429,7 @@ func TestWikiLinkFollowedByParens(t *testing.T) {
 
 // a wikilink to media opens the media detail page like a markdown link to it
 func TestWikiLinkMediaDetail(t *testing.T) {
-	if got, want := RenderLinks("[[media/a b.png]]"), RenderLinks("[a b](<media/a b.png>)"); got != want {
+	if got, want := RenderLinks("[[media/a b.png]]", PathlessRender), RenderLinks("[a b](<media/a b.png>)", PathlessRender); got != want {
 		t.Errorf("RenderLinks = %q, want %q", got, want)
 	}
 }
@@ -429,5 +439,36 @@ func TestRenderImageProtocolRelative(t *testing.T) {
 	out, err := NewMarkdownHandler().Render([]byte("![x](//cdn.example.com/x.png)"), "", false)
 	if err != nil || !strings.Contains(string(out), `src="//cdn.example.com/x.png"`) {
 		t.Errorf("Render = %q, %v, want the external src", out, err)
+	}
+}
+
+// an inline code span over a line break is code on both lines, a blank line ends it
+func TestRewriteLinksMultilineCodeSpan(t *testing.T) {
+	in := "`x [a](a.md)\n[b](b.md) ü` [c](c.md)\n\n`[d](d.md)\n\n[e](e.md)`"
+	want := "`x [a](a.md)\n[b](b.md) ü` [c](z.md)\n\n`[d](z.md)\n\n[e](z.md)`"
+	if got, _ := RewriteLinks(in, func(l Link) (string, bool) { return "z.md", true }); got != want {
+		t.Errorf("RewriteLinks = %q, want %q", got, want)
+	}
+	if got := RenderLinks(in, PathlessRender); !strings.Contains(got, "[b](b.md)") || strings.Contains(got, "[c](c.md)") {
+		t.Errorf("RenderLinks = %q, want [b] kept and [c] rewritten", got)
+	}
+}
+
+// a code span doesn't continue onto a new block - heading, list item, table row
+func TestRewriteLinksCodeSpanEndsAtBlock(t *testing.T) {
+	for _, in := range []string{"# t `x\n[a](a.md) `y`", "- type ``` to open\n- see [a](a.md)\n- close ```", "| a ` b |\n| [a](a.md) ` |"} {
+		if got, _ := RewriteLinks(in, func(l Link) (string, bool) { return "z.md", true }); !strings.Contains(got, "[a](z.md)") {
+			t.Errorf("RewriteLinks(%q) = %q, want [a] rewritten", in, got)
+		}
+	}
+}
+
+// bare "." and ".." are folder links, not notes named like the folder
+func TestRenderDotFolderLinks(t *testing.T) {
+	if got := RenderLinks("[up](..) [here](.)", "docs/a/x/n.md"); strings.Contains(got, ".md") {
+		t.Errorf("RenderLinks = %q, want folder urls", got)
+	}
+	if got := RenderLinks("[root](..)", "docs/a/n.md"); got != "[root](/files/)" {
+		t.Errorf("RenderLinks = %q, want the docs root url", got)
 	}
 }

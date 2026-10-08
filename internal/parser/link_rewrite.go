@@ -33,7 +33,9 @@ var (
 	rewriteLinkRe     = regexp.MustCompile(wikiLinkPattern + `|\]\(` + mdLinkDestPattern + `\)`)
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
-	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
+	rewriteRefDefRe = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
+	// a line starting a new block (heading, list item, quote, table row) - a code span doesn't continue onto it
+	blockStartRe      = regexp.MustCompile(`^ {0,3}(?:#{1,6}(?:[ \t]|$)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|\|)`)
 	linkSuffixRe      = regexp.MustCompile(`\s+(?:=\d*x\d*|["'])`) // " =WxH" (wiki.js) or "title"
 	wikijsImageSizeRe = regexp.MustCompile(`^\s+=\d*x\d*`)
 	// a CommonMark backslash escape (\_ \( ...) - except "\.", so windows "..\" and ".hidden"
@@ -283,40 +285,69 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 }
 
 // replaceOutsideCode replaces every part of a line outside fenced code blocks and inline `code`
-// spans with fn(part, wholeLine) - the link scanner of RewriteLinks and the renderer, so code is
-// never a link. wholeLine is false for a line with a code span, so it's never a reference definition.
+// spans (maskCode) with fn(part, wholeLine) - the link scanner of RewriteLinks and the renderer, so
+// code is never a link. wholeLine is false for a line with a code span, so it's never a reference definition.
 func replaceOutsideCode(content string, fn func(part string, wholeLine bool) string) string {
 	lines := strings.Split(content, "\n")
-	fenced := markdown.FenceMask(lines)
+	masked := strings.Split(maskCode(content), "\n")
 	for i, line := range lines {
-		if fenced[i] {
-			continue
+		var b strings.Builder
+		for start := 0; start < len(line); {
+			code, end := masked[i][start] == 0, start
+			for end < len(line) && (masked[i][end] == 0) == code {
+				end++
+			}
+			if code {
+				b.WriteString(line[start:end])
+			} else {
+				b.WriteString(fn(line[start:end], end-start == len(line)))
+			}
+			start = end
 		}
-		// odd parts are inline `code` spans
-		parts := markdown.SplitCodeSpans(line)
-		for j := 0; j < len(parts); j += 2 {
-			parts[j] = fn(parts[j], len(parts) == 1)
-		}
-		lines[i] = strings.Join(parts, "")
+		lines[i] = b.String()
 	}
 	return strings.Join(lines, "\n")
 }
 
 // maskCode replaces every byte of fenced code blocks and inline `code` spans with "\x00" (line
-// breaks kept), so a regex over the result never sees code and its indexes match content.
+// breaks kept), so a regex over the result never sees code and its indexes match content. a code
+// span may span the lines of a paragraph, but not a blank line, a fence, a heading or a new list
+// item, quote or table row (blockStartRe).
 func maskCode(content string) string {
 	lines := strings.Split(content, "\n")
 	fenced := markdown.FenceMask(lines)
-	for i, line := range lines {
-		parts := markdown.SplitCodeSpans(line)
-		for j := range parts {
-			if fenced[i] || j%2 == 1 {
-				parts[j] = strings.Repeat("\x00", len(parts[j]))
-			}
+	for i := 0; i < len(lines); {
+		j := i
+		for j < len(lines) && !fenced[j] && strings.TrimSpace(lines[j]) != "" && (j == i || !blockStartRe.MatchString(lines[j]) && !isATXHeading(lines[j-1])) {
+			j++
 		}
-		lines[i] = strings.Join(parts, "")
+		if j == i {
+			if fenced[i] {
+				lines[i] = strings.Repeat("\x00", len(lines[i]))
+			}
+			i++
+			continue
+		}
+		parts := markdown.SplitCodeSpans(strings.Join(lines[i:j], "\n"))
+		for k := 1; k < len(parts); k += 2 {
+			b := []byte(parts[k])
+			for x := range b {
+				if b[x] != '\n' {
+					b[x] = 0
+				}
+			}
+			parts[k] = string(b)
+		}
+		copy(lines[i:j], strings.Split(strings.Join(parts, ""), "\n"))
+		i = j
 	}
 	return strings.Join(lines, "\n")
+}
+
+// isATXHeading reports whether line is a "# heading" - its own block, a code span doesn't continue after it.
+func isATXHeading(line string) bool {
+	_, _, ok := markdown.ATXHeading(line)
+	return ok
 }
 
 // IsAppRouteLink reports whether a link is an html root link to an app route (/dashboard,

@@ -13,8 +13,9 @@ type Parser interface {
 	// CanHandle returns true if this handler supports the file
 	CanHandle(filename string) bool
 
-	// Parse converts raw content to intermediate format if needed
-	Parse(content []byte) ([]byte, error)
+	// Parse converts raw content to intermediate format if needed. filePath is the source file
+	// relative links are read against, PathlessRender when there is none.
+	Parse(content []byte, filePath string) ([]byte, error)
 
 	// Render converts content to HTML. filePath is the docs-relative path of the source
 	// file; pass PathlessRender when the content has no file on disk. editableSections

@@ -217,7 +217,8 @@ func (idx *relocateIndex) relinkFunc(doc string) func(l parser.Link) (string, bo
 	}
 }
 
-// resolve resolves a link written in doc to a key of moved: a wiki or bare markdown link relative
+// resolve resolves a link written in doc to a key of moved: a "./" or "../" link strictly relative
+// to doc's folder (pathutils.ResolveRelativeLink, like they render), a wiki or bare markdown link relative
 // to the docs root, like they render (a bare markdown one falls back to doc's folder, the way
 // imported wikis write it), a relative html link strictly relative to doc's folder, a root ("/",
 // wiki.js) link relative to doc's folder first, then to each parent folder up to the docs root.
@@ -237,7 +238,9 @@ func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 	// root links ("/upload/x.png") from a wiki imported into a subfolder are relative to that
 	// subfolder, so they try doc's folder and each parent up to the docs root
 	var dirs []string
-	switch {
+	switch resolved := pathutils.ResolveRelativeLink("docs/"+doc, link); {
+	case resolved != link:
+		link, dirs = resolved, []string{"."}
 	case root:
 		for dir := path.Dir(doc); ; dir = path.Dir(dir) {
 			if dirs = append(dirs, dir); dir == "." {

@@ -143,7 +143,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		}
 	}
 
-	parsed, err := handler.Parse(content)
+	parsed, err := handler.Parse(content, renderPath)
 	if err != nil {
 		return nil, err
 	}

@@ -30,6 +30,10 @@ func CleanseID(input string) string {
 // space in it is part of the filename.
 func NormalizeLinkPath(cleanLink string) string {
 	// map URL path prefixes to metadata path prefixes
+	if cleanLink == "/" {
+		// the docs root (pathutils.ResolveRelativeLink), the same as a "/files/" link
+		return "docs/"
+	}
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
 	if strings.HasPrefix(cleanLink, "files/") {
 		cleanLink = strings.TrimPrefix(cleanLink, "files/")

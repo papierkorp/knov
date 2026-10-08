@@ -99,7 +99,7 @@ func render(opts Options, filePath string, content []byte) (pdf []byte, err erro
 	if opts.HeaderLeft != "" || opts.HeaderCenter != "" || opts.HeaderRight != "" {
 		opts.HeaderTokens = zoneTokens(filePath)
 	}
-	return MarkdownToPDF(content, opts)
+	return MarkdownToPDF(content, filePath, opts)
 }
 
 // settingsOptions builds the pdf options from the pdf settings, without the per-file tokens.

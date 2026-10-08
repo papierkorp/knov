@@ -130,7 +130,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			if handler != nil {
 				links := handler.ExtractLinks(contentData)
 				for _, link := range links {
-					cleanLink := resolveMediaLink(utils.NormalizeLinkPath(link))
+					cleanLink := resolveMediaLink(utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(metadata.Path, link)))
 					if cleanLink != "" && cleanLink != metadata.Path && !slices.Contains(metadata.UsedLinks, cleanLink) {
 						metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
 					}
@@ -409,7 +409,7 @@ func updateUsedLinks(metadata *Metadata) []func() {
 	metadata.UsedLinks = []string{}
 
 	for _, link := range links {
-		cleanLink := resolveMediaLink(utils.NormalizeLinkPath(link))
+		cleanLink := resolveMediaLink(utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(metadata.Path, link)))
 
 		if cleanLink == "" || cleanLink == metadata.Path {
 			continue
@@ -539,6 +539,13 @@ func UpdateLinksForMovedFile(key logging.Key, oldPath, newPath string) error {
 // UpdateLinksForMovedFileNoRefresh is UpdateLinksForMovedFile without the
 // aggregate cache refresh. See UpdateLinksForMovedFile.
 func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) error {
+	return updateLinksForMovedFile(key, oldPath, newPath, nil)
+}
+
+// updateLinksForMovedFile is UpdateLinksForMovedFileNoRefresh for a file moved along with others
+// (folder move): movedAlong maps the old metadata path of each other moved file to its new path,
+// so a file linking to this one is read where it is now.
+func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlong map[string]string) error {
 	logging.LogInfo(key, "updating links for moved file: %s -> %s", oldPath, newPath)
 
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
@@ -558,6 +565,8 @@ func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) 
 	if err := chat.MoveFilePath(normalizedOldPath, normalizedNewPath); err != nil {
 		logging.LogWarning(key, "failed to move chat messages for %s -> %s: %v", normalizedOldPath, normalizedNewPath, err)
 	}
+
+	relinkMovedDoc(key, oldPath, newPath)
 
 	// step 1: rebuild outbound links for the moved file
 	var movedMetadata *Metadata
@@ -584,9 +593,17 @@ func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) 
 
 		updatedFiles := 0
 		for _, linkingFilePath := range oldMetadata.LinksToHere {
+			moved, along := movedAlong[linkingFilePath]
+			if along {
+				linkingFilePath = moved
+			}
 			ok, err := updateLinksInFile(key, linkingFilePath, oldPath, newPath)
 			if err != nil {
 				logging.LogError(key, "failed to update links in file %s: %v", linkingFilePath, err)
+				continue
+			}
+			// a relative link between two files moved along still reads right
+			if !ok && along {
 				continue
 			}
 			if !ok {
@@ -650,24 +667,67 @@ func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) str
 	return newPath
 }
 
-// renameLinkFunc returns the parser.RewriteLinks callback pointing links to oldPath at newPath.
-// each link path and oldPath are compared as metadata paths (docs/ or media/ prefixed), and the
-// original absolute/relative style is preserved on write. wiki links keep their
-// extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
-// the new name would then read as another file ([[v1.2]] isn't v1.2.md)
-func renameLinkFunc(oldPath, newPath string) func(l parser.Link) (string, bool) {
-	oldPath = pathutils.ToWithPrefix(oldPath)
-	return func(l parser.Link) (string, bool) {
-		if parser.IsAppRouteLink(l.Path, l.Kind) || pathutils.ToWithPrefix(utils.NormalizeLinkPath(l.Path)) != oldPath {
+// relinkMovedDoc rewrites the "./" and "../" links of the doc moved from oldPath to newPath (already
+// on disk there) to a new relative path, so they keep pointing at their target - only those valid
+// at the old location and reading as another file from the new one, so a target moved along
+// (folder move) or an already missing one stays as written.
+func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
+	fullPath := pathutils.ToFullPath(newPath)
+	if !parser.IsMarkdownExtension(fullPath) {
+		return
+	}
+	data, err := os.ReadFile(fullPath)
+	if err != nil {
+		logging.LogWarning(key, "failed to read moved file %s: %v", newPath, err)
+		return
+	}
+	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
+		resolved, newResolved := pathutils.ResolveRelativeLink(oldPath, l.Path), pathutils.ResolveRelativeLink(newPath, l.Path)
+		target := resolveMediaLink(utils.NormalizeLinkPath(resolved))
+		if resolved == l.Path || (newResolved != l.Path && resolveMediaLink(utils.NormalizeLinkPath(newResolved)) == target) || !fileExists(pathutils.ToFullPath(target)) {
 			return "", false
 		}
-		if l.Kind == parser.LinkWiki {
-			if bare := strings.TrimSuffix(newPath, ".md"); !strings.HasSuffix(l.Path, ".md") && utils.WithDefaultLinkExt(bare) == newPath {
-				return bare, true
-			}
-			return newPath, true
+		// html src/href aren't read relative on render, so they get a url; resolved has no media/
+		// prefix, a relative link to it reads as media anyway
+		if l.Kind == parser.LinkHTML {
+			return rebuildLinkTarget(l.Path, target, l.Kind), true
 		}
-		return rebuildLinkTarget(l.Path, newPath, l.Kind), true
+		return pathutils.RelativeLink(newPath, resolved), true
+	})
+	if !changed {
+		return
+	}
+	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+		logging.LogError(key, "failed to write relative links of moved file %s: %v", newPath, err)
+		return
+	}
+	logging.LogInfo(key, "rewrote relative links of moved file %s", newPath)
+}
+
+// renameLinkFunc returns the parser.RewriteLinks callback pointing the links of filePath to oldPath
+// at newPath. each link path ("./" and "../" read relative to filePath) and oldPath are compared as
+// metadata paths (docs/ or media/ prefixed), and the original absolute/relative style is preserved
+// on write - a markdown or wiki "./" or "../" link gets a new relative path. wiki links keep their
+// extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
+// the new name would then read as another file ([[v1.2]] isn't v1.2.md)
+func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (string, bool) {
+	oldPath = pathutils.ToWithPrefix(oldPath)
+	return func(l parser.Link) (string, bool) {
+		resolved := pathutils.ResolveRelativeLink(filePath, l.Path)
+		if parser.IsAppRouteLink(l.Path, l.Kind) || pathutils.ToWithPrefix(utils.NormalizeLinkPath(resolved)) != oldPath {
+			return "", false
+		}
+		if l.Kind == parser.LinkHTML || (l.Kind == parser.LinkMarkdown && resolved == l.Path) {
+			return rebuildLinkTarget(l.Path, newPath, l.Kind), true
+		}
+		target := newPath
+		if bare := strings.TrimSuffix(newPath, ".md"); l.Kind == parser.LinkWiki && !strings.HasSuffix(l.Path, ".md") && utils.WithDefaultLinkExt(bare) == newPath {
+			target = bare
+		}
+		if resolved != l.Path {
+			return pathutils.RelativeLink(filePath, target), true
+		}
+		return target, true
 	}
 }
 
@@ -687,7 +747,7 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 		return false, nil
 	}
 
-	content, updated := parser.RewriteLinks(string(contentData), renameLinkFunc(oldPath, newPath))
+	content, updated := parser.RewriteLinks(string(contentData), renameLinkFunc(filePath, oldPath, newPath))
 
 	if updated {
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
@@ -1160,10 +1220,12 @@ type BrokenLink struct {
 }
 
 // FindBrokenLinks scans link metadata (no file content is read) for outbound
-// links pointing to paths that no longer exist. A repair is suggested when an
-// existing media file's path, read as link text, is the broken link (the old upload
-// inserted the still-encoded media path raw, `media/x%20(1)/pic.png`), or else
-// when exactly one existing file shares the broken link's basename.
+// links pointing to paths that no longer exist - a folder link (trailing "/") is
+// checked with os.Stat, all other targets against the listed files. A repair is
+// suggested when an existing media file's path, read as link text, is the broken
+// link (the old upload inserted the still-encoded media path raw,
+// `media/x%20(1)/pic.png`), or else when exactly one existing file shares the
+// broken link's basename.
 func FindBrokenLinks() ([]BrokenLink, error) {
 	docFiles, err := GetAllPhysicalFiles()
 	if err != nil {
@@ -1197,7 +1259,7 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 			continue
 		}
 		for _, target := range metadata.UsedLinks {
-			if validPaths[target] {
+			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
 				continue
 			}
 			bl := BrokenLink{SourceFile: metadata.Path, Target: target}
@@ -1211,6 +1273,12 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 	}
 
 	return broken, nil
+}
+
+// isDir reports whether fullPath is an existing folder, the target of a folder link ("../", "/files/").
+func isDir(fullPath string) bool {
+	info, err := os.Stat(fullPath)
+	return err == nil && info.IsDir()
 }
 
 // RepairBrokenLink rewrites a single broken link occurrence in sourceFile

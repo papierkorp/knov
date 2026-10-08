@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/contentStorage"
@@ -133,7 +134,7 @@ func caseRepairOldUpload() test.CaseResult {
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote
 // (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file. A
-// name the filename policy rejects can't be renamed to (see pathutils.TestCheckMovedName), the file
+// name the filename policy rejects can't be renamed to (see pathutils.TestCheckTarget), the file
 // is written directly (like git sync) and only renamed away.
 func caseRename() test.CaseResult {
 	var gaps []string
@@ -171,6 +172,71 @@ func caseRename() test.CaseResult {
 	}
 	files.RefreshCaches()
 	return gapsCase("links-rename", "links renamed to and away from every special-char name read back as the renamed file", gaps)
+}
+
+// caseRelative links docs with "./" and "../" links - they read relative to the doc's folder, keep
+// pointing at their target after the target is renamed, the doc is moved, or both move along in a
+// folder move, and stay relative links.
+func caseRelative() test.CaseResult {
+	dir := testDir + "/relative"
+	a, m, n := dir+"/a.md", dir+"/sub/m.md", dir+"/sub/n.md"
+	// targets first, a link to a doc without metadata yet isn't added to its linked from
+	// r moves next to another t.md, its "./t.md" has to keep pointing at the old one
+	hT, r := dir+"/h/t.md", dir+"/h/r.md"
+	// rt links the docs root (dir is 3 folders deep), moved one folder deeper its markdown link needs
+	// one more "../", its html link isn't read relative on render so it gets the root url
+	rt, rtMoved := dir+"/rt.md", dir+"/other/rt.md"
+	docs := [][2]string{{a, "# a\n"}, {m, "[x](../a.md)\n"}, {n, "[x](../a.md) [[./m]]\n"}, {dir + "/f/q.md", "# q\n"}, {dir + "/f/p.md", "[x](./q.md)\n"},
+		// o links q absolute, the folder move reads o at its new path to rewrite it
+		{dir + "/f/o.md", "[x](/files/" + dir + "/f/q.md)\n"},
+		{hT, "# t\n"}, {dir + "/k/t.md", "# other t\n"}, {r, "[x](./t.md)\n"}, {rt, "[x](../../../) <a href=\"../../../\">y</a>\n"}}
+	for _, d := range docs {
+		if err := saveDoc(d[0], d[1]); err != nil {
+			return errCase("links-relative", err)
+		}
+	}
+	gaps := linkGaps(n, []string{pathutils.ToWithPrefix(a), pathutils.ToWithPrefix(m)})
+
+	b, moved, rMoved := dir+"/b.md", dir+"/other/deep/n.md", dir+"/k/r.md"
+	for _, mv := range [][2]string{{a, b}, {n, moved}, {r, rMoved}, {rt, rtMoved}} {
+		if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+			return errCase("links-relative", err)
+		}
+	}
+	// a rename within the same folder keeps the doc's relative links as written
+	m2 := dir + "/sub/m2.md"
+	if err := files.MoveFileNoRefresh(logging.KeyApp, m, m2); err != nil {
+		return errCase("links-relative", err)
+	}
+	gaps = append(gaps, linkGaps(m2, []string{pathutils.ToWithPrefix(b)})...)
+	gaps = append(gaps, linkGaps(moved, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(m2)})...)
+	gaps = append(gaps, linkGaps(rMoved, []string{pathutils.ToWithPrefix(hT)})...)
+	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/docs/">y</a>`} {
+		if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(doc)); err != nil || strings.TrimSpace(string(raw)) != want {
+			gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", doc, raw, want, err))
+		}
+	}
+
+	if _, failed, err := files.MoveFolder(logging.KeyApp, pathutils.ToDocsPath(dir+"/f"), pathutils.ToDocsPath(dir+"/g")); err != nil || failed > 0 {
+		return errCase("links-relative", fmt.Errorf("move folder: %d failed, %v", failed, err))
+	}
+	gaps = append(gaps, linkGaps(dir+"/g/p.md", []string{pathutils.ToWithPrefix(dir + "/g/q.md")})...)
+	gaps = append(gaps, linkGaps(dir+"/g/o.md", []string{pathutils.ToWithPrefix(dir + "/g/q.md")})...)
+	files.RefreshCaches()
+	// rt's links to the docs root are folder links, not broken ones
+	if meta, err := files.MetaDataGet(pathutils.ToWithPrefix(rtMoved)); err != nil || meta == nil || !slices.Contains(meta.UsedLinks, "docs/") {
+		gaps = append(gaps, fmt.Sprintf("%s: folder link %q not in used links (%v)", rtMoved, "docs/", err))
+	}
+	broken, err := files.FindBrokenLinks()
+	if err != nil {
+		return errCase("links-relative", err)
+	}
+	for _, bl := range broken {
+		if bl.SourceFile == pathutils.ToWithPrefix(rtMoved) {
+			gaps = append(gaps, fmt.Sprintf("%s: link %q listed as broken", rtMoved, bl.Target))
+		}
+	}
+	return gapsCase("links-relative", "./ and ../ links read relative to their doc and keep their target on rename, move and folder move", gaps)
 }
 
 // caseRelocate puts a misplaced image named after each corpus name into the docs folder, links it

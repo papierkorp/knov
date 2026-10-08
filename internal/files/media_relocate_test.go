@@ -35,6 +35,8 @@ func TestRewriteMediaLinks(t *testing.T) {
 		// a bare markdown path is docs-root relative like it renders, doc-relative only as fallback
 		`![x](img/e.png)`:         `![x](/media/img/e.png)`,
 		`![x](uploads/a%20b.png)`: `![x](/media/uploads/a%20b.png)`,
+		// a "./" link is relative to the doc's folder only, wiki/img/e.png isn't moved
+		`![x](./img/e.png)`: `![x](./img/e.png)`,
 		// wiki/img/e.png exists and isn't moved, so an html link isn't redirected to img/e.png
 		`<img src="img/e.png">`: `<img src="img/e.png">`,
 		// relative html links never walk up to a parent folder

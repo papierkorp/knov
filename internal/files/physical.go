@@ -81,7 +81,7 @@ func moveDocsToMedia(oldFullPath, newFullPath string) error {
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.
 func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
-	if err := pathutils.CheckMovedDocsPath(oldRelPath, newRelPath); err != nil {
+	if err := pathutils.CheckTarget(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath)); err != nil {
 		return err
 	}
 	if err := movePhysical(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath), false); err != nil {
@@ -105,7 +105,7 @@ func MoveMediaFileNoRefresh(oldRelPath, newRelPath string) error {
 	oldMediaPath := "media/" + oldRelPath
 	newMediaPath := "media/" + newRelPath
 
-	if err := pathutils.CheckMovedName(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath)); err != nil {
+	if err := pathutils.CheckTarget(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath)); err != nil {
 		return err
 	}
 	if err := movePhysical(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath), true); err != nil {
@@ -250,7 +250,7 @@ func removeDirPhysical(fullPath string) error {
 // was inside it, then refreshes the aggregate caches once. Returns the number of files whose
 // links were updated successfully and the number that failed.
 func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, failed int, err error) {
-	if err := pathutils.CheckMovedDocsPath(currentFullPath, newFullPath); err != nil {
+	if err := pathutils.CheckTarget(currentFullPath, newFullPath); err != nil {
 		return 0, 0, err
 	}
 	// collect all files before the move so we can update their links
@@ -270,14 +270,24 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 		return 0, 0, err
 	}
 
+	movedAlong := make(map[string]string, len(filesToUpdate))
+	for _, f := range filesToUpdate {
+		movedAlong[pathutils.ToWithPrefix(f.oldRel)] = pathutils.ToWithPrefix(f.newRel)
+	}
 	for _, f := range filesToUpdate {
 		notifyFileMoved(f.oldRel, f.newRel)
-		if err := UpdateLinksForMovedFileNoRefresh(key, f.oldRel, f.newRel); err != nil {
+		if err := updateLinksForMovedFile(key, f.oldRel, f.newRel, movedAlong); err != nil {
 			logging.LogWarning(key, "move-folder: failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
 			failed++
 			continue
 		}
 		updated++
+	}
+	// a link between two moved files ("./q.md") only reaches the target's linked from once both moved
+	for _, f := range filesToUpdate {
+		if err := UpdateLinksForSingleFile(pathutils.ToWithPrefix(f.newRel)); err != nil {
+			logging.LogWarning(key, "move-folder: failed to resync links of %s: %v", f.newRel, err)
+		}
 	}
 	if len(filesToUpdate) > 0 {
 		RefreshCaches()

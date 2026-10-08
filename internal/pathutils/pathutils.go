@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -209,6 +210,52 @@ func DocsRoot() string { return getDocsPath() }
 // MediaRoot returns the full path to the media directory - see DocsRoot.
 func MediaRoot() string { return getMediaPath() }
 
+// ResolveRelativeLink resolves a decoded "./" or "../" link path written in the doc docPath against
+// that doc's folder to a docs-root path, the way bare links are read ("../b.md" in "docs/a/x/n.md"
+// -> "a/b.md"), bare "." and ".." too, read as the folder "./" and "../" - one climbing above the docs root stops there, like a url,
+// and one to the docs root itself is "/". Other link paths are returned unchanged.
+func ResolveRelativeLink(docPath, link string) string {
+	if link != "." && link != ".." && !strings.HasPrefix(link, "./") && !strings.HasPrefix(link, "../") {
+		return link
+	}
+	resolved := strings.TrimPrefix(path.Join("/", path.Dir(ToRelative(docPath)), link), "/")
+	if resolved == "" {
+		return "/"
+	}
+	if strings.HasSuffix(link, "/") || link == "." || link == ".." {
+		resolved += "/"
+	}
+	return resolved
+}
+
+// RelativeLink is the inverse of ResolveRelativeLink: the "./" or "../" link path from the folder of
+// the doc docPath to target ("docs/a/b.md" from "docs/a/x/n.md" -> "../b.md"), a trailing "/" kept, "/" is the docs root. a
+// media/ target gets the link to its path without the prefix, read as media like any relative link.
+func RelativeLink(docPath, target string) string {
+	if target == "/" {
+		if n := strings.Count(ToRelative(docPath), "/"); n > 0 {
+			return strings.Repeat("../", n)
+		}
+		return "./"
+	}
+	if strings.HasSuffix(target, "/") {
+		return RelativeLink(docPath, strings.TrimSuffix(target, "/")) + "/"
+	}
+	from := strings.Split(path.Dir(ToRelative(docPath)), "/")
+	if from[0] == "." {
+		from = nil
+	}
+	to := strings.Split(ToRelative(target), "/")
+	i := 0
+	for i < len(from) && i < len(to)-1 && from[i] == to[i] {
+		i++
+	}
+	if i == len(from) {
+		return "./" + strings.Join(to[i:], "/")
+	}
+	return strings.Repeat("../", len(from)-i) + strings.Join(to[i:], "/")
+}
+
 // ToSlash converts path separators to forward slashes, without any of the docs/media
 // normalization the To* functions above do. Use this over filepath.ToSlash for any path
 // that will be compared against or stored as a forward-slash path (git tree paths, cache
@@ -238,70 +285,57 @@ func FolderContains(dirPath, folderPath string) bool {
 }
 
 // ErrReservedPath is returned when a new docs file or folder would land in a reserved top-level
-// folder (see CheckNewDocsPath).
+// folder (see CheckTarget).
 var ErrReservedPath = errors.New("target is in a reserved top-level folder")
 
 // ErrInvalidName is returned when a new file or folder name breaks the filename policy (see
-// CheckNewNames).
+// CheckTarget).
 var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailing space")
 
-// CheckNewNames returns ErrInvalidName if a file or folder of fullPath (a host filesystem path)
-// that doesn't exist yet holds one of # ? | [ ] \ or starts/ends with a space - these break or
-// need encoding in links, so the app never creates them. Existing ones (git sync, manual copy)
-// are left alone, the link codec still reads them. The docs and media roots are never checked.
-func CheckNewNames(fullPath string) error {
-	for p := filepath.Clean(fullPath); ; p = filepath.Dir(p) {
+// CheckTarget checks creating a file or folder at the host path newFull, or moving oldFull there
+// (oldFull "" for a new one). It returns ErrReservedPath for a docs path in a top-level folder
+// parsePath reads as a prefix (see configmanager.ReservedDocsFolders) - such a file can't be
+// resolved back to itself - and ErrInvalidName for a name holding # ? | [ ] \ or starting/ending
+// with a space - these break or need encoding in links, so the app never creates them. Existing
+// paths (git sync, manual copy) are left alone, the link codec still reads them, and so is the old
+// name a move keeps: "a#b.md" may move to another folder or to the collision name "a#b_2.md"
+// (see kanban.moveFileUnique), only the new folders are checked - any other rename has to fix the
+// name. The docs and media roots are never checked.
+func CheckTarget(oldFull, newFull string) error {
+	_, statErr := os.Stat(newFull)
+	if docsRoot := getDocsPath(); statErr != nil && PathContains(docsRoot, newFull) {
+		rel, _ := filepath.Rel(docsRoot, newFull)
+		if first, _, _ := strings.Cut(filepath.ToSlash(rel), "/"); slices.Contains(configmanager.ReservedDocsFolders(), first) {
+			return ErrReservedPath
+		}
+	}
+	if oldFull != "" && keepsName(filepath.Base(oldFull), filepath.Base(newFull)) {
+		newFull = filepath.Dir(newFull)
+	}
+	for p := filepath.Clean(newFull); ; p = filepath.Dir(p) {
 		if _, err := os.Stat(p); err == nil || p == filepath.Dir(p) || p == getDocsPath() || p == getMediaPath() {
 			return nil
 		}
-		name := filepath.Base(p)
-		if strings.ContainsAny(name, `#?|[]\`) || strings.TrimSpace(name) != name {
+		if invalidName(filepath.Base(p)) {
 			return ErrInvalidName
 		}
 	}
 }
 
-// CheckNewDocsPath returns ErrReservedPath if the user-given docs path doesn't exist yet and
-// lies in a top-level folder parsePath reads as a prefix (see configmanager.ReservedDocsFolders)
-// - such a file can't be resolved back to itself, so nothing may be created or moved there.
-// Otherwise it returns ErrInvalidName for a new name that breaks the filename policy (see
-// CheckNewNames).
-func CheckNewDocsPath(path string) error {
-	if err := checkReservedDocsPath(path); err != nil {
-		return err
-	}
-	return CheckNewNames(ToDocsPath(path))
+// CheckNewDocsPath is CheckTarget for creating the docs path p ("a/b.md" or "docs/a/b.md").
+func CheckNewDocsPath(p string) error { return CheckTarget("", ToDocsPath(p)) }
+
+// keepsName reports whether newName is oldName or its collision name "<stem>_<n><ext>", see CheckTarget.
+func keepsName(oldName, newName string) bool {
+	ext := filepath.Ext(oldName)
+	n, ok := strings.CutPrefix(newName, strings.TrimSuffix(oldName, ext)+"_")
+	n, hasExt := strings.CutSuffix(n, ext)
+	return newName == oldName || (ok && hasExt && n != "" && strings.Trim(n, "0123456789") == "")
 }
 
-// CheckMovedDocsPath is CheckNewDocsPath for moving the docs file or folder oldPath to newPath,
-// see CheckMovedName.
-func CheckMovedDocsPath(oldPath, newPath string) error {
-	if err := checkReservedDocsPath(newPath); err != nil {
-		return err
-	}
-	return CheckMovedName(ToDocsPath(oldPath), ToDocsPath(newPath))
-}
-
-// CheckMovedName is CheckNewNames for moving oldFull to newFull (host paths): a name the move
-// keeps (moved to another folder) isn't new (git sync, manual copy), so an existing bad name
-// can still move - only the new folders are checked.
-func CheckMovedName(oldFull, newFull string) error {
-	if filepath.Base(oldFull) == filepath.Base(newFull) {
-		return CheckNewNames(filepath.Dir(newFull))
-	}
-	return CheckNewNames(newFull)
-}
-
-// checkReservedDocsPath returns ErrReservedPath for a docs path that doesn't exist yet in a
-// reserved top-level folder, see CheckNewDocsPath.
-func checkReservedDocsPath(path string) error {
-	first, _, _ := strings.Cut(ToRelative(path), "/")
-	if slices.Contains(configmanager.ReservedDocsFolders(), first) {
-		if _, err := os.Stat(ToDocsPath(path)); err != nil {
-			return ErrReservedPath
-		}
-	}
-	return nil
+// invalidName reports whether a file or folder name breaks the filename policy, see CheckTarget.
+func invalidName(name string) bool {
+	return strings.ContainsAny(name, `#?|[]\`) || strings.TrimSpace(name) != name
 }
 
 // PathContains reports whether candidate is root itself or strictly beneath it on the

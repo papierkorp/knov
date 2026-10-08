@@ -162,3 +162,18 @@ func TestFileRefSectionSpecialChars(t *testing.T) {
 		t.Errorf("DecodeFileRef(%q) = %q, %q", entries[0].Value, p, s)
 	}
 }
+
+// a chapter's "./" and "../" links are resolved against the chapter, the book renders pathless
+func TestComposeRelativeLinks(t *testing.T) {
+	full := pathutils.ToDocsPath("rel/sub/ch.md")
+	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := contentStorage.WriteFile(full, []byte("[a](../a.md) [[./b]] ![c](./c.png) [d](d.md)\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	want := "[a](rel/a.md) [[rel/sub/b]] ![c](rel/sub/c.png) [d](d.md)"
+	if got := ComposeEntries("test.book", []Entry{{Type: EntryFile, Value: EncodeFileRef("rel/sub/ch.md", "")}}); got != want {
+		t.Errorf("ComposeEntries = %q, want %q", got, want)
+	}
+}
