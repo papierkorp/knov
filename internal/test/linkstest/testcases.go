@@ -239,6 +239,25 @@ func caseRelative() test.CaseResult {
 			gaps = append(gaps, fmt.Sprintf("%s: link %q listed as broken", rtMoved, bl.Target))
 		}
 	}
+
+	// one "../" more than dir is deep climbs above the docs root: listed with the docs root as
+	// suggestion, the repair drops the extra "../"
+	up := dir + "/up.md"
+	if err := saveDoc(up, "[x](../../../../)\n"); err != nil {
+		return errCase("links-relative", err)
+	}
+	if broken, err = files.FindBrokenLinks(); err != nil {
+		return errCase("links-relative", err)
+	}
+	want := files.BrokenLink{SourceFile: pathutils.ToWithPrefix(up), Target: "docs/", Suggested: "docs/", AboveRoot: true}
+	if !slices.Contains(broken, want) {
+		gaps = append(gaps, fmt.Sprintf("%s: %+v not listed as broken", up, want))
+	} else if ok, err := files.RepairBrokenLink(want.SourceFile, want.Target, want.Suggested); !ok || err != nil {
+		gaps = append(gaps, fmt.Sprintf("%s: repair %v, %v", up, ok, err))
+	}
+	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(up)); err != nil || strings.TrimSpace(string(raw)) != "[x](../../../)" {
+		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", up, raw, "[x](../../../)", err))
+	}
 	return gapsCase("links-relative", "./ and ../ links read relative to their doc and keep their target on rename, move and folder move", gaps)
 }
 

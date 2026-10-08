@@ -234,11 +234,35 @@ func IsRelativeLink(link string) bool {
 	return link == "." || link == ".." || strings.HasPrefix(link, "./") || strings.HasPrefix(link, "../")
 }
 
+// LinkClimbsAboveRoot reports whether a "./" or "../" link path written in the doc docPath climbs
+// above the docs root - ResolveRelativeLink stops it there, like a url.
+func LinkClimbsAboveRoot(docPath, link string) bool {
+	if !IsRelativeLink(link) {
+		return false
+	}
+	depth := 0
+	if dir := path.Dir(ToRelative(docPath)); dir != "." {
+		depth = strings.Count(dir, "/") + 1
+	}
+	for _, seg := range strings.Split(link, "/") {
+		switch seg {
+		case "..":
+			if depth--; depth < 0 {
+				return true
+			}
+		case ".", "":
+		default:
+			depth++
+		}
+	}
+	return false
+}
+
 // RelativeLink is the inverse of ResolveRelativeLink: the "./" or "../" link path from the folder of
-// the doc docPath to target ("docs/a/b.md" from "docs/a/x/n.md" -> "../b.md"), a trailing "/" kept, "/" is the docs root. a
+// the doc docPath to target ("docs/a/b.md" from "docs/a/x/n.md" -> "../b.md"), a trailing "/" kept, "/" and "docs/" are the docs root. a
 // media/ target gets the link to its path without the prefix, read as media like any relative link.
 func RelativeLink(docPath, target string) string {
-	if target == "/" {
+	if target == "/" || target == "docs/" {
 		if n := strings.Count(ToRelative(docPath), "/"); n > 0 {
 			return strings.Repeat("../", n)
 		}

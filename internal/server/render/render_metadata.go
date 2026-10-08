@@ -175,8 +175,12 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 
 	for _, bl := range repairable {
 		value := fmt.Sprintf("%s|%s|%s", bl.SourceFile, bl.Target, bl.Suggested)
+		target := bl.Target
+		if bl.AboveRoot {
+			target += " (" + translation.SprintfForRequest(configmanager.GetLanguage(), "climbs above the docs root") + ")"
+		}
 		fmt.Fprintf(&html, `<tr><td><input type="checkbox" name="repair" value="%s" checked></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
-			value, bl.SourceFile, bl.Target, brokenLinkSuggestedCell(bl.Suggested))
+			value, bl.SourceFile, target, brokenLinkSuggestedCell(bl.Suggested))
 	}
 
 	html.WriteString(`</tbody></table>`)

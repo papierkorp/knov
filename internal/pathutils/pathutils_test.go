@@ -125,6 +125,27 @@ func TestResolveRelativeLink(t *testing.T) {
 	}
 }
 
+// a "../" past the docs root is reported, also one climbing back down again
+func TestLinkClimbsAboveRoot(t *testing.T) {
+	cases := []struct {
+		doc, link string
+		want      bool
+	}{
+		{"docs/a/n.md", "../x.md", false},
+		{"docs/a/n.md", "../../x.md", true},
+		{"docs/a/n.md", "../../a/x.md", true},
+		{"docs/a/b/n.md", "./../../", false},
+		{"docs/n.md", "..", true},
+		{"docs/n.md", "./x/../y.md", false},
+		{"docs/n.md", "x/../../y.md", false}, // not a relative link
+	}
+	for _, c := range cases {
+		if got := LinkClimbsAboveRoot(c.doc, c.link); got != c.want {
+			t.Errorf("LinkClimbsAboveRoot(%q, %q) = %v, want %v", c.doc, c.link, got, c.want)
+		}
+	}
+}
+
 func TestRelativeLink(t *testing.T) {
 	cases := []struct{ doc, target, want string }{
 		{"docs/a/x/n.md", "docs/a/b.md", "../b.md"},
@@ -136,6 +157,10 @@ func TestRelativeLink(t *testing.T) {
 		{"docs/n.md", "a/x/b.md", "./a/x/b.md"},
 		{"docs/a/x/n.md", "/", "../../"},
 		{"docs/n.md", "/", "./"},
+	}
+	// the docs root as metadata path, like parser.LinkTarget reads it
+	if got := RelativeLink("docs/a/x/n.md", "docs/"); got != "../../" {
+		t.Errorf(`RelativeLink("docs/a/x/n.md", "docs/") = %q, want "../../"`, got)
 	}
 	for _, c := range cases {
 		if got := RelativeLink(c.doc, c.target); got != c.want {

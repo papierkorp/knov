@@ -163,6 +163,8 @@ definitions:
     type: object
   files.BrokenLink:
     properties:
+      aboveRoot:
+        type: boolean
       sourceFile:
         type: string
       suggested:
@@ -3728,9 +3730,10 @@ paths:
       - metadata
   /api/metadata/broken-links:
     get:
-      description: Scans link metadata (no file content is read) for outbound links
-        pointing to files that no longer exist, suggesting a repair target where the
-        broken link's filename uniquely matches an existing file.
+      description: Scans link metadata for outbound links pointing to files that no
+        longer exist, suggesting a repair target where the broken link's filename
+        uniquely matches an existing file, and the docs' content for "../" links climbing
+        above the docs root (aboveRoot), suggesting the target they are read as.
       produces:
       - application/json
       - text/html

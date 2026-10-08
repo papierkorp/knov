@@ -79,7 +79,7 @@ follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..40
   - update ResolveRelativeLink / RelativeLink, rename (renameLinkFunc keeps the written style), relinkMovedDoc (a move now changes bare links too), media relocate (drop the "docs root first, then doc folder" fallback for bare markdown links), book resolveRelativeLinks, help page docs
   - upgrade note: bare links now read from the doc's folder, run the new admin action to keep the old targets
   - links suite cases for the new rule and the migration action
-- 4. `../` above the docs root (decision 3: both)
+- 4. `../` above the docs root (decision 3: both) - done: pathutils.LinkClimbsAboveRoot, FindBrokenLinks reads the docs' content for them (BrokenLink.AboveRoot), no metadata field
   - keep resolving it clamped to the docs root (renders like a url), and also list it in the broken links scan as "climbs above the docs root" with the clamped path as suggestion, so "Repair Broken Links" can rewrite it
   - ResolveRelativeLink has to report the clamping (e.g. a second return value); FindBrokenLinks only reads metadata, so either store the info in link metadata or scan content for it - decide
 - 5. warning noise in folder moves

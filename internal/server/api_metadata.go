@@ -306,7 +306,7 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Scan for broken links
-// @Description Scans link metadata (no file content is read) for outbound links pointing to files that no longer exist, suggesting a repair target where the broken link's filename uniquely matches an existing file.
+// @Description Scans link metadata for outbound links pointing to files that no longer exist, suggesting a repair target where the broken link's filename uniquely matches an existing file, and the docs' content for "../" links climbing above the docs root (aboveRoot), suggesting the target they are read as.
 // @Tags metadata
 // @Produce json,html
 // @Success 200 {array} files.BrokenLink

@@ -1206,15 +1206,18 @@ type BrokenLink struct {
 	SourceFile string `json:"sourceFile"`
 	Target     string `json:"target"`
 	Suggested  string `json:"suggested,omitempty"`
+	AboveRoot  bool   `json:"aboveRoot,omitempty"`
 }
 
-// FindBrokenLinks scans link metadata (no file content is read) for outbound
+// FindBrokenLinks scans link metadata for outbound
 // links pointing to paths that no longer exist - a folder link (trailing "/") is
 // checked with os.Stat, all other targets against the listed files. A repair is
 // suggested when an existing media file's path, read as link text, is the broken
 // link (the old upload inserted the still-encoded media path raw,
 // `media/x%20(1)/pic.png`), or else when exactly one existing file shares the
-// broken link's basename.
+// broken link's basename. A "../" link climbing above the docs root to an existing target
+// (read from the docs' content) is listed as AboveRoot with its target as suggestion, the repair
+// writes it without the extra "../".
 func FindBrokenLinks() ([]BrokenLink, error) {
 	docFiles, err := GetAllPhysicalFiles()
 	if err != nil {
@@ -1247,6 +1250,11 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 		if err != nil || metadata == nil {
 			continue
 		}
+		for _, target := range aboveRootTargets(metadata.Path) {
+			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
+				broken = append(broken, BrokenLink{SourceFile: metadata.Path, Target: target, Suggested: target, AboveRoot: true})
+			}
+		}
 		for _, target := range metadata.UsedLinks {
 			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
 				continue
@@ -1262,6 +1270,30 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 	}
 
 	return broken, nil
+}
+
+// aboveRootTargets returns the target of every link in the doc docPath that climbs above the docs
+// root (pathutils.LinkClimbsAboveRoot), once each.
+func aboveRootTargets(docPath string) []string {
+	if !parser.IsMarkdownExtension(docPath) {
+		return nil
+	}
+	data, err := os.ReadFile(pathutils.ToFullPath(docPath))
+	if err != nil {
+		return nil
+	}
+	var targets []string
+	parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
+		p := l.Path
+		if parser.IsBareLink(l) {
+			p = "./" + p
+		}
+		if target := parser.LinkTarget(docPath, l); pathutils.LinkClimbsAboveRoot(docPath, p) && target != "" && !slices.Contains(targets, target) {
+			targets = append(targets, target)
+		}
+		return "", false
+	})
+	return targets
 }
 
 // isDir reports whether fullPath is an existing folder, the target of a folder link ("../", "/files/").
