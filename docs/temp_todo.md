@@ -63,7 +63,7 @@ follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..40
   - fix: one function (e.g. parser.LinkTarget(docPath string, l parser.Link) string -> metadata path "docs/a.md" / "media/x.png" / "docs/sub/" for folders) used by all of them; the renderer builds its url from that result (appLinkDest) instead of its own branches
   - add a links suite / go test case: for every specialchars name and link kind, the rendered href and the link metadata point at the same file
   - include html src/href: a bare `<img src="pic.png">` in sub/n.md has three meanings today - link metadata reads it from the docs root (NormalizeLinkPath), media relocate from the doc's folder (relocateIndex.resolve default case), and the renderer leaves it untouched (RenderLinks has no LinkHTML handling), so the browser resolves it against the page url /files/sub/n.md. the resolver decides once and RenderLinks rewrites html src/href to that url like markdown links
-- 2. one link walker
+- 2. one link walker - done: parser.walkLinks (masked once), RewriteLinks / ExtractLinks / RenderLinks use it
   - problem: RewriteLinks (rewriteLinkRe, per non-code line part) and RenderLinks (processMdLinkRe on the whole masked content, then processRefDefs as a second replaceOutsideCode pass = second maskCode) are two scanners sharing sub-patterns - they can drift
   - fix: one walker (masked once) that yields each link (parser.Link, its span, its "[text" / "![alt" opening, kind incl. ref defs and html attrs) and lets the caller replace it; RewriteLinks, ExtractLinks and RenderLinks become thin users of it
 - 3. bare links relative to the doc (decision 2B) + admin migration action

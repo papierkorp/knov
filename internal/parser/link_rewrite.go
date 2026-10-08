@@ -1,10 +1,12 @@
 package parser
 
 import (
+	"cmp"
 	"html"
 	"net/url"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"knov/internal/markdown"
@@ -26,14 +28,16 @@ const (
 const wikiLinkPattern = `\[\[([^\[\]\n\x00]+)\]\]`
 
 // a markdown link destination: <...> plus title, or one level of (...) in it - a bare one never
-// starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link). shared by RewriteLinks and
-// RenderLinks so both see the same links
+// starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link)
 const mdLinkDestPattern = `([ \t]*(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*))`
 
 var (
-	// a [[wikilink]] (group 1) or a markdown ](dest) (group 2) in one pass, so a "](" closing a
-	// wikilink is never read as a markdown link - "[[a]](b)" is [[a]] followed by the text "(b)"
-	rewriteLinkRe     = regexp.MustCompile(wikiLinkPattern + `|\]\(` + mdLinkDestPattern + `\)`)
+	// a [[wikilink]] (group 1) or [text](dest) / ![alt](dest) (the text may hold escaped
+	// brackets, group 2, the destination group 3) in one pass, so a "](" closing a wikilink is no
+	// link ("[[a]](b)" is [[a]] and the text "(b)"). The text may span lines and hold code but no
+	// unescaped "[", so a nested ![img](src) or one after a stray "[" matches on its own; the
+	// outer link of nested brackets matches as "](dest)" alone.
+	mdLinkRe          = regexp.MustCompile(wikiLinkPattern + `|(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
@@ -66,9 +70,10 @@ func markdownLinkPath(p string) string {
 // link, as written for an External one), everything else is kept as written: Query "?...",
 // Anchor "#...", Alias "|text" of a wikilink, Title the " title" after a markdown destination (a
 // wiki.js " =WxH" image size is dropped, goldmark doesn't parse it), Angle a markdown <...>
-// destination, kept so its query / anchor may hold spaces. Text and Image are only used by
-// String, for writing a new link. ParseLink reads one, Dest and String write it - the only place
-// link paths are decoded and encoded.
+// destination, kept so its query / anchor may hold spaces. Text is only used by String, for
+// writing a new link, Image by String and set by the link walker (walkLinks) for a markdown
+// image. ParseLink reads one, Dest and String write it - the only place link paths are decoded
+// and encoded.
 type Link struct {
 	Kind     LinkKind
 	Image    bool
@@ -240,76 +245,106 @@ func encodeLinkPath(p string, kind LinkKind) string {
 	return strings.Replace(p, ":", "%3A", strings.Count(seg, ":"))
 }
 
-// RewriteLinks replaces, outside fenced code blocks and inline code, the path of every markdown
-// ](dest), [[wiki]], reference-style [id]: dest and html src/href link (not external ones) for
-// which fn returns a new path: fn gets the link as read by ParseLink and returns the new decoded
-// path, the link is written back with Dest only if the path changed - the rest of the content
-// is kept as-is. Returns the content and whether anything was replaced.
+// RewriteLinks replaces the path of every link walkLinks finds (not external ones) for which fn
+// returns a new path: fn gets the link as read by ParseLink and returns the new decoded path, the
+// link is written back with Dest only if the path changed - the rest of the content is kept
+// as-is. Returns the content and whether anything was replaced.
 // ExtractLinks walks links through this too, so both always see the same links.
 func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool) {
 	changed := false
-	replace := func(dest string, kind LinkKind) string {
-		l := ParseLink(dest, kind)
+	content = walkLinks(content, func(m linkMatch) string {
+		l := m.Link
 		if l.External {
-			return dest
+			return m.whole()
 		}
 		newPath, ok := fn(l)
 		if !ok || newPath == l.Path {
-			return dest
+			return m.whole()
 		}
 		changed = true
 		l.Path = newPath
-		return l.Dest()
-	}
-
-	content = replaceOutsideCode(content, func(part string, wholeLine bool) string {
-		if sub := rewriteRefDefRe.FindStringSubmatch(part); wholeLine && sub != nil {
-			return sub[1] + replace(sub[2], LinkMarkdown)
-		}
-		var b strings.Builder
-		last := 0
-		for _, m := range rewriteLinkRe.FindAllStringSubmatchIndex(part, -1) {
-			b.WriteString(part[last:m[0]])
-			if m[2] != -1 {
-				b.WriteString("[[" + replace(part[m[2]:m[3]], LinkWiki) + "]]")
-			} else {
-				b.WriteString("](" + replace(part[m[4]:m[5]], LinkMarkdown) + ")")
-			}
-			last = m[1]
-		}
-		part = b.String() + part[last:]
-		return rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
-			// the path can't contain quotes, so the last one ends the tag prefix
-			i := strings.LastIndexAny(m, `"'`) + 1
-			return m[:i] + replace(m[i:], LinkHTML)
-		})
+		return m.Prefix + l.Dest() + m.Suffix
 	})
 	return content, changed
 }
 
-// replaceOutsideCode replaces every part of a line outside fenced code blocks and inline `code`
-// spans (maskCode) with fn(part, wholeLine) - the link scanner of RewriteLinks and the renderer, so
-// code is never a link. wholeLine is false for a line with a code span, so it's never a reference definition.
-func replaceOutsideCode(content string, fn func(part string, wholeLine bool) string) string {
-	lines := strings.Split(content, "\n")
-	masked := strings.Split(maskCode(content), "\n")
-	for i, line := range lines {
-		var b strings.Builder
-		for start := 0; start < len(line); {
-			code, end := masked[i][start] == 0, start
-			for end < len(line) && (masked[i][end] == 0) == code {
-				end++
-			}
-			if code {
-				b.WriteString(line[start:end])
-			} else {
-				b.WriteString(fn(line[start:end], end-start == len(line)))
-			}
-			start = end
-		}
-		lines[i] = b.String()
+// linkMatch is one link walkLinks found: Link as read by ParseLink (Image set for a markdown
+// image), Open the "[text" / "![alt" of a markdown ](dest) ("" without one: the outer link of
+// nested brackets), RefDef for a reference definition. The matched text is Prefix + Dest +
+// Suffix: "[[" body "]]", "[text](" dest ")", "[id]: " dest, `<img src="` value.
+type linkMatch struct {
+	Link                       Link
+	Open, Prefix, Dest, Suffix string
+	RefDef                     bool
+}
+
+func (m linkMatch) whole() string { return m.Prefix + m.Dest + m.Suffix }
+
+// walkLinks replaces every markdown [text](dest) / ](dest), [[wikilink]], reference-style
+// [id]: dest and html src/href outside fenced code blocks and inline code with fn(m) - the one
+// link scanner, RewriteLinks, ExtractLinks and RenderLinks only differ in what they write back.
+// The content is masked once (maskCode): markdown and wiki links are matched on the whole
+// content (a link text may span lines and hold code, a destination holding code is no link),
+// reference definitions (only on a line without code) and html attributes line by line. A link
+// overlapping an earlier one (by start, a reference definition before a markdown link before an
+// html attribute) is no link.
+func walkLinks(content string, fn func(m linkMatch) string) string {
+	type span struct {
+		start, end, order int
+		m                 linkMatch
 	}
-	return strings.Join(lines, "\n")
+	var spans []span
+	masked := maskCode(content)
+	for _, i := range mdLinkRe.FindAllStringSubmatchIndex(masked, -1) {
+		if i[2] != -1 {
+			body := content[i[2]:i[3]]
+			spans = append(spans, span{i[0], i[1], 1, linkMatch{Link: ParseLink(body, LinkWiki), Prefix: "[[", Dest: body, Suffix: "]]"}})
+			continue
+		}
+		if strings.Contains(masked[i[6]:i[7]], "\x00") {
+			continue
+		}
+		m := linkMatch{Prefix: content[i[0]:i[6]], Dest: content[i[6]:i[7]], Suffix: ")"}
+		if i[4] != -1 {
+			m.Open = content[i[4]:i[5]]
+		}
+		m.Link = ParseLink(m.Dest, LinkMarkdown)
+		m.Link.Image = strings.HasPrefix(m.Open, "!")
+		spans = append(spans, span{i[0], i[1], 1, m})
+	}
+	offset := 0
+	for _, line := range strings.Split(masked, "\n") {
+		text := content[offset : offset+len(line)]
+		if i := rewriteRefDefRe.FindStringSubmatchIndex(text); i != nil && !strings.Contains(line, "\x00") {
+			m := linkMatch{Prefix: text[i[2]:i[3]], Dest: text[i[4]:i[5]], RefDef: true}
+			m.Link = ParseLink(m.Dest, LinkMarkdown)
+			spans = append(spans, span{offset, offset + len(text), 0, m})
+		}
+		for _, i := range rewriteHTMLAttrRe.FindAllStringSubmatchIndex(line, -1) {
+			if !strings.Contains(line[i[0]:i[1]], "\x00") {
+				m := linkMatch{Prefix: text[i[2]:i[3]], Dest: text[i[4]:i[5]]}
+				m.Link = ParseLink(m.Dest, LinkHTML)
+				spans = append(spans, span{offset + i[0], offset + i[1], 2, m})
+			}
+		}
+		offset += len(line) + 1
+	}
+	slices.SortStableFunc(spans, func(a, b span) int {
+		return cmp.Or(a.start-b.start, a.order-b.order)
+	})
+
+	var b strings.Builder
+	last := 0
+	for _, s := range spans {
+		if s.start < last {
+			continue
+		}
+		b.WriteString(content[last:s.start])
+		b.WriteString(fn(s.m))
+		last = s.end
+	}
+	b.WriteString(content[last:])
+	return b.String()
 }
 
 // maskCode replaces every byte of fenced code blocks and inline `code` spans with "\x00" (line

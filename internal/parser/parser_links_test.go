@@ -225,7 +225,7 @@ func TestExtractLinksDestination(t *testing.T) {
 [ref]: <ref img.png> "title"
 [note]: remember this
 [^1]: footnote text`
-	want := []string{"media/a b.png", "docs/note.md", "docs/img/c.png", "docs/ns:page.md", "docs/C:/x.png", "docs/a_b.md", "docs/sub/_res/a.md", "media/d.png", "docs/ref img.png"}
+	want := []string{"media/a b.png", "docs/note.md", "docs/img/c.png", "media/d.png", "docs/ns:page.md", "docs/C:/x.png", "docs/a_b.md", "docs/sub/_res/a.md", "docs/ref img.png"}
 	if got := NewMarkdownHandler().ExtractLinks([]byte(in), PathlessRender); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
 	}
