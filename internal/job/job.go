@@ -76,6 +76,13 @@ type RepairBrokenLinksResult struct {
 	Skipped  int
 }
 
+// MigrateRelativeLinksResult holds the outcome of a relative links migration run, counted per
+// selected doc and old target.
+type MigrateRelativeLinksResult struct {
+	Migrated int
+	Skipped  int
+}
+
 // BulkDeleteResult holds the outcome of a bulk/folder file delete run.
 type BulkDeleteResult struct {
 	Deleted int

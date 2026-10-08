@@ -212,6 +212,11 @@
       "translation": "Backups"
     },
     {
+      "id": "Bare Links Migration",
+      "message": "Bare Links Migration",
+      "translation": "Migration einfacher Links"
+    },
+    {
       "id": "Barebones history",
       "message": "Barebones history",
       "translation": "Barebones-Verlauf"
@@ -887,6 +892,11 @@
       "translation": "Kanban-Tags"
     },
     {
+      "id": "Keep Old Targets",
+      "message": "Keep Old Targets",
+      "translation": "Alte Ziele behalten"
+    },
+    {
       "id": "Language",
       "message": "Language",
       "translation": "Sprache"
@@ -910,6 +920,11 @@
       "id": "Line Numbers",
       "message": "Line Numbers",
       "translation": "Zeilennummern"
+    },
+    {
+      "id": "Links",
+      "message": "Links",
+      "translation": "Links"
     },
     {
       "id": "List",
@@ -1255,6 +1270,11 @@
       "id": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
       "message": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
       "translation": "Beispieldateien werden beim allerersten Start automatisch eingerichtet. Nutze unten \"Testdaten bereinigen\", um sie zu entfernen."
+    },
+    {
+      "id": "Scan Bare Links",
+      "message": "Scan Bare Links",
+      "translation": "Einfache Links prüfen"
     },
     {
       "id": "Scan Kanban Tags",
@@ -1677,6 +1697,11 @@
       "translation": "Möchtest du die App ausprobieren, ohne deine echten Notizen zu verwenden? Fülle sie mit Beispieldateien."
     },
     {
+      "id": "Where a link points depends on how it is written, for a link in the file sub/n.md:",
+      "message": "Where a link points depends on how it is written, for a link in the file sub/n.md:",
+      "translation": "Wohin ein Link zeigt, hängt davon ab, wie er geschrieben ist, für einen Link in der Datei sub/n.md:"
+    },
+    {
       "id": "Whole-Word Matches Only",
       "message": "Whole-Word Matches Only",
       "translation": "Nur ganze Wörter"
@@ -1965,6 +1990,11 @@
       "id": "backup restored, application restarting...",
       "message": "backup restored, application restarting...",
       "translation": "Backup wiederhergestellt, Anwendung wird neu gestartet..."
+    },
+    {
+      "id": "bare markdown and html links like [x](a.md) are read from the folder of their file now, not from the docs root. scan for links whose target changed and rewrite the selected ones to their old target (/a.md)",
+      "message": "bare markdown and html links like [x](a.md) are read from the folder of their file now, not from the docs root. scan for links whose target changed and rewrite the selected ones to their old target (/a.md)",
+      "translation": "einfache Markdown- und HTML-Links wie [x](a.md) werden jetzt vom Ordner ihrer Datei aus gelesen, nicht mehr vom docs-Stammordner. nach Links suchen, deren Ziel sich geändert hat, und die ausgewählten auf ihr altes Ziel (/a.md) umschreiben"
     },
     {
       "id": "barebone theme - home page",
@@ -3262,6 +3292,11 @@
       "translation": "Fehler beim Suchen nach falsch abgelegten Medien"
     },
     {
+      "id": "failed to scan for relative links",
+      "message": "failed to scan for relative links",
+      "translation": "Suche nach relativen Links fehlgeschlagen"
+    },
+    {
       "id": "failed to search git history",
       "message": "failed to search git history",
       "translation": "Fehler bei der Suche im Git-Verlauf"
@@ -3652,6 +3687,31 @@
       "translation": "Von-Datum"
     },
     {
+      "id": "from the docs root (a.md)",
+      "message": "from the docs root (a.md)",
+      "translation": "vom docs-Stammordner aus (a.md)"
+    },
+    {
+      "id": "from the docs root, a wikilink is a page name (a.md)",
+      "message": "from the docs root, a wikilink is a page name (a.md)",
+      "translation": "vom docs-Stammordner aus, ein Wikilink ist ein Seitenname (a.md)"
+    },
+    {
+      "id": "from the folder of the file",
+      "message": "from the folder of the file",
+      "translation": "vom Ordner der Datei aus"
+    },
+    {
+      "id": "from the folder of the file (sub/a.md, a.md)",
+      "message": "from the folder of the file (sub/a.md, a.md)",
+      "translation": "vom Ordner der Datei aus (sub/a.md, a.md)"
+    },
+    {
+      "id": "from the media folder",
+      "message": "from the media folder",
+      "translation": "aus dem Medienordner"
+    },
+    {
       "id": "full backup history",
       "message": "full backup history",
       "translation": "vollständiger Backup-Verlauf"
@@ -3877,6 +3937,11 @@
       "translation": "ungültige Zeile"
     },
     {
+      "id": "invalid migrate entry",
+      "message": "invalid migrate entry",
+      "translation": "ungültiger Migrationseintrag"
+    },
+    {
       "id": "invalid path",
       "message": "invalid path",
       "translation": "ungültiger Pfad"
@@ -3987,6 +4052,11 @@
       "translation": "Limit"
     },
     {
+      "id": "link",
+      "message": "link",
+      "translation": "Link"
+    },
+    {
       "id": "link copied to clipboard",
       "message": "link copied to clipboard",
       "translation": "Link in Zwischenablage kopiert"
@@ -3995,6 +4065,16 @@
       "id": "links from",
       "message": "links from",
       "translation": "Links von"
+    },
+    {
+      "id": "links migrated in {Integer} files",
+      "message": "links migrated in {Integer} files",
+      "translation": "Links in {Integer} Dateien migriert"
+    },
+    {
+      "id": "links migrated in {Integer} files, {Integer_1} could not be matched in their file",
+      "message": "links migrated in {Integer} files, {Integer_1} could not be matched in their file",
+      "translation": "Links in {Integer} Dateien migriert, {Integer_1} konnten in ihrer Datei nicht zugeordnet werden"
     },
     {
       "id": "links to",
@@ -4185,6 +4265,11 @@
       "id": "metadata saved",
       "message": "metadata saved",
       "translation": "Metadaten gespeichert"
+    },
+    {
+      "id": "missing",
+      "message": "missing",
+      "translation": "fehlt"
     },
     {
       "id": "missing board",
@@ -4407,6 +4492,11 @@
       "translation": "neuer Pfad ist erforderlich"
     },
     {
+      "id": "new target",
+      "message": "new target",
+      "translation": "neues Ziel"
+    },
+    {
       "id": "next",
       "message": "next",
       "translation": "weiter"
@@ -4530,6 +4620,11 @@
       "id": "no kanban issues found",
       "message": "no kanban issues found",
       "translation": "keine Kanban-Probleme gefunden"
+    },
+    {
+      "id": "no links changed their target",
+      "message": "no links changed their target",
+      "translation": "keine Links haben ihr Ziel geändert"
     },
     {
       "id": "no longer available",
@@ -4670,6 +4765,11 @@
       "id": "not used in any files",
       "message": "not used in any files",
       "translation": "in keiner Datei verwendet"
+    },
+    {
+      "id": "old target (kept)",
+      "message": "old target (kept)",
+      "translation": "altes Ziel (bleibt)"
     },
     {
       "id": "only .ico, .png and .svg files are allowed",
@@ -5610,11 +5710,6 @@
       "id": "upgrading from",
       "message": "upgrading from",
       "translation": "Update von"
-    },
-    {
-      "id": "upload",
-      "message": "upload",
-      "translation": "hochladen"
     },
     {
       "id": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",

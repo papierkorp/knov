@@ -108,7 +108,7 @@ func resetAndSeed() error {
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(linkedFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := writeFile(testPath(linkerFile), "# jobs-linker.md\n\nSee ["+linkedFile+"]("+testPath(linkedFile)+")\n"); err != nil {
+	if err := writeFile(testPath(linkerFile), "# jobs-linker.md\n\nSee ["+linkedFile+"](/"+testPath(linkedFile)+")\n"); err != nil {
 		return err
 	}
 	if err := test.SeedMetadataRaw(&files.Metadata{Path: withPrefix(linkerFile), Editor: files.EditorTypeCodeMirror}); err != nil {

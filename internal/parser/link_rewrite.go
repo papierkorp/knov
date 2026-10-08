@@ -398,18 +398,47 @@ func IsAppRouteLink(p string, kind LinkKind) bool {
 // ("docs/a.md", "media/x.png", "docs/sub/" for a folder) - "" for an external link, a pure
 // anchor or an html link to an app route. The one place a link path is resolved: rendering,
 // link metadata, rename, move and media relocation all read the target from here.
-// A "./" or "../" path is read from docPath's folder, any other from the docs root (a /files/
-// url too), a "media/" or "/media/" one from the media folder; a bare path naming an existing
+// The path is read like ResolveLinkPath: a bare markdown / html one and a "./" or "../" one from
+// docPath's folder, a wikilink and a leading "/" (a /files/ url too) from the docs root, a
+// "media/" or "/media/" one from the media folder; a path without "media/" naming an existing
 // media file is that media file (links copied from the media page have no "media/" prefix).
 func LinkTarget(docPath string, l Link) string {
+	return linkTarget(ResolveLinkPath(docPath, l), l)
+}
+
+// DocsRootLinkTarget is the LinkTarget l had while a bare markdown or html path was read from the
+// docs root - for the relative links migration (files.ScanRelativeLinks).
+func DocsRootLinkTarget(docPath string, l Link) string {
+	return linkTarget(pathutils.ResolveRelativeLink(docPath, l.Path), l)
+}
+
+// linkTarget is the LinkTarget of l with its path p read from the docs root.
+func linkTarget(p string, l Link) string {
 	if l.External || l.Path == "" || IsAppRouteLink(l.Path, l.Kind) {
 		return ""
 	}
-	p := utils.NormalizeLinkPath(pathutils.ResolveRelativeLink(docPath, l.Path))
+	p = utils.NormalizeLinkPath(p)
 	if !strings.HasPrefix(p, "media/") && !strings.HasPrefix(p, "docs/") {
 		if _, err := os.Stat(pathutils.ToMediaPath(p)); err == nil {
 			p = "media/" + p
 		}
 	}
 	return pathutils.ToWithPrefix(p)
+}
+
+// IsBareLink reports whether l is a markdown or html link whose path has no "./", "../", leading
+// "/" or "media/" - read from the folder of its doc like "./" (CommonMark), see LinkTarget.
+func IsBareLink(l Link) bool {
+	return l.Kind != LinkWiki && !l.External && l.Path != "" && !strings.HasPrefix(l.Path, "/") &&
+		!strings.HasPrefix(l.Path, "media/") && !pathutils.IsRelativeLink(l.Path)
+}
+
+// ResolveLinkPath is the path of l written in the doc docPath, read from the docs root: a bare
+// (IsBareLink), "./" or "../" one resolved against docPath's folder (pathutils.ResolveRelativeLink,
+// "/" for the docs root itself), any other as written.
+func ResolveLinkPath(docPath string, l Link) string {
+	if IsBareLink(l) {
+		return pathutils.ResolveRelativeLink(docPath, "./"+l.Path)
+	}
+	return pathutils.ResolveRelativeLink(docPath, l.Path)
 }

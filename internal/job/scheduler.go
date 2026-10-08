@@ -390,6 +390,16 @@ func RunRepairBrokenLinks(entries []string) (RepairBrokenLinksResult, error) {
 	return j.result, nil
 }
 
+// RunMigrateRelativeLinks rewrites the selected bare links to their docs-root form with dedup
+// protection - shares the lock with the broken links repair, both rewrite links.
+func RunMigrateRelativeLinks(changes []files.RelativeLinkChange) (MigrateRelativeLinksResult, error) {
+	j := &migrateRelativeLinksJob{changes: changes}
+	if err := execute(&repairLinksMu, j); err != nil {
+		return MigrateRelativeLinksResult{}, err
+	}
+	return j.result, nil
+}
+
 // RunGitPull runs a git pull --rebase with dedup protection.
 func RunGitPull() error {
 	return execute(&gitPullMu, &gitPullJob{})

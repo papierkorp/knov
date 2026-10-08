@@ -365,6 +365,67 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]int{"repaired": repaired, "skipped": skipped}, html)
 }
 
+// @Summary Scan for bare links read from their doc's folder
+// @Description Lists every bare markdown or html link (no "./", "../", leading "/" or "media/") whose target changed when bare links started to be read from the doc's folder instead of the docs root, with its old and new target. Changes nothing.
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} files.RelativeLinkChange
+// @Failure 500 {string} string "failed to scan for relative links"
+// @Router /api/metadata/relative-links [get]
+func handleAPIScanRelativeLinks(w http.ResponseWriter, r *http.Request) {
+	changes, err := files.ScanRelativeLinks()
+	if err != nil {
+		logging.LogError(logging.KeyRepairLinks, "failed to scan for relative links: %v", err)
+		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for relative links"))
+		return
+	}
+	writeResponse(w, r, changes, render.RenderRelativeLinksHTML(changes))
+}
+
+// @Summary Keep the old targets of selected bare links
+// @Description Rewrites the selected bare links of a relative links scan to their docs-root form ("/a.md", "/media/x.png"), so they keep pointing at their old target
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param migrate formData []string false "Entries as a json array [sourceFile, oldTarget], repeatable"
+// @Success 200 {string} string "links migrated"
+// @Failure 400 {string} string "invalid migrate entry"
+// @Failure 409 {string} string "already running"
+// @Router /api/metadata/relative-links/migrate [post]
+func handleAPIMigrateRelativeLinks(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+	var changes []files.RelativeLinkChange
+	for _, entry := range r.Form["migrate"] {
+		var pair [2]string
+		if err := json.Unmarshal([]byte(entry), &pair); err != nil || pair[0] == "" || pair[1] == "" {
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid migrate entry"))
+			return
+		}
+		changes = append(changes, files.RelativeLinkChange{SourceFile: pair[0], OldTarget: pair[1]})
+	}
+
+	result, err := job.RunMigrateRelativeLinks(changes)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		writeAPIError(w, r, status, err.Error())
+		return
+	}
+
+	remaining, _ := files.ScanRelativeLinks()
+	if result.Skipped > 0 {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "links migrated in %d files, %d could not be matched in their file", result.Migrated, result.Skipped))
+	} else {
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "links migrated in %d files", result.Migrated))
+	}
+	writeResponse(w, r, map[string]int{"migrated": result.Migrated, "skipped": result.Skipped}, render.RenderRelativeLinksHTML(remaining))
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- GET INDIVIDUAL ----------------------------------
 // ----------------------------------------------------------------------------------------

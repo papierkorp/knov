@@ -70,7 +70,8 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 	const doc = "docs/sub/n.md"
 	for _, p := range specialchars.Names {
 		img, pdf := strings.Replace(p, ".md", ".png", 1), strings.Replace(p, ".md", ".pdf", 1)
-		for _, m := range []string{img, pdf} {
+		// at the media root for the media/ forms and in the doc's folder for the bare ones
+		for _, m := range []string{img, pdf, "sub/" + img, "sub/" + pdf} {
 			full := filepath.Join(dir, "media", filepath.FromSlash(m))
 			if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 				t.Fatal(err)

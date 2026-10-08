@@ -66,7 +66,7 @@ follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..40
 - 2. one link walker - done: parser.walkLinks (masked once), RewriteLinks / ExtractLinks / RenderLinks use it
   - problem: RewriteLinks (rewriteLinkRe, per non-code line part) and RenderLinks (processMdLinkRe on the whole masked content, then processRefDefs as a second replaceOutsideCode pass = second maskCode) are two scanners sharing sub-patterns - they can drift
   - fix: one walker (masked once) that yields each link (parser.Link, its span, its "[text" / "![alt" opening, kind incl. ref defs and html attrs) and lets the caller replace it; RewriteLinks, ExtractLinks and RenderLinks become thin users of it
-- 3. bare links relative to the doc (decision 2B) + admin migration action
+- 3. bare links relative to the doc (decision 2B) + admin migration action - done: parser.IsBareLink / ResolveLinkPath / DocsRootLinkTarget, files.ScanRelativeLinks / MigrateRelativeLinks, admin "Bare Links Migration". decided when doing it: a bare `media/...` link stays media (upload and media autocomplete insert it), html src/href follow markdown
   - do after 1 (then it is a change in one place)
   - change: a bare markdown link (`[x](a.md)` in sub/n.md) is read from the doc's folder like `./a.md` (CommonMark / GitHub behaviour), a leading "/" (`[x](/a.md)`) or `/files/` stays docs-root
   - decided: wikilinks stay docs-root (`[[a]]` in sub/n.md -> a.md) - wikilinks are page names like in dokuwiki / mediawiki / wiki.js, the editor autocomplete and .book/.index entries already write them docs-root, so no wikilink migration. `[[./a]]` / `[[../a]]` stay doc-relative (already implemented). the rule for the help page:

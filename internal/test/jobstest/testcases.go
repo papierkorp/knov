@@ -48,11 +48,11 @@ func caseMetadataFullRebuild() test.CaseResult {
 
 	success := slices.Equal(child.Ancestor, []string{withPrefix(parentFile)}) &&
 		slices.Contains(parent.Kids, withPrefix(childFile)) &&
-		slices.Contains(linker.UsedLinks, testPath(linkedFile))
+		slices.Contains(linker.UsedLinks, withPrefix(linkedFile))
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: fmt.Sprintf("child.Ancestor=[%s], parent.Kids contains %s, linker.UsedLinks contains %s", withPrefix(parentFile), withPrefix(childFile), testPath(linkedFile)),
+		Expected: fmt.Sprintf("child.Ancestor=[%s], parent.Kids contains %s, linker.UsedLinks contains %s", withPrefix(parentFile), withPrefix(childFile), withPrefix(linkedFile)),
 		Actual:   fmt.Sprintf("ancestor=%v kids=%v usedLinks=%v", child.Ancestor, parent.Kids, linker.UsedLinks),
 		Success:  success,
 	}

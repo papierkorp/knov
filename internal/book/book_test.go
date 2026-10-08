@@ -163,16 +163,17 @@ func TestFileRefSectionSpecialChars(t *testing.T) {
 	}
 }
 
-// a chapter's "./" and "../" links are resolved against the chapter, the book renders pathless
+// a chapter's bare, "./" and "../" links are resolved against the chapter, its wikilinks and "/"
+// links stay docs-root - the book renders pathless
 func TestComposeRelativeLinks(t *testing.T) {
 	full := pathutils.ToDocsPath("rel/sub/ch.md")
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		t.Fatal(err)
 	}
-	if err := contentStorage.WriteFile(full, []byte("[a](../a.md) [[./b]] ![c](./c.png) [d](d.md)\n"), 0644); err != nil {
+	if err := contentStorage.WriteFile(full, []byte("[a](../a.md) [[./b]] ![c](./c.png) [d](d.md) [e](/e.md) [[f]]\n"), 0644); err != nil {
 		t.Fatal(err)
 	}
-	want := "[a](rel/a.md) [[rel/sub/b]] ![c](rel/sub/c.png) [d](d.md)"
+	want := "[a](rel/a.md) [[rel/sub/b]] ![c](rel/sub/c.png) [d](rel/sub/d.md) [e](/e.md) [[f]]"
 	if got := ComposeEntries("test.book", []Entry{{Type: EntryFile, Value: EncodeFileRef("rel/sub/ch.md", "")}}); got != want {
 		t.Errorf("ComposeEntries = %q, want %q", got, want)
 	}

@@ -2,7 +2,9 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
+	"html"
 	"path/filepath"
 	"strings"
 
@@ -182,6 +184,41 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "Repair Selected"))
 	html.WriteString(`</form></div>`)
 	return html.String()
+}
+
+// RenderRelativeLinksHTML renders the scan result of ScanRelativeLinks as a checkbox list of bare
+// links to rewrite to their old, docs-root target - checked where that old target exists.
+func RenderRelativeLinksHTML(changes []files.RelativeLinkChange) string {
+	lang := configmanager.GetLanguage()
+	var out strings.Builder
+	out.WriteString(`<div id="component-relative-links">`)
+	if len(changes) == 0 {
+		fmt.Fprintf(&out, `<p class="no-items">%s</p></div>`, translation.SprintfForRequest(lang, "no links changed their target"))
+		return out.String()
+	}
+
+	out.WriteString(`<form hx-post="/api/metadata/relative-links/migrate" hx-target="#relative-links-result" hx-swap="innerHTML">`)
+	fmt.Fprintf(&out, `<table class="broken-links-table"><thead><tr><th><input type="checkbox" onclick="%s"></th>`, toggleAllCheckboxesJS)
+	fmt.Fprintf(&out, `<th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		translation.SprintfForRequest(lang, "file"),
+		translation.SprintfForRequest(lang, "link"),
+		translation.SprintfForRequest(lang, "old target (kept)"),
+		translation.SprintfForRequest(lang, "new target"))
+	for _, c := range changes {
+		value, _ := json.Marshal([2]string{c.SourceFile, c.OldTarget})
+		checked, oldTarget := "", html.EscapeString(c.OldTarget)
+		if c.OldTargetExists {
+			checked = " checked"
+		} else {
+			oldTarget += " (" + translation.SprintfForRequest(lang, "missing") + ")"
+		}
+		fmt.Fprintf(&out, `<tr><td><input type="checkbox" name="migrate" value="%s"%s></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			html.EscapeString(string(value)), checked, html.EscapeString(c.SourceFile), html.EscapeString(c.Link), oldTarget, html.EscapeString(c.NewTarget))
+	}
+	out.WriteString(`</tbody></table>`)
+	fmt.Fprintf(&out, `<button type="submit" class="btn-danger">%s</button>`, translation.SprintfForRequest(lang, "Keep Old Targets"))
+	out.WriteString(`</form></div>`)
+	return out.String()
 }
 
 // brokenLinkSuggestedCell renders the suggested-fix path, with a thumbnail

@@ -217,13 +217,13 @@ func (idx *relocateIndex) relinkFunc(doc string) func(l parser.Link) (string, bo
 	}
 }
 
-// resolve resolves a link written in doc to a key of moved: its literal path (a real "docs" or
-// "files" folder wins over the docs-root prefix, and the files are already moved, so a bare path
-// may read as the moved media file) and its docs LinkTarget, and the way imported wikis write
-// them: a root ("/", wiki.js) link from doc's folder and each parent folder before those, a bare
-// markdown or html link from doc's folder after them. A "/media/" link to an existing media file
-// is left alone. Stops at the first candidate that is an existing, not moved file, so a link
-// never gets redirected to a same-named file higher up.
+// resolve resolves a link written in doc to a key of moved: its literal path read from the docs
+// root (parser.ResolveLinkPath - a real "docs" or "files" folder wins over the docs-root prefix,
+// and the files are already moved, so the path may read as the moved media file) and its docs
+// LinkTarget, a root ("/", wiki.js) link from doc's folder and each parent folder first, the way
+// imported wikis write them. A "/media/" link to an existing media file is left
+// alone. Stops at the first candidate that is an existing, not moved file, so a link never gets
+// redirected to a same-named file higher up.
 func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 	if l.External || l.Path == "" {
 		return ""
@@ -233,7 +233,6 @@ func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 			return ""
 		}
 	}
-	resolved := pathutils.ResolveRelativeLink("docs/"+doc, l.Path)
 	var candidates []string
 	if strings.HasPrefix(l.Path, "/") {
 		for dir := path.Dir(doc); dir != "."; dir = path.Dir(dir) {
@@ -241,12 +240,9 @@ func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 		}
 	}
 	// an html root link has no LinkTarget (read as app route), only its literal path
-	candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+resolved), "/"))
+	candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+parser.ResolveLinkPath("docs/"+doc, l)), "/"))
 	if rel, ok := strings.CutPrefix(parser.LinkTarget("docs/"+doc, l), "docs/"); ok {
 		candidates = append(candidates, rel)
-	}
-	if resolved == l.Path && !strings.HasPrefix(l.Path, "/") && l.Kind != parser.LinkWiki {
-		candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+path.Join(path.Dir(doc), l.Path)), "/"))
 	}
 	for _, p := range candidates {
 		if _, ok := idx.moved[p]; ok {

@@ -277,6 +277,17 @@
             </div>
         </section>
 
+        <section class="settings-section settings-section-wide">
+            <h2>{{T "Bare Links Migration"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "bare markdown and html links like [x](a.md) are read from the folder of their file now, not from the docs root. scan for links whose target changed and rewrite the selected ones to their old target (/a.md)"}}</div>
+                <button type="button" class="btn-secondary"
+                        hx-get="/api/metadata/relative-links"
+                        hx-target="#relative-links-result" hx-swap="innerHTML">{{T "Scan Bare Links"}}</button>
+                <div id="relative-links-result" style="margin-top:12px;"></div>
+            </div>
+        </section>
+
     </div>
 </div>
 {{ end }}

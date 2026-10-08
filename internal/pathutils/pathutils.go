@@ -215,7 +215,7 @@ func MediaRoot() string { return getMediaPath() }
 // -> "a/b.md"), bare "." and ".." too, read as the folder "./" and "../" - one climbing above the docs root stops there, like a url,
 // and one to the docs root itself is "/". Other link paths are returned unchanged.
 func ResolveRelativeLink(docPath, link string) string {
-	if link != "." && link != ".." && !strings.HasPrefix(link, "./") && !strings.HasPrefix(link, "../") {
+	if !IsRelativeLink(link) {
 		return link
 	}
 	resolved := strings.TrimPrefix(path.Join("/", path.Dir(ToRelative(docPath)), link), "/")
@@ -226,6 +226,12 @@ func ResolveRelativeLink(docPath, link string) string {
 		resolved += "/"
 	}
 	return resolved
+}
+
+// IsRelativeLink reports whether a decoded link path is written relative to its doc's folder:
+// "./", "../", "." or "..".
+func IsRelativeLink(link string) bool {
+	return link == "." || link == ".." || strings.HasPrefix(link, "./") || strings.HasPrefix(link, "../")
 }
 
 // RelativeLink is the inverse of ResolveRelativeLink: the "./" or "../" link path from the folder of

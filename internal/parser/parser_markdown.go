@@ -826,8 +826,8 @@ func processMarkdownLink(m linkMatch, docPath string) string {
 		return m.whole()
 	}
 	target := LinkTarget(docPath, l)
-	l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
-	// an image is rendered from its destination by goldmark, written back normalized
+	l.Path = ResolveLinkPath(docPath, l)
+	// an image is rendered from its destination by goldmark, written back read from the docs root
 	if l.Image {
 		return m.Prefix + l.Dest() + m.Suffix
 	}
@@ -893,7 +893,7 @@ func linkAnchor(l Link, target string) string {
 
 // refDefDest is the destination RenderLinks writes for the reference definition m, like
 // processMarkdownLink - goldmark would resolve it against the page. an image one stays as written,
-// a "./" or "../" one only resolved to its docs-root path (rendered from the destination like an
+// only resolved to its docs-root path (ResolveLinkPath, rendered from the destination like an
 // inline image).
 func refDefDest(m linkMatch, docPath string) string {
 	l := m.Link
@@ -902,7 +902,7 @@ func refDefDest(m linkMatch, docPath string) string {
 		return m.Dest
 	}
 	written := l.Path
-	l.Path = pathutils.ResolveRelativeLink(docPath, l.Path)
+	l.Path = ResolveLinkPath(docPath, l)
 	if configmanager.IsImageExtension(strings.ToLower(path.Ext(target))) {
 		if l.Path == written {
 			return m.Dest

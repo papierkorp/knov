@@ -353,12 +353,12 @@ func expandFilters(bookPath string, entries []Entry) []Entry {
 	return out
 }
 
-// resolveRelativeLinks rewrites the "./" and "../" links of content read from the docs file p to
-// docs-root paths, since the composed book is rendered without a path - they read as the same
-// parser.LinkTarget there.
+// resolveRelativeLinks rewrites the bare, "./" and "../" links of content read from the docs file
+// p to docs-root paths (parser.ResolveLinkPath), since the composed book is rendered without a
+// path - they read as the same parser.LinkTarget there.
 func resolveRelativeLinks(p, content string) string {
 	content, _ = parser.RewriteLinks(content, func(l parser.Link) (string, bool) {
-		return pathutils.ResolveRelativeLink(p, l.Path), true
+		return parser.ResolveLinkPath(p, l), true
 	})
 	return content
 }

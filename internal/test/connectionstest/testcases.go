@@ -80,10 +80,10 @@ func caseUsedLinks() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	success := slices.Contains(linker.UsedLinks, testPath(linkedFile))
+	success := slices.Contains(linker.UsedLinks, withPrefix(linkedFile))
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: fmt.Sprintf("UsedLinks contains %s", testPath(linkedFile)),
+		Expected: fmt.Sprintf("UsedLinks contains %s", withPrefix(linkedFile)),
 		Actual:   fmt.Sprintf("%v", linker.UsedLinks),
 		Success:  success,
 	}

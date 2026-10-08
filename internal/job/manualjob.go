@@ -340,6 +340,45 @@ func (j *repairBrokenLinksJob) Message() string {
 }
 
 // ----------------------------------------------------------------------------------------
+// ------------------------------ migrateRelativeLinksJob ---------------------------------
+// ----------------------------------------------------------------------------------------
+
+type migrateRelativeLinksJob struct {
+	changes []files.RelativeLinkChange
+	result  MigrateRelativeLinksResult
+}
+
+func (j *migrateRelativeLinksJob) Name() string { return "migrate-relative-links" }
+
+func (j *migrateRelativeLinksJob) Run(_ context.Context) error {
+	var result MigrateRelativeLinksResult
+	for _, c := range j.changes {
+		ok, err := files.MigrateRelativeLinks(c.SourceFile, c.OldTarget)
+		if err != nil || !ok {
+			logging.LogWarning(logging.KeyRepairLinks, "skipped relative links migration: %s: %s (found: %v, error: %v)", c.SourceFile, c.OldTarget, ok, err)
+			result.Skipped++
+			continue
+		}
+		logging.LogInfo(logging.KeyRepairLinks, "migrated relative links: %s: %s", c.SourceFile, c.OldTarget)
+		go git.CommitFile(pathutils.ToFullPath(c.SourceFile))
+		result.Migrated++
+	}
+
+	if result.Migrated > 0 {
+		files.RefreshCaches()
+	}
+
+	j.result = result
+	return nil
+}
+
+func (j *migrateRelativeLinksJob) Output() any { return j.result }
+
+func (j *migrateRelativeLinksJob) Message() string {
+	return fmt.Sprintf("migrated links in %d files, %d skipped", j.result.Migrated, j.result.Skipped)
+}
+
+// ----------------------------------------------------------------------------------------
 // -------------------------------------- gitPullJob --------------------------------------
 // ----------------------------------------------------------------------------------------
 

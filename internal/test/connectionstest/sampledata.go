@@ -83,7 +83,7 @@ func resetAndSeed() error {
 	// filename wouldn't resolve to linkedFile's actual metadata path when UsedLinks/
 	// LinksToHere are computed below, since link hrefs aren't resolved relative to the
 	// linking file's own folder.
-	if err := writeFile(testPath(linkerFile), "# conn-linker.md\n\nSee ["+linkedFile+"]("+testPath(linkedFile)+")\n"); err != nil {
+	if err := writeFile(testPath(linkerFile), "# conn-linker.md\n\nSee ["+linkedFile+"](/"+testPath(linkedFile)+")\n"); err != nil {
 		return err
 	}
 

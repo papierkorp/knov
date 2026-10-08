@@ -360,6 +360,19 @@ definitions:
       url:
         type: string
     type: object
+  files.RelativeLinkChange:
+    properties:
+      link:
+        type: string
+      newTarget:
+        type: string
+      oldTarget:
+        type: string
+      oldTargetExists:
+        type: boolean
+      sourceFile:
+        type: string
+    type: object
   files.TagCount:
     additionalProperties:
       type: integer
@@ -4414,6 +4427,63 @@ paths:
               $ref: '#/definitions/files.Reference'
             type: array
       summary: Add a reference to a file
+      tags:
+      - metadata
+  /api/metadata/relative-links:
+    get:
+      description: Lists every bare markdown or html link (no "./", "../", leading
+        "/" or "media/") whose target changed when bare links started to be read from
+        the doc's folder instead of the docs root, with its old and new target. Changes
+        nothing.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.RelativeLinkChange'
+            type: array
+        "500":
+          description: failed to scan for relative links
+          schema:
+            type: string
+      summary: Scan for bare links read from their doc's folder
+      tags:
+      - metadata
+  /api/metadata/relative-links/migrate:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Rewrites the selected bare links of a relative links scan to their
+        docs-root form ("/a.md", "/media/x.png"), so they keep pointing at their old
+        target
+      parameters:
+      - collectionFormat: csv
+        description: Entries as a json array [sourceFile, oldTarget], repeatable
+        in: formData
+        items:
+          type: string
+        name: migrate
+        type: array
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: links migrated
+          schema:
+            type: string
+        "400":
+          description: invalid migrate entry
+          schema:
+            type: string
+        "409":
+          description: already running
+          schema:
+            type: string
+      summary: Keep the old targets of selected bare links
       tags:
       - metadata
   /api/metadata/tags:

@@ -212,6 +212,11 @@
       "translation": ""
     },
     {
+      "id": "Bare Links Migration",
+      "message": "Bare Links Migration",
+      "translation": ""
+    },
+    {
       "id": "Barebones history",
       "message": "Barebones history",
       "translation": ""
@@ -887,6 +892,11 @@
       "translation": ""
     },
     {
+      "id": "Keep Old Targets",
+      "message": "Keep Old Targets",
+      "translation": ""
+    },
+    {
       "id": "Language",
       "message": "Language",
       "translation": ""
@@ -909,6 +919,11 @@
     {
       "id": "Line Numbers",
       "message": "Line Numbers",
+      "translation": ""
+    },
+    {
+      "id": "Links",
+      "message": "Links",
       "translation": ""
     },
     {
@@ -1254,6 +1269,11 @@
     {
       "id": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
       "message": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
+      "translation": ""
+    },
+    {
+      "id": "Scan Bare Links",
+      "message": "Scan Bare Links",
       "translation": ""
     },
     {
@@ -1677,6 +1697,11 @@
       "translation": ""
     },
     {
+      "id": "Where a link points depends on how it is written, for a link in the file sub/n.md:",
+      "message": "Where a link points depends on how it is written, for a link in the file sub/n.md:",
+      "translation": ""
+    },
+    {
       "id": "Whole-Word Matches Only",
       "message": "Whole-Word Matches Only",
       "translation": ""
@@ -1964,6 +1989,11 @@
     {
       "id": "backup restored, application restarting...",
       "message": "backup restored, application restarting...",
+      "translation": ""
+    },
+    {
+      "id": "bare markdown and html links like [x](a.md) are read from the folder of their file now, not from the docs root. scan for links whose target changed and rewrite the selected ones to their old target (/a.md)",
+      "message": "bare markdown and html links like [x](a.md) are read from the folder of their file now, not from the docs root. scan for links whose target changed and rewrite the selected ones to their old target (/a.md)",
       "translation": ""
     },
     {
@@ -3262,6 +3292,11 @@
       "translation": ""
     },
     {
+      "id": "failed to scan for relative links",
+      "message": "failed to scan for relative links",
+      "translation": ""
+    },
+    {
       "id": "failed to search git history",
       "message": "failed to search git history",
       "translation": ""
@@ -3652,6 +3687,31 @@
       "translation": ""
     },
     {
+      "id": "from the docs root (a.md)",
+      "message": "from the docs root (a.md)",
+      "translation": ""
+    },
+    {
+      "id": "from the docs root, a wikilink is a page name (a.md)",
+      "message": "from the docs root, a wikilink is a page name (a.md)",
+      "translation": ""
+    },
+    {
+      "id": "from the folder of the file",
+      "message": "from the folder of the file",
+      "translation": ""
+    },
+    {
+      "id": "from the folder of the file (sub/a.md, a.md)",
+      "message": "from the folder of the file (sub/a.md, a.md)",
+      "translation": ""
+    },
+    {
+      "id": "from the media folder",
+      "message": "from the media folder",
+      "translation": ""
+    },
+    {
       "id": "full backup history",
       "message": "full backup history",
       "translation": ""
@@ -3877,6 +3937,11 @@
       "translation": ""
     },
     {
+      "id": "invalid migrate entry",
+      "message": "invalid migrate entry",
+      "translation": ""
+    },
+    {
       "id": "invalid path",
       "message": "invalid path",
       "translation": ""
@@ -3987,6 +4052,11 @@
       "translation": ""
     },
     {
+      "id": "link",
+      "message": "link",
+      "translation": ""
+    },
+    {
       "id": "link copied to clipboard",
       "message": "link copied to clipboard",
       "translation": ""
@@ -3994,6 +4064,16 @@
     {
       "id": "links from",
       "message": "links from",
+      "translation": ""
+    },
+    {
+      "id": "links migrated in {Integer} files",
+      "message": "links migrated in {Integer} files",
+      "translation": ""
+    },
+    {
+      "id": "links migrated in {Integer} files, {Integer_1} could not be matched in their file",
+      "message": "links migrated in {Integer} files, {Integer_1} could not be matched in their file",
       "translation": ""
     },
     {
@@ -4184,6 +4264,11 @@
     {
       "id": "metadata saved",
       "message": "metadata saved",
+      "translation": ""
+    },
+    {
+      "id": "missing",
+      "message": "missing",
       "translation": ""
     },
     {
@@ -4407,6 +4492,11 @@
       "translation": ""
     },
     {
+      "id": "new target",
+      "message": "new target",
+      "translation": ""
+    },
+    {
       "id": "next",
       "message": "next",
       "translation": ""
@@ -4529,6 +4619,11 @@
     {
       "id": "no kanban issues found",
       "message": "no kanban issues found",
+      "translation": ""
+    },
+    {
+      "id": "no links changed their target",
+      "message": "no links changed their target",
       "translation": ""
     },
     {
@@ -4669,6 +4764,11 @@
     {
       "id": "not used in any files",
       "message": "not used in any files",
+      "translation": ""
+    },
+    {
+      "id": "old target (kept)",
+      "message": "old target (kept)",
       "translation": ""
     },
     {
@@ -5609,11 +5709,6 @@
     {
       "id": "upgrading from",
       "message": "upgrading from",
-      "translation": ""
-    },
-    {
-      "id": "upload",
-      "message": "upload",
       "translation": ""
     },
     {

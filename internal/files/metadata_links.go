@@ -630,22 +630,33 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 	return nil
 }
 
-// rebuildLinkTarget reconstructs a link target for newPath, preserving whether
-// the original link used an absolute "/files/..." view URL, a "/media/..." URL or a bare
-// relative path. html src/href always get a URL, a bare path would resolve against the page.
+// rebuildLinkTarget writes the path of the markdown or html link l in the doc docPath pointing at
+// newPath, keeping how l was written: a "/media/" or "/files/" url (html always gets one, a bare
+// path would resolve against the page), "media/" for a media file linked without leading "/",
+// "/" + the docs-root path for a "/" link and the path from docPath's folder for a bare one.
 // Returns the decoded link path, RewriteLinks encodes it (so it's no url built by hand).
-func rebuildLinkTarget(originalTarget, newPath string, kind parser.LinkKind) string {
-	html := kind == parser.LinkHTML
-	if rel, ok := strings.CutPrefix(newPath, "media/"); ok && (html || strings.HasPrefix(originalTarget, "/media/")) {
+func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
+	newPath = pathutils.ToWithPrefix(newPath)
+	rel, media := strings.CutPrefix(newPath, "media/")
+	switch {
+	case media && (l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/")):
 		return "/media/" + rel
+	case l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/files/"):
+		return "/files/" + newPath
+	case media:
+		return newPath
+	case strings.HasPrefix(l.Path, "/"):
+		return "/" + strings.TrimPrefix(newPath, "docs/")
 	}
-	if html || strings.HasPrefix(strings.TrimPrefix(originalTarget, "/"), "files/") {
-		return "/files/" + pathutils.ToWithPrefix(newPath)
+	// bare like it was written - unless that would read as the media folder
+	relative := pathutils.RelativeLink(docPath, newPath)
+	if bare := strings.TrimPrefix(relative, "./"); !strings.HasPrefix(bare, "media/") {
+		return bare
 	}
-	return newPath
+	return relative
 }
 
-// relinkMovedDoc rewrites the "./" and "../" links of the doc moved from oldPath to newPath (already
+// relinkMovedDoc rewrites the bare, "./" and "../" links of the doc moved from oldPath to newPath (already
 // on disk there) to a new relative path, so they keep pointing at their target - only those valid
 // at the old location and reading as another file from the new one, so a target moved along
 // (folder move) or an already missing one stays as written.
@@ -660,16 +671,16 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 		return
 	}
 	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
-		resolved, target := pathutils.ResolveRelativeLink(oldPath, l.Path), parser.LinkTarget(oldPath, l)
-		if resolved == l.Path || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target)) {
+		target := parser.LinkTarget(oldPath, l)
+		if !pathutils.IsRelativeLink(l.Path) && !parser.IsBareLink(l) || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target)) {
 			return "", false
 		}
-		// html src/href get a url (rebuildLinkTarget), like rename writes them; resolved has no media/
-		// prefix, a relative link to it reads as media anyway
-		if l.Kind == parser.LinkHTML {
-			return rebuildLinkTarget(l.Path, target, l.Kind), true
+		// a "./" or "../" link gets a new relative path (its docs-root path has no media/ prefix, a
+		// relative link to it reads as media anyway), html src/href a url, like rename writes them
+		if pathutils.IsRelativeLink(l.Path) && l.Kind != parser.LinkHTML {
+			return pathutils.RelativeLink(newPath, parser.ResolveLinkPath(oldPath, l)), true
 		}
-		return pathutils.RelativeLink(newPath, resolved), true
+		return rebuildLinkTarget(newPath, l, target), true
 	})
 	if !changed {
 		return
@@ -682,9 +693,10 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 }
 
 // renameLinkFunc returns the parser.RewriteLinks callback pointing the links of filePath to oldPath
-// at newPath. each link path ("./" and "../" read relative to filePath) and oldPath are compared as
-// metadata paths (docs/ or media/ prefixed), and the original absolute/relative style is preserved
-// on write - a markdown or wiki "./" or "../" link gets a new relative path. wiki links keep their
+// at newPath. each link's parser.LinkTarget and oldPath are compared as metadata paths (docs/ or
+// media/ prefixed), and the original absolute/relative style is preserved on write - a bare
+// markdown link gets a new path from filePath's folder, a markdown or wiki "./" or "../" link a
+// new relative path (rebuildLinkTarget). wiki links keep their
 // extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
 // the new name would then read as another file ([[v1.2]] isn't v1.2.md)
 func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (string, bool) {
@@ -693,15 +705,15 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 		if parser.LinkTarget(filePath, l) != oldPath {
 			return "", false
 		}
-		resolved := pathutils.ResolveRelativeLink(filePath, l.Path)
-		if l.Kind == parser.LinkHTML || (l.Kind == parser.LinkMarkdown && resolved == l.Path) {
-			return rebuildLinkTarget(l.Path, newPath, l.Kind), true
+		relative := pathutils.IsRelativeLink(l.Path)
+		if l.Kind == parser.LinkHTML || (l.Kind == parser.LinkMarkdown && !relative) {
+			return rebuildLinkTarget(filePath, l, newPath), true
 		}
 		target := newPath
 		if bare := strings.TrimSuffix(newPath, ".md"); l.Kind == parser.LinkWiki && !strings.HasSuffix(l.Path, ".md") && utils.WithDefaultLinkExt(bare) == newPath {
 			target = bare
 		}
-		if resolved != l.Path {
+		if relative {
 			return pathutils.RelativeLink(filePath, target), true
 		}
 		return target, true

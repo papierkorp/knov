@@ -10,6 +10,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 )
 
@@ -74,8 +75,9 @@ func setAutoTestFileContent() error {
 			link2Idx = (i + 2) % len(autoTestFiles)
 		}
 
-		content += fmt.Sprintf("- [%s](%s)\n", autoTestFiles[link1Idx], autoTestFiles[link1Idx])
-		content += fmt.Sprintf("- [%s](%s)\n", autoTestFiles[link2Idx], autoTestFiles[link2Idx])
+		for _, l := range []string{autoTestFiles[link1Idx], autoTestFiles[link2Idx]} {
+			content += fmt.Sprintf("- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: l, Path: "/" + l})
+		}
 
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return err

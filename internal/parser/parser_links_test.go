@@ -13,11 +13,13 @@ import (
 	"knov/internal/utils"
 )
 
-// "./" and "../" links are relative to the rendered doc's folder, bare ones to the docs root
+// "./", "../" and bare markdown links are relative to the rendered doc's folder, wikilinks and "/"
+// ones to the docs root
 func TestRenderRelativeLinks(t *testing.T) {
-	in := "[y](../a.md) [[./b]] ![i](./c.png) [z](sub/d.md)\n\n[r]: ./e.md\n[s]: ./f.png"
+	in := "[y](../a.md) [[./b]] ![i](./c.png) [z](sub/d.md) [w](/d.md) [[d]] ![j](g.png)\n\n[r]: ./e.md\n[s]: ./f.png\n[t]: h.md"
 	want := "[y](" + pathutils.ToFileURL("x/a.md") + ") [b](" + pathutils.ToFileURL("x/sub/b.md") + ") ![i](x/sub/c.png) [z](" +
-		pathutils.ToFileURL("sub/d.md") + ")\n\n[r]: " + pathutils.ToFileURL("x/sub/e.md") + "\n[s]: x/sub/f.png"
+		pathutils.ToFileURL("x/sub/sub/d.md") + ") [w](" + pathutils.ToFileURL("d.md") + ") [d](" + pathutils.ToFileURL("d.md") +
+		") ![j](x/sub/g.png)\n\n[r]: " + pathutils.ToFileURL("x/sub/e.md") + "\n[s]: x/sub/f.png\n[t]: " + pathutils.ToFileURL("x/sub/h.md")
 	if got := RenderLinks(in, "docs/x/sub/n.md"); got != want {
 		t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
 	}
@@ -77,7 +79,7 @@ func TestRenderLinks(t *testing.T) {
 		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + pathutils.ToFileURL("sub/_resources/a.md") + ")"},
 		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](a_b.png#c\d "t\x")`},
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
-		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("a/../b/.c.md") + ")"},
+		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("b/.c.md") + ")"},
 		// a /files/ url gets the default extension like link metadata reads it
 		{"files url no ext", "[x](/files/docs/a)", "[x](" + pathutils.ToFileURL("a.md") + ")"},
 		{"media url", "[x](/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},

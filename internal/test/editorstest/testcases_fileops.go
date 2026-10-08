@@ -28,7 +28,7 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 	}
 
 	// the wiki link uses its usual extensionless form ([[note]] for note.md)
-	refContent := "[link](%s)\n[[%s]]\n"
+	refContent := "[link](/%s)\n[[%s]]\n"
 	if err := writeFile(referencer, fmt.Sprintf(refContent, oldRel, strings.TrimSuffix(oldRel, ".md"))); err != nil {
 		return errCase(name, err)
 	}

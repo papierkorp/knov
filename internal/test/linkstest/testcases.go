@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"html"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -133,7 +135,7 @@ func caseRepairOldUpload() test.CaseResult {
 }
 
 // caseRename renames a linked file to every corpus name and away again - the links rename wrote
-// (markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file. A
+// (markdown, bare markdown, wiki, extensionless wiki, /files/ url, html) have to read back as the new file. A
 // name the filename policy rejects can't be renamed to (see pathutils.TestCheckTarget), the file
 // is written directly (like git sync) and only renamed away.
 func caseRename() test.CaseResult {
@@ -149,7 +151,8 @@ func caseRename() test.CaseResult {
 			return errCase("links-rename", err)
 		}
 		srcs, err := saveForms(dir, map[string]string{
-			"markdown":    parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: old}.String(),
+			"markdown":    parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: "/" + old}.String(),
+			"bare":        parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: strings.TrimPrefix(old, dir+"/")}.String(),
 			"wiki":        parser.Link{Kind: parser.LinkWiki, Path: old}.String(),
 			"wiki no ext": parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSuffix(old, ".md")}.String(),
 			"file url":    "[x](" + pathutils.ToFileURL(old) + ")",
@@ -239,8 +242,71 @@ func caseRelative() test.CaseResult {
 	return gapsCase("links-relative", "./ and ../ links read relative to their doc and keep their target on rename, move and folder move", gaps)
 }
 
+// caseBare links docs with bare markdown and html links - they read from the doc's folder, keep
+// their bare form on rename and are rewritten on move. a bare link that read from the docs root
+// before is listed by the migration scan and rewritten to its old, docs-root target.
+func caseBare() test.CaseResult {
+	dir := testDir + "/bare"
+	a, b, n := dir+"/a.md", dir+"/sub/b.md", dir+"/sub/n.md"
+	// "[x](<dir>/a.md)" read from the docs root was a.md, from sub/ it is a missing file
+	old := "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: a}.Dest() + "\">x</a>"
+	for _, d := range [][2]string{{a, "# a\n"}, {b, "# b\n"}, {n, "[y](b.md)\n" + old + "\n"}} {
+		if err := saveDoc(d[0], d[1]); err != nil {
+			return errCase("links-bare", err)
+		}
+	}
+	gaps := linkGaps(n, []string{pathutils.ToWithPrefix(b)})
+
+	changes, err := files.ScanRelativeLinks()
+	if err != nil {
+		return errCase("links-bare", err)
+	}
+	// [y](b.md) is listed too, its old docs-root target docs/b.md is missing
+	var found []string
+	for _, c := range changes {
+		if c.SourceFile == pathutils.ToWithPrefix(n) {
+			found = append(found, fmt.Sprintf("%s %v", c.OldTarget, c.OldTargetExists))
+		}
+	}
+	if want := []string{"docs/b.md false", pathutils.ToWithPrefix(a) + " true"}; !slices.Equal(found, want) {
+		gaps = append(gaps, fmt.Sprintf("scan found %q, want %q", found, want))
+	}
+	// the admin scan lists it, the old target pre-selected
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/metadata/relative-links", nil)
+	req.Header.Set("Accept", "text/html")
+	if resp, err := ts.Client().Do(req); err != nil {
+		gaps = append(gaps, fmt.Sprintf("scan route: %v", err))
+	} else {
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), html.EscapeString(pathutils.ToWithPrefix(a))+`&#34;]" checked`) {
+			gaps = append(gaps, fmt.Sprintf("scan route: status %d, %s not pre-selected", resp.StatusCode, a))
+		}
+	}
+	if ok, err := files.MigrateRelativeLinks(pathutils.ToWithPrefix(n), pathutils.ToWithPrefix(a)); !ok || err != nil {
+		gaps = append(gaps, fmt.Sprintf("migrate: %v, %v", ok, err))
+	}
+	gaps = append(gaps, metadataGaps(n, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(a)})...)
+
+	c, moved := dir+"/sub/c.md", dir+"/other/n.md"
+	for _, mv := range [][2]string{{b, c}, {n, moved}} {
+		if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+			return errCase("links-bare", err)
+		}
+	}
+	gaps = append(gaps, metadataGaps(moved, []string{pathutils.ToWithPrefix(c), pathutils.ToWithPrefix(a)})...)
+	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/docs/" + a}.Dest() + "\">x</a>"
+	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(moved)); err != nil || strings.TrimSpace(string(raw)) != want {
+		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", moved, raw, want, err))
+	}
+	files.RefreshCaches()
+	return gapsCase("links-bare", "bare links read from their doc's folder, keep their target on rename and move, and the migration keeps the old docs-root target", gaps)
+}
+
 // caseRelocate puts a misplaced image named after each corpus name into the docs folder, links it
-// (markdown, wiki, html /files/ url, doc-relative markdown) and relocates it into the media folder -
+// (markdown, wiki, html /files/ url, bare markdown) and relocates it into the media folder -
 // the rewritten links have to read back as the moved file.
 func caseRelocate() test.CaseResult {
 	var selected []string
@@ -252,7 +318,7 @@ func caseRelocate() test.CaseResult {
 			return errCase("links-relocate", err)
 		}
 		forms, err := saveForms(dir, map[string]string{
-			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: img}.String(),
+			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: "/" + img}.String(),
 			"wiki":              parser.Link{Kind: parser.LinkWiki, Path: img}.String(),
 			"html":              `<img src="` + pathutils.ToFileURL(img) + `">`,
 			"markdown relative": parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "y", Path: imgName(n)}.String(),

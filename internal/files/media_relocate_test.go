@@ -32,16 +32,15 @@ func TestRewriteMediaLinks(t *testing.T) {
 		"```\n![x](img/c.jpg)\n```":          "```\n![x](img/c.jpg)\n```",
 		// a real "docs" folder wins over the docs-root prefix
 		`![x](/docs/d.png)`: `![x](/media/docs/d.png)`,
-		// a bare markdown path is docs-root relative like it renders, doc-relative only as fallback
-		`![x](img/e.png)`:         `![x](/media/img/e.png)`,
-		`![x](uploads/a%20b.png)`: `![x](/media/uploads/a%20b.png)`,
+		// a bare markdown path is read from the doc's folder only, wiki/img/e.png isn't moved
+		`![x](img/e.png)`:         `![x](img/e.png)`,
+		`![x](uploads/a%20b.png)`: `![x](uploads/a%20b.png)`,
 		// a "./" link is relative to the doc's folder only, wiki/img/e.png isn't moved
 		`![x](./img/e.png)`: `![x](./img/e.png)`,
-		// a bare html link is docs-root relative like a markdown one (parser.LinkTarget)
-		`<img src="img/e.png">`:         `<img src="/media/img/e.png">`,
-		`<img src="uploads/a%20b.png">`: `<img src="/media/uploads/a%20b.png">`,
-		// doc-relative only as fallback
-		`<img src="F.png">`: `<img src="/media/wiki/F.png">`,
+		// a bare html link too
+		`<img src="img/e.png">`:         `<img src="img/e.png">`,
+		`<img src="uploads/a%20b.png">`: `<img src="uploads/a%20b.png">`,
+		`<img src="F.png">`:             `<img src="/media/wiki/F.png">`,
 		// knov's own /files/ view url
 		`![x](/files/img/e.png)`: `![x](/media/img/e.png)`,
 		// no case-insensitive match

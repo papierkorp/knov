@@ -5512,6 +5512,84 @@
                 }
             }
         },
+        "/api/metadata/relative-links": {
+            "get": {
+                "description": "Lists every bare markdown or html link (no \"./\", \"../\", leading \"/\" or \"media/\") whose target changed when bare links started to be read from the doc's folder instead of the docs root, with its old and new target. Changes nothing.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Scan for bare links read from their doc's folder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.RelativeLinkChange"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to scan for relative links",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/relative-links/migrate": {
+            "post": {
+                "description": "Rewrites the selected bare links of a relative links scan to their docs-root form (\"/a.md\", \"/media/x.png\"), so they keep pointing at their old target",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Keep the old targets of selected bare links",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Entries as a json array [sourceFile, oldTarget], repeatable",
+                        "name": "migrate",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "links migrated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid migrate entry",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/tags": {
             "get": {
                 "description": "Get all tags with counts, or tags for a specific file if filepath is provided",
@@ -7367,6 +7445,26 @@
                     "type": "string"
                 },
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "files.RelativeLinkChange": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "type": "string"
+                },
+                "newTarget": {
+                    "type": "string"
+                },
+                "oldTarget": {
+                    "type": "string"
+                },
+                "oldTargetExists": {
+                    "type": "boolean"
+                },
+                "sourceFile": {
                     "type": "string"
                 }
             }

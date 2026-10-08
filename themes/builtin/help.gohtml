@@ -22,6 +22,16 @@
         <li><a href="/files/new/book">{{T "Book"}}</a> - {{T "compose files and sections into one exportable document"}}</li>
     </ul>
 
+    <h2>{{T "Links"}}</h2>
+    <p>{{T "Where a link points depends on how it is written, for a link in the file sub/n.md:"}}</p>
+    <ul class="help-list">
+        <li><code>[x](a.md)</code>, <code>[x](./a.md)</code>, <code>[x](../a.md)</code> - {{T "from the folder of the file (sub/a.md, a.md)"}}</li>
+        <li><code>[x](/a.md)</code>, <code>[x](/files/a.md)</code> - {{T "from the docs root (a.md)"}}</li>
+        <li><code>[[a]]</code> - {{T "from the docs root, a wikilink is a page name (a.md)"}}</li>
+        <li><code>[[./a]]</code>, <code>[[../a]]</code> - {{T "from the folder of the file"}}</li>
+        <li><code>[x](media/pic.png)</code>, <code>[[media/pic.png]]</code> - {{T "from the media folder"}}</li>
+    </ul>
+
     <h2>{{T "Browse & Search"}}</h2>
     <p>{{T "Files can be found by where they live or by labels attached to them."}}</p>
     <ul class="help-list">
