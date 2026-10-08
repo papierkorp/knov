@@ -1,0 +1,161 @@
+package parser
+
+import (
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
+	"testing"
+)
+
+// guardRule is a way of reading or writing a link path by hand. allowed is how many matches each
+// repo-relative file may have (with the reason as comment), skip the folders the rule doesn't
+// apply to.
+type guardRule struct {
+	name    string
+	re      *regexp.Regexp
+	exts    []string
+	skip    []string
+	allowed map[string]int
+}
+
+var guardRules = []guardRule{
+	{
+		name: "url path escaping outside the codec and pathutils",
+		re:   regexp.MustCompile(`url\.Path(?:Unescape|Escape)\(`),
+		exts: []string{".go"},
+		allowed: map[string]int{
+			"internal/parser/link_rewrite.go": 2, // decodeLinkPath, AnchorText
+			"internal/pathutils/pathutils.go": 1, // escapeRelPath, the To*URL helpers
+		},
+	},
+	{
+		name: `link regex (\]\( or \[\[) outside internal/parser`,
+		re:   regexp.MustCompile(`\\\]\\\(|\\\[\\\[`),
+		exts: []string{".go", ".js", ".gohtml"},
+		skip: []string{"internal/parser/"},
+		allowed: map[string]int{
+			"internal/dokuwikiconverter/converter_process.go":    1, // dokuwiki [[...]] syntax, not markdown
+			"internal/pdfexport/images.go":                       1, // a header/footer zone template that is one image link
+			"internal/server/render/render_editor_codemirror.go": 2, // strips link syntax down to its text
+			"static/wiki-autocomplete.js":                        2, // an open [[ / ]( before the cursor starts autocomplete
+		},
+	},
+	{
+		name: "hand-built markdown link",
+		re:   regexp.MustCompile(`"\]\(" \+|\[%s\]\(%s\)`),
+		exts: []string{".go"},
+		allowed: map[string]int{
+			"internal/parser/link_rewrite.go":                 1, // Link.String
+			"internal/parser/parser_markdown.go":              4, // RenderLinks writes app urls
+			"internal/dokuwikiconverter/converter.go":         1, // dead markdown branch, link refactor cleanup step 6
+			"internal/dokuwikiconverter/converter_process.go": 1, // dokuwiki namespace -> /browse/folders link
+		},
+	},
+	{
+		name: "hand-rolled %20 encoding",
+		re:   regexp.MustCompile(`(?i)replace(?:all)?\([^)]*%20`),
+		exts: []string{".go", ".js", ".gohtml"},
+		allowed: map[string]int{
+			"internal/thememanager/template_data.go": 1, // urlPathSegment, link refactor cleanup step 6
+		},
+	},
+	{
+		name: "encodeURIComponent (link paths go through the server, pathutils)",
+		re:   regexp.MustCompile(`encodeURIComponent\b`),
+		exts: []string{".go", ".js", ".gohtml"},
+		allowed: map[string]int{
+			// query parameter values
+			"internal/server/render/render_system.go": 2,
+			"static/wiki-autocomplete.js":             5,
+			"themes/builtin/js/history-search.js":     3,
+			"themes/builtin/js/kanban.js":             3,
+			"themes/builtin/js/panel-content.js":      4,
+			"themes/builtin/js/panel-file.js":         4,
+			// pathURL, the js side of pathutils.ToRouteURL
+			"themes/builtin/js/rail-core.js": 1,
+		},
+	},
+	{
+		name: "goldmark render without RenderLinks first",
+		re:   regexp.MustCompile(`goldmark\.New\(|\.Convert\(|RenderInlineMarkdown\(`),
+		exts: []string{".go"},
+		allowed: map[string]int{
+			// Render (after Parse ran RenderLinks), RenderInlineMarkdown / RenderHeadingInline (heading
+			// and <summary> text, whose links RenderLinks already rewrote)
+			"internal/parser/parser_markdown.go": 7,
+			"internal/pdfexport/pdfexport.go":    1, // runs RenderLinks first
+			"internal/server/api_tables.go":      2, // table cells, link refactor cleanup step 6
+		},
+	},
+}
+
+// isCommentLine reports whether a source line is only a comment.
+func isCommentLine(line string) bool {
+	line = strings.TrimSpace(line)
+	return slices.ContainsFunc([]string{"//", "/*", "* ", "<!--", "{{/*"}, func(p string) bool { return strings.HasPrefix(line, p) })
+}
+
+// a link path is decoded and encoded only by the codec (link_rewrite.go) and turned into an url
+// only by pathutils - every other place reading or writing one by hand has to be allowed in
+// guardRules, so a new hand-rolled link reader or writer fails the build instead of relying on
+// review. tests, the test suites (they write links like a user types them) and vendored *.min.js
+// are not scanned.
+func TestNoHandRolledLinkHandling(t *testing.T) {
+	root := filepath.Join("..", "..")
+	counts := make([]map[string]int, len(guardRules))
+	for i := range counts {
+		counts[i] = map[string]int{}
+	}
+	for _, dir := range []string{"internal", "static", "themes"} {
+		err := filepath.WalkDir(filepath.Join(root, dir), func(p string, d fs.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return err
+			}
+			rel, err := filepath.Rel(root, p)
+			if err != nil {
+				return err
+			}
+			rel = filepath.ToSlash(rel)
+			if strings.HasSuffix(rel, "_test.go") || strings.HasSuffix(rel, ".min.js") || strings.HasPrefix(rel, "internal/test/") {
+				return nil
+			}
+			data, err := os.ReadFile(p)
+			if err != nil {
+				return err
+			}
+			for i, r := range guardRules {
+				if !slices.Contains(r.exts, filepath.Ext(rel)) || slices.ContainsFunc(r.skip, func(s string) bool { return strings.HasPrefix(rel, s) }) {
+					continue
+				}
+				for _, line := range strings.Split(string(data), "\n") {
+					if !isCommentLine(line) {
+						counts[i][rel] += len(r.re.FindAllStringIndex(line, -1))
+					}
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i, r := range guardRules {
+		for file, n := range counts[i] {
+			if n > r.allowed[file] {
+				t.Errorf("%s: %s in %s (%d, allowed %d) - use parser.Link / LinkTarget / RenderLinks and the pathutils url helpers, or allow it in guardRules with the reason", r.name, r.re, file, n, r.allowed[file])
+			}
+		}
+		for file, n := range r.allowed {
+			if counts[i][file] < n {
+				t.Errorf("%s: %s allows %d in %s, found %d - lower the allow-list", r.name, r.re, n, file, counts[i][file])
+			}
+		}
+	}
+	if t.Failed() {
+		fmt.Println("lines are counted outside comments, see isCommentLine")
+	}
+}
