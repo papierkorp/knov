@@ -28,6 +28,21 @@
 
 # reserved folders refactoring
 
+goal: docs paths are unambiguous, so no top-level docs folder name (docs, media, files) has to be reserved. rule: a docs path entering pathutils always carries an explicit "docs/" prefix - user input, /files/<rel> urls and listings are docs-relative and taken literally, the prefix guessing of pathutils.parsePath only stays for links and old metadata. own run, one commit per step, `--start-tests --remove` at the end.
+
+- [ ] R1 path model: pathutils.DocsPath(rel) - a literal docs-relative path as "docs/" path (no prefix stripping), go tests that docs/media/x.md, docs/docs/x.md and docs/files/x.md resolve to themselves through ToDocsPath / ToFullPath / ToWithPrefix / ToRelative
+- [ ] R2 listing: contentStorage.ListFiles callers and files.pathsToFiles give docs files a "docs/" File.Path, fix the File.Path consumers that expect it unprefixed (ViewURL, display, filters)
+- [ ] R3 url routes: /files/, /files/edit/, /files/edittable/, /files/history/, pathutils.FileFromURL (upload context_path, viewedFile / HX-Current-URL) and the api path routes reading r.URL.Path (content, rename, move-folder, delete, delete-folder, versions, versions/diff, versions/restore) read their rel literally (DocsPath)
+- [ ] R4 query / form params: every handler path param (filepath, path, folder, prefillpath, parents, ... ~66) and its senders (templates, js, render) - per param decide docs-relative (literal) or metadata path (explicit docs/ or media/ prefix, e.g. where media files are accepted too) and convert at the handler boundary
+- [ ] R5 links: one place since the link cleanup - parser.LinkTarget / ResolveLinkPath / utils.NormalizeLinkPath. a /files/<rel> link is literal; decide and document how a docs file in docs/media/ is linked ([[media/x]] and bare media/ stay media), help page, links suite case for docs/media/, docs/docs/, docs/files/
+- [ ] R6 other stored paths: metadata parents, kanban folders, filter criteria folder values, Auto-Create Tags folders, configeditor ids / PairedPath (filter, tracker)
+- [ ] R7 migration: metadata of docs files under docs/docs/, docs/media/, docs/files/ (their old keys collide with real media / docs keys), filter / tracker configStorage ids starting with docs/, media/ or files/ (configeditor.CleanID)
+- [ ] R8 remove the workaround: configmanager.ReservedDocsFolders, the reserved check in pathutils.CheckTarget, ErrReservedPath (+ server newPathMessage / handleMoveError), the reserved checks in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), turn the reserved cases of TestCheckNewDocsPath into "these paths resolve correctly" tests. keep the filename policy (CheckTarget / ErrInvalidName)
+- [ ] R9 suite: files in docs/docs/, docs/media/, docs/files/ created by the app and written directly (git sync) - list, view, edit, metadata, links, rename, move, delete
+- [ ] R10 upgrade note, run every suite (`--start-tests --remove`)
+
+context (from the review, decisions included):
+
 - todo: make docs paths unambiguous so no top-level docs folder name has to be reserved
   - problem: pathutils.parsePath guesses the type from free text - a leading "files/" is stripped, "media/..." is read as a media file and "docs/..." as a docs file. a docs file at data/docs/media/x.md (or docs/docs/..., docs/files/...) therefore can't be resolved back to itself
     - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.ErrReservedPath (checked first in pathutils.CheckTarget, before the filename policy) reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
@@ -48,59 +63,30 @@
 
 # link refactor cleanup
 
-follow-ups from the review of the link refactor (parser.Link codec, 93f0bbd1..4038feac). the codec (decode once / encode once) is done - what is left is that "link -> target file" is still resolved in several places, plus a few leftovers. order matters: do 1 and 2 first, the rest builds on them. the "reserved folders refactoring" above is a separate refactor (path model + metadata migration) that depends on 1 - keep them as separate commits/runs, don't mix the two migrations
-- work order:
-  - 1 (one resolver), 2 (one walker), the tests of 7 - then stop and report to the user
-  - then start the "reserved folders refactoring" section above as its own run (it needs the single resolver from 1, its link part is a change in that one place) - before or after 3, the user decides when reporting
-  - 3, 4, 5, 6, the rest of 7, 8
+done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgrade.md):
 
-- decided, nothing to do:
-  - keep the filename policy (pathutils.CheckTarget / ErrInvalidName)
-  - keep the title fallback removal (titles only from stored metadata, files/metadata_cache.go)
-- 1. one link target resolver - done: parser.LinkTarget (renderer, ExtractLinks, rename, relinkMovedDoc, FindBrokenLinks, relocate). left: markdown images still render through renderImage/resolveMediaPath (see report)
-  - problem: the link path -> target file mapping is put together by hand at ~9 call sites, each combining pathutils.ResolveRelativeLink + utils.NormalizeLinkPath / WithDefaultLinkExt + files.resolveMediaLink slightly differently: parser_markdown.go (wikiLinkMarkdown, processMarkdownLink, processRefDefs, docLinkDest), book.resolveRelativeLinks, files/metadata_links.go (MetaDataLinksRebuild, updateUsedLinks, relinkMovedDoc, renameLinkFunc, FindBrokenLinks), files/media_relocate.go relocateIndex.resolve
-  - existing divergence: a bare `[x](pic.png)` to the media file media/pic.png - link metadata says media/pic.png (resolveMediaLink stats the media folder), the renderer links /files/pic.png (404, /files/ has no media fallback) - so it's neither shown in the broken links scan nor working
-  - fix: one function (e.g. parser.LinkTarget(docPath string, l parser.Link) string -> metadata path "docs/a.md" / "media/x.png" / "docs/sub/" for folders) used by all of them; the renderer builds its url from that result (appLinkDest) instead of its own branches
-  - add a links suite / go test case: for every specialchars name and link kind, the rendered href and the link metadata point at the same file
-  - include html src/href: a bare `<img src="pic.png">` in sub/n.md has three meanings today - link metadata reads it from the docs root (NormalizeLinkPath), media relocate from the doc's folder (relocateIndex.resolve default case), and the renderer leaves it untouched (RenderLinks has no LinkHTML handling), so the browser resolves it against the page url /files/sub/n.md. the resolver decides once and RenderLinks rewrites html src/href to that url like markdown links
-- 2. one link walker - done: parser.walkLinks (masked once), RewriteLinks / ExtractLinks / RenderLinks use it
-  - problem: RewriteLinks (rewriteLinkRe, per non-code line part) and RenderLinks (processMdLinkRe on the whole masked content, then processRefDefs as a second replaceOutsideCode pass = second maskCode) are two scanners sharing sub-patterns - they can drift
-  - fix: one walker (masked once) that yields each link (parser.Link, its span, its "[text" / "![alt" opening, kind incl. ref defs and html attrs) and lets the caller replace it; RewriteLinks, ExtractLinks and RenderLinks become thin users of it
-- 3. bare links relative to the doc (decision 2B) + admin migration action - done: parser.IsBareLink / ResolveLinkPath / DocsRootLinkTarget, files.ScanRelativeLinks / MigrateRelativeLinks, admin "Bare Links Migration". decided when doing it: a bare `media/...` link stays media (upload and media autocomplete insert it), html src/href follow markdown
-  - do after 1 (then it is a change in one place)
-  - change: a bare markdown link (`[x](a.md)` in sub/n.md) is read from the doc's folder like `./a.md` (CommonMark / GitHub behaviour), a leading "/" (`[x](/a.md)`) or `/files/` stays docs-root
-  - decided: wikilinks stay docs-root (`[[a]]` in sub/n.md -> a.md) - wikilinks are page names like in dokuwiki / mediawiki / wiki.js, the editor autocomplete and .book/.index entries already write them docs-root, so no wikilink migration. `[[./a]]` / `[[../a]]` stay doc-relative (already implemented). the rule for the help page:
-    - `[x](a.md)`, `[x](./a.md)`, `[x](../a.md)` -> the doc's folder
-    - `[x](/a.md)`, `[x](/files/a.md)` -> the docs root
-    - `[[a]]` -> the docs root
-    - `[[./a]]`, `[[../a]]` -> the doc's folder
-  - only hand-typed bare markdown links change meaning - the editor inserts markdown links as `/files/<path>`, so the migration action's list stays short
-  - admin action "scan links for relative migration" (like Repair Broken Links): scan every doc for bare links whose target changes with the new rule, list source file / link / old target / new target, let the user select and apply - the apply rewrites them to the docs-root form (`/a.md`) so they keep their old target. business logic in files, thin job/handler wrappers, writeResponse / writeAPIError, translations
-  - update ResolveRelativeLink / RelativeLink, rename (renameLinkFunc keeps the written style), relinkMovedDoc (a move now changes bare links too), media relocate (drop the "docs root first, then doc folder" fallback for bare markdown links), book resolveRelativeLinks, help page docs
-  - upgrade note: bare links now read from the doc's folder, run the new admin action to keep the old targets
-  - links suite cases for the new rule and the migration action
-- 4. `../` above the docs root (decision 3: both) - done: pathutils.LinkClimbsAboveRoot, FindBrokenLinks reads the docs' content for them (BrokenLink.AboveRoot), no metadata field
-  - keep resolving it clamped to the docs root (renders like a url), and also list it in the broken links scan as "climbs above the docs root" with the clamped path as suggestion, so "Repair Broken Links" can rewrite it
-  - ResolveRelativeLink has to report the clamping (e.g. a second return value); FindBrokenLinks only reads metadata, so either store the info in link metadata or scan content for it - decide
-- 5. warning noise in folder moves - done
-  - `could not get metadata for linked file docs/` (a folder link, now valid in UsedLinks) and `... <file moved along>` (metadata not moved yet, MoveFolder resyncs it afterwards) in files/metadata_links.go (step 3 of updateLinksForMovedFile, MetaDataMutate on movedMetadata.UsedLinks) - skip folder targets (trailing "/") and moved-along files there
-- 6. leftovers not on the codec yet - done (table cells through RenderLinks, fileHistoryURL template func, dokuwiki markdown link branch and the media select list removed)
-  - table cells bypass the link renderer: server/api_tables.go:132,138 renders headers and cells with parser.RenderInlineMarkdown (plain goldmark), not through RenderLinks - in the interactive table view a `[[note]]` stays literal text, `[x](a b.md)` / `./` links / anchors aren't routed to /files/ and a special-char link breaks. run cells through RenderLinks with the doc's path first (or give RenderInlineMarkdown a docPath), and add a table case to the links suite
-  - thememanager/template_data.go "urlPathSegment": hand-rolled url encoder (misses "%" and more), used in themes/builtin/history.gohtml:10 for /files/history/ - use pathutils.ToFileHistoryURL via a template func and delete urlPathSegment
-  - dokuwikiconverter/converter.go renderElement case "link" markdown branch (fmt.Sprintf("[%s](%s)")) is dead since processLinks returns parser.Link.String() for markdown - remove it
-  - server/render/render_media.go RenderMediaListSelect: onclick="insertMediaIntoEditor(this)" is defined nowhere - either delete the select list (+ its mode in handleAPIGetAllMedia) or insert a server-written data-link like the autocomplete
-- 7. guard against divergence - done: FuzzLinkCodec / FuzzRewriteLinksIdentity (parser_fuzz_test.go), TestScannerMatchesGoldmark (parser_goldmark_diff_test.go), TestNoHandRolledLinkHandling (parser_guard_test.go), allow-list lowered after 6
-  - fuzz test (go native fuzzing, seeded with the specialchars corpus) for the codec: for any path and link kind, ParseLink(Link{Path: p}.Dest()).Path == p, and RewriteLinks with an identity callback never changes content
-  - differential test scanner vs goldmark: for the corpus and a set of tricky markdown (nested brackets, link text over lines, code spans, ref defs, `<...>` destinations, a destination on the next line), the links ExtractLinks finds must match the links goldmark's AST finds (ast.Link / ast.Image destinations, decoded) - catches the scanner reading markdown differently from the renderer
-  - a go test that greps the source (internal/, static/, themes/) and fails on: url.PathUnescape / url.PathEscape outside parser/link_rewrite.go and pathutils, regexes with `\]\(` or `\[\[` outside internal/parser (allow-list dokuwiki syntax), hand-built markdown links (`"](" +`, `"[%s](%s)"`), ReplaceAll with "%20", encodeURIComponent on link paths in js, goldmark.New / .Convert outside an allow-list of render paths known to run RenderLinks first (that's how the table cells slipped through) - with an allow-list, so a new hand-rolled reader/writer fails the build instead of relying on review
-- 9. found by the tests of 1 and 7 (not fixed yet, decide)
-  - codec: ascii control characters besides tab / line breaks aren't percent-encoded in link paths - a "\f" ends a markdown destination, so the link is lost (fuzzPath skips them)
-  - codec + walker: "`" isn't encoded - two of them in a path are a code span for maskCode, so the walker skips the link, goldmark reads them as part of the destination (fuzzPath skips them, a knownDivergences case)
-  - walker vs goldmark (knownDivergences in TestScannerMatchesGoldmark): a destination, title or reference definition destination on the next line (goldmark: link, walker: none), an escaped "\[" before "](dest)", a link in an indented code block or an html comment (walker: link, goldmark: none)
-  - markdown images still render through renderImage / resolveMediaPath, not LinkTarget: a bare `![x](pic.png)` that exists only in the docs folder renders /media/pic.png (404) while link metadata reads docs/pic.png, and an image named with a trailing space ("trail.png ") renders nothing
-  - images in interactive table cells render with plain goldmark (RenderInlineMarkdown), not renderImage - `![x](media/pic.png)` gets a src relative to the page
-  - other hand-rolled link readers / writers (allowed in guardRules): pdfexport/images.go zoneImageLinkRe (header/footer zone image template), dokuwikiconverter/converter_process.go builds an unencoded `[url](url)` /browse/folders link, server/render/render_editor_codemirror.go strips link syntax to text with its own regexes
-- 8. done: `--start-tests --remove` 182 passed, 1 skipped (s3, no endpoint) - dashboard widget-filter-data failed once in a full run and passed in the rerun and 3 runs alone (flaky, not links). (`knov --start-tests --remove`), not only links - two go tests in internal/server/render (TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction) already fail before the link refactor (table editor), unrelated
+- [x] 1 one link target resolver - parser.LinkTarget (`fix:` ae7de291)
+- [x] 2 one link walker - parser.walkLinks (`refactor:` 6af90df0)
+- [x] 7 guard tests - FuzzLinkCodec / FuzzRewriteLinksIdentity, TestScannerMatchesGoldmark, TestNoHandRolledLinkHandling (`test:` ae2eb2c4)
+- [x] 3 bare markdown / html links read from the doc's folder + admin "Bare Links Migration" - a bare `media/...` link stays media, html follows markdown (`feat!:` 2ace0341)
+- [x] 4 `../` above the docs root listed and repaired in "Repair Broken Links", content scan, no metadata field (`feat:` f6a32955)
+- [x] 5 no warning noise for folder links / files moved along in folder moves (`fix:` f7095680)
+- [x] 6 table cells through RenderLinks, fileHistoryURL template func, dead dokuwiki branch and media select list removed (`fix!:` d74e1dd0)
+- [x] 7 rest - guard allow-list lowered after 6
+- [x] 8 every suite run: 182 passed, 1 skipped (s3)
+- decided, nothing to do: keep the filename policy (pathutils.CheckTarget / ErrInvalidName), keep the title fallback removal
+
+follow-ups (found by the tests, not fixed yet - decide):
+
+- [ ] codec: ascii control characters besides tab / line breaks aren't percent-encoded in link paths - a "\f" ends a markdown destination, so the link is lost (FuzzLinkCodec's fuzzPath skips them)
+- [ ] codec + walker: "`" isn't encoded - two of them in a path are a code span for maskCode, the walker skips the link while goldmark reads them as part of the destination (fuzzPath skips them, a knownDivergences case)
+- [ ] walker vs goldmark (knownDivergences in TestScannerMatchesGoldmark): a destination, title or reference definition destination on the next line (goldmark: link, walker: none), an escaped "\[" before "](dest)", a link in an indented code block or an html comment (walker: link, goldmark: none)
+- [ ] images: markdown images still render through renderImage / resolveMediaPath, not LinkTarget - a bare `![x](pic.png)` that exists only in the docs folder renders /media/... (404) while link metadata reads docs/..., an image named with a trailing space ("trail.png ") renders nothing
+- [ ] images in interactive table cells render with plain goldmark (RenderInlineMarkdown), not renderImage - `![x](media/pic.png)` gets a src relative to the page
+- [ ] other hand-rolled link readers / writers (allowed in guardRules): pdfexport/images.go zoneImageLinkRe (header/footer zone image template), dokuwikiconverter/converter_process.go builds an unencoded `[url](url)` /browse/folders link, server/render/render_editor_codemirror.go strips link syntax to text with its own regexes
+- [ ] markdown links with a "|" in the path break a table cell (the codec doesn't escape "|" for markdown, GFM needs `\|` in cells) - the links suite table case skips them
+- [ ] flaky: dashboard suite widget-filter-data failed once in a full `--start-tests --remove` run, passed in the rerun and 3 runs alone
+- [ ] unrelated, already failing: internal/server/render TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction (table editor)
 
 # every other time
 
