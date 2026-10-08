@@ -19,14 +19,18 @@ const (
 	LinkHTML                     // <img/a/video/audio/source src/href="...">
 )
 
+// a [[wikilink]] body never holds brackets, line breaks or masked code (see maskCode)
+const wikiLinkPattern = `\[\[([^\[\]\n\x00]+)\]\]`
+
 // a markdown link destination: <...> plus title, or one level of (...) in it - a bare one never
 // starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link). shared by RewriteLinks and
-// processMarkdownLinks so both see the same links
+// RenderLinks so both see the same links
 const mdLinkDestPattern = `([ \t]*(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*))`
 
 var (
-	rewriteMdLinkRe   = regexp.MustCompile(`\]\(` + mdLinkDestPattern + `\)`)
-	wikiLinkRe        = regexp.MustCompile(`\[\[([^\[\]\n]+)\]\]`)
+	// a [[wikilink]] (group 1) or a markdown ](dest) (group 2) in one pass, so a "](" closing a
+	// wikilink is never read as a markdown link - "[[a]](b)" is [[a]] followed by the text "(b)"
+	rewriteLinkRe     = regexp.MustCompile(wikiLinkPattern + `|\]\(` + mdLinkDestPattern + `\)`)
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe   = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
@@ -257,12 +261,18 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		if sub := rewriteRefDefRe.FindStringSubmatch(part); wholeLine && sub != nil {
 			return sub[1] + replace(sub[2], LinkMarkdown)
 		}
-		part = rewriteMdLinkRe.ReplaceAllStringFunc(part, func(m string) string {
-			return "](" + replace(m[2:len(m)-1], LinkMarkdown) + ")"
-		})
-		part = wikiLinkRe.ReplaceAllStringFunc(part, func(m string) string {
-			return "[[" + replace(m[2:len(m)-2], LinkWiki) + "]]"
-		})
+		var b strings.Builder
+		last := 0
+		for _, m := range rewriteLinkRe.FindAllStringSubmatchIndex(part, -1) {
+			b.WriteString(part[last:m[0]])
+			if m[2] != -1 {
+				b.WriteString("[[" + replace(part[m[2]:m[3]], LinkWiki) + "]]")
+			} else {
+				b.WriteString("](" + replace(part[m[4]:m[5]], LinkMarkdown) + ")")
+			}
+			last = m[1]
+		}
+		part = b.String() + part[last:]
 		return rewriteHTMLAttrRe.ReplaceAllStringFunc(part, func(m string) string {
 			// the path can't contain quotes, so the last one ends the tag prefix
 			i := strings.LastIndexAny(m, `"'`) + 1

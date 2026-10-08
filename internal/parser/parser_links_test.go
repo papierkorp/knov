@@ -13,7 +13,7 @@ import (
 	"knov/internal/utils"
 )
 
-func TestProcessMarkdownLinks(t *testing.T) {
+func TestRenderLinks(t *testing.T) {
 	cases := []struct {
 		name, in, want string
 	}{
@@ -97,8 +97,8 @@ func TestProcessMarkdownLinks(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := processMarkdownLinks(c.in); got != c.want {
-				t.Errorf("processMarkdownLinks(%q) = %q, want %q", c.in, got, c.want)
+			if got := RenderLinks(c.in); got != c.want {
+				t.Errorf("RenderLinks(%q) = %q, want %q", c.in, got, c.want)
 			}
 		})
 	}
@@ -108,10 +108,10 @@ func TestProcessMarkdownLinks(t *testing.T) {
 // rather than a naive ASCII-only uppercase, for both a single-word and a multi-word
 // (hyphenated) slug.
 func TestUnicodeHeaderSlugCapitalization(t *testing.T) {
-	if got, want := processMarkdownLinks("[](#übersicht)"), "[Übersicht](#übersicht)"; got != want {
+	if got, want := RenderLinks("[](#übersicht)"), "[Übersicht](#übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
-	if got, want := processMarkdownLinks("[](#persönliche-übersicht)"), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
+	if got, want := RenderLinks("[](#persönliche-übersicht)"), "[Persönliche Übersicht](#persönliche-übersicht)"; got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
@@ -209,7 +209,7 @@ func TestExtractLinksDestination(t *testing.T) {
 [ref]: <ref img.png> "title"
 [note]: remember this
 [^1]: footnote text`
-	want := []string{"/media/a b.png", "note.md", "img/c.png", "C:/x.png", "a_b.md", "sub/_res/a.md", "ns:page", "/media/d.png", "ref img.png"}
+	want := []string{"/media/a b.png", "note.md", "img/c.png", "ns:page", "C:/x.png", "a_b.md", "sub/_res/a.md", "/media/d.png", "ref img.png"}
 	if got := NewMarkdownHandler().ExtractLinks([]byte(in)); strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("ExtractLinks(%q) = %q, want %q", in, got, want)
 	}
@@ -357,8 +357,8 @@ func TestLinkString(t *testing.T) {
 	if got, want := l.String(), `[a/\[1\].md](a/[1].md)`; got != want {
 		t.Errorf("String = %q, want %q", got, want)
 	}
-	if got := processMarkdownLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
-		t.Errorf("processMarkdownLinks(%q) = %q", l.String(), got)
+	if got := RenderLinks(l.String()); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
+		t.Errorf("RenderLinks(%q) = %q", l.String(), got)
 	}
 }
 
@@ -401,5 +401,33 @@ func TestRewriteLinksRefDefAfterCode(t *testing.T) {
 	in := "`x` [id]: a.md"
 	if got, changed := RewriteLinks(in, func(l Link) (string, bool) { return "b.md", true }); changed || got != in {
 		t.Errorf("RewriteLinks = %q, %v, want %q unchanged", got, changed, in)
+	}
+}
+
+// a "(...)" right after a [[wikilink]] is text, not a markdown link destination - for rendering
+// and link metadata alike
+func TestWikiLinkFollowedByParens(t *testing.T) {
+	in := "see [[note]](draft) and [a [b]](c.md)"
+	want := "see [note](" + pathutils.ToFileURL("note.md") + ")(draft) and [a [b]](" + pathutils.ToFileURL("c.md") + ")"
+	if got := RenderLinks(in); got != want {
+		t.Errorf("RenderLinks = %q, want %q", got, want)
+	}
+	if got := (&MarkdownHandler{}).ExtractLinks([]byte(in)); !slices.Equal(got, []string{"note", "c.md"}) {
+		t.Errorf("ExtractLinks = %q, want [note c.md]", got)
+	}
+}
+
+// a wikilink to media opens the media detail page like a markdown link to it
+func TestWikiLinkMediaDetail(t *testing.T) {
+	if got, want := RenderLinks("[[media/a b.png]]"), RenderLinks("[a b](<media/a b.png>)"); got != want {
+		t.Errorf("RenderLinks = %q, want %q", got, want)
+	}
+}
+
+// a protocol-relative image is external, not a media preview path
+func TestRenderImageProtocolRelative(t *testing.T) {
+	out, err := NewMarkdownHandler().Render([]byte("![x](//cdn.example.com/x.png)"), "", false)
+	if err != nil || !strings.Contains(string(out), `src="//cdn.example.com/x.png"`) {
+		t.Errorf("Render = %q, %v, want the external src", out, err)
 	}
 }

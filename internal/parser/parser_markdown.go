@@ -55,38 +55,23 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	return []byte(RenderLinks(processed)), nil
 }
 
-// RenderLinks rewrites every internal markdown link, reference definition and [[wikilink]]
-// outside code to a markdown link to its app url (/files/, /media/), each read once with
-// ParseLink. markdown links go first, so the app urls written for wikilinks are never read again.
-func RenderLinks(content string) string {
-	return resolveWikiLinks(processMarkdownLinks(content))
-}
-
-// resolveWikiLinks converts [[path]] and [[path|display]] outside code to markdown links to
-// their app url, with the same destination and fallback label as a hand-typed markdown link
+// wikiLinkMarkdown converts the [[path]] / [[path|display]] body inner to a markdown link to its
+// app url, with the same destination and fallback label as a hand-typed markdown link
 // (appLinkDest, fallbackLinkText).
-func resolveWikiLinks(content string) string {
-	return replaceOutsideCode(content, func(part string, _ bool) string {
-		return wikiLinkRe.ReplaceAllStringFunc(part, func(match string) string {
-			inner := match[2 : len(match)-2]
-			wl := ParseLink(inner, LinkWiki)
+func wikiLinkMarkdown(inner string) string {
+	wl := ParseLink(inner, LinkWiki)
 
-			// read as the markdown link [](/files/path#anchor) - the anchor encoded, so
-			// AnchorText reads it back; a pure same-page anchor ([[#some-header]]) has no path
-			l := Link{Kind: LinkMarkdown}
-			if text := wl.AnchorText(); text != "" {
-				l.Anchor = "#" + encodeLinkPath(text, LinkMarkdown)
-			}
-			if linkPath := ResolveWikiTarget(inner); linkPath != "" {
-				l.Path = "/files/" + linkPath
-			}
-			display := strings.TrimSpace(strings.TrimPrefix(wl.Alias, "|"))
-			if display == "" {
-				display = fallbackLinkText(l)
-			}
-			return "[" + display + "](" + appLinkDest(l) + ")"
-		})
-	})
+	// read as the markdown link [](path#anchor) - the anchor encoded, so AnchorText
+	// reads it back; a pure same-page anchor ([[#some-header]]) has no path
+	l := Link{Kind: LinkMarkdown, Path: ResolveWikiTarget(inner)}
+	if text := wl.AnchorText(); text != "" {
+		l.Anchor = "#" + encodeLinkPath(text, LinkMarkdown)
+	}
+	display := strings.TrimSpace(strings.TrimPrefix(wl.Alias, "|"))
+	if display == "" {
+		display = fallbackLinkText(l)
+	}
+	return "[" + display + "](" + appLinkDest(l) + ")"
 }
 
 // ResolveWikiTarget normalizes a wikilink body ("path", "path#anchor", "path|text", ...)
@@ -447,7 +432,7 @@ func (r *knovNodeRenderer) renderImage(w util.BufWriter, source []byte, node ast
 	}
 	n := node.(*ast.Image)
 	dest := string(n.Destination)
-	isExternal := strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://")
+	isExternal := isExternalLink(dest, LinkMarkdown)
 
 	var altBuf bytes.Buffer
 	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
@@ -805,31 +790,37 @@ func (s *sectionWriter) closeSection() {
 // Link processing and helpers
 // ---------------------------------------------------------------------------
 
-// [text](dest) or ![alt](dest) (the text may hold escaped brackets), the destination read like
-// RewriteLinks does. The text may span lines and hold code but no unescaped "[", so a nested
-// ![img](src) or one after a stray "[" matches on its own; the outer link of nested brackets
-// matches as "](dest)" alone.
-var processMdLinkRe = regexp.MustCompile(`(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
+// a [[wikilink]] (group 1) or [text](dest) / ![alt](dest) (the text may hold escaped brackets),
+// the destination read like RewriteLinks does - one regex, so a "](" closing a wikilink is no
+// link ("[[a]](b)" is [[a]] and the text "(b)"). The text may span lines and hold code but no
+// unescaped "[", so a nested ![img](src) or one after a stray "[" matches on its own; the outer
+// link of nested brackets matches as "](dest)" alone.
+var processMdLinkRe = regexp.MustCompile(wikiLinkPattern + `|(!?\[(?:[^\[\]\\]|\\.)*)?\]\(` + mdLinkDestPattern + `\)`)
 
-// processMarkdownLinks rewrites every internal [text](url) link outside code to its app url
-// (appLinkDest), an empty-text "[](url)" link gets its fallback label (fallbackLinkText), and a
-// reference definition to a docs file is rewritten the same way.
-func processMarkdownLinks(content string) string {
+// RenderLinks rewrites every internal [text](url) link and [[wikilink]] outside code to a markdown
+// link to its app url (appLinkDest, /files/, /media/), each read once with ParseLink - an
+// empty-text "[](url)" link gets its fallback label (fallbackLinkText), and a reference
+// definition to a docs file is rewritten the same way.
+func RenderLinks(content string) string {
 	// links are matched on the whole content with code blanked out, so a link text spanning
 	// lines or holding `code` keeps its "![" and brackets / destinations in code are never seen
 	masked := maskCode(content)
 	var b strings.Builder
 	last := 0
 	for _, m := range processMdLinkRe.FindAllStringSubmatchIndex(masked, -1) {
-		if strings.Contains(masked[m[4]:m[5]], "\x00") {
+		if m[2] == -1 && strings.Contains(masked[m[6]:m[7]], "\x00") {
 			continue
 		}
-		open := ""
-		if m[2] != -1 {
-			open = content[m[2]:m[3]]
-		}
 		b.WriteString(content[last:m[0]])
-		b.WriteString(processMarkdownLink(content[m[0]:m[1]], open, content[m[4]:m[5]]))
+		if m[2] != -1 {
+			b.WriteString(wikiLinkMarkdown(content[m[2]:m[3]]))
+		} else {
+			open := ""
+			if m[4] != -1 {
+				open = content[m[4]:m[5]]
+			}
+			b.WriteString(processMarkdownLink(content[m[0]:m[1]], open, content[m[6]:m[7]]))
+		}
 		last = m[1]
 	}
 	b.WriteString(content[last:])
@@ -837,7 +828,7 @@ func processMarkdownLinks(content string) string {
 }
 
 // processMarkdownLink rewrites one processMdLinkRe match with its opening "[text" (or "") and
-// destination, see processMarkdownLinks.
+// destination, see RenderLinks.
 func processMarkdownLink(match, open, dest string) string {
 	l := ParseLink(dest, LinkMarkdown)
 

@@ -20,10 +20,16 @@
   - connections - parents - link shows to /browse instead of /files
   - bulk update - add parent
   - bulk update - remove parent
-  - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
-  - general and centralized solution for links (link rewrite, parser..) with all of the special chars, we have multiple different solutions for different special chars
   - index/book editor => use markdown links instead of wiki links
+  - admin action scan for broken parents/grandparents (e.g. i have grandparent for a file that no longer exists? how is this even possible?) and why is the file not shown as a child in the parent metadata? and why do i have an ancestor in the kanban board that no longer exists and doesnt have any children? => maybe a new admin action cleanup_metadata?
   - make the upgrade.md file more readable
+- chore quick
+  - links: `./` and `../` links - `[y](../a.md)` renders `/files/../a.md` (browser normalizes to `/a.md`, 404), metadata stores `./sub/a.md` uncleaned (broken link), media relocate falls back to doc-relative but render never does - decide one policy for doc-relative paths and apply it in NormalizeLinkPath + render
+  - links: inline code spanning a line break isn't masked by replaceOutsideCode / maskCode (both split code spans per line), so links inside it are read - low priority
+  - tests: `--start-tests --remove` logs ~70 "disk I/O error" / "unable to open database" lines after the summary - background RefreshCaches goroutines still run while the isolated storage is deleted; cancel/await them before exitHeadlessTests removes the dir (can hide real errors, and on windows the remove may fail on locked files)
+  - kanban: moveFileUnique's collision fallback for an existing bad card name (`a#b.md` -> `a#b_2.md`) is a new name, so the card move fails with ErrInvalidName - needs a "keeps the old name" rule
+  - simplify: after the reserved folders refactoring, merge CheckNewNames / CheckMovedName / CheckNewDocsPath / CheckMovedDocsPath / checkReservedDocsPath into one "check target, optionally keeping the old name" function
+  - simplify: FindBrokenLinks' byLinkText exact match only repairs links of the old media upload - remove it once the own data is repaired
 - test
   - remote git in mobile
 
@@ -31,110 +37,20 @@
 
 - todo: make docs paths unambiguous so no top-level docs folder name has to be reserved
   - problem: pathutils.parsePath guesses the type from free text - a leading "files/" is stripped, "media/..." is read as a media file and "docs/..." as a docs file. a docs file at data/docs/media/x.md (or docs/docs/..., docs/files/...) therefore can't be resolved back to itself
-    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.CheckNewDocsPath/ErrReservedPath reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
+    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.checkReservedDocsPath/ErrReservedPath (run inside CheckNewDocsPath / CheckMovedDocsPath, before the filename policy CheckNewNames / CheckMovedName) reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
     - the workaround only covers files created by the app - files that arrive via git pull/sync or are copied into the filesystem are still broken:
       - contentStorage.ListFiles + files.pathsToFiles list them as "media/x.md" without a docs/ prefix
       - File.ViewURL points to /files/x.md => docs/x.md (404 or the wrong file)
       - their metadata key "media/x.md" is the same key as a real media file data/media/x.md, so the two overwrite each other's metadata
   - fix:
     - docs paths always carry an explicit "docs/" prefix internally (listing, metadata keys, File.Path)
-    - user input (form paths, rename/move targets) and /files/<rel> URLs are treated as literal docs-relative paths - no prefix stripping (e.g. a separate docs-rel => full path function next to ToDocsPath)
-    - keep the prefix guessing only where it's really needed (links in content / old metadata)
-    - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this
+    - user input (form paths, rename/move targets) and /files/<rel> URLs are treated as literal docs-relative paths - no prefix stripping (e.g. a separate docs-rel => full path function next to ToDocsPath). this includes pathutils.FileFromURL (upload context_path, viewedFile / HX-Current-URL) and the path routes that read r.URL.Path (rename, delete, move-folder, metadata rebuild, versions) - today their rel goes through ToDocsPath, so /files/media/x.md resolves to the media folder
+    - keep the prefix guessing only where it's really needed (old metadata) - for links in content that's one place since the link refactor: utils.NormalizeLinkPath (after parser.ParseLink decoded the path), used by metadata, rename (renameLinkFunc) and FindBrokenLinks; the renderer has its own branch in parser.appLinkDest (media/ and /media/ -> ToMediaURL, the rest -> docLinkDest) and media relocate its candidates in relocateIndex.resolve - change all three together, the links suite (internal/test/linkstest) covers them
+    - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this (in NormalizeLinkPath + appLinkDest), add a docs/media/ case to the links suite
   - migration: metadata keys of docs files that currently collide with media keys, and filter/tracker configStorage ids starting with docs/, media/ or files/ (see configeditor.CleanID)
-  - afterwards delete: ReservedDocsFolders, CheckNewDocsPath, ErrReservedPath, writeReservedPathError/reservedPathMessage, the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn TestCheckNewDocsPath into "these paths now resolve correctly" tests
+  - afterwards delete: ReservedDocsFolders, checkReservedDocsPath, ErrReservedPath (+ its case in server newPathMessage / handleMoveError), the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn the reserved cases of TestCheckNewDocsPath into "these paths now resolve correctly" tests
+  - keep: the filename policy from the link refactor (CheckNewNames / CheckMovedName / ErrInvalidName, writeNewPathError / newPathMessage) - CheckNewDocsPath / CheckMovedDocsPath stay as its docs entry points (or merge the five check functions into one, see the chore point)
   - touches many ToDocsPath/ToWithPrefix/ToRelative callers - do it as its own refactor, run `--start-tests --remove` afterwards
-
-# link refactor
-
-- goal: one general, centralized solution for links and their special chars - one reader, one writer, decoded paths everywhere in between
-- done (step 0): parser.DecodeLinkPath / EncodeLinkPath as the only link codec, utils.NormalizeLinkPath + WithDefaultLinkExt, RewriteLinks skips external links, rename/media relocate/filter index/book editor write encoded paths (see the CLAUDE.md rule)
-- special chars are 6 separate contexts - only 1-4 belong to this refactor:
-  1. link text in content (`](dest)`, `[[...]]`, html src/href) - parser codec
-  2. links written by js - wiki-autocomplete.js inserts a wikilink path raw (not encoded at all) and a markdown/media target with encodeURIComponent per segment but "#" kept as separator, codemirror upload inserts `](media/<path>)` raw
-  3. app urls - pathutils.To*URL, but raw url.PathEscape(relPath) is left in render_files.go / render_media.go ("/" becomes %2F), js builds urls in several ways (panel-file.js, panel-tree.js)
-  4. anchors - percent-decoded in 4 places (headings.go anchorText, ProcessMarkdownLinks twice, pdfexport/renderer.go resolveLink)
-  5. allowed filename chars - only SanitizeFilename on uploads, no shared policy for create/rename/import
-  6. output escaping (html, js, csv, md table cells) - already central enough, leave out
-- [x] step 1: shared special-char corpus as the test fixture
-  - corpus: `internal/test/specialchars` (Names, ValidOn) - the todo list plus `a<b>.md` and a special-char folder `x (1)/ö ü.md`
-  - go tests: parser TestSpecialCharLinksRoundTrip (encode/app url -> ExtractLinks, ResolveWikiTarget, Parse+Render href/media preview), book TestFileRefRoundTrip (EncodeFileRef -> ToMarkdown -> Parse -> ResolveWikiTarget/DecodeFileRef/ComposeEntries), files TestRenamedLinkReadsBack (renameLinkFunc to and from each name), dokuwikiconverter TestSpecialCharLinks
-  - in-app suite `links` (internal/test/linkstest): autocomplete (real wiki-autocomplete.js in chromedp), upload, rename + rename back, media relocate, filter index, book editor api - each link form in its own doc, checked through used links, linked from and the rendered page
-  - gaps found (these decide steps 2-5, the failing tests are the acceptance list):
-    - leading/trailing space - every reader trims after decoding (ExtractLinks, ResolveWikiTarget, render), so `%20lead.md` / `[[trail.md ]]` read as `lead.md` / `trail.md` - in every writer (codec, rename, relocate, filter index, book editor, autocomplete)
-    - `&` - only `[x](/media/a&copy;b.png)` (EncodeLinkPath of a /media/ path): ProcessMarkdownLinks passes /media/ links to goldmark untouched, which resolves the entity -> a©b.png. docs links, images and pathutils urls are fine (PathEscape encodes the ";") - the step 0 finding below was only half right
-    - book editor - the plain `path#anchor` value is split at the first `#` / `|`: `a#b.md` resolves to `a.md` (not included), `a|b.md` resolves to `a.md` as alias and includes that other file
-    - rename (not char related, every name) - MoveFileNoRefresh passes the docs-relative oldPath, renameLinkFunc compares it to NormalizeLinkPath(p), which is `docs/`-prefixed for a `/files/` url or html href - so those links are never rewritten on a rename through the api (files_test used `docs/` paths on both sides and missed it)
-    - media relocate (every name) - a docs-root markdown link without leading "/" (`![x](sub/a.png)`, the form EncodeLinkPath / rename / filter index write) isn't relocated: relocate reads a bare markdown path as doc-relative only, metadata and render read it as docs-root. doc-relative, wiki and html /files/ links are relocated
-    - upload (every special-char folder, even a space) - context_path comes from location.pathname, percent-encoded, and UploadMedia doesn't decode it -> media lands in `media/.../x%20%281%29/pic.png`, and the raw inserted `media/<path>` link decodes back to the (missing) mirror folder
-    - autocomplete wiki - raw path: `a%41` -> aA.md, `a#b` -> a.md + anchor, `a|b` -> alias, `[1]` ends the wikilink (reads the folder), `a\b` -> a/b.md
-    - autocomplete markdown / media - "#" isn't encoded -> `a.md` + anchor / `media/.../a`
-    - filter index - the label is the raw path, `[1].md` makes `- [.../[1].md](...)` no link in the rendered page (metadata is fine)
-    - dokuwiki - `{{:[1].png}}` -> `![[1].png](...)`: the alt text starts a wikilink, ExtractLinks reports an extra link "1"; `[[v1.2 notes]]` -> /media/v1.2%20notes (own extension rule, not WithDefaultLinkExt)
-    - reader mismatch - `/files/x` without extension: metadata adds .md, render links `/files/x` (ProcessMarkdownLinks' /files/ branch skips WithDefaultLinkExt)
-    - no gap: `%`, `%41`, `?`, `( )`, quotes, `< >`, `:`, `\`, unicode, `v1.2 notes.md`, the nested folder - through the codec, rename (markdown/wiki), relocate (doc-relative/wiki/html), filter index metadata, book editor
-- [x] step 2: one link model + one scanner/formatter in parser
-  - parser.Link (Kind, Image, Text, Path decoded, Query, Anchor, Alias, Title kept as written, External), ParseLink reads one destination / wikilink body, Link.Dest writes it back, Link.String writes a new link (escapes `[ ]` in the text) - decodeLinkPath/encodeLinkPath are their internals
-  - RewriteLinks callbacks get a Link and return the new decoded path, RewriteLinks encodes it and only rewrites when the decoded path changed; a rewritten `<...>` destination keeps its angle brackets (path encoded)
-  - removed: DecodeLinkPath, EncodeLinkPath, SplitWikiTarget, splitLinkPath, splitMarkdownLinkDest; one wikiLinkRe (needs the closing "]]") for scanning and rendering
-  - codec: raw text trimmed, then decoded - nothing trims a decoded path anymore (ExtractLinks, NormalizeLinkPath, parents trim the form value instead); wiki edge spaces encoded; markdown/html resolve complete html entities like goldmark, "&" written as %26; markdown no longer encodes quotes
-  - left out on purpose: no position field (nothing needs it), anchors stay as written (normalized once in step 3 with their readers), the bare markdown path rule is decided in step 3 with relocate
-  - fixed gaps: leading/trailing spaces (codec, rename markdown/wiki, relocate wiki, filter index), `&` in /media/ links, filter index `[1].md` label, dokuwiki `{{:[1].png}}` alt text (no "]]", no wikilink), `a%41` re-normalized by RewriteLinks
-  - known: the links suite's RefreshCaches rebuilds still run when `--remove` deletes the isolated storage, so "unable to open database" errors are logged after the summary - harness noise, not a result
-- [x] step 3: move every reader onto the scanner
-  - metadata (ExtractLinks), rename and media relocate were already on RewriteLinks since step 2; RewriteLinks, ResolveWikiLinks and ProcessMarkdownLinks share one code-skipping walker (replaceOutsideCode), ProcessMarkdownLinks reads each link with ParseLink and writes its app url (/files/ with WithDefaultLinkExt also for `/files/x`, /media/ through ToMediaURL)
-  - anchors are decoded once (Link.AnchorText) and turned into a heading id by AnchorID(text) - render (also pure same-page anchors), book, pdfexport resolveLink; pdfexport reads image / zone image destinations with ParseLink
-  - book entries: DecodeFileRef / EncodeFileRef take path and section apart, the editor has a section field (`entries[][section]`) - no plain `path#anchor` split anymore
-  - rename compares metadata paths (ToWithPrefix both sides); relocate reads a bare markdown path docs-root first like it renders, doc-relative only as fallback (html relative links stay doc-relative)
-  - dokuwiki: links and media written with Link.String (Link.Image), a `[[...]]` link is a page unless its extension is a known media type
-  - step 2 leftovers: ParseLink only takes the angle branch with a closing ">", and a bare markdown destination never starts with "<" in the scanner (CommonMark) - `[x](<abc.md)` is no link for rendering, metadata and rename; Link.Image used (dokuwiki, linkstest)
-  - fixed gaps: book `#` / `|` names, dokuwiki `v1.2 notes`, links suite rename (file url / html), relocate (markdown docs-root), book editor, `/files/x` without extension on render, links / wikilinks in code rendered as links, a percent-encoded image path in the pdf export
-  - left out on purpose: dokuwiki doesn't use WithDefaultLinkExt - a dokuwiki id is always a page, WithDefaultLinkExt reads `v1.2 notes` as having an extension (that rule stays, see upgrade.md); ResolveWikiLinks still writes an intermediate `[text](/files/...)` that ProcessMarkdownLinks reads again; a book section is stored as typed (a `|` or `]]` in it breaks the entry) and a hand-written `|alias` on an entry is dropped by the editor
-  - review fixes: ProcessMarkdownLinks matches on the whole content with code masked (maskCode), so an image alt / link text spanning lines or holding `code` keeps its "![", a linked image `[![b](i.png)](a.md)` or one after a stray "[" stays an image; `[x]( <a.md)` is no link either; dokuwiki media check uses knov's fixed media table (types.MediaCategory), not the host mime db
-  - known: a reference definition whose title holds a code span isn't rewritten; reference definitions `[id]: dest` are still rendered by goldmark as written (metadata reads them docs-root); raw html is never rendered (goldmark without WithUnsafe), so the links suite checks html forms through metadata only; the book editor case skips names with a trailing space (the typed path is trimmed, step 5); links suite still failing: autocomplete, upload (step 4)
-- [x] step 4: js and urls
-  - autocomplete apis (/api/files/autocomplete, /api/files/headers, /api/media/autocomplete) take `link=wiki|markdown` and return each suggestion's ready-to-insert link text (AutocompleteItem.Link, `data-link`) - files and headings through parser.FileLinkDest (wikilink body or markdown /files/ url, empty path = same-page anchor), media through Link.Dest; `data-value` stays the plain path for path inputs. wiki-autocomplete.js inserts `data-link` as is - encodePathSegments, buildTarget, buildMediaTarget and the unused global buildTarget are gone, cursorOffset reads the link text (a "#" in a name is encoded, so only a real anchor keeps the cursor after the link)
-  - upload: uploadMediaBlob sends location.pathname as context_path, the handler reads the doc with pathutils.FileFromURL (decoded once, /files/new/... -> 400), UploadMedia gets the docs-relative path and returns MediaUploadResult.Link (parser.Link.String, image link for image/*) - the editor inserts it as is; the js "save first" pre-check is gone (the api answers it)
-  - urls: pathutils.ToRouteURL(route, rel) for path routes - replaces the raw url.PathEscape in render_files.go (delete file / folder) and render_media.go (delete media); RenderFileDropdown uses file.ViewURL() instead of `'/files/'+path` in js. builtin theme js: one pathURL(route, path) (per-segment encodeURIComponent, the js side of ToRouteURL) for every path route in panel-file.js / panel-tree.js, $store.filePanel.editURL replaces editPath; query params stay encodeURIComponent
-  - fixed gaps: links suite autocomplete (wiki raw path, "#" in markdown/media) and upload (every special-char folder), rename / move / delete / rebuild from the file panel for names with "#", "?" (the path was sent raw), metadata rebuild route for names whose encoding differs from go's (it read chi's still-encoded wildcard, now r.URL.Path like the other path routes), a stale dropdown list inserting the other syntax's link text (hide() now drops the items)
-  - left out on purpose: dispatchFetch still decodeURIComponent()s the typed link text to build the search query (reading, not writing a link - a typed `%23` splits as anchor); RenderMediaUploadComponent is dead code and still documents the old context_path; the example theme has no js that builds path urls
-  - known: the metadata suite's sanitize-kanban-tags fails on main too (unrelated); the links suite's "unable to open database" lines after the summary are the step 2 harness noise
-- [x] step 5: filename policy
-  - pathutils.CheckNewNames / ErrInvalidName: a file or folder name of a host path that doesn't exist yet must not hold `# ? | [ ] \` or start/end with a space - existing parts of the path (git sync, manual copy) aren't checked, so a new file in an existing `a#b/` folder is fine. CheckNewDocsPath runs it after the reserved folder check, so every create/move that already called it is covered: file save (create), rename / set path, move folder (job, kanban status rename), chat move, list / book / index editor, filter and tracker (configeditor Kind.Set checks the paired file before storing the config); MoveMediaFileNoRefresh checks the media path (media rename / set path)
-  - a move that keeps the name (to another folder: kanban card drag, move folder, set path) only checks the new folder, pathutils.CheckMovedName / CheckMovedDocsPath - an existing bad name can still move
-  - server: writeReservedPathError -> writeNewPathError (400 for both errors, translated message from newPathMessage), handleMoveError answers 400 for both
-  - links suite rename: a name CheckNewDocsPath rejects is written through storage (like git sync) and only renamed away, that MoveFileNoRefresh rejects it is covered by pathutils.TestCheckMovedName (pure, temp dir); forms written with parser.Link instead of raw text
-  - step 4 leftovers: media rename / rename-form / path-display read r.URL.Path instead of chi's still-encoded wildcard, pathURL moved from panel-file.js to rail-core.js (shared by panel-file.js and panel-tree.js)
-  - left out on purpose: no import mapping - the dokuwiki converter is an export (zip) and dokuwiki page ids can't hold these chars, backup restore brings back existing files like git sync; upload keeps utils.SanitizeFilename (already only keeps `a-z0-9-_.`), its media folder mirrors the doc's existing folder and isn't checked, same for media relocate; convert-to-markdown keeps the existing name; kanban statuses are already `[a-zA-Z0-9_]`; the codec is unchanged
-  - book editor skip stays: the typed path is trimmed, which is right now that the app never creates a name with an edge space - only a git-synced `trail.md ` can't be a book entry
-  - known: the kanban suite fails 6 cases on main too with the copied settings (statuses like `innboxx`) plus the known sanitize-kanban-tags; the links suite's "unable to open database" lines are the step 2 harness noise
-- step 5b: leftover from the step 5 review
-  - fixed: CheckNewNames stops at the docs / media root (a missing root or a data path with `#` no longer fails every create), configeditor Kind.Set checks CleanID's id directly, pathutils TestCheckNewNames pins every corpus name (the links suite's rename skip reads the policy)
-  - known: kanban moveFileUnique's collision fallback for an existing bad card name (`a#b.md` -> `a#b_2.md`) is a new name, so the card move fails with ErrInvalidName - rare (git-synced name + same name already in the status folder), fixing it needs a "keeps the old name" heuristic
-  - handleMedia (`/media/*`) reads r.URL.Path instead of chi's still-encoded wildcard, like the media rename / rename-form / path-display and metadata rebuild routes - a media page whose url a browser encodes differently from go (`( ) '` kept raw, so the request has a RawPath) was a 404: `x (1)`, `a&copy;b`, `it's "x"` and the nested `x (1)/ö ü` folder
-  - links suite upload: requests each uploaded media page the way a browser encodes it (go's url with `( ) '` unescaped) and expects 200 - failed for those 4 names before the fix
-  - known: `/metadata/{metadata}/{value}` (pages_browse.go) still reads chi.URLParam - single segments, untouched here; `go test ./...` fails render TestHeaderContextMenuScript / TestRowContextMenuScript on main too (c30bd8cd changed the table editor's remove actions, the tests still expect `column.delete()` / `row.delete()`)
-- [x] step 6: automatic metadata rebuild on upgrade
-  - not needed: main.go already runs job.RunMetadataRebuild (MetaDataLinksRebuild - ExtractLinks on every doc, used links + linked from) about 2 minutes after every startup, so link reading changes reach the stored metadata on their own
-  - upgrade.md: the "run a full metadata rebuild" note and the rebuild sentences of the step 2 / 3 link notes removed (their behavior changes stay); CLAUDE.md says link reading changes need no manual-rebuild note
-  - left out on purpose: no version constant / one-time full rebuild - nothing beyond link metadata needs it today
-- [x] step 7: repair media from the old upload
-  - FindBrokenLinks also suggests the media file whose path, read as link text (parser.ParseLink + NormalizeLinkPath), is the broken link - the old upload's raw `media/x%20(1)/pic.png` link reads as the missing `media/x (1)/pic.png`, the file is at the literal path; an exact match, checked before the unique-basename guess (which misses `pic.png` / `image.png`). the existing repair rewrites the link encoded (`x%2520(1)`), the encoded folder stays
-  - links suite repair-old-upload: media at the folder as the browser encoded it (`( ) '` raw) plus the raw link, for every corpus folder whose encoding differs - suggested and repaired, the link reads back as the media file (failed without the fix)
-  - upgrade.md: the upload note points at "Repair Broken Links" instead of moving media by hand
-  - left out on purpose: only media files get the exact match (only the upload wrote encoded names); the optional misplaced media scan for media whose folder doesn't mirror its doc - not needed to repair the links, a folder named `x%20(1)` can be intended
-- [x] step 8: final review fixes
-  - ResolveWikiLinks writes its intermediate markdown link with Link.Dest and the anchor encoded - `[[a#Say "hi"]]` was read with ` "hi"` as title, `[[a#x)]]` ended the destination
-  - ProcessMarkdownLinks rewrites a reference definition `[id]: dest` to a docs file to its /files/ url (docLinkDest / linkAnchor shared with inline links) - goldmark resolved it against the page; media, images, pure anchors and external ones stay as written
-  - book ComposeEntries reads an entry once (DecodeFileRef); files.keepsInvalidName replaced by pathutils.CheckMovedName / CheckMovedDocsPath
-  - left out on purpose: merging replaceOutsideCode and maskCode - a shared splitter isn't less code
-- [x] step 9: review simplifications
-  - parser.RenderLinks replaces ResolveWikiLinks + ProcessMarkdownLinks (now unexported): markdown links first, then wikilinks written straight to their app url (appLinkDest, fallbackLinkText shared with markdown links) - no intermediate `[](/files/...)` read a second time, a `[[` in a markdown destination is no wikilink anymore
-  - pathutils.FileFromURL returns "" for a path with a ".." segment (upload context_path); Link.AnchorText only percent-decodes (no "\" -> "/"); dead RenderMediaUploadComponent removed
-  - CLAUDE.md: links stay on the regex scanner on purpose, not goldmark's AST
-- open findings from the step 0 review to fix along the way
-  - stale link metadata after upgrading - not an issue, see step 6
-- run `go test ./...` and `--start-tests --remove` after every step
 
 # every other time
 
