@@ -21,11 +21,11 @@ type CacheKey string
 
 const (
 	CacheKeyFolderPaths           CacheKey = "all_folder_paths"
-	CacheKeyFilePaths             CacheKey = "all_file_paths"
+	CacheKeyFilePaths             CacheKey = "all_file_paths_v2" // v2: docs paths with docs/ prefix
 	CacheKeyTitles                CacheKey = "all_titles"
 	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
 	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
-	CacheKeyFullFileList          CacheKey = "all_files_full"
+	CacheKeyFullFileList          CacheKey = "all_files_full_v2" // v2: docs paths with docs/ prefix
 )
 
 // in-memory memo of the decoded file list. cacheStorage.Get + json.Unmarshal of
@@ -450,10 +450,11 @@ func GetAllFolderPathsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolderPaths)
 }
 
-// ancestorFolderPaths returns every ancestor folder of filePath, each with a trailing slash.
+// ancestorFolderPaths returns every ancestor folder of the docs file filePath (docs-relative, as
+// the user picks them), each with a trailing slash.
 // For xxx/yyy/zzz.md it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
 func ancestorFolderPaths(filePath string) []string {
-	dir := pathutils.ToSlash(filepath.Dir(filePath))
+	dir := pathutils.ToSlash(filepath.Dir(pathutils.ToRelative(filePath)))
 	if dir == "." || dir == "" {
 		return nil
 	}

@@ -92,7 +92,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath)
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
 			continue
@@ -110,7 +110,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath)
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -164,7 +164,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath)
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -196,7 +196,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath)
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
 			continue

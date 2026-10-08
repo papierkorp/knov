@@ -57,17 +57,15 @@ type FileContent struct {
 	Editor EditorType // resolved editor type, so view handlers can dispatch without re-sniffing
 }
 
-// pathsToFiles converts file paths to File structs
+// pathsToFiles converts the paths of a docs or media listing to File structs with their prefixed
+// metadata path ("docs/..." / "media/...") as Path, so a docs folder named like a prefix stays a
+// docs file
 func pathsToFiles(paths []string, prefix string) []File {
 	var files []File
 	for _, path := range paths {
 		fileName := filepath.Base(path)
 
-		// add prefix to distinguish media files
-		fullPath := path
-		if prefix != "" {
-			fullPath = pathutils.ToSlash(filepath.Join(prefix, path))
-		}
+		fullPath := pathutils.ToSlash(filepath.Join(prefix, path))
 
 		// get metadata if it exists
 		metadata, _ := MetaDataGet(fullPath)
@@ -94,7 +92,7 @@ func GetAllPhysicalFiles() ([]File, error) {
 		logging.LogError(logging.KeyApp, "failed to list files: %v", err)
 		return nil, err
 	}
-	return pathsToFiles(paths, ""), nil
+	return pathsToFiles(paths, "docs"), nil
 }
 
 // GetAllFiles returns all files from the filesystem (docs only).

@@ -172,9 +172,10 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 		return searchFilesRepositoryFallback(query, limit, allFiles)
 	}
 
+	// the search index is keyed by the docs-relative path (searchStorage.indexKey)
 	fileMap := make(map[string]files.File, len(allFiles))
 	for _, f := range allFiles {
-		fileMap[f.Path] = f
+		fileMap[pathutils.ToRelative(f.Path)] = f
 	}
 
 	var results []files.File

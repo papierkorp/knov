@@ -26,3 +26,4 @@
 - tables: links in the cells of the interactive table view (`[[note]]`, `[x](a b.md)`, `./` links, anchors) now open the file like in the rendered page, before a wikilink stayed plain text
 - api: the `select` mode of `GET /api/media/list` was removed (its list called an editor function that doesn't exist), use the default or `compact` mode
 - themes: the template function `urlPathSegment` was removed, use `{{fileHistoryURL .Data.FilePath}}` for a file's history url
+- api: file lists (`GET /api/files/list`, search, browse, filter results as json) give a docs file's `path` with its `docs/` prefix (`docs/notes/a.md`), like metadata paths - before it was `notes/a.md`. a docs file in a top-level folder named `docs`, `media` or `files` (copied in or synced with git) no longer shares its metadata with the media or docs file its path read as without the prefix

@@ -53,6 +53,7 @@ import (
 	_ "knov/internal/test/logstest"
 	_ "knov/internal/test/mediatest"
 	_ "knov/internal/test/metadatatest"
+	_ "knov/internal/test/reservedtest"
 	_ "knov/internal/test/searchtest"
 	_ "knov/internal/test/settingstest"
 	"knov/internal/thememanager"
