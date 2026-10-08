@@ -320,12 +320,14 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 // movePhysical's lock - so two callers racing for the same name can't both pass a check that's
 // already stale by the time they act on it; the loser simply retries the next candidate. Caps
 // out at maxMoveUniqueAttempts as a safety net against an unbounded loop if MoveFileNoRefresh
-// ever misreports ErrMoveTargetExists.
+// ever misreports ErrMoveTargetExists. The collision names are built from pathutils.CleanName(name),
+// since only a move keeping its name may keep chars the filename policy rejects.
 const maxMoveUniqueAttempts = 100
 
 func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string, err error) {
-	ext := filepath.Ext(name)
-	base := strings.TrimSuffix(name, ext)
+	clean := pathutils.CleanName(name)
+	ext := filepath.Ext(clean)
+	base := strings.TrimSuffix(clean, ext)
 	candidate := dir + "/" + name
 	for n := 2; n <= maxMoveUniqueAttempts; n++ {
 		err = files.MoveFileNoRefresh(key, oldPath, candidate)

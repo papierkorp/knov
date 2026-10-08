@@ -293,14 +293,15 @@ var ErrReservedPath = errors.New("target is in a reserved top-level folder")
 var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailing space")
 
 // CheckTarget checks creating a file or folder at the host path newFull, or moving oldFull there
-// (oldFull "" for a new one). It returns ErrReservedPath for a docs path in a top-level folder
-// parsePath reads as a prefix (see configmanager.ReservedDocsFolders) - such a file can't be
-// resolved back to itself - and ErrInvalidName for a name holding # ? | [ ] \ or starting/ending
-// with a space - these break or need encoding in links, so the app never creates them. Existing
-// paths (git sync, manual copy) are left alone, the link codec still reads them, and so is the old
-// name a move keeps: "a#b.md" may move to another folder or to the collision name "a#b_2.md"
-// (see kanban.moveFileUnique), only the new folders are checked - any other rename has to fix the
-// name. The docs and media roots are never checked.
+// (oldFull "" for a new one):
+//   - ErrReservedPath for a docs path in a top-level folder parsePath reads as a prefix (see
+//     configmanager.ReservedDocsFolders) - such a file can't be resolved back to itself
+//   - ErrInvalidName for a name holding # ? | [ ] \ or starting/ending with a space - these break or
+//     need encoding in links, so the app never creates them
+//   - existing paths (git sync, manual copy) are left alone, the link codec still reads them
+//   - a move keeping its name ("a#b.md" into another folder) only checks the new folders, any
+//     rename has to fix the name
+//   - the docs and media roots are never checked
 func CheckTarget(oldFull, newFull string) error {
 	_, statErr := os.Stat(newFull)
 	if docsRoot := getDocsPath(); statErr != nil && PathContains(docsRoot, newFull) {
@@ -309,7 +310,7 @@ func CheckTarget(oldFull, newFull string) error {
 			return ErrReservedPath
 		}
 	}
-	if oldFull != "" && keepsName(filepath.Base(oldFull), filepath.Base(newFull)) {
+	if oldFull != "" && filepath.Base(oldFull) == filepath.Base(newFull) {
 		newFull = filepath.Dir(newFull)
 	}
 	for p := filepath.Clean(newFull); ; p = filepath.Dir(p) {
@@ -325,17 +326,20 @@ func CheckTarget(oldFull, newFull string) error {
 // CheckNewDocsPath is CheckTarget for creating the docs path p ("a/b.md" or "docs/a/b.md").
 func CheckNewDocsPath(p string) error { return CheckTarget("", ToDocsPath(p)) }
 
-// keepsName reports whether newName is oldName or its collision name "<stem>_<n><ext>", see CheckTarget.
-func keepsName(oldName, newName string) bool {
-	ext := filepath.Ext(oldName)
-	n, ok := strings.CutPrefix(newName, strings.TrimSuffix(oldName, ext)+"_")
-	n, hasExt := strings.CutSuffix(n, ext)
-	return newName == oldName || (ok && hasExt && n != "" && strings.Trim(n, "0123456789") == "")
+// CleanName replaces the chars of name that break the filename policy (see CheckTarget) with "_"
+// and trims its spaces ("a#b" -> "a_b").
+func CleanName(name string) string {
+	return strings.TrimSpace(strings.Map(func(r rune) rune {
+		if strings.ContainsRune(`#?|[]\`, r) {
+			return '_'
+		}
+		return r
+	}, name))
 }
 
 // invalidName reports whether a file or folder name breaks the filename policy, see CheckTarget.
 func invalidName(name string) bool {
-	return strings.ContainsAny(name, `#?|[]\`) || strings.TrimSpace(name) != name
+	return CleanName(name) != name
 }
 
 // PathContains reports whether candidate is root itself or strictly beneath it on the

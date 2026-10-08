@@ -284,7 +284,7 @@ func GetAllTitlesFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyTitles)
 }
 
-// GetAllTitles returns all unique non-empty titles, reading from file content if the DB title is empty
+// GetAllTitles returns all unique non-empty titles
 func GetAllTitles() ([]string, error) {
 	allFiles, err := GetAllFilesCached()
 	if err != nil {
@@ -302,11 +302,6 @@ func GetAllTitles() ([]string, error) {
 			continue
 		}
 		title := meta.Title
-		if title == "" {
-			m := *meta // copy - meta is shared with the cached file list
-			updateTitle(&m)
-			title = m.Title
-		}
 		logging.LogDebug(logging.KeyApp, "getAllTitles: %s -> %q", file.Path, title)
 		if title != "" && !seen[title] {
 			seen[title] = true
@@ -353,14 +348,9 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
 	}
 
-	// collect title (fall back to reading from file content if not in DB)
-	title := metadata.Title
-	if title == "" {
-		updateTitle(metadata)
-		title = metadata.Title
-	}
-	if title != "" {
-		mc.Titles[title] = true
+	// collect title - set by every metadata sync, a file without a header has none
+	if metadata.Title != "" {
+		mc.Titles[metadata.Title] = true
 	}
 	if metadata.Collection != "" && len(metadata.Ancestor) > 0 {
 		root := metadata.Ancestor[0]

@@ -259,15 +259,27 @@ func TestCheckTarget(t *testing.T) {
 		{old, filepath.Join(root, "x#", "a#b.md"), ErrInvalidName},             // into an invalid new folder
 		{filepath.Join(root, "a.md"), old, ErrInvalidName},                     // renamed to a bad name
 		{filepath.Join(root, "a.md"), filepath.Join(root, "dst", "b.md"), nil}, // valid rename
-		{old, filepath.Join(root, "dst", "a#b_2.md"), nil},                     // keeps the old name (kanban collision)
-		{old, filepath.Join(root, "dst", "a#b#2.md"), ErrInvalidName},          // adds a bad char to it
-		{old, filepath.Join(root, "dst", "a#b final.md"), ErrInvalidName},
-		{old, filepath.Join(root, "dst", "a#b_2.txt"), ErrInvalidName},
-		{filepath.Join(root, ".env"), filepath.Join(root, " a.md"), ErrInvalidName}, // empty stem keeps nothing
+		{old, filepath.Join(root, "dst", "a#b_2.md"), ErrInvalidName},          // a rename keeping the bad char
+		{old, filepath.Join(root, "dst", "a_b_2.md"), nil},                     // kanban collision name (CleanName)
 	}
 	for _, c := range cases {
 		if got := CheckTarget(c.old, c.new); !errors.Is(got, c.want) {
 			t.Errorf("CheckTarget(%q, %q) = %v, want %v", c.old, c.new, got, c.want)
+		}
+	}
+}
+
+func TestCleanName(t *testing.T) {
+	cases := map[string]string{
+		"a.md":             "a.md",
+		"a#b?c|d[e]f\\.md": "a_b_c_d_e_f_.md",
+		" a b.md ":         "a b.md",
+		"#":                "_",
+		" ":                "",
+	}
+	for in, want := range cases {
+		if got := CleanName(in); got != want {
+			t.Errorf("CleanName(%q) = %q, want %q", in, got, want)
 		}
 	}
 }
