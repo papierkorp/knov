@@ -365,11 +365,17 @@ func ResolveBaseDir() string {
 	return baseDir
 }
 
+// IsolatedRoot is the scratch directory of this process's `knov --start-tests` run (next to the
+// executable, one per process so runs at once don't share databases).
+func IsolatedRoot() string {
+	return filepath.Join(ResolveBaseDir(), fmt.Sprintf("knov_temp_test_%d", os.Getpid()))
+}
+
 // isolatedLogsDir, when set, redirects every log key except KeyInAppTests away from the
 // live logs directory - see SetIsolatedLogsDir.
 var isolatedLogsDir string
 
-// SetIsolatedLogsDir points every log key except KeyInAppTests at a knov_temp_test/logs
+// SetIsolatedLogsDir points every log key except KeyInAppTests at the logs folder of IsolatedRoot
 // folder next to the executable instead of the live logs directory, and raises the console
 // and file log level to "warning" (checked directly in shouldLog/shouldLogToFile, not via
 // KNOV_LOG_LEVEL/KNOV_LOG_FILE_LEVEL env vars, so a later .env reload can't clobber it). Used
@@ -378,7 +384,7 @@ var isolatedLogsDir string
 // problems; KeyInAppTests keeps writing to the real logs directory so a single persistent
 // history of every test run (live and isolated) stays in one place. Must be called before Init.
 func SetIsolatedLogsDir() {
-	isolatedLogsDir = filepath.Join(ResolveBaseDir(), "knov_temp_test", "logs")
+	isolatedLogsDir = filepath.Join(IsolatedRoot(), "logs")
 }
 
 func resolveLogsDir(key Key) string {

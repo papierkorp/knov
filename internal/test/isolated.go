@@ -11,10 +11,11 @@ import (
 	"knov/internal/pathutils"
 )
 
-// TempRoot is the knov_temp_test scratch directory (sibling to the executable) that
-// PrepareIsolatedStorage sets up and RemoveIsolatedStorage deletes.
+// TempRoot is the knov_temp_test_<pid> scratch directory (sibling to the executable) that
+// PrepareIsolatedStorage sets up and RemoveIsolatedStorage deletes - one per process, so two runs
+// at once don't share their databases.
 func TempRoot() string {
-	return filepath.Join(logging.ResolveBaseDir(), "knov_temp_test")
+	return logging.IsolatedRoot()
 }
 
 // PrepareIsolatedStorage points every storage path at fresh, empty data/storage directories

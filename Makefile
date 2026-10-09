@@ -74,7 +74,7 @@ changelog:
 	@git add docs/changelogs/ docs/releases/
 
 tree:
-	tree -I 'bin|data|data2|data3|storage|backups|knov_temp_test'
+	tree -I 'bin|data|data2|data3|storage|backups|knov_temp_test*'
 
 # bump internal/version/version.yaml first, then: make release
 release:

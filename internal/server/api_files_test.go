@@ -15,6 +15,9 @@ import (
 // TestMoveRedirectsOnlyViewedFile checks that rename and folder move only send HX-Redirect when
 // the HX-Current-URL page shows the moved file, and toast in place (HX-Trigger) otherwise.
 func TestMoveRedirectsOnlyViewedFile(t *testing.T) {
+	// the server tests share one data dir that lives for the whole run - start from an empty docs folder, so -count=2 works
+	os.RemoveAll(pathutils.DocsRoot())
+	t.Cleanup(func() { os.RemoveAll(pathutils.DocsRoot()) })
 	for _, f := range []string{"a.md", "b.md", "d1/c.md", "d2/c.md"} {
 		p := pathutils.ToDocsPath(f)
 		if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
