@@ -743,6 +743,9 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 		if relative {
 			return relativeDocLink(filePath, target), true
 		}
+		if rel, ok := strings.CutPrefix(target, "docs/"); ok && l.Kind == parser.LinkWiki {
+			target = parser.DocsWikiPath(rel) // a wikilink reads docs files from the docs root
+		}
 		return target, true
 	}
 }

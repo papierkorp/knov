@@ -173,3 +173,23 @@ func TestRenamedRelativeMediaLinkKeepsMediaSegment(t *testing.T) {
 		}
 	}
 }
+
+// a renamed wikilink is written from the docs root without a docs/ prefix, only a docs file in a
+// folder called docs or media keeps it
+func TestRenamedWikiLinkDocsPrefix(t *testing.T) {
+	dir := t.TempDir()
+	prevData, prevStorage := configmanager.GetDataPath(), configmanager.GetStoragePath()
+	configmanager.SetDataAndStoragePaths(dir, dir)
+	t.Cleanup(func() { configmanager.SetDataAndStoragePaths(prevData, prevStorage) })
+	for _, c := range []struct{ link, oldPath, newPath, want string }{
+		{"[[sub/x]]", "docs/sub/x.md", "docs/sub/y.md", "[[sub/y]]"},
+		{"[[sub/x.md]]", "docs/sub/x.md", "docs/sub/y.md", "[[sub/y.md]]"},
+		{"[[sub/x]]", "docs/sub/x.md", "docs/media/y.md", "[[docs/media/y]]"},
+		{"[[sub/x]]", "docs/sub/x.md", "docs/docs/y.md", "[[docs/docs/y]]"},
+	} {
+		got, ok := parser.RewriteLinks(c.link, renameLinkFunc("docs/n.md", c.oldPath, c.newPath))
+		if !ok || got != c.want {
+			t.Errorf("%q -> %s = %q, want %q", c.link, c.newPath, got, c.want)
+		}
+	}
+}
