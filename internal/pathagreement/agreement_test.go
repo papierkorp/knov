@@ -68,8 +68,6 @@ var consumers = []consumer{
 // knownBugs are the disagreements that are not fixed yet, keyed "consumer loc". The test fails
 // when one of them agrees again (remove it) and when any other one disagrees.
 var knownBugs = map[string]string{
-	"kanban-ancestor-select docs/media/x.md": "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
-	"kanban-ancestor-select docs/docs/x.md":  "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
 }
 
 func TestPathAgreement(t *testing.T) {

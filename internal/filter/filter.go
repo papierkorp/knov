@@ -189,21 +189,21 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 		return false
 	case "child-of":
 		for _, p := range metadata.Parents {
-			if matchesOperator(pathutils.ToWithPrefix(p), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
+			if matchesOperator(p, criterion.Operator, criterion.Value) {
 				return true
 			}
 		}
 		return false
 	case "parent-of":
 		for _, k := range metadata.Kids {
-			if matchesOperator(pathutils.ToWithPrefix(k), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
+			if matchesOperator(k, criterion.Operator, criterion.Value) {
 				return true
 			}
 		}
 		return false
 	case "ancestor-of":
 		for _, a := range metadata.Ancestor {
-			if matchesOperator(pathutils.ToWithPrefix(a), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
+			if matchesOperator(a, criterion.Operator, criterion.Value) {
 				return true
 			}
 		}

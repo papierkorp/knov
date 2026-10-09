@@ -254,11 +254,7 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 
 	format := r.URL.Query().Get("format")
 	if format == "options" {
-		rels := make([]string, 0, len(ancestors))
-		for _, a := range ancestors {
-			rels = append(rels, pathutils.ToRelative(a))
-		}
-		writeResponse(w, r, rels, render.RenderAncestorOptions(ancestors))
+		writeResponse(w, r, ancestors, render.RenderAncestorOptions(ancestors))
 		return
 	}
 

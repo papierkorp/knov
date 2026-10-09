@@ -118,11 +118,11 @@ func RenderNoLinksMessage(message string) string {
 	return fmt.Sprintf(`<div class="connection-empty">%s</div>`, message)
 }
 
-// RenderAncestorOptions renders the ancestor files as the <option>s of a select (value: the docs-relative path).
+// RenderAncestorOptions renders the ancestor files as the <option>s of a select (value: the metadata path).
 func RenderAncestorOptions(ancestors []string) string {
 	var out strings.Builder
 	for _, a := range ancestors {
-		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(pathutils.ToRelative(a)), GetLinkDisplayText(pathutils.ToWithPrefix(a)))
+		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(a), GetLinkDisplayText(a))
 	}
 	return out.String()
 }

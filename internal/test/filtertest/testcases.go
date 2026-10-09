@@ -246,7 +246,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "child-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestD.md",
+					Value:    "docs/test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
@@ -292,7 +292,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "ancestor-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestD.md",
+					Value:    "docs/test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
@@ -385,19 +385,19 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "child-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestD.md",
+					Value:    "docs/test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 				{
 					Metadata: "parent-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestF.md",
+					Value:    "docs/test/filter-tests/filterTestF.md",
 					Action:   "include",
 				},
 				{
 					Metadata: "ancestor-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestD.md",
+					Value:    "docs/test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
