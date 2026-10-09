@@ -167,6 +167,7 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 	knownDivergences := map[string]string{
 		"    ```\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
 		"    ~~~\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
+		"\t```\n[x](a.md)":   "a tab-indented fence marker is a fence for the app's scanner, indented code for goldmark",
 	}
 	// an html comment opened after a list marker or ">" is a block comment that ends with its container, the scanner only
 	// knows the ones starting a line
@@ -174,7 +175,7 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		knownDivergences[in] = "a block html comment inside a list item or quote isn't masked"
 		inputs = append(inputs, in)
 	}
-	inputs = append(inputs, "    ```\n[x](a.md)", "    ~~~\n[x](a.md)")
+	inputs = append(inputs, "    ```\n[x](a.md)", "    ~~~\n[x](a.md)", "\t```\n[x](a.md)")
 	for _, p := range specialchars.Names {
 		if strings.Contains(p, `\`) {
 			continue // a "\" is a windows separator for knov, goldmark keeps it
