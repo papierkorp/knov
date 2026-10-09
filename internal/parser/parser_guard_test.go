@@ -73,6 +73,15 @@ var guardRules = []guardRule{
 		},
 	},
 	{
+		name: "decodeURIComponent (link paths are decoded by the server)",
+		re:   regexp.MustCompile(`decodeURIComponent\b`),
+		exts: []string{".go", ".js", ".gohtml"},
+		allowed: map[string]int{
+			"themes/builtin/js/panel-content.js": 1, // a url fragment
+			"themes/builtin/js/panel-file.js":    3, // the displayed name and the page path, from location.pathname
+		},
+	},
+	{
 		name: "goldmark render without RenderLinks first",
 		re:   regexp.MustCompile(`goldmark\.New\(|\.Convert\(|RenderInlineMarkdown\(`),
 		exts: []string{".go"},

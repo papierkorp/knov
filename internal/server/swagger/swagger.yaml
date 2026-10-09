@@ -1716,7 +1716,8 @@ paths:
     get:
       description: Returns files matching a query string for use in wiki link autocomplete
       parameters:
-      - description: search query
+      - description: search query, with link set the link destination typed so far,
+          as written
         in: query
         name: q
         type: string
@@ -2021,24 +2022,21 @@ paths:
       description: Returns headings from a file, optionally filtered, for use in wiki
         link anchor autocomplete
       parameters:
-      - description: relative file path
+      - description: the link destination typed so far, as written (path#heading text)
         in: query
-        name: filepath
+        name: typed
         required: true
         type: string
-      - description: filter headings by text or id
-        in: query
-        name: q
-        type: string
-      - description: 'if set, autocomplete values are a bare #id instead of filepath#id
-          (same-file links)'
-        in: query
-        name: bare
-        type: string
-      - description: wiki or markdown - also return each heading as ready-to-insert
-          link text
+      - description: wiki or markdown - the kind of link typed, each heading is also
+          returned as ready-to-insert link text
         in: query
         name: link
+        required: true
+        type: string
+      - description: docs-relative path of the file being edited, whose headings a
+          destination without path (#heading) lists
+        in: query
+        name: current
         type: string
       produces:
       - application/json

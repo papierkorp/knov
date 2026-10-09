@@ -3752,6 +3752,11 @@
       "translation": "aus dem Medienordner"
     },
     {
+      "id": "invalid link kind",
+      "message": "invalid link kind",
+      "translation": "ungültige Linkart"
+    },
+    {
       "id": "the docs file when it exists, else the media file of that name",
       "message": "the docs file when it exists, else the media file of that name",
       "translation": "die Docs-Datei, wenn sie existiert, sonst die Mediendatei mit diesem Namen"

@@ -238,6 +238,8 @@ func CreateFuncMap() template.FuncMap {
 		},
 		// docsPath is the docs/ path of a docs-relative file path, what the ?filepath= apis take
 		"docsPath": pathutils.DocsPath,
+		// mediaPath is the media/ path of a media-relative file path, what the ?filepath= apis take
+		"mediaPath": pathutils.MediaPath,
 		// fileHistoryURL is the /files/history/ url of a docs-relative file path
 		"fileHistoryURL": func(rel string) string { return pathutils.ToFileHistoryURL(pathutils.DocsPath(rel)) },
 		"marshalJSON": func(v interface{}) string {

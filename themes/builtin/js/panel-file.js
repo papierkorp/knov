@@ -38,8 +38,11 @@ document.addEventListener("alpine:init", () => {
       return decodeURIComponent(this.filepath);
     },
 
+    // metadata path (docs/...) of the viewed file, as the server rendered it
+    metaPath: "",
+
     get fp() {
-      return encodeURIComponent("docs/" + this.filepath);
+      return encodeURIComponent(this.metaPath);
     },
 
     // /files/edit/<path> url - unlike fp (a ?filepath= query param) "/" stays
@@ -86,6 +89,11 @@ document.addEventListener("alpine:init", () => {
 // ================================================================
 // file page setup
 // ================================================================
+// the metadata path (docs/... or media/...) of the file the page shows, rendered by the server
+function pageMetaPath() {
+  return document.querySelector(".file-content[data-filepath], .page-file-editor[data-filepath]")?.dataset.filepath || "";
+}
+
 function setupFilePage() {
   const path = window.location.pathname;
 
@@ -150,11 +158,11 @@ function setupFilePage() {
     // re-encoding for query use - otherwise "ö" etc. gets double-encoded (%25C3…)
     // and every ?filepath= lookup misses. ?filepath= is the docs/ metadata path.
     const filepath = decodeURIComponent(editMatch[1].split("?")[0]);
-    const fp = encodeURIComponent("docs/" + filepath);
+    const fp = encodeURIComponent(pageMetaPath());
     document.body.setAttribute("data-has-file", "true");
     Alpine.store("filePanel").hasFile = true;
     const refFp = document.getElementById("fp-reference-filepath");
-    if (refFp) refFp.value = "docs/" + filepath;
+    if (refFp) refFp.value = pageMetaPath();
     const editFields = {
       "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
       "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
@@ -191,7 +199,7 @@ function setupFilePage() {
   // through encodeURIComponent. Without the decode "ö" etc. double-encodes (%25C3…)
   // and every ?filepath= lookup misses. ?filepath= is the docs/ metadata path.
   const filepath = decodeURIComponent(fileMatch[1]);
-  const fp = encodeURIComponent("docs/" + filepath);
+  const fp = encodeURIComponent(pageMetaPath());
 
   // reveal file rail button
   document.body.setAttribute("data-has-file", "true");
@@ -199,6 +207,7 @@ function setupFilePage() {
   // filename header + edit-link + export-pdf-link bind straight to
   // $store.filePanel in base.gohtml
   Alpine.store("filePanel").filepath = filepath;
+  Alpine.store("filePanel").metaPath = pageMetaPath();
 
   // dokuwiki detection - a rendered dokuwiki file still starts with its
   // "====== heading ======" syntax since no dokuwiki parser exists anymore,
@@ -242,7 +251,7 @@ function setupFilePage() {
   }
 
   const refFp = document.getElementById("fp-reference-filepath");
-  if (refFp) refFp.value = "docs/" + filepath;
+  if (refFp) refFp.value = pageMetaPath();
   loadReferences(fp);
 
   // hide no-file message and show metadata rows

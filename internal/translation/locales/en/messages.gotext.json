@@ -3752,6 +3752,11 @@
       "translation": ""
     },
     {
+      "id": "invalid link kind",
+      "message": "invalid link kind",
+      "translation": ""
+    },
+    {
       "id": "the docs file when it exists, else the media file of that name",
       "message": "the docs file when it exists, else the media file of that name",
       "translation": ""

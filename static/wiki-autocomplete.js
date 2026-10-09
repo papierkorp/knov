@@ -9,8 +9,6 @@
 // link text), path inputs insert the plain data-value.
 
 (function (global) {
-  var FILES_PREFIX = "/files/";
-
   // ── shared dropdown state ────────────────────────────────────────────────
 
   var dropdown = null;
@@ -123,14 +121,14 @@
   }
 
   // link: "wiki" / "markdown" for an editor link, "" for a path input
-  function fetchHeaders(filepath, q, anchorEl, bare, link) {
+  function fetchHeaders(typed, currentFile, anchorEl, link) {
     fetchList(
-      "/api/files/headers?filepath=" +
-        encodeURIComponent(filepath) +
-        "&q=" +
-        encodeURIComponent(q) +
-        (bare ? "&bare=1" : "") +
-        (link ? "&link=" + link : ""),
+      "/api/files/headers?typed=" +
+        encodeURIComponent(typed) +
+        "&current=" +
+        encodeURIComponent(currentFile || "") +
+        "&link=" +
+        link,
       anchorEl,
     );
   }
@@ -164,28 +162,13 @@
       fetchList("/api/media/autocomplete?link=markdown&q=" + encodeURIComponent(inner), anchorEl);
       return;
     }
-    // Markdown links store "/files/<path>" (a real href), but the file and
-    // header lookup APIs expect a plain repo-relative path, same as
-    // wikilinks store internally. Strip the prefix before querying.
-    if (inner.indexOf(FILES_PREFIX) === 0) inner = inner.substring(FILES_PREFIX.length);
-    try {
-      inner = decodeURIComponent(inner);
-    } catch (e) {}
-    var hashIdx = inner.indexOf("#");
-    if (hashIdx !== -1) {
-      // no filepath before the "#" (e.g. "](#") — link to a header in the
-      // file currently being edited instead of querying an empty filepath.
-      // Ask the server for bare "#id" values in that case, so the inserted
-      // link stays a same-page anchor instead of the full file path.
-      var typedFilepath = inner.substring(0, hashIdx);
-      // a wikilink names a docs file with its docs/ prefix, the headers api takes the docs-relative path
-      if (link === "wiki" && typedFilepath.indexOf("docs/") === 0) typedFilepath = typedFilepath.substring(5);
-      var filepath = typedFilepath || currentFile;
-      if (!filepath) {
+    // the server reads what was typed (a /files/ url, an encoded path, a docs/ prefix, the anchor)
+    if (inner.indexOf("#") !== -1) {
+      if (!inner.split("#")[0] && !currentFile) {
         hide();
         return;
       }
-      fetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "", link);
+      fetchHeaders(inner, currentFile, anchorEl, link);
     } else {
       fetchList("/api/files/autocomplete?link=" + link + "&q=" + encodeURIComponent(inner), anchorEl);
     }

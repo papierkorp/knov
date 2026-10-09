@@ -100,6 +100,11 @@ func parsePath(inputPath string) *PathInfo {
 	}
 }
 
+// MediaPath is the metadata path of the media file at the media-relative path rel.
+func MediaPath(rel string) string {
+	return "media/" + strings.TrimPrefix(rel, "/")
+}
+
 // DocsPath is the docs file or folder at the docs-relative path rel (user input, a /files/<rel>
 // url, a docs listing), taken literally: "media/x.md" is data/docs/media/x.md, not a media file.
 // A docs-relative path goes through it before any other function here - they read a leading

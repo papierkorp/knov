@@ -1070,20 +1070,26 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 // @Summary Get headers (TOC) for a file
 // @Description Returns headings from a file, optionally filtered, for use in wiki link anchor autocomplete
 // @Tags files
-// @Param filepath query string true "relative file path"
-// @Param q query string false "filter headings by text or id"
-// @Param bare query string false "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)"
-// @Param link query string false "wiki or markdown - also return each heading as ready-to-insert link text"
+// @Param typed query string true "the link destination typed so far, as written (path#heading text)"
+// @Param link query string true "wiki or markdown - the kind of link typed, each heading is also returned as ready-to-insert link text"
+// @Param current query string false "docs-relative path of the file being edited, whose headings a destination without path (#heading) lists"
 // @Produce json,html
 // @Success 200 {array} object "array of {id, text, level, link}"
 // @Failure 400 {string} string "missing filepath"
 // @Failure 404 {string} string "file not found"
 // @Router /api/files/headers [get]
 func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimSpace(r.URL.Query().Get("filepath"))
-	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
-	bare := r.URL.Query().Get("bare") != ""
 	linkKind, withLink := linkKindParam(r)
+	if !withLink {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid link kind"))
+		return
+	}
+	filePath, q, _ := parser.TypedLinkPath(r.URL.Query().Get("typed"), linkKind)
+	q = strings.ToLower(strings.TrimSpace(q))
+	bare := filePath == ""
+	if bare {
+		filePath = strings.TrimSpace(r.URL.Query().Get("current"))
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, "missing filepath")
 		return
@@ -1141,7 +1147,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 // @Summary Autocomplete file paths
 // @Description Returns files matching a query string for use in wiki link autocomplete
 // @Tags files
-// @Param q query string false "search query"
+// @Param q query string false "search query, with link set the link destination typed so far, as written"
 // @Param link query string false "wiki or markdown - also return each file as ready-to-insert link text"
 // @Produce json,html
 // @Success 200 {array} object "array of {value, label, detail, link}"
@@ -1149,6 +1155,9 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	linkKind, withLink := linkKindParam(r)
+	if withLink {
+		q, _, _ = parser.TypedLinkPath(q, linkKind)
+	}
 
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {

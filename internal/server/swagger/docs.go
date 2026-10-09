@@ -1588,7 +1588,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "search query",
+                        "description": "search query, with link set the link destination typed so far, as written",
                         "name": "q",
                         "in": "query"
                     },
@@ -2037,27 +2037,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "relative file path",
-                        "name": "filepath",
+                        "description": "the link destination typed so far, as written (path#heading text)",
+                        "name": "typed",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "filter headings by text or id",
-                        "name": "q",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)",
-                        "name": "bare",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "wiki or markdown - also return each heading as ready-to-insert link text",
+                        "description": "wiki or markdown - the kind of link typed, each heading is also returned as ready-to-insert link text",
                         "name": "link",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "docs-relative path of the file being edited, whose headings a destination without path (#heading) lists",
+                        "name": "current",
                         "in": "query"
                     }
                 ],

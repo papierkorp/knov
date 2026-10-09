@@ -548,3 +548,24 @@ func TestRewriteLinksCRLF(t *testing.T) {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
+
+func TestTypedLinkPath(t *testing.T) {
+	for _, c := range []struct {
+		typed     string
+		kind      LinkKind
+		rel, anch string
+		has       bool
+	}{
+		{"sub/a b", LinkWiki, "sub/a b", "", false},
+		{"docs/media/a#intro", LinkWiki, "media/a", "intro", true},
+		{"#intro", LinkWiki, "", "intro", true},
+		{"/files/sub/a%20b.md#my-sec", LinkMarkdown, "sub/a b.md", "my-sec", true},
+		{"/files/sub/", LinkMarkdown, "sub/", "", false},
+		{"a%2", LinkMarkdown, "a%2", "", false},
+	} {
+		rel, anch, has := TypedLinkPath(c.typed, c.kind)
+		if rel != c.rel || anch != c.anch || has != c.has {
+			t.Errorf("%q: got (%q, %q, %v), want (%q, %q, %v)", c.typed, rel, anch, has, c.rel, c.anch, c.has)
+		}
+	}
+}

@@ -213,6 +213,20 @@ func DocsWikiPath(rel string) string {
 	return rel
 }
 
+// TypedLinkPath reads the destination typed so far into a link of kind (the body of a wikilink or
+// the dest of a markdown link) for the autocomplete: the decoded docs-relative path (a "/files/"
+// url prefix, for a wikilink its docs/ prefix, dropped) and the anchor text after a "#".
+func TypedLinkPath(typed string, kind LinkKind) (rel, anchor string, hasAnchor bool) {
+	l := ParseLink(typed, kind)
+	rel = l.Path
+	if kind == LinkWiki {
+		rel = strings.TrimPrefix(rel, "docs/")
+	} else {
+		rel = strings.TrimPrefix(rel, "/files/")
+	}
+	return rel, strings.TrimPrefix(l.Anchor, "#"), l.Anchor != ""
+}
+
 // FilesLinkPath is the decoded "/files/" link path of the docs file metaPath ("docs/a.md" ->
 // "/files/a.md"), the docs-relative path taken literally - the one writer of the form
 // utils.NormalizeLinkPath reads.
