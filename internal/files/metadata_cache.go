@@ -52,14 +52,20 @@ func fileListGeneration() uint64 {
 }
 
 // setFileListMemo replaces the in-memory decoded file list, unless the list was
-// invalidated since gen was captured - in that case allFiles is already stale.
-func setFileListMemo(allFiles []File, gen uint64) {
+// invalidated since gen was captured - in that case allFiles is already stale. Reports whether it
+// did. persist, if set, runs under the same lock, so an invalidation can't land between the
+// check and the write and leave a stale list in cache storage.
+func setFileListMemo(allFiles []File, gen uint64, persist func() error) (bool, error) {
 	fileListMemoMu.Lock()
 	defer fileListMemoMu.Unlock()
 	if fileListMemoGen != gen {
-		return
+		return false, nil
 	}
 	fileListMemo = allFiles
+	if persist == nil {
+		return true, nil
+	}
+	return true, persist()
 }
 
 // invalidateFileListMemo drops the memo and bumps the generation, so any read or
@@ -72,15 +78,18 @@ func invalidateFileListMemo() {
 }
 
 // saveFileListToCache persists the full file list (including metadata) to cache storage
-// and memoizes it. gen must be the generation captured before allFiles was built.
+// and memoizes it. gen must be the generation captured before allFiles was built; a list that was
+// invalidated since is neither memoized nor persisted.
 func saveFileListToCache(allFiles []File, gen uint64) error {
 	logging.LogDebug(logging.KeyApp, "saving %s to cache", CacheKeyFullFileList)
-	setFileListMemo(allFiles, gen)
 	jsonData, err := json.Marshal(allFiles)
 	if err != nil {
 		return err
 	}
-	return cacheStorage.Set(string(CacheKeyFullFileList), jsonData)
+	_, err = setFileListMemo(allFiles, gen, func() error {
+		return cacheStorage.Set(string(CacheKeyFullFileList), jsonData)
+	})
+	return err
 }
 
 // getFileListFromCache retrieves the full file list from cache storage.
@@ -124,7 +133,7 @@ func GetAllFilesCached() ([]File, error) {
 	if err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to read file list cache, falling back to live data: %v", err)
 	} else if cached != nil {
-		setFileListMemo(cached, gen)
+		setFileListMemo(cached, gen, nil)
 		return cached, nil
 	}
 
