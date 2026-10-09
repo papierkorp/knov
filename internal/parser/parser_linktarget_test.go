@@ -240,3 +240,41 @@ func TestSoleImageLink(t *testing.T) {
 		}
 	}
 }
+
+// a link without media/ opens the docs file when it exists and the media file of that name only
+// as a fallback - in link metadata and on the rendered page
+func TestLinkTargetDocsFileWinsOverMedia(t *testing.T) {
+	dir := t.TempDir()
+	prevData, prevStorage := configmanager.GetDataPath(), configmanager.GetStoragePath()
+	configmanager.SetDataAndStoragePaths(dir, dir)
+	t.Cleanup(func() { configmanager.SetDataAndStoragePaths(prevData, prevStorage) })
+
+	for _, rel := range []string{"docs/sub/p.pdf", "media/sub/p.pdf", "media/only.pdf", "media/sub/only.pdf"} {
+		full := filepath.Join(dir, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, []byte("x"), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	const doc = "docs/sub/n.md"
+	for content, want := range map[string]string{
+		"[x](p.pdf)":            "docs/sub/p.pdf",
+		"[x](./p.pdf)":          "docs/sub/p.pdf",
+		"[x](/sub/p.pdf)":       "docs/sub/p.pdf",
+		"[[sub/p.pdf]]":         "docs/sub/p.pdf",
+		`<a href="p.pdf">x</a>`: "docs/sub/p.pdf",
+		"[x](media/sub/p.pdf)":  "media/sub/p.pdf",
+		"[x](only.pdf)":         "media/sub/only.pdf",
+		"[x](/only.pdf)":        "media/only.pdf",
+	} {
+		if got := metadataTarget(content, doc); got != want {
+			t.Errorf("%q: link metadata reads %q, want %q", content, got, want)
+		}
+		if got := renderedLinkTarget(content, doc); got != want {
+			t.Errorf("%q: renders to %q, want %q", content, got, want)
+		}
+	}
+}

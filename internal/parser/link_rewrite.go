@@ -619,8 +619,8 @@ func IsAppRouteLink(p string, kind LinkKind) bool {
 // and a leading "/" from the docs root, a "/files/" url as the docs-relative path taken literally
 // ("/files/media/x.md" is the docs file docs/media/x.md), a path written "media/", "./media/" or
 // "/media/" from the media folder and one written "docs/" as that docs path ("[[docs/media/x]]");
-// a path without a prefix naming an existing media file is that media file (links copied from the
-// media page have no "media/" prefix).
+// a path without a prefix is the docs file when it exists, else the media file of that name when
+// that exists (links copied from the media page have no "media/" prefix).
 func LinkTarget(docPath string, l Link) string {
 	return linkTarget(ResolveLinkPath(docPath, l), l, IsBareLink(l) || pathutils.IsRelativeLink(l.Path))
 }
@@ -644,17 +644,24 @@ func linkTarget(p string, l Link, joined bool) string {
 	p = utils.NormalizeLinkPath(p)
 	switch {
 	case joined && !(strings.HasPrefix(p, "media/") && WrittenAsMedia(l.Path)):
-		if _, err := os.Stat(pathutils.ToMediaPath("media/" + p)); err == nil {
-			return "media/" + p
-		}
-		return pathutils.DocsPath(p)
+		return docsOrMediaTarget(p)
 	case strings.HasPrefix(p, "media/") || strings.HasPrefix(p, "docs/"):
 		return pathutils.ToWithPrefix(p)
+	}
+	return docsOrMediaTarget(p)
+}
+
+// docsOrMediaTarget is the docs file p (a docs-root path) when it exists, else the media file of
+// that name when that exists, else the (missing) docs file.
+func docsOrMediaTarget(p string) string {
+	docs := pathutils.DocsPath(p)
+	if _, err := os.Stat(pathutils.ToFullPath(docs)); err == nil {
+		return docs
 	}
 	if _, err := os.Stat(pathutils.ToMediaPath("media/" + p)); err == nil {
 		return "media/" + p
 	}
-	return pathutils.DocsPath(p)
+	return docs
 }
 
 // WrittenAsMedia reports whether the link path p reads media/... once its leading "/", "./" and
