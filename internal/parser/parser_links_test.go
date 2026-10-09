@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"knov/internal/pathutils"
 	"knov/internal/test/specialchars"
@@ -503,5 +504,19 @@ func TestRewriteLinksEscapesPipeInTableRows(t *testing.T) {
 		if l != "docs/old.md" && l != "docs/a|b.md" {
 			t.Errorf("ExtractLinks read %q", l)
 		}
+	}
+}
+
+// rewriting many links to a path with a "|" in a doc without a table finds the tables once, not
+// once per link (20k reference definitions took 10s)
+func TestRewriteLinksPipeNoTableIsLinear(t *testing.T) {
+	content := strings.Repeat("[i]: a.md\n", 20000)
+	start := time.Now()
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) { return "z|q.md", true })
+	if !changed || !strings.Contains(got, "[i]: z|q.md\n") {
+		t.Fatalf("RewriteLinks changed=%v", changed)
+	}
+	if d := time.Since(start); d > 3*time.Second {
+		t.Errorf("rewriting 20k links took %s, want well under 3s", d)
 	}
 }

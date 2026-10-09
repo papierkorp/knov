@@ -285,6 +285,7 @@ func encodeLinkPath(p string, kind LinkKind) string {
 func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool) {
 	changed := false
 	var rows tableRows
+	rowsFound := false
 	content = walkLinks(content, func(m linkMatch) string {
 		l := m.Link
 		if l.External {
@@ -298,8 +299,8 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		l.Path = newPath
 		dest := l.Dest()
 		if l.Kind != LinkWiki && strings.Contains(dest, "|") {
-			if rows == nil {
-				rows = newTableRows(content)
+			if !rowsFound {
+				rows, rowsFound = newTableRows(content), true
 			}
 			if rows.contains(m.Start) {
 				// GFM ends a table cell at an unescaped "|"; in html the cell unescaping isn't applied to the attribute
