@@ -24,44 +24,11 @@ import (
 func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 	name := "git-remote-push-pull-test-auth"
 
-	bareDir, err := os.MkdirTemp("", "knov-searchtest-remote-*")
+	bareDir, branch, cleanup, err := useBareRemote()
 	if err != nil {
 		return errCase(name, err)
 	}
-	defer os.RemoveAll(bareDir)
-
-	if _, err := gogit.PlainInit(bareDir, true); err != nil {
-		return errCase(name, err)
-	}
-
-	origRemote := configmanager.GetGitRemote()
-	defer func() {
-		configmanager.SetGitRemoteForTest(origRemote)
-		if origRemote == "" {
-			removeOriginRemote()
-		} else {
-			_ = git.EnsureRemote()
-		}
-	}()
-
-	configmanager.SetGitRemoteForTest(bareDirFileURL(bareDir))
-	if err := git.EnsureRemote(); err != nil {
-		return errCase(name, err)
-	}
-
-	// git.Push/PullRebase always push/pull refs/heads/<configured branch>, which only
-	// exists locally if the repo's actual branch happens to match it (KNOV_GIT_REMOTE_BRANCH
-	// isn't a live-editable setting, so it can't be pointed at whatever branch this repo
-	// really uses) - create a temporary local ref under that name pointing at HEAD so the
-	// push has something to push, then remove it again if this case is the one that added it.
-	branch := configmanager.GetGitRemoteBranch()
-	createdRef, err := ensureLocalBranchRef(branch)
-	if err != nil {
-		return errCase(name, err)
-	}
-	if createdRef {
-		defer removeLocalBranchRef(branch)
-	}
+	defer cleanup()
 
 	git.Push() // fire-and-forget; poll the bare remote below instead of assuming completion
 
@@ -87,6 +54,53 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 		cr.Error = "push/pull/test-auth against local bare remote did not behave as expected"
 	}
 	return cr
+}
+
+// useBareRemote points the app's git remote at a throwaway local bare repo (file:// transport) and
+// makes sure refs/heads/<configured branch> exists locally, since git.Push/PullRebase always use that
+// ref, which only exists if the repo's real branch happens to match it (KNOV_GIT_REMOTE_BRANCH
+// isn't live-editable) - cleanup restores the remote and removes a ref it added.
+func useBareRemote() (bareDir, branch string, cleanup func(), err error) {
+	bareDir, err = os.MkdirTemp("", "knov-searchtest-remote-*")
+	if err != nil {
+		return "", "", nil, err
+	}
+	if _, err := gogit.PlainInit(bareDir, true); err != nil {
+		os.RemoveAll(bareDir)
+		return "", "", nil, err
+	}
+
+	origRemote := configmanager.GetGitRemote()
+	cleanups := []func(){func() { os.RemoveAll(bareDir) }, func() {
+		configmanager.SetGitRemoteForTest(origRemote)
+		if origRemote == "" {
+			removeOriginRemote()
+		} else {
+			_ = git.EnsureRemote()
+		}
+	}}
+	cleanup = func() {
+		for i := len(cleanups) - 1; i >= 0; i-- {
+			cleanups[i]()
+		}
+	}
+
+	configmanager.SetGitRemoteForTest(bareDirFileURL(bareDir))
+	if err := git.EnsureRemote(); err != nil {
+		cleanup()
+		return "", "", nil, err
+	}
+
+	branch = configmanager.GetGitRemoteBranch()
+	createdRef, err := ensureLocalBranchRef(branch)
+	if err != nil {
+		cleanup()
+		return "", "", nil, err
+	}
+	if createdRef {
+		cleanups = append(cleanups, func() { removeLocalBranchRef(branch) })
+	}
+	return bareDir, branch, cleanup, nil
 }
 
 // bareDirFileURL builds a file:// URL for a local bare repo path. On Windows the path

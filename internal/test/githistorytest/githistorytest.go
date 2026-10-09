@@ -28,6 +28,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseGitFileDiff,
 		caseGitFileRestore,
 		caseGitRemotePushPullTestAuth,
+		caseGitSyncWrittenFiles,
 	}
 
 	result := &test.SuiteResult{Suite: "git-history"}
