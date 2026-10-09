@@ -4577,7 +4577,7 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "description": "Repair entries as sourceFile|target|suggested, repeatable",
+                        "description": "Entries as a json array [sourceFile, target, suggested], repeatable",
                         "name": "repair",
                         "in": "formData"
                     }

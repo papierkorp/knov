@@ -333,7 +333,7 @@ func handleAPIScanBrokenLinks(w http.ResponseWriter, r *http.Request) {
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param repair formData []string false "Repair entries as sourceFile|target|suggested, repeatable"
+// @Param repair formData []string false "Entries as a json array [sourceFile, target, suggested], repeatable"
 // @Success 200 {string} string "broken links repaired"
 // @Failure 400 {string} string "failed to parse form"
 // @Router /api/metadata/broken-links/repair [post]

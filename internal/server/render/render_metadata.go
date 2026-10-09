@@ -157,37 +157,37 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 		}
 	}
 
-	var html strings.Builder
-	html.WriteString(`<div id="component-broken-links">`)
+	var out strings.Builder
+	out.WriteString(`<div id="component-broken-links">`)
 
 	if len(repairable) == 0 {
-		fmt.Fprintf(&html, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no repairable broken links found"))
-		html.WriteString(`</div>`)
-		return html.String()
+		fmt.Fprintf(&out, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no repairable broken links found"))
+		out.WriteString(`</div>`)
+		return out.String()
 	}
 
-	html.WriteString(`<form hx-post="/api/metadata/broken-links/repair" hx-target="#broken-links-result" hx-swap="innerHTML">`)
-	fmt.Fprintf(&html, `<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="%s"></th>`, toggleAllCheckboxesJS)
-	fmt.Fprintf(&html, `<th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+	out.WriteString(`<form hx-post="/api/metadata/broken-links/repair" hx-target="#broken-links-result" hx-swap="innerHTML">`)
+	fmt.Fprintf(&out, `<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="%s"></th>`, toggleAllCheckboxesJS)
+	fmt.Fprintf(&out, `<th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "broken link"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "suggested fix"))
 
 	for _, bl := range repairable {
-		value := fmt.Sprintf("%s|%s|%s", bl.SourceFile, bl.Target, bl.Suggested)
+		value, _ := json.Marshal([3]string{bl.SourceFile, bl.Target, bl.Suggested})
 		target := bl.Target
 		if bl.AboveRoot {
 			target += " (" + translation.SprintfForRequest(configmanager.GetLanguage(), "climbs above the docs root") + ")"
 		}
-		fmt.Fprintf(&html, `<tr><td><input type="checkbox" name="repair" value="%s" checked></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
-			value, bl.SourceFile, target, brokenLinkSuggestedCell(bl.Suggested))
+		fmt.Fprintf(&out, `<tr><td><input type="checkbox" name="repair" value="%s" checked></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			html.EscapeString(string(value)), bl.SourceFile, target, brokenLinkSuggestedCell(bl.Suggested))
 	}
 
-	html.WriteString(`</tbody></table>`)
-	fmt.Fprintf(&html, `<button type="submit" class="btn-danger">%s</button>`,
+	out.WriteString(`</tbody></table>`)
+	fmt.Fprintf(&out, `<button type="submit" class="btn-danger">%s</button>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "Repair Selected"))
-	html.WriteString(`</form></div>`)
-	return html.String()
+	out.WriteString(`</form></div>`)
+	return out.String()
 }
 
 // RenderRelativeLinksHTML renders the scan result of ScanRelativeLinks as a checkbox list of bare

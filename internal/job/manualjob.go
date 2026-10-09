@@ -3,6 +3,7 @@ package job
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -305,8 +306,10 @@ func (j *repairBrokenLinksJob) Name() string { return "repair-broken-links" }
 func (j *repairBrokenLinksJob) Run(_ context.Context) error {
 	var result RepairBrokenLinksResult
 	for _, entry := range j.entries {
-		parts := strings.SplitN(entry, "|", 3)
-		if len(parts) != 3 {
+		var parts [3]string
+		if err := json.Unmarshal([]byte(entry), &parts); err != nil || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+			logging.LogWarning(logging.KeyRepairLinks, "skipped malformed repair entry: %s", entry)
+			result.Skipped++
 			continue
 		}
 		sourceFile, target, suggested := parts[0], parts[1], parts[2]
