@@ -557,11 +557,11 @@ func UpdateOrphanedMediaCache() error {
 
 // UpdateOrphanedMediaCacheForFile incrementally updates orphaned media cache
 // for media files affected by changes to a specific file
-func UpdateOrphanedMediaCacheForFile(filePath string) error {
+func UpdateOrphanedMediaCacheForFile(filePath pathutils.MetaPath) error {
 	logging.LogDebug(logging.KeyApp, "incrementally updating orphaned media cache for file: %s", filePath)
 
 	// get file metadata to find affected media files
-	metadata, err := MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		logging.LogDebug(logging.KeyApp, "no metadata found for %s, skipping cache update", filePath)
 		return nil
@@ -673,12 +673,12 @@ func GetAncestorsInFolder(folderPath string) ([]string, error) {
 
 // GetFilesInSameFolder returns other files whose folder path exactly matches filePath's
 // (unlike GetAncestorsInFolder, this does not include subfolders).
-func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
+func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]string, error) {
 	if limit <= 0 {
 		limit = 5
 	}
 
-	meta, err := MetaDataGet(pathutils.GuessMeta(filePath))
+	meta, err := MetaDataGet(filePath)
 	if err != nil || meta == nil {
 		return nil, err
 	}
@@ -708,12 +708,12 @@ func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
 
 // GetFilesWithSameTags returns other files sharing at least one tag with filePath, ranked by
 // number of shared tags.
-func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
+func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]string, error) {
 	if limit <= 0 {
 		limit = 5
 	}
 
-	meta, err := MetaDataGet(pathutils.GuessMeta(filePath))
+	meta, err := MetaDataGet(filePath)
 	if err != nil || meta == nil || len(meta.Tags) == 0 {
 		return nil, err
 	}

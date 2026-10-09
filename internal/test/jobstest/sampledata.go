@@ -136,7 +136,7 @@ func resetAndSeed() error {
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix("jobs-media-linker.md")), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := files.UpdateLinksForSingleFile(withPrefix("jobs-media-linker.md")); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(withPrefix("jobs-media-linker.md"))); err != nil {
 		return err
 	}
 

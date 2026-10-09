@@ -171,7 +171,7 @@ func caseAncestorsInFolder() test.CaseResult {
 func caseSameFolder() test.CaseResult {
 	name := "same-folder"
 
-	got, err := files.GetFilesInSameFolder(withPrefix(parentFile), 20)
+	got, err := files.GetFilesInSameFolder(pathutils.GuessMeta(withPrefix(parentFile)), 20)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -196,7 +196,7 @@ func caseSameFolder() test.CaseResult {
 func caseSameTags() test.CaseResult {
 	name := "same-tags"
 
-	got, err := files.GetFilesWithSameTags(withPrefix(tagAFile), 20)
+	got, err := files.GetFilesWithSameTags(pathutils.GuessMeta(withPrefix(tagAFile)), 20)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -221,7 +221,7 @@ func caseSameTags() test.CaseResult {
 func caseConflictBanner() test.CaseResult {
 	name := "conflict-banner"
 
-	if err := files.SetConflictFile(withPrefix(conflictOriginal), withPrefix(conflictCopy)); err != nil {
+	if err := files.SetConflictFile(pathutils.GuessMeta(withPrefix(conflictOriginal)), pathutils.GuessMeta(withPrefix(conflictCopy))); err != nil {
 		return errCase(name, err)
 	}
 	afterSet, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
@@ -230,7 +230,7 @@ func caseConflictBanner() test.CaseResult {
 	}
 	setOK := afterSet.ConflictFile == withPrefix(conflictCopy)
 
-	if err := files.ClearConflictFile(withPrefix(conflictOriginal)); err != nil {
+	if err := files.ClearConflictFile(pathutils.GuessMeta(withPrefix(conflictOriginal))); err != nil {
 		return errCase(name, err)
 	}
 	afterClear, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
@@ -257,7 +257,7 @@ func caseConflictBanner() test.CaseResult {
 func caseConflictOfBanner() test.CaseResult {
 	name := "conflict-of-banner"
 
-	if err := files.SetConflictOf(withPrefix(conflictCopy), withPrefix(conflictOriginal)); err != nil {
+	if err := files.SetConflictOf(pathutils.GuessMeta(withPrefix(conflictCopy)), pathutils.GuessMeta(withPrefix(conflictOriginal))); err != nil {
 		return errCase(name, err)
 	}
 	got, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictCopy)))

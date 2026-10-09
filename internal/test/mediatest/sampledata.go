@@ -74,7 +74,7 @@ func linkDoc(relDocPath, mediaRelPath string) error {
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(relDocPath), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	return files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relDocPath))
+	return files.UpdateLinksForSingleFile(pathutils.GuessMeta(relDocPath))
 }
 
 // resetAndSeed wipes the sample docs/media folders and reseeds: a context file for upload,

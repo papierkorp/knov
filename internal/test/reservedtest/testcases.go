@@ -319,11 +319,11 @@ func caseMigration() test.CaseResult {
 	// docs/docs/x.md and docs/files/x.md shared one old key (docs/x.md), the first one found keeps the record
 	for _, top := range []string{"media", "docs"} {
 		rel := doc(top, "migrate.md")
-		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		legacy, key := pathutils.GuessMeta(rel), "docs/"+rel
 		if err := write(fullPath(key), "# migrate\n"); err != nil {
 			return errCase("reserved-migration", err)
 		}
-		if err := files.MetaDataMutate(pathutils.GuessMeta(legacy), func(m *files.Metadata, _ bool) (bool, error) {
+		if err := files.MetaDataMutate(legacy, func(m *files.Metadata, _ bool) (bool, error) {
 			m.Tags = []string{"legacy-" + top}
 			return true, nil
 		}); err != nil {
@@ -335,11 +335,11 @@ func caseMigration() test.CaseResult {
 	}
 	for _, top := range []string{"media", "docs"} {
 		rel := doc(top, "migrate.md")
-		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		legacy, key := pathutils.GuessMeta(rel), "docs/"+rel
 		if m, _ := files.MetaDataGet(pathutils.GuessMeta(key)); m == nil || !slices.Contains(m.Tags, "legacy-"+top) {
 			gaps = append(gaps, fmt.Sprintf("%q: record not moved from %q: %+v", key, legacy, m))
 		}
-		if m, _ := files.MetaDataGet(pathutils.GuessMeta(legacy)); m != nil && !exists(legacy) {
+		if m, _ := files.MetaDataGet(legacy); m != nil && !exists(legacy.String()) {
 			gaps = append(gaps, fmt.Sprintf("%q: old record left", legacy))
 		}
 		_ = files.MetaDataDelete(pathutils.GuessMeta(key))
@@ -392,7 +392,7 @@ func caseLinkRename() test.CaseResult {
 				return errCase("reserved-link-rename", err)
 			}
 		}
-		if err := files.UpdateLinksForSingleFile(linker); err != nil {
+		if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(linker)); err != nil {
 			return errCase("reserved-link-rename", err)
 		}
 		if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(strings.TrimPrefix(src, "docs/")), pathutils.DocsPath(strings.TrimPrefix(dst, "docs/"))); err != nil {

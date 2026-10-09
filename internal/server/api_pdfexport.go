@@ -36,14 +36,14 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var content []byte
-	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+	filename := strings.TrimSuffix(filepath.Base(filePath.String()), filepath.Ext(filePath.String()))
 
 	// a book exports as its composed document, so a section only applies to other files
 	if sectionID != "" && !files.IsBook(filePath) {
 		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s section %s", filePath, sectionID)
 
 		handler := contentHandler.GetHandler("markdown")
-		sectionContent, err := handler.ExtractSection(filePath, sectionID, configmanager.GetSectionEditIncludeSubheaders())
+		sectionContent, err := handler.ExtractSection(filePath.String(), sectionID, configmanager.GetSectionEditIncludeSubheaders())
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to extract section %s in file %s: %v", sectionID, filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
@@ -54,7 +54,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s", filePath)
 
-		source, err := pdfexport.LoadSource(filePath)
+		source, err := pdfexport.LoadSource(filePath.String())
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to load file %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
@@ -63,7 +63,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		content = source
 	}
 
-	pdf, err := pdfexport.RenderFile(filePath, content)
+	pdf, err := pdfexport.RenderFile(filePath.String(), content)
 	if err != nil {
 		logging.LogError(logging.KeyPdfExport, "pdf export: failed to convert file to pdf %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"))

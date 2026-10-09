@@ -1860,8 +1860,8 @@ func saveConflictCopy(filePath string) (string, error) {
 func HandleConflict(localFilePaths []string) {
 	for _, path := range localFilePaths {
 		// remove previous conflict file if one exists
-		origMeta := pathutils.ToWithPrefix(path)
-		if existingMeta, err := files.MetaDataGet(pathutils.GuessMeta(origMeta)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
+		origMeta := pathutils.GuessMeta(path)
+		if existingMeta, err := files.MetaDataGet(origMeta); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
 			existingConflictFull := pathutils.ToFullPath(existingMeta.ConflictFile)
 			os.Remove(existingConflictFull)
 		}
@@ -1874,7 +1874,7 @@ func HandleConflict(localFilePaths []string) {
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(path), filepath.Base(conflictPath)),
 			true)
-		conflictMeta := pathutils.ToWithPrefix(conflictPath)
+		conflictMeta := pathutils.GuessMeta(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
 			logging.LogWarning(logging.KeyApp, "git conflict: failed to update conflict metadata for %s: %v", origMeta, err)
 		}
@@ -1964,8 +1964,8 @@ func SyncBeforeCommit(localFiles []string) {
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(snap.fullPath), filepath.Base(conflictPath)),
 			true)
-		origMeta := pathutils.ToWithPrefix(snap.fullPath)
-		conflictMeta := pathutils.ToWithPrefix(conflictPath)
+		origMeta := pathutils.GuessMeta(snap.fullPath)
+		conflictMeta := pathutils.GuessMeta(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
 			logging.LogWarning(logging.KeyApp, "git: failed to update conflict metadata for %s: %v", origMeta, err)
 		}

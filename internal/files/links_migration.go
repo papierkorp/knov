@@ -36,8 +36,8 @@ func ScanRelativeLinks() ([]RelativeLinkChange, error) {
 			continue
 		}
 		// docs/ prefixed, so a docs folder named "media", "docs" or "files" isn't stripped
-		src := "docs/" + rel
-		data, err := os.ReadFile(pathutils.ToDocsPath(src))
+		src := pathutils.DocsPath(rel).String()
+		data, err := os.ReadFile(pathutils.DocsPath(rel).FullPath())
 		if err != nil {
 			logging.LogWarning(logging.KeyRepairLinks, "failed to read %s: %v", src, err)
 			continue
@@ -82,7 +82,7 @@ func MigrateRelativeLinks(sourceFile, oldTarget string) (bool, error) {
 	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 		return false, fmt.Errorf("failed to write %s: %w", sourceFile, err)
 	}
-	if err := UpdateLinksForSingleFile(sourceFile); err != nil {
+	if err := UpdateLinksForSingleFile(pathutils.GuessMeta(sourceFile)); err != nil {
 		logging.LogWarning(logging.KeyRepairLinks, "failed to rebuild links for %s: %v", sourceFile, err)
 	}
 	return true, nil

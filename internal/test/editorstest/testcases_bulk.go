@@ -40,15 +40,15 @@ func caseBulkDeleteFiles() test.CaseResult {
 
 	deleted := 0
 	for _, p := range paths {
-		normalized := pathutils.ToWithPrefix(p)
-		meta, err := files.MetaDataGet(pathutils.GuessMeta(normalized))
+		normalized := pathutils.GuessMeta(p)
+		meta, err := files.MetaDataGet(normalized)
 		if err != nil || meta == nil || !slices.Contains(meta.Tags, tag) {
 			continue
 		}
 		if err := os.Remove(pathutils.ToDocsPath(p)); err != nil {
 			continue
 		}
-		files.MetaDataDeleteNoRefresh(logging.KeyApp, pathutils.GuessMeta(normalized))
+		files.MetaDataDeleteNoRefresh(logging.KeyApp, normalized)
 		deleted++
 	}
 	files.RefreshCaches()

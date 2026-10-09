@@ -96,7 +96,7 @@ func MoveFileNoRefresh(key logging.Key, oldPath, newPath pathutils.MetaPath) err
 		return err
 	}
 	notifyFileMoved(oldPath, newPath)
-	if err := UpdateLinksForMovedFileNoRefresh(key, oldPath.String(), newPath.String()); err != nil {
+	if err := UpdateLinksForMovedFileNoRefresh(key, oldPath, newPath); err != nil {
 		return fmt.Errorf("%w: %v", ErrLinkUpdateFailed, err)
 	}
 	return nil
@@ -110,8 +110,8 @@ func MoveFileNoRefresh(key logging.Key, oldPath, newPath pathutils.MetaPath) err
 // they run outside it - same reasoning as MoveFolder not holding the lock for its link-update
 // pass.
 func MoveMediaFileNoRefresh(oldRelPath, newRelPath string) error {
-	oldMediaPath := "media/" + oldRelPath
-	newMediaPath := "media/" + newRelPath
+	oldMediaPath := pathutils.MediaPath(oldRelPath)
+	newMediaPath := pathutils.MediaPath(newRelPath)
 
 	if err := pathutils.CheckTarget(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath)); err != nil {
 		return err
@@ -291,7 +291,7 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 	}
 	// a link between two moved files ("./q.md") only reaches the target's linked from once both moved
 	for _, f := range filesToUpdate {
-		if err := UpdateLinksForSingleFile(f.newMeta.String()); err != nil {
+		if err := UpdateLinksForSingleFile(f.newMeta); err != nil {
 			logging.LogWarning(key, "move-folder: failed to resync links of %s: %v", f.newMeta, err)
 		}
 	}

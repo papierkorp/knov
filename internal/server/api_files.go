@@ -172,11 +172,11 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]string{
-		"filepath": filepath,
-		"link":     pathutils.ToFileURL(pathutils.GuessMeta(filepath)),
+		"filepath": filepath.String(),
+		"link":     pathutils.ToFileURL(filepath),
 	}
 
-	html := render.RenderFileHeader(filepath)
+	html := render.RenderFileHeader(filepath.String())
 	writeResponse(w, r, data, html)
 }
 
@@ -198,7 +198,7 @@ func handleAPIGetFileViews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	links := render.FileViewLinks(pathutils.ToRelative(fp), r.URL.Query().Get("view"))
+	links := render.FileViewLinks(pathutils.ToRelative(fp.String()), r.URL.Query().Get("view"))
 	writeResponse(w, r, links, render.RenderFileViewLinks(links))
 }
 
@@ -227,7 +227,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 	lang := configmanager.GetLanguage()
 	result := map[string]string{}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to get metadata"))
 		return
@@ -280,7 +280,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	relatedPaths, err := search.GetRelatedFiles(filePath, 5)
+	relatedPaths, err := search.GetRelatedFiles(filePath.String(), 5)
 	if err != nil || len(relatedPaths) == 0 {
 		result["related"] = render.RenderRelatedFiles(nil)
 	} else {
@@ -322,7 +322,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filepath)
+	fullPath := pathutils.ToDocsPath(filepath.String())
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get raw content: %v", err)
@@ -387,8 +387,8 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 			editor = files.EditorType(configmanager.DefaultMarkdownEditor.Get())
 		}
 
-		normalizedPath := pathutils.ToWithPrefix(filePath)
-		if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
+		normalizedPath := pathutils.GuessMeta(filePath)
+		if err := files.MetaDataSync(normalizedPath); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
 		} else if err := files.SetEditor(normalizedPath, editor); err != nil {
 			logging.LogError(logging.KeyApp, "failed to set editor for new file %s: %v", filePath, err)
@@ -415,7 +415,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// update links for existing files
-		normalizedPath := pathutils.ToWithPrefix(filePath)
+		normalizedPath := pathutils.GuessMeta(filePath)
 		if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		}
@@ -477,7 +477,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath.String())
 
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
@@ -506,7 +506,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 	if date != "" {
 		dateText = " (" + date + ")"
 	}
-	writeResponse(w, r, map[string]string{"filepath": filePath, "date": dateText}, dateText)
+	writeResponse(w, r, map[string]string{"filepath": filePath.String(), "date": dateText}, dateText)
 }
 
 // @Summary Remove a todo checkbox's date stamp from the rendered file view
@@ -542,7 +542,7 @@ func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath.String())
 
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
@@ -564,7 +564,7 @@ func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
+	writeResponse(w, r, map[string]string{"filepath": filePath.String()}, "")
 }
 
 // @Summary Export file to markdown
@@ -590,7 +590,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	var markdown string
 	if files.IsBook(filePath) {
 		// a book exports as its composed document, not its raw entry list
-		composed, err := book.Compose(filePath)
+		composed, err := book.Compose(filePath.String())
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to compose book %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"))
@@ -598,17 +598,17 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		}
 		markdown = composed
 	} else {
-		content, err := os.ReadFile(pathutils.ToDocsPath(filePath))
+		content, err := os.ReadFile(pathutils.ToDocsPath(filePath.String()))
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to read file %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
-		markdown = dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
+		markdown = dokuwikiconverter.NewWithFilePath(filePath.String()).ConvertToMarkdown(string(content))
 	}
 
 	// prepare download
-	filename := filepath.Base(filePath)
+	filename := filepath.Base(filePath.String())
 	filename = strings.TrimSuffix(filename, filepath.Ext(filename)) + ".md"
 
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
@@ -680,14 +680,14 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html, err := render.RenderMetadataForm(filePath, "")
+	html, err := render.RenderMetadataForm(filePath.String(), "")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))
 		return
 	}
 
-	writeResponse(w, r, map[string]string{"filepath": filePath}, html)
+	writeResponse(w, r, map[string]string{"filepath": filePath.String()}, html)
 }
 
 // @Summary Get file form HTML
@@ -700,8 +700,8 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	html := render.RenderFileForm(filePath)
-	writeResponse(w, r, map[string]string{"filepath": filePath}, html)
+	html := render.RenderFileForm(filePath.String())
+	writeResponse(w, r, map[string]string{"filepath": filePath.String()}, html)
 }
 
 // @Summary Get metadata form HTML
@@ -717,14 +717,14 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	}
 	defaultFiletype := r.URL.Query().Get("editor")
 
-	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
+	html, err := render.RenderMetadataForm(filePath.String(), defaultFiletype)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))
 		return
 	}
 
-	writeResponse(w, r, map[string]string{"filepath": filePath, "editor": defaultFiletype}, html)
+	writeResponse(w, r, map[string]string{"filepath": filePath.String(), "editor": defaultFiletype}, html)
 }
 
 // @Summary Rename a file
@@ -890,7 +890,7 @@ func removeFileAndMetadata(fullPath string) error {
 		return err
 	}
 	relPath := pathutils.ToRelative(fullPath)
-	metaPath := pathutils.ToWithPrefix(fullPath)
+	metaPath := pathutils.GuessMeta(fullPath)
 	// a filter index file carries a paired config in configStorage - drop it too, or
 	// RegenerateAllIndexes recreates the file on the next metadata change
 	if filter.GetFilterConfigForFile(relPath) != nil {
@@ -899,10 +899,10 @@ func removeFileAndMetadata(fullPath string) error {
 			logging.LogWarning(logging.KeyApp, "failed to delete filter config for %s: %v", relPath, err)
 		}
 	}
-	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, pathutils.GuessMeta(metaPath)); err != nil {
+	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, metaPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
 	}
-	if err := git.InvalidateFileHistoryCache(metaPath); err != nil {
+	if err := git.InvalidateFileHistoryCache(metaPath.String()); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", relPath, err)
 	}
 	files.RefreshCaches()

@@ -28,7 +28,7 @@ func createEditSaveCase(name, relPath string, editor files.EditorType, initial, 
 	if err := writeFile(relPath, edited); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relPath)); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(relPath)); err != nil {
 		return errCase(name, err)
 	}
 
@@ -201,7 +201,7 @@ func caseIndexCreateEditSave() test.CaseResult {
 	if err := writeFile(relPath, edited); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relPath)); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(relPath)); err != nil {
 		return errCase(name, err)
 	}
 
@@ -287,7 +287,7 @@ func caseBookCreateEditSave() test.CaseResult {
 	if err := writeFile(relPath, book.ToMarkdown(reloaded)); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relPath)); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(relPath)); err != nil {
 		return errCase(name, err)
 	}
 
@@ -579,7 +579,7 @@ func caseTableCreateEditSave() test.CaseResult {
 	if err := handler.SaveTable(relPath, 0, []string{"A", "B"}, [][]string{{"3", "4"}, {"5", "6"}}, nil); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relPath)); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(relPath)); err != nil {
 		return errCase(name, err)
 	}
 

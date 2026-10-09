@@ -149,8 +149,8 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalizedPath := pathutils.ToWithPrefix(filePath)
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(normalizedPath))
+	normalizedPath := filePath
+	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get metadata for %s: %v", normalizedPath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
@@ -158,8 +158,8 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if metadata == nil {
-		if strings.HasPrefix(normalizedPath, "media/") {
-			metadata = &files.Metadata{Path: pathutils.GuessMeta(normalizedPath)}
+		if strings.HasPrefix(normalizedPath.String(), "media/") {
+			metadata = &files.Metadata{Path: normalizedPath}
 		} else {
 			writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 			return
@@ -167,7 +167,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html string
-	if strings.HasPrefix(normalizedPath, "media/") {
+	if strings.HasPrefix(normalizedPath.String(), "media/") {
 		html = render.RenderMediaDetail(metadata)
 	} else {
 		html = render.RenderFileMetadataSimple(metadata)
@@ -201,7 +201,7 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 	// SetMetadataNoRefresh applies every provided field plus the derived-field resync under a
 	// single lock acquisition for path, so the request is atomic against other writers again.
 	path := metadata.Path
-	if err := files.SetMetadataNoRefresh(path.String(), &metadata); err != nil {
+	if err := files.SetMetadataNoRefresh(path, &metadata); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
@@ -251,7 +251,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 	filePath = pathutils.DocsPath(filePath).String()
 
-	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
+	if err := files.MetaDataLinksRebuildForFile(pathutils.GuessMeta(filePath)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"))
 		return
@@ -452,7 +452,7 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -482,7 +482,7 @@ func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -512,7 +512,7 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -542,7 +542,7 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -573,7 +573,7 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -613,7 +613,7 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := files.SetEditor(pathutils.ToWithPrefix(filePath), files.EditorType(editor)); err != nil {
+	if err := files.SetEditor(filePath, files.EditorType(editor)); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
@@ -646,14 +646,14 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newpath = path.Clean(newpath)
-	newMeta, ok := pathutils.ParseMeta(newpath)
+	newpath = pathutils.GuessMeta(path.Clean(newpath.String()))
+	newMeta, ok := pathutils.ParseMeta(newpath.String())
 	if !ok {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "newpath"))
 		return
 	}
-	if strings.HasPrefix(filePath, "media/") != strings.HasPrefix(newpath, "media/") {
-		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath, "/", 2)[0]+"/"))
+	if strings.HasPrefix(filePath.String(), "media/") != strings.HasPrefix(newpath.String(), "media/") {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath.String(), "/", 2)[0]+"/"))
 		return
 	}
 
@@ -664,14 +664,14 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "changing file path via metadata: %s -> %s", filePath, newpath)
 
-	isMedia := strings.HasPrefix(filePath, "media/")
+	isMedia := strings.HasPrefix(filePath.String(), "media/")
 	context := "move file via metadata"
 	var err error
 	if isMedia {
 		context = "move media via metadata"
-		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
+		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath.String()), pathutils.ToRelative(newpath.String()))
 	} else {
-		oldMeta, _ := pathutils.ParseMeta(filePath) // checked by metaPathParam
+		oldMeta, _ := pathutils.ParseMeta(filePath.String()) // checked by metaPathParam
 		err = files.MoveFileNoRefresh(logging.KeyApp, oldMeta, newMeta)
 	}
 	msgs := moveErrorMessages{
@@ -679,7 +679,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		targetExists:  translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"),
 		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"),
 	}
-	if handleMoveError(err, context, filePath, newpath, msgs, func(status int, message string) {
+	if handleMoveError(err, context, filePath.String(), newpath.String(), msgs, func(status int, message string) {
 		writeAPIError(w, r, status, message)
 	}) {
 		return
@@ -688,9 +688,9 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "successfully moved file via metadata: %s -> %s", filePath, newpath)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
-	redirect := pathutils.ToFileURL(pathutils.GuessMeta(newpath))
+	redirect := pathutils.ToFileURL(newpath)
 	if isMedia {
-		redirect = pathutils.ToMediaURL(pathutils.ToRelative(newpath))
+		redirect = pathutils.ToMediaURL(pathutils.ToRelative(newpath.String()))
 	}
 	w.Header().Set("HX-Redirect", redirect)
 	w.WriteHeader(http.StatusOK)
@@ -723,7 +723,7 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := files.SetCreatedAt(pathutils.ToWithPrefix(filePath), createdAt); err != nil {
+	if err := files.SetCreatedAt(filePath, createdAt); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
@@ -759,7 +759,7 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := files.SetLastEdited(pathutils.ToWithPrefix(filePath), lastEdited); err != nil {
+	if err := files.SetLastEdited(filePath, lastEdited); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
@@ -806,7 +806,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		tags = []string{}
 	}
 
-	oldTags, newTags, err := files.SetTagsStrict(pathutils.ToWithPrefix(filePath), tags)
+	oldTags, newTags, err := files.SetTagsStrict(filePath, tags)
 	if errors.Is(err, files.ErrInvalidKanbanTags) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
 		return
@@ -869,7 +869,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		parents = []string{}
 	}
 
-	if err := files.SetParents(pathutils.ToWithPrefix(filePath), parents); err != nil {
+	if err := files.SetParents(filePath, parents); err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"))
 		return
 	}
@@ -1108,7 +1108,7 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -1138,7 +1138,7 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -1168,7 +1168,7 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"))
 		return
@@ -1202,13 +1202,13 @@ func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"))
 		return
 	}
 
-	html := render.RenderReferencesHTML(filePath, metadata.References)
+	html := render.RenderReferencesHTML(filePath.String(), metadata.References)
 	if r.URL.Query().Get("sidebar") == "true" {
 		html = render.RenderReferencesSidebarHTML(metadata.References)
 	}
@@ -1242,10 +1242,10 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalizedPath := pathutils.ToWithPrefix(filePath)
+	normalizedPath := filePath
 	notFound := false
 	var references []files.Reference
-	err := files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *files.Metadata, existed bool) (bool, error) {
+	err := files.MetaDataMutate(normalizedPath, func(m *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			notFound = true
 			return false, nil
@@ -1268,7 +1268,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderReferencesHTML(filePath, references)
+	html := render.RenderReferencesHTML(filePath.String(), references)
 	writeResponse(w, r, references, html)
 }
 
@@ -1298,10 +1298,10 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalizedPath := pathutils.ToWithPrefix(filePath)
+	normalizedPath := filePath
 	notFound := false
 	var references []files.Reference
-	err := files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *files.Metadata, existed bool) (bool, error) {
+	err := files.MetaDataMutate(normalizedPath, func(m *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			notFound = true
 			return false, nil
@@ -1326,7 +1326,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderReferencesHTML(filePath, references)
+	html := render.RenderReferencesHTML(filePath.String(), references)
 	writeResponse(w, r, references, html)
 }
 
@@ -1350,8 +1350,8 @@ func handleAPIMetadataInlineDisplay(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return
 	}
-	metadata, _ := files.MetaDataGet(pathutils.GuessMeta(filePath))
-	html := render.RenderSidebarFieldDisplay(field, filePath, metadata)
+	metadata, _ := files.MetaDataGet(filePath)
+	html := render.RenderSidebarFieldDisplay(field, filePath.String(), metadata)
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprint(w, html)
 }
@@ -1372,8 +1372,8 @@ func handleAPIMetadataInlineEdit(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return
 	}
-	metadata, _ := files.MetaDataGet(pathutils.GuessMeta(filePath))
-	html := render.RenderSidebarFieldEdit(field, filePath, metadata)
+	metadata, _ := files.MetaDataGet(filePath)
+	html := render.RenderSidebarFieldEdit(field, filePath.String(), metadata)
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprint(w, html)
 }

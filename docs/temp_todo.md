@@ -52,6 +52,7 @@ the docs-relative path, the metadata path (`docs/...` / `media/...`) and the ful
 - [ ] convert package by package, boundaries first: `files.OnFileMoved`, metadata keys, filter criteria (`child-of`, `parent-of`, `ancestor-of`), dashboard, kanban order and events, search index keys, `File.Path`
   - [x] files.OnFileMoved, dashboard.PatchFilePathForMove, kanban.PatchPathForMove, files.MoveFileNoRefresh (typed: DocsRel / MetaPath, pathutils.FromFullPath and MetaPath.FullPath as the exact conversions)
   - [x] File.Path, Metadata.Path, MetaDataGet / Mutate / Sync / Delete and the file url helpers take MetaPath, parser.LinkTarget returns it; pathutils.GuessMeta marks the guess points that are left (parser_guard_test.go counts them, the list only shrinks)
+  - [x] the metadata operations (SetTags, SetParents, SetEditor, SetConflictFile, UpdateLinksForSingleFile, ...) and server.metaPathParam take / give a MetaPath; guessing calls 321 -> 239
 - [ ] known bugs the conversion has to fix (keep the regression test for each):
   - `files.OnFileMoved` gets docs-relative paths (`physical.go:90,276`) and `dashboard.PatchFilePathForMove` runs `ToRelative` on them again (`dashboard.go:191-196`, not idempotent: `media/x.md` -> `x.md`): moving `docs/media/x.md` patches a widget of `docs/x.md` and writes `y.md` for `docs/media/y.md`
   - `filter.GenerateFilterIndex` writes `/docs/x.md` for `docs/docs/x.md`, which reads as `docs/x.md`: write `/files/` + the path without `docs/` for every docs file (media files keep `/media/`)

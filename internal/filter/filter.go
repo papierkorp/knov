@@ -468,7 +468,7 @@ func SavedFilterPaths(filterID string) ([]string, error) {
 	}
 	var paths []string
 	for _, file := range result.Files {
-		if !files.IsBook(file.Path.String()) {
+		if !files.IsBook(file.Path) {
 			paths = append(paths, parser.DocsWikiPath(pathutils.ToRelative(file.Path.String())))
 		}
 	}

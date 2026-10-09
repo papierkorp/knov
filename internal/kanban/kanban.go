@@ -372,11 +372,11 @@ func applyStatusTag(meta *files.Metadata, newStatus string) (oldStatus string) {
 // and tag agree, so a hand-edited tag that disagrees with the current folder is describing an
 // inconsistent state, not a competing source of truth.
 func SyncFolderTag(path string, changedAt time.Time) error {
-	normalizedPath := pathutils.ToWithPrefix(path)
+	normalizedPath := pathutils.GuessMeta(path)
 
 	var oldStatus, status, board string
 	var applied bool
-	err := files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(meta *files.Metadata, existed bool) (bool, error) {
+	err := files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}

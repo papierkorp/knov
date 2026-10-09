@@ -120,7 +120,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	metaPath := pathutils.ToWithPrefix(filePath)
+	metaPath := pathutils.GuessMeta(filePath)
 	editor := ResolveEditor(metaPath)
 
 	// a book is shown as its composed document (referenced bodies inlined), not its raw
@@ -129,7 +129,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	var content []byte
 	renderPath := metaPath
 	if editor == EditorTypeBook {
-		composed, err := book.Compose(metaPath)
+		composed, err := book.Compose(metaPath.String())
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +141,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		}
 	}
 
-	parsed, err := handler.Parse(content, renderPath)
+	parsed, err := handler.Parse(content, renderPath.String())
 	if err != nil {
 		return nil, err
 	}
@@ -151,11 +151,11 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	editableSections := !(editor == EditorTypeFilter || editor == EditorTypeTracker || editor == EditorTypeList ||
 		editor == EditorTypeTodo || editor == EditorTypeIndex || editor == EditorTypeBook)
 
-	html, err := handler.Render(parsed, renderPath, editableSections)
+	html, err := handler.Render(parsed, renderPath.String(), editableSections)
 	if err != nil {
 		return nil, err
 	}
-	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", metaPath)
+	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", metaPath.String())
 
 	var toc []parser.TOCItem
 	if handler.Name() == "markdown" {

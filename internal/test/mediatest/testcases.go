@@ -133,7 +133,7 @@ func caseRename() test.CaseResult {
 	oldMediaPath := "media/" + oldRel
 	newMediaPath := "media/" + newRel
 
-	if err := files.UpdateLinksForMovedMedia(oldMediaPath, newMediaPath); err != nil {
+	if err := files.UpdateLinksForMovedMedia(pathutils.GuessMeta(oldMediaPath), pathutils.GuessMeta(newMediaPath)); err != nil {
 		return errCase(name, err)
 	}
 
@@ -145,7 +145,7 @@ func caseRename() test.CaseResult {
 	if err := os.Rename(oldFull, newFull); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MoveMediaMetadata(oldMediaPath, newMediaPath); err != nil {
+	if err := files.MoveMediaMetadata(pathutils.GuessMeta(oldMediaPath), pathutils.GuessMeta(newMediaPath)); err != nil {
 		return errCase(name, err)
 	}
 

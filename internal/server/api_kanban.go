@@ -228,7 +228,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		boardFolder = board.FolderPath
 	}
 
-	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, pathutils.ToRelative(filePath), newStatus)
+	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, pathutils.ToRelative(filePath.String()), newStatus)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
@@ -338,7 +338,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	filePath = relOfMeta(filePath)
+	fileRel := relOfMeta(filePath.String())
 	fromRaw := r.URL.Query().Get("from")
 	toRaw := r.URL.Query().Get("to")
 
@@ -361,7 +361,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	events, err := kanban.GetEvents(board.FolderPath, filePath, from, to, limit)
+	events, err := kanban.GetEvents(board.FolderPath, fileRel, from, to, limit)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get kanban events for %s: %v", board.FolderPath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get events"))
@@ -373,7 +373,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
 	}
 
-	writeResponse(w, r, events, render.RenderKanbanEvents(events, filePaths, board.Slug, filePath, fromRaw, toRaw))
+	writeResponse(w, r, events, render.RenderKanbanEvents(events, filePaths, board.Slug, fileRel, fromRaw, toRaw))
 }
 
 // parseEventBoundary parses a time-range boundary as RFC3339, falling back to a bare

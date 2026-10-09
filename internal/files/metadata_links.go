@@ -138,8 +138,8 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 
 		for _, link := range metadata.UsedLinks {
-			normalized := pathutils.ToWithPrefix(link)
-			linksToHereMap[normalized] = append(linksToHereMap[normalized], normalizedPath)
+			normalized := pathutils.GuessMeta(link)
+			linksToHereMap[normalized.String()] = append(linksToHereMap[normalized.String()], normalizedPath)
 		}
 		for _, parent := range metadata.Parents {
 			kidsMap[parent] = append(kidsMap[parent], normalizedPath)
@@ -254,13 +254,13 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 }
 
 // MetaDataLinksRebuildForFile rebuilds link metadata for a single file.
-func MetaDataLinksRebuildForFile(filePath string) error {
-	normalizedPath := pathutils.ToWithPrefix(filePath)
+func MetaDataLinksRebuildForFile(filePath pathutils.MetaPath) error {
+	normalizedPath := filePath
 	logging.LogInfo(logging.KeyApp, "rebuilding metadata links for file: %s", normalizedPath)
 
-	unlock := lockMetaPath(pathutils.GuessMeta(normalizedPath))
+	unlock := lockMetaPath(normalizedPath)
 
-	metadata, err := MetaDataGet(pathutils.GuessMeta(normalizedPath))
+	metadata, err := MetaDataGet(normalizedPath)
 	if err != nil {
 		unlock()
 		return err
@@ -511,14 +511,14 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 // files in one request (e.g. a folder move), call UpdateLinksForMovedFileNoRefresh
 // in the loop and RefreshCaches() once afterwards instead - otherwise each file
 // kicks off its own full background cache rebuild.
-func UpdateLinksForMovedFile(key logging.Key, oldPath, newPath string) error {
+func UpdateLinksForMovedFile(key logging.Key, oldPath, newPath pathutils.MetaPath) error {
 	return withRefresh(func() error { return UpdateLinksForMovedFileNoRefresh(key, oldPath, newPath) })
 }
 
 // UpdateLinksForMovedFileNoRefresh is UpdateLinksForMovedFile without the
 // aggregate cache refresh. See UpdateLinksForMovedFile.
-func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) error {
-	return updateLinksForMovedFile(key, oldPath, newPath, nil)
+func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath pathutils.MetaPath) error {
+	return updateLinksForMovedFile(key, oldPath.String(), newPath.String(), nil)
 }
 
 // updateLinksForMovedFile is UpdateLinksForMovedFileNoRefresh for a file moved along with others
@@ -527,10 +527,10 @@ func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath string) 
 func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlong map[string]string) error {
 	logging.LogInfo(key, "updating links for moved file: %s -> %s", oldPath, newPath)
 
-	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
-	normalizedNewPath := pathutils.ToWithPrefix(newPath)
+	normalizedOldPath := pathutils.GuessMeta(oldPath)
+	normalizedNewPath := newPath
 
-	oldMetadata, err := MetaDataGet(pathutils.GuessMeta(normalizedOldPath))
+	oldMetadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
 		logging.LogWarning(key, "could not get metadata for moved file %s: %v", normalizedOldPath, err)
 		return err
@@ -541,7 +541,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 		return err
 	}
 
-	if err := chat.MoveFilePath(normalizedOldPath, normalizedNewPath); err != nil {
+	if err := chat.MoveFilePath(normalizedOldPath.String(), normalizedNewPath); err != nil {
 		logging.LogWarning(key, "failed to move chat messages for %s -> %s: %v", normalizedOldPath, normalizedNewPath, err)
 	}
 
@@ -611,7 +611,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 				}
 
 				changed := false
-				if idx := slices.Index(m.LinksToHere, normalizedOldPath); idx != -1 {
+				if idx := slices.Index(m.LinksToHere, normalizedOldPath.String()); idx != -1 {
 					m.LinksToHere = slices.Delete(m.LinksToHere, idx, idx+1)
 					logging.LogInfo(key, "removed %s from LinksToHere of %s", normalizedOldPath, linkedPath)
 					changed = true
@@ -752,7 +752,7 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 // The returned bool reports whether a matching link was actually found and rewritten.
 func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool, error) {
 	// the callers hand over metadata paths or docs-relative ones: the one place that guesses, renameLinkFunc and rebuildLinkTarget take them literally
-	oldPath, newPath = pathutils.ToWithPrefix(oldPath), pathutils.ToWithPrefix(newPath)
+	oldPath, newPath = pathutils.GuessMeta(oldPath).String(), pathutils.ToWithPrefix(newPath)
 	fullPath := pathutils.ToFullPath(filePath)
 
 	contentData, err := os.ReadFile(fullPath)
@@ -775,7 +775,7 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 
 		logging.LogInfo(key, "updated links in file %s: %s -> %s", filePath, oldPath, newPath)
 
-		if err := UpdateLinksForSingleFile(filePath); err != nil {
+		if err := UpdateLinksForSingleFile(pathutils.GuessMeta(filePath)); err != nil {
 			logging.LogWarning(key, "failed to rebuild links for modified file %s: %v", filePath, err)
 		}
 	}
@@ -797,10 +797,10 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 // of carried over to newPath. Given how infrequently a file move races a metadata edit on the
 // very same file, this is left as a known limitation rather than restructured.
 func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
-	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
-	normalizedNewPath := pathutils.ToWithPrefix(newPath)
+	normalizedOldPath := pathutils.GuessMeta(oldPath)
+	normalizedNewPath := newPath
 
-	oldMetadata, err := MetaDataGet(pathutils.GuessMeta(normalizedOldPath))
+	oldMetadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
 		logging.LogDebug(key, "no metadata found for %s, creating new metadata for %s", normalizedOldPath, normalizedNewPath)
 	}
@@ -824,7 +824,7 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 		return fmt.Errorf("failed to sync metadata for new path %s: %w", normalizedNewPath, err)
 	}
 
-	if err := MetaDataDelete(pathutils.GuessMeta(normalizedOldPath)); err != nil {
+	if err := MetaDataDelete(normalizedOldPath); err != nil {
 		logging.LogWarning(key, "failed to delete old metadata for %s: %v", normalizedOldPath, err)
 	}
 
@@ -891,18 +891,18 @@ func updateTitle(metadata *Metadata) {
 
 // SetParents normalizes and sets path's parent links, updates the ancestor chain, and fans
 // out the resulting Kids add/remove onto the old and new parents' own metadata.
-func SetParents(path string, parents []string) error {
+func SetParents(path pathutils.MetaPath, parents []string) error {
 	return withRefresh(func() error { return SetParentsNoRefresh(path, parents) })
 }
 
 // SetParentsNoRefresh is SetParents without the aggregate cache refresh - for callers that set
 // several fields or loop over many files in one request, so use SetParents and call
 // RefreshCaches() once afterwards instead of paying for a full cache rebuild per field/file.
-func SetParentsNoRefresh(path string, parents []string) error {
-	normalized := pathutils.ToWithPrefix(path)
+func SetParentsNoRefresh(path pathutils.MetaPath, parents []string) error {
+	normalized := path
 
 	var oldParents, newParents []string
-	err := MetaDataMutate(pathutils.GuessMeta(normalized), func(m *Metadata, existed bool) (bool, error) {
+	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
 		oldParents = append(oldParents, m.Parents...)
 		for _, parent := range parents {
 			newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
@@ -916,7 +916,7 @@ func SetParentsNoRefresh(path string, parents []string) error {
 	}
 
 	// runs after normalized's own lock is released - see parentChildFanOut
-	fanOut := parentChildFanOut(normalized, oldParents, newParents)
+	fanOut := parentChildFanOut(normalized.String(), oldParents, newParents)
 	for _, apply := range fanOut {
 		apply()
 	}
@@ -930,12 +930,12 @@ func SetParentsNoRefresh(path string, parents []string) error {
 // the tags and parents writes. Fan-out onto other paths (parents' Kids, linked files'
 // LinksToHere) still runs after this path's own lock is released - see parentChildFanOut and
 // updateLinksToHereFanOut.
-func SetMetadataNoRefresh(path string, patch *Metadata) error {
-	normalized := pathutils.ToWithPrefix(path)
+func SetMetadataNoRefresh(path pathutils.MetaPath, patch *Metadata) error {
+	normalized := path
 
 	var oldParents, newParents []string
 	var fanOut []func()
-	err := MetaDataMutate(pathutils.GuessMeta(normalized), func(m *Metadata, existed bool) (bool, error) {
+	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			m.CreatedAt = time.Now()
 		}
@@ -977,7 +977,7 @@ func SetMetadataNoRefresh(path string, patch *Metadata) error {
 		apply()
 	}
 	if newParents != nil {
-		for _, apply := range parentChildFanOut(normalized, oldParents, newParents) {
+		for _, apply := range parentChildFanOut(normalized.String(), oldParents, newParents) {
 			apply()
 		}
 	}
@@ -1057,12 +1057,12 @@ func removeKid(path, sourcePath string) (changed bool, err error) {
 }
 
 // UpdateLinksForSingleFile updates link metadata for a single file incrementally.
-func UpdateLinksForSingleFile(filePath string) error {
+func UpdateLinksForSingleFile(filePath pathutils.MetaPath) error {
 	logging.LogInfo(logging.KeyApp, "updating links for file: %s", filePath)
 
-	unlock := lockMetaPath(pathutils.GuessMeta(filePath))
+	unlock := lockMetaPath(filePath)
 
-	metadata, err := MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := MetaDataGet(filePath)
 	if err != nil {
 		unlock()
 		logging.LogWarning(logging.KeyApp, "failed to get metadata for file %s: %v", filePath, err)
@@ -1196,8 +1196,8 @@ func StopMetaGetCounter() {
 // Instead of relying on LinksToHere (which may be stale), it scans all doc files'
 // UsedLinks for the old media path — a safe reverse lookup.
 // Must be called BEFORE MoveMediaMetadata.
-func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
-	normalizedOld := pathutils.ToWithPrefix(oldMediaPath)
+func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath pathutils.MetaPath) error {
+	normalizedOld := pathutils.ToWithPrefix(oldMediaPath.String())
 
 	allFiles, err := GetAllFiles()
 	if err != nil {
@@ -1213,7 +1213,7 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
 		if !slices.Contains(metadata.UsedLinks, normalizedOld) {
 			continue
 		}
-		ok, err := updateLinksInFile(logging.KeyApp, file.Path.String(), oldMediaPath, newMediaPath)
+		ok, err := updateLinksInFile(logging.KeyApp, file.Path.String(), oldMediaPath.String(), newMediaPath.String())
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to update media links in %s: %v", file.Path, err)
 		} else if ok {
@@ -1227,8 +1227,8 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
 }
 
 // MoveMediaMetadata moves metadata from old media path to new media path.
-func MoveMediaMetadata(oldPath, newPath string) error {
-	return moveFileMetadata(logging.KeyApp, oldPath, newPath)
+func MoveMediaMetadata(oldPath, newPath pathutils.MetaPath) error {
+	return moveFileMetadata(logging.KeyApp, oldPath.String(), newPath.String())
 }
 
 // BrokenLink is an outbound link whose target no longer exists.

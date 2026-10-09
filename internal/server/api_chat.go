@@ -32,13 +32,10 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if filePath != "" {
-		filePath = pathutils.ToWithPrefix(filePath)
-	}
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 	short := r.URL.Query().Get("short") == "true"
 
-	messages, total, err := chat.GetPage(filePath, offset)
+	messages, total, err := chat.GetPage(filePath.String(), offset)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get chat messages: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load chat"))
@@ -47,9 +44,9 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 
 	var html string
 	if offset > 0 {
-		html = render.RenderChatLoadMore(messages, total, offset, filePath, short)
+		html = render.RenderChatLoadMore(messages, total, offset, filePath.String(), short)
 	} else {
-		html = render.RenderChatComponent(messages, total, offset, filePath, short)
+		html = render.RenderChatComponent(messages, total, offset, filePath.String(), short)
 	}
 
 	writeResponse(w, r, messages, html)
@@ -79,12 +76,9 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if filePath != "" {
-		filePath = pathutils.ToWithPrefix(filePath)
-	}
 	short := r.URL.Query().Get("short") == "true"
 
-	msg, err := chat.Add(content, filePath)
+	msg, err := chat.Add(content, filePath.String())
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to add chat message: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save message"))
@@ -222,11 +216,11 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalizedTarget := pathutils.ToWithPrefix(target)
+	normalizedTarget := pathutils.GuessMeta(target)
 	if mode == "append" {
 		// initialize metadata if file is new
-		if existingMeta, _ := files.MetaDataGet(pathutils.GuessMeta(normalizedTarget)); existingMeta == nil {
-			if err := files.MetaDataSync(pathutils.GuessMeta(normalizedTarget)); err != nil {
+		if existingMeta, _ := files.MetaDataGet(normalizedTarget); existingMeta == nil {
+			if err := files.MetaDataSync(normalizedTarget); err != nil {
 				logging.LogWarning(logging.KeyApp, "failed to save metadata after append: %v", err)
 			} else if et := files.EditorFromExtension(target); et != "" {
 				if err := files.SetEditor(normalizedTarget, et); err != nil {
@@ -234,7 +228,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-	} else if err := files.MetaDataSync(pathutils.GuessMeta(normalizedTarget)); err != nil {
+	} else if err := files.MetaDataSync(normalizedTarget); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to save metadata for moved chat message: %v", err)
 	} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to set editor for moved chat message: %v", err)
@@ -339,8 +333,8 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if mode != "append" {
-		normalizedTarget := pathutils.ToWithPrefix(target)
-		if err := files.MetaDataSync(pathutils.GuessMeta(normalizedTarget)); err != nil {
+		normalizedTarget := pathutils.GuessMeta(target)
+		if err := files.MetaDataSync(normalizedTarget); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to save metadata for bulk chat move: %v", err)
 		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to set editor for bulk chat move: %v", err)

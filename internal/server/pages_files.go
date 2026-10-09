@@ -20,8 +20,8 @@ import (
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	rel := strings.TrimPrefix(r.URL.Path, "/files/")
-	filePath := pathutils.DocsPath(rel).String()
-	fullPath := pathutils.ToDocsPath(filePath)
+	filePath := pathutils.DocsPath(rel)
+	fullPath := filePath.FullPath()
 	ext := strings.ToLower(filepath.Ext(fullPath))
 
 	if ext == ".pdf" {
@@ -39,7 +39,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	// a book renders as its composed document (see files.GetFileContent); prepend the
 	// export toolbar, or an empty-book notice, above it.
 	if files.IsBook(filePath) {
-		fileContent.HTML = render.RenderBookViewPrefix(filePath) + fileContent.HTML
+		fileContent.HTML = render.RenderBookViewPrefix(filePath.String()) + fileContent.HTML
 	}
 
 	// show the requested view (?view=) of the file, e.g. a tracker's live stats or the raw source

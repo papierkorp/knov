@@ -43,9 +43,12 @@ func viewedFile(r *http.Request) string {
 // metaPathParam reads the param name naming an existing file: its metadata path ("docs/..." or
 // "media/..."). An empty value is returned as is for the handler's own missing-param answer, any
 // other value without the prefix is answered with 400 and ok is false.
-func metaPathParam(w http.ResponseWriter, r *http.Request, name string) (path string, ok bool) {
-	path = r.FormValue(name)
-	if path != "" && !pathutils.IsMetaPath(path) {
+func metaPathParam(w http.ResponseWriter, r *http.Request, name string) (path pathutils.MetaPath, ok bool) {
+	value := r.FormValue(name)
+	if value == "" {
+		return "", true
+	}
+	if path, ok = pathutils.ParseMeta(value); !ok {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", name))
 		return "", false
 	}

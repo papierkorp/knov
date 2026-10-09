@@ -48,8 +48,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// unless an explicit non-codemirror editor was requested (e.g. "open file with"),
 	// which should override the section view
 	if sectionID != "" && fp != "" && (editorParam == "" || editorParam == string(files.EditorTypeCodeMirror)) {
-		html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
-		writeResponse(w, r, map[string]string{"filepath": fp, "section": sectionID}, html)
+		html = render.RenderCodeMirrorSectionEditorForm(fp.String(), sectionID)
+		writeResponse(w, r, map[string]string{"filepath": fp.String(), "section": sectionID}, html)
 		return
 	}
 
@@ -68,44 +68,44 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// render the appropriate editor
 	switch et {
 	case files.EditorTypeList:
-		html = render.RenderListEditor(fp, false)
+		html = render.RenderListEditor(fp.String(), false)
 	case files.EditorTypeTodo:
-		html = render.RenderListEditor(fp, true)
+		html = render.RenderListEditor(fp.String(), true)
 	case files.EditorTypeFilter:
 		var renderErr error
-		html, renderErr = render.RenderFilterEditor(fp)
+		html, renderErr = render.RenderFilterEditor(fp.String())
 		if renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render filter editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
 		}
 	case files.EditorTypeTracker:
 		if !configmanager.GetTrackerEnabled() {
-			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
 			break
 		}
 		var renderErr error
-		if html, renderErr = render.RenderTrackerEditor(fp); renderErr != nil {
+		if html, renderErr = render.RenderTrackerEditor(fp.String()); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render tracker editor: %v", renderErr)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load tracker"))
 			return
 		}
 	case files.EditorTypeIndex:
 		var renderErr error
-		if html, renderErr = render.RenderIndexEditor(fp); renderErr != nil {
+		if html, renderErr = render.RenderIndexEditor(fp.String()); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
 		}
 	case files.EditorTypeBook:
 		var renderErr error
-		if html, renderErr = render.RenderBookEditor(fp); renderErr != nil {
+		if html, renderErr = render.RenderBookEditor(fp.String()); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render book editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
 		}
 	default:
-		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+		html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
 	}
 
-	writeResponse(w, r, map[string]string{"filepath": fp, "editor": editorParam}, html)
+	writeResponse(w, r, map[string]string{"filepath": fp.String(), "editor": editorParam}, html)
 }
 
 // @Summary List the headings of unsaved markdown
@@ -244,8 +244,8 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	}
 	go git.CommitFile(fullPath)
 
-	normalizedPath := pathutils.ToWithPrefix(filezpath)
-	if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
+	normalizedPath := pathutils.GuessMeta(filezpath)
+	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for %s file %s: %v", kind.extKey, filezpath, err)
 	} else if err := files.SetEditor(normalizedPath, kind.editor); err != nil {
 		logging.LogError(logging.KeyApp, "failed to set editor for %s file %s: %v", kind.extKey, filezpath, err)
@@ -365,8 +365,8 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	normalizedPath := pathutils.ToWithPrefix(filePath)
-	if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
+	normalizedPath := pathutils.GuessMeta(filePath)
+	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for list file %s: %v", filePath, err)
 	} else if err := files.SetEditor(normalizedPath, editorType); err != nil {
 		logging.LogError(logging.KeyApp, "failed to set editor for list file %s: %v", filePath, err)
@@ -488,7 +488,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "saved table in file: %s", filePath)
 
 	// update links for this file
-	normalizedPath := pathutils.ToWithPrefix(filePath)
+	normalizedPath := pathutils.GuessMeta(filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
@@ -531,7 +531,7 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	html := render.RenderTableEditorForm(filePath, tableIndex)
+	html := render.RenderTableEditorForm(filePath.String(), tableIndex)
 
 	writeResponse(w, r, map[string]any{"filepath": filePath, "tableIndex": tableIndex}, html)
 }
@@ -578,7 +578,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "saved section %s in file: %s", sectionID, filePath)
 
 	// update links for this file
-	normalizedPath := pathutils.ToWithPrefix(filePath)
+	normalizedPath := pathutils.GuessMeta(filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
@@ -624,7 +624,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath.String())
 
 	// read file content
 	content, err := os.ReadFile(fullPath)
@@ -635,10 +635,10 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.NewWithFilePath(filePath.String()).ConvertToMarkdown(string(content))
 
 	// determine new filename
-	markdownFileName := strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".md"
+	markdownFileName := strings.TrimSuffix(filePath.String(), filepath.Ext(filePath.String())) + ".md"
 	markdownFullPath := pathutils.ToDocsPath(markdownFileName)
 
 	// save markdown file

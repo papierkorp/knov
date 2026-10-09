@@ -133,16 +133,16 @@ func EditorFromExtension(path string) EditorType {
 
 // ResolveEditor picks the editor for an existing file: metadata first, then the extension,
 // then "" for the caller to default. The one place the metadata→extension precedence lives.
-func ResolveEditor(path string) EditorType {
-	if meta, err := MetaDataGet(pathutils.GuessMeta(path)); err == nil && meta != nil && meta.Editor != "" {
+func ResolveEditor(path pathutils.MetaPath) EditorType {
+	if meta, err := MetaDataGet(path); err == nil && meta != nil && meta.Editor != "" {
 		return meta.Editor
 	}
-	return EditorFromExtension(path)
+	return EditorFromExtension(path.String())
 }
 
 // IsBook reports whether the file at path is a book (shown as its composed document, not
 // its raw entry list).
-func IsBook(path string) bool {
+func IsBook(path pathutils.MetaPath) bool {
 	return ResolveEditor(path) == EditorTypeBook
 }
 
@@ -352,12 +352,12 @@ func SanitizeKanbanTags(oldTags, tags []string) ([]string, error) {
 // Overwrites any previous conflict file reference — only one is kept at a time. Errors if
 // originalFilePath has no metadata yet — its caller always names an already-tracked file, so a
 // miss means a bad path rather than something to paper over with a phantom record.
-func SetConflictFile(originalFilePath, conflictFilePath string) error {
-	return MetaDataMutate(pathutils.GuessMeta(originalFilePath), func(m *Metadata, existed bool) (bool, error) {
+func SetConflictFile(originalFilePath, conflictFilePath pathutils.MetaPath) error {
+	return MetaDataMutate(originalFilePath, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", originalFilePath)
 		}
-		m.ConflictFile = conflictFilePath
+		m.ConflictFile = conflictFilePath.String()
 		return true, nil
 	})
 }
@@ -366,16 +366,16 @@ func SetConflictFile(originalFilePath, conflictFilePath string) error {
 // this auto-creates a bare record when conflictFilePath has none: its caller (git.HandleConflict)
 // writes the conflict copy straight to disk without ever syncing metadata for it first, so this
 // is the only place that record gets created.
-func SetConflictOf(conflictFilePath, originalFilePath string) error {
-	return MetaDataMutate(pathutils.GuessMeta(conflictFilePath), func(m *Metadata, existed bool) (bool, error) {
-		m.ConflictOf = originalFilePath
+func SetConflictOf(conflictFilePath, originalFilePath pathutils.MetaPath) error {
+	return MetaDataMutate(conflictFilePath, func(m *Metadata, existed bool) (bool, error) {
+		m.ConflictOf = originalFilePath.String()
 		return true, nil
 	})
 }
 
 // ClearConflictFile removes the conflict file reference from the original file's metadata.
-func ClearConflictFile(originalFilePath string) error {
-	return MetaDataMutate(pathutils.GuessMeta(originalFilePath), func(m *Metadata, existed bool) (bool, error) {
+func ClearConflictFile(originalFilePath pathutils.MetaPath) error {
+	return MetaDataMutate(originalFilePath, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -388,15 +388,15 @@ func ClearConflictFile(originalFilePath string) error {
 // MetaDataSync's "default when empty" rule, this always takes effect regardless of the
 // current value). Errors if path has no metadata yet - callers change an existing file's
 // editor, they don't create metadata as a side effect.
-func SetEditor(path string, editor EditorType) error {
+func SetEditor(path pathutils.MetaPath, editor EditorType) error {
 	return withRefresh(func() error { return SetEditorNoRefresh(path, editor) })
 }
 
 // SetEditorNoRefresh is SetEditor without the aggregate cache refresh - for callers that set
 // several fields or loop over many files in one request, so use SetEditor and call
 // RefreshCaches() once afterwards instead of paying for a full cache rebuild per field/file.
-func SetEditorNoRefresh(path string, editor EditorType) error {
-	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func SetEditorNoRefresh(path pathutils.MetaPath, editor EditorType) error {
+	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -407,16 +407,16 @@ func SetEditorNoRefresh(path string, editor EditorType) error {
 
 // SetTags sanitizes and sets path's tags, applying kanban add/moved timestamps on status
 // transitions the same way the old field-merge path did.
-func SetTags(path string, tags []string) error {
+func SetTags(path pathutils.MetaPath, tags []string) error {
 	return withRefresh(func() error { return SetTagsNoRefresh(path, tags) })
 }
 
 // SetTagsStrict is SetTags for user input: the kanban check runs against the tags on disk under
 // the path lock, and invalid kanban tags (ErrInvalidKanbanTags) reject the whole save instead
 // of being dropped. Returns the tags before and after the save as seen under the lock.
-func SetTagsStrict(path string, tags []string) (oldTags, newTags []string, err error) {
+func SetTagsStrict(path pathutils.MetaPath, tags []string) (oldTags, newTags []string, err error) {
 	err = withRefresh(func() error {
-		return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+		return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 			cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 			if err != nil {
 				return false, err
@@ -432,8 +432,8 @@ func SetTagsStrict(path string, tags []string) (oldTags, newTags []string, err e
 }
 
 // SetTagsNoRefresh is SetTags without the aggregate cache refresh. See SetEditorNoRefresh.
-func SetTagsNoRefresh(path string, tags []string) error {
-	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func SetTagsNoRefresh(path pathutils.MetaPath, tags []string) error {
+	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		oldKanbanStatus := kanbanStatusFromTags(m.Tags)
 		cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 		if err != nil {
@@ -449,9 +449,9 @@ func SetTagsNoRefresh(path string, tags []string) error {
 // MoveCard cannot lose updates the way a stale unlocked read + SetTags would), reporting whether
 // a change was actually saved so a batch caller knows whether RefreshCaches() is needed at all.
 // Skips the save when the result would be empty - clearing every tag via bulk is not supported.
-func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err error) {
+func PatchTagsNoRefresh(path pathutils.MetaPath, add, remove []string) (changed bool, err error) {
 	skipped := false
-	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -495,8 +495,8 @@ func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err er
 }
 
 // SetCreatedAt sets path's creation timestamp. Errors if path has no metadata yet.
-func SetCreatedAt(path string, createdAt time.Time) error {
-	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func SetCreatedAt(path pathutils.MetaPath, createdAt time.Time) error {
+	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -507,8 +507,8 @@ func SetCreatedAt(path string, createdAt time.Time) error {
 
 // SetLastEdited sets path's last-edited timestamp (manual override of the Sync-stamped value).
 // Errors if path has no metadata yet.
-func SetLastEdited(path string, lastEdited time.Time) error {
-	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func SetLastEdited(path pathutils.MetaPath, lastEdited time.Time) error {
+	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -518,8 +518,8 @@ func SetLastEdited(path string, lastEdited time.Time) error {
 }
 
 // SetReferences sets path's external reference list. Errors if path has no metadata yet.
-func SetReferences(path string, references []Reference) error {
-	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func SetReferences(path pathutils.MetaPath, references []Reference) error {
+	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}

@@ -29,7 +29,7 @@ var (
 
 // fileViewsFor lists the views of relPath's file type; the first one is the default.
 func fileViewsFor(relPath string) []fileView {
-	if files.ResolveEditor(pathutils.DocsPath(relPath).String()) == files.EditorTypeTracker {
+	if files.ResolveEditor(pathutils.DocsPath(relPath)) == files.EditorTypeTracker {
 		return []fileView{
 			{"stats", "statistics", "fa-chart-line", RenderTrackerFileView},
 			{"counters", "counters", "fa-plus-minus", RenderTrackerClickView},

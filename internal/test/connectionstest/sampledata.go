@@ -109,7 +109,7 @@ func resetAndSeed() error {
 	if err := saveMetadata(linkerFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := files.UpdateLinksForSingleFile(withPrefix(linkerFile)); err != nil {
+	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(withPrefix(linkerFile))); err != nil {
 		return err
 	}
 

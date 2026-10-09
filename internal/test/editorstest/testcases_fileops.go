@@ -50,7 +50,7 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 	if err := os.Rename(oldFull, newFull); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForMovedFile(logging.KeyApp, oldRel, newRel); err != nil {
+	if err := files.UpdateLinksForMovedFile(logging.KeyApp, pathutils.GuessMeta(oldRel), pathutils.GuessMeta(newRel)); err != nil {
 		return errCase(name, err)
 	}
 

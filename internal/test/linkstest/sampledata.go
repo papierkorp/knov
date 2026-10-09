@@ -70,7 +70,7 @@ func saveDoc(rel, content string) error {
 	if err := files.MetaDataSync(pathutils.GuessMeta(rel)); err != nil {
 		return err
 	}
-	return files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(rel))
+	return files.UpdateLinksForSingleFile(pathutils.GuessMeta(rel))
 }
 
 // resetAndSeed wipes the sample folders and writes one doc and one media file per corpus name.
@@ -103,8 +103,8 @@ func resetAndSeed() error {
 // wanted target (a metadata path, docs/ or media/ prefixed): the target exists, it's in src's
 // used links and src is in a doc target's linked from. Returns one line per gap.
 func metadataGaps(src string, want []string) []string {
-	srcKey := pathutils.ToWithPrefix(src)
-	meta, err := files.MetaDataGet(pathutils.GuessMeta(srcKey))
+	srcKey := pathutils.GuessMeta(src)
+	meta, err := files.MetaDataGet(srcKey)
 	if err != nil || meta == nil {
 		return []string{fmt.Sprintf("%s: no metadata (%v)", src, err)}
 	}
@@ -121,7 +121,7 @@ func metadataGaps(src string, want []string) []string {
 			gaps = append(gaps, fmt.Sprintf("%q: not in used links", w))
 		}
 		if strings.HasPrefix(w, "docs/") {
-			if m, _ := files.MetaDataGet(pathutils.GuessMeta(w)); m == nil || !slices.Contains(m.LinksToHere, srcKey) {
+			if m, _ := files.MetaDataGet(pathutils.GuessMeta(w)); m == nil || !slices.Contains(m.LinksToHere, srcKey.String()) {
 				gaps = append(gaps, fmt.Sprintf("%q: src not in its linked from", w))
 			}
 		}

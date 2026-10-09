@@ -51,13 +51,13 @@ func walkReservedFolders(fn func(oldKey, newKey string)) {
 			if err != nil || info.IsDir() {
 				return nil
 			}
-			newKey := pathutils.ToWithPrefix(p)
+			newKey := pathutils.GuessMeta(p)
 			rel, err := filepath.Rel(pathutils.DocsRoot(), p)
 			if err != nil {
 				return nil
 			}
-			if oldKey := pathutils.ToWithPrefix(pathutils.ToSlash(rel)); oldKey != newKey {
-				fn(oldKey, newKey)
+			if oldKey := pathutils.GuessMeta(pathutils.ToSlash(rel)); oldKey != newKey {
+				fn(oldKey.String(), newKey.String())
 			}
 			return nil
 		})

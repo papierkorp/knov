@@ -23,10 +23,10 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, fr
 	var b strings.Builder
 	b.WriteString("<ul>")
 	for _, file := range files {
-		linkPath := pathutils.ToWithPrefix(file.Path)
+		linkPath := pathutils.GuessMeta(file.Path)
 		fmt.Fprintf(&b, `<li>%s - <a href="%s"><strong>%s</strong></a> (%s)</li>`,
 			configmanager.FormatDateTime(file.Date),
-			pathutils.ToFileURL(pathutils.GuessMeta(linkPath)),
+			pathutils.ToFileURL(linkPath),
 			file.Name,
 			strings.TrimSpace(file.Message))
 	}

@@ -66,7 +66,7 @@ func writeCard(relPath, title string, tags []string, createdAt time.Time) error 
 		return err
 	}
 
-	return files.SetCreatedAt(pathutils.ToWithPrefix(relPath), createdAt)
+	return files.SetCreatedAt(pathutils.GuessMeta(relPath), createdAt)
 }
 
 func kanbanTag(status string) string {
@@ -76,8 +76,8 @@ func kanbanTag(status string) string {
 // clearKanbanStatus strips any kanban status tag from a file's metadata via a raw save,
 // bypassing metaDataUpdate's "empty Tags means unchanged" merge semantics.
 func clearKanbanStatus(relPath string) error {
-	normalizedPath := pathutils.ToWithPrefix(relPath)
-	return files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(meta *files.Metadata, existed bool) (bool, error) {
+	normalizedPath := pathutils.GuessMeta(relPath)
+	return files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
 		filtered := meta.Tags[:0:0]
 		for _, t := range meta.Tags {
 			if !configmanager.IsKanbanTag(t) {

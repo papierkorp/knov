@@ -23,11 +23,12 @@ import (
 // LoadSource returns the markdown to export for filePath - a book's composed
 // document, otherwise the file's raw content.
 func LoadSource(filePath string) ([]byte, error) {
-	if files.IsBook(filePath) {
+	meta := pathutils.GuessMeta(filePath)
+	if files.IsBook(meta) {
 		composed, err := book.Compose(filePath)
 		return []byte(composed), err
 	}
-	return os.ReadFile(pathutils.ToDocsPath(filePath))
+	return os.ReadFile(meta.FullPath())
 }
 
 // ExportAll renders every markdown file and book to a pdf and passes each to add,

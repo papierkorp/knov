@@ -69,12 +69,12 @@ func BulkUpdateMetadata(key logging.Key, matched []File, patch BulkUpdatePatch, 
 // instead of once per file.
 func applyBulkUpdatePatch(current *Metadata, p BulkUpdatePatch) error {
 	if p.Editor != nil {
-		return SetEditorNoRefresh(current.Path.String(), *p.Editor)
+		return SetEditorNoRefresh(current.Path, *p.Editor)
 	}
 	if len(p.TagsAdd) > 0 || len(p.TagsRemove) > 0 {
 		// PatchTagsNoRefresh re-reads tags under the path lock - never apply add/remove against
 		// the unlocked snapshot in current (that lost concurrent MoveCard/bulk edits).
-		_, err := PatchTagsNoRefresh(current.Path.String(), p.TagsAdd, p.TagsRemove)
+		_, err := PatchTagsNoRefresh(current.Path, p.TagsAdd, p.TagsRemove)
 		return err
 	}
 	return nil
