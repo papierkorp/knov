@@ -10,7 +10,10 @@ import (
 	"slices"
 	"strings"
 
+	"knov/internal/configStorage"
 	"knov/internal/files"
+	"knov/internal/filter"
+	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server"
@@ -62,19 +65,19 @@ func caseListing() test.CaseResult {
 			gaps = append(gaps, fmt.Sprintf("%q not listed", want))
 			continue
 		}
-		if got := all[i].ViewURL(); got != pathutils.ToFileURL(doc(top, "synced.md")) {
+		if got := all[i].ViewURL(); got != pathutils.ToFileURL("docs/"+doc(top, "synced.md")) {
 			gaps = append(gaps, fmt.Sprintf("%q: view url %q", want, got))
 		}
 	}
 	return gapsCase("reserved-listing", "docs files in docs/docs/, docs/media/ and docs/files/ are listed as themselves", gaps)
 }
 
-// caseView: the file page, its raw content and its edit page show the doc, not its partner.
+// caseView: the file page and its content api show the doc, not its partner.
 func caseView() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		rel := doc(top, "synced.md")
-		for _, target := range []string{pathutils.ToFileURL(rel), "/api/files/raw?filepath=" + url.QueryEscape(rel), "/api/files/content/" + strings.TrimPrefix(pathutils.ToFileURL(rel), "/files/")} {
+		for _, target := range []string{pathutils.ToFileURL("docs/" + rel), "/api/files/content/" + rel} {
 			status, body, err := request(http.MethodGet, target, nil)
 			if err != nil {
 				return errCase("reserved-view", err)
@@ -84,7 +87,20 @@ func caseView() test.CaseResult {
 			}
 		}
 	}
-	return gapsCase("reserved-view", "the file page, raw content and content api of each sample doc show it, not its collision partner", gaps)
+	// the edit page names the doc by its docs/ path
+	for _, top := range reserved {
+		rel := doc(top, "synced.md")
+		for _, target := range []string{pathutils.ToFileEditURL("docs/" + rel)} {
+			status, body, err := request(http.MethodGet, target, nil)
+			if err != nil {
+				return errCase("reserved-view", err)
+			}
+			if status != http.StatusOK || !strings.Contains(body, "docs/"+rel) && !strings.Contains(body, "filepath=docs/"+rel) {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, does not name %q", target, status, "docs/"+rel))
+			}
+		}
+	}
+	return gapsCase("reserved-view", "the file page and content api of each sample doc show it, not its collision partner", gaps)
 }
 
 // caseMetadata: each sample doc and its partner have their own metadata.
@@ -110,26 +126,32 @@ func caseMetadata() test.CaseResult {
 	return gapsCase("reserved-metadata", "a sample doc and its collision partner don't share metadata", gaps)
 }
 
-// caseLinks: a docs/-prefixed wikilink and /files/docs/ url from the docs root and a bare link from
-// the doc's own folder read and render as the sample doc.
+// caseLinks: a docs file in docs/docs/, docs/media/ or docs/files/ is linked as itself - by a
+// /files/ url (taken literally), a docs/-prefixed wikilink and a bare link from its own folder -
+// and a link written media/... still reads as the media file.
 func caseLinks() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		want := "docs/" + doc(top, "synced.md")
-		forms := map[string][2]string{
-			"wiki":     {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: want}.String()},
-			"file url": {"docs/" + sub + "/linker.md", "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + want}.Dest() + ")"},
-			"bare":     {"docs/" + doc(top, "linker.md"), "[x](synced.md)"},
+		forms := map[string][3]string{
+			"wiki":       {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: want}.String(), want},
+			"file url":   {"docs/" + sub + "/linker.md", "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + doc(top, "synced.md")}.Dest() + ")", want},
+			"html":       {"docs/" + sub + "/linker.md", `<a href="` + pathutils.ToFileURL(want) + `">x</a>`, want},
+			"bare":       {"docs/" + doc(top, "linker.md"), "[x](synced.md)", want},
+			"dot":        {"docs/" + doc(top, "linker.md"), "[x](./synced.md)", want},
+			"wiki media": {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: "media/" + sub + "/synced.md"}.String(), "media/" + sub + "/synced.md"},
 		}
 		for form, f := range forms {
 			got := (&parser.MarkdownHandler{}).ExtractLinks([]byte(f[1]), f[0])
-			rendered := parser.RenderLinks(f[1], f[0])
-			if !slices.Equal(got, []string{want}) || !strings.Contains(rendered, "("+pathutils.ToFileURL(doc(top, "synced.md"))+")") {
-				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, renders %q", form, f[1], f[0], got, rendered))
+			if !slices.Equal(got, []string{f[2]}) {
+				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, want %q", form, f[1], f[0], got, f[2]))
+			}
+			if rendered := parser.RenderLinks(f[1], f[0]); f[2] == want && !strings.Contains(rendered, pathutils.ToFileURL(want)) {
+				gaps = append(gaps, fmt.Sprintf("%s %q in %s: renders %q", form, f[1], f[0], rendered))
 			}
 		}
 	}
-	return gapsCase("reserved-links", "links to a sample doc read and render as it", gaps)
+	return gapsCase("reserved-links", "links to a sample doc read and render as it, media/ links stay media", gaps)
 }
 
 // caseCreate: saving a new doc into each reserved folder through the api creates it there.
@@ -178,4 +200,206 @@ func caseRenameMoveDelete() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-rename-move-delete", "a doc in a reserved folder is renamed, moved and deleted as itself", gaps)
+}
+
+// caseDelete: deleting a doc through the api removes it, not its partner.
+func caseDelete() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		rel := doc(top, "delete.md")
+		if err := write(fullPath("docs/"+rel), "# delete\n"); err != nil {
+			return errCase("reserved-delete", err)
+		}
+		if err := write(fullPath(partner(top, "delete.md")), "# partner\n"); err != nil {
+			return errCase("reserved-delete", err)
+		}
+		status, body, err := request(http.MethodDelete, pathutils.ToRouteURL("/api/files/delete/", rel), nil)
+		if err != nil {
+			return errCase("reserved-delete", err)
+		}
+		if status != http.StatusOK || exists("docs/"+rel) || !exists(partner(top, "delete.md")) {
+			gaps = append(gaps, fmt.Sprintf("delete %q: status %d (%s), doc left %v, partner there %v", rel, status, strings.TrimSpace(body), exists("docs/"+rel), exists(partner(top, "delete.md"))))
+		}
+	}
+	return gapsCase("reserved-delete", "deleting a doc in a reserved folder removes it, not its collision partner", gaps)
+}
+
+// caseParams: a query / form param naming an existing file is its metadata path - the sample doc
+// is read through it (raw content, editor, metadata api, links api), never its collision
+// partner, and the unprefixed docs-relative form is answered with 400.
+func caseParams() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		rel, meta := doc(top, "synced.md"), "docs/"+doc(top, "synced.md")
+		for _, target := range []string{"/api/files/raw?filepath=" + url.QueryEscape(meta), "/api/editor?filepath=" + url.QueryEscape(meta)} {
+			status, body, err := request(http.MethodGet, target, nil)
+			if err != nil {
+				return errCase("reserved-params", err)
+			}
+			if status != http.StatusOK || !strings.Contains(body, marker(top)) || strings.Contains(body, partnerMarker(top)) {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, shows the doc %v, its partner %v", target, status, strings.Contains(body, marker(top)), strings.Contains(body, partnerMarker(top))))
+			}
+		}
+		status, body, err := request(http.MethodGet, "/api/metadata?filepath="+url.QueryEscape(meta), nil)
+		if err != nil {
+			return errCase("reserved-params", err)
+		}
+		if status != http.StatusOK || !strings.Contains(body, meta) {
+			gaps = append(gaps, fmt.Sprintf("metadata of %q: status %d (%s)", meta, status, strings.TrimSpace(body)))
+		}
+		// for docs/ and media/ the docs-relative path is itself a metadata path
+		for _, target := range []string{"/api/files/raw?filepath=" + url.QueryEscape(rel), "/api/metadata?filepath=" + url.QueryEscape(rel)} {
+			if pathutils.IsMetaPath(rel) {
+				break
+			}
+			if status, _, err := request(http.MethodGet, target, nil); err != nil || status != http.StatusBadRequest {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, want 400 (%v)", target, status, err))
+			}
+		}
+		// saving through the editor form edits the doc itself
+		if status, body, err := request(http.MethodPost, "/api/files/save", url.Values{"filepath": {rel}, "content": {"# synced\n\n" + marker(top) + "\n\nedited\n"}}); err != nil || status != http.StatusOK {
+			gaps = append(gaps, fmt.Sprintf("save %q: status %d (%s) %v", rel, status, strings.TrimSpace(body), err))
+		} else if b, _ := os.ReadFile(fullPath(meta)); !strings.Contains(string(b), "edited") {
+			gaps = append(gaps, fmt.Sprintf("save %q: doc not changed", rel))
+		}
+		if b, _ := os.ReadFile(fullPath(partner(top, "synced.md"))); strings.Contains(string(b), "edited") {
+			gaps = append(gaps, fmt.Sprintf("save %q: partner changed", rel))
+		}
+	}
+	return gapsCase("reserved-params", "file params are metadata paths, read and saved as the sample doc, not its collision partner", gaps)
+}
+
+// caseStoredPaths: the parents of a sample doc and a filter on its folder and parent keep the
+// docs/ path - the doc in docs/media/ is not read as the media file, a parent without prefix is
+// answered with 400.
+func caseStoredPaths() test.CaseResult {
+	var gaps []string
+	for i, top := range reserved {
+		meta, parent := "docs/"+doc(top, "synced.md"), "docs/"+doc(reserved[(i+1)%len(reserved)], "synced.md")
+		status, body, err := request(http.MethodPost, "/api/metadata/parents", url.Values{"filepath": {meta}, "parents": {parent}})
+		if err != nil {
+			return errCase("reserved-stored-paths", err)
+		}
+		if m, _ := files.MetaDataGet(meta); status != http.StatusOK || m == nil || !slices.Equal(m.Parents, []string{parent}) {
+			gaps = append(gaps, fmt.Sprintf("parents of %q: status %d (%s), stored %+v", meta, status, strings.TrimSpace(body), m))
+		}
+		// for docs/ and media/ the docs-relative path is itself a metadata path
+		if bare := doc(reserved[(i+1)%len(reserved)], "synced.md"); !pathutils.IsMetaPath(bare) {
+			if status, _, err := request(http.MethodPost, "/api/metadata/parents", url.Values{"filepath": {meta}, "parents": {bare}}); err != nil || status != http.StatusBadRequest {
+				gaps = append(gaps, fmt.Sprintf("parents of %q without prefix: status %d, want 400 (%v)", meta, status, err))
+			}
+		}
+		for _, c := range []filter.Criteria{
+			{Metadata: "collection", Operator: "equals", Value: top, Action: "include"},
+			{Metadata: "child-of", Operator: "equals", Value: parent, Action: "include"},
+		} {
+			all, err := files.GetAllPhysicalFiles()
+			if err != nil {
+				return errCase("reserved-stored-paths", err)
+			}
+			matched := filter.FilterFileList(all, []filter.Criteria{c}, "and")
+			if !slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == meta }) || slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == partner(top, "synced.md") }) {
+				gaps = append(gaps, fmt.Sprintf("filter %s=%q: matches %d files, the doc %q not found or its partner found", c.Metadata, c.Value, len(matched), meta))
+			}
+		}
+	}
+	return gapsCase("reserved-stored-paths", "parents and filters on a sample doc keep its docs/ path", gaps)
+}
+
+// caseMigration: the metadata record a docs file in a reserved folder had under its old key (the
+// path without docs/) moves to its own key unless a file lives at the old key, and a saved filter
+// named like a reserved folder (media/x) is renamed to the id its paired file x.index belongs to.
+func caseMigration() test.CaseResult {
+	var gaps []string
+	// docs/docs/x.md and docs/files/x.md shared one old key (docs/x.md), the first one found keeps the record
+	for _, top := range []string{"media", "docs"} {
+		rel := doc(top, "migrate.md")
+		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		if err := write(fullPath(key), "# migrate\n"); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		if err := files.MetaDataMutate(legacy, func(m *files.Metadata, _ bool) (bool, error) {
+			m.Tags = []string{"legacy-" + top}
+			return true, nil
+		}); err != nil {
+			return errCase("reserved-migration", err)
+		}
+	}
+	files.MigrateReservedFolderMetadata()
+	for _, top := range []string{"media", "docs"} {
+		rel := doc(top, "migrate.md")
+		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		if m, _ := files.MetaDataGet(key); m == nil || !slices.Contains(m.Tags, "legacy-"+top) {
+			gaps = append(gaps, fmt.Sprintf("%q: record not moved from %q: %+v", key, legacy, m))
+		}
+		if m, _ := files.MetaDataGet(legacy); m != nil && !exists(legacy) {
+			gaps = append(gaps, fmt.Sprintf("%q: old record left", legacy))
+		}
+		_ = files.MetaDataDelete(key)
+	}
+
+	for _, top := range reserved {
+		id := "knov-test-migrate-" + top
+		paired := filter.FilterIndexPath(id)
+		if err := write(fullPath("docs/"+paired), "# filter\n"); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		defer os.Remove(fullPath("docs/" + paired))
+		if err := configStorage.Set("filter/"+top+"/"+id, []byte("{}")); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		defer configStorage.Delete("filter/" + id)
+	}
+	if err := filter.MigrateReservedIDs(); err != nil {
+		return errCase("reserved-migration", err)
+	}
+	for _, top := range reserved {
+		id := "knov-test-migrate-" + top
+		if got, _ := configStorage.Get("filter/" + id); got == nil {
+			gaps = append(gaps, fmt.Sprintf("filter id %q: not renamed to %q", top+"/"+id, id))
+		}
+		if got, _ := configStorage.Get("filter/" + top + "/" + id); got != nil {
+			gaps = append(gaps, fmt.Sprintf("filter id %q: old id left", top+"/"+id))
+		}
+	}
+	return gapsCase("reserved-migration", "legacy metadata records and filter ids named like a reserved folder are migrated", gaps)
+}
+
+// caseLinkRename: renaming a docs file in a reserved folder rewrites the links to it, in each form
+// they were written, to the new file - not to the media or docs file of the old name.
+func caseLinkRename() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		src, dst, linker := "docs/"+doc(top, "rsrc.md"), "docs/"+doc(top, "rdst.md"), "docs/"+doc(top, "rlinker.md")
+		content := strings.Join([]string{
+			"[a](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + doc(top, "rsrc.md")}.Dest() + ")",
+			parser.Link{Kind: parser.LinkWiki, Path: src}.String(),
+			"[c](rsrc.md)",
+			"[d](./rsrc.md)",
+		}, "\n") + "\n"
+		for p, c := range map[string]string{src: "# src\n", linker: content} {
+			if err := write(fullPath(p), c); err != nil {
+				return errCase("reserved-link-rename", err)
+			}
+			if err := files.MetaDataSync(p); err != nil {
+				return errCase("reserved-link-rename", err)
+			}
+		}
+		if err := files.UpdateLinksForSingleFile(linker); err != nil {
+			return errCase("reserved-link-rename", err)
+		}
+		if err := files.MoveFileNoRefresh(logging.KeyApp, src, dst); err != nil {
+			gaps = append(gaps, fmt.Sprintf("rename %q: %v", src, err))
+			continue
+		}
+		data, err := os.ReadFile(fullPath(linker))
+		if err != nil {
+			return errCase("reserved-link-rename", err)
+		}
+		got := (&parser.MarkdownHandler{}).ExtractLinks(data, linker)
+		if want := []string{dst, dst, dst, dst}; !slices.Equal(got, want) {
+			gaps = append(gaps, fmt.Sprintf("links of %q after renaming %q: %q, want %q\n%s", linker, src, got, want, data))
+		}
+	}
+	return gapsCase("reserved-link-rename", "renaming a doc in a reserved folder rewrites every form of its links to the new file", gaps)
 }

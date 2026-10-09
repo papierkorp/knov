@@ -54,7 +54,8 @@ func parsePath(inputPath string) *PathInfo {
 	var relativePath string
 	var withPrefix string
 
-	// the prefixes stripped below must match configmanager.ReservedDocsFolders
+	// a docs-relative path is never read here - DocsPath prefixes it, so a folder named docs, media
+	// or files keeps its name
 	// strip leading slash and "files/" prefix used in stored metadata links
 	normalizedPath = strings.TrimPrefix(normalizedPath, "/")
 	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
@@ -107,6 +108,16 @@ func parsePath(inputPath string) *PathInfo {
 // docs/, media/ or files/ as prefix.
 func DocsPath(rel string) string {
 	return "docs/" + strings.TrimPrefix(rel, "/")
+}
+
+// IsMetaPath reports whether p is the metadata path of an existing file or folder: "docs/..." or
+// "media/..." (what File.Path holds), without a "." or ".." segment - a path naming an existing
+// file is never docs-relative guessed, see DocsPath for what a user types.
+func IsMetaPath(p string) bool {
+	if !strings.HasPrefix(p, "docs/") && !strings.HasPrefix(p, "media/") {
+		return false
+	}
+	return !slices.ContainsFunc(strings.Split(p, "/"), func(seg string) bool { return seg == ".." || seg == "." })
 }
 
 // ToRelative strips any prefix and data path to return clean relative path
@@ -322,18 +333,12 @@ func FolderContains(dirPath, folderPath string) bool {
 	return dirPath == folderPath || strings.HasPrefix(dirPath, folderPath+"/")
 }
 
-// ErrReservedPath is returned when a new docs file or folder would land in a reserved top-level
-// folder (see CheckTarget).
-var ErrReservedPath = errors.New("target is in a reserved top-level folder")
-
 // ErrInvalidName is returned when a new file or folder name breaks the filename policy (see
 // CheckTarget).
 var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailing space")
 
 // CheckTarget checks creating a file or folder at the host path newFull, or moving oldFull there
 // (oldFull "" for a new one):
-//   - ErrReservedPath for a docs path in a top-level folder parsePath reads as a prefix (see
-//     configmanager.ReservedDocsFolders) - such a file can't be resolved back to itself
 //   - ErrInvalidName for a name holding # ? | [ ] \ or starting/ending with a space - these break or
 //     need encoding in links, so the app never creates them
 //   - existing paths (git sync, manual copy) are left alone, the link codec still reads them
@@ -341,13 +346,6 @@ var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailin
 //     rename has to fix the name
 //   - the docs and media roots are never checked
 func CheckTarget(oldFull, newFull string) error {
-	_, statErr := os.Stat(newFull)
-	if docsRoot := getDocsPath(); statErr != nil && PathContains(docsRoot, newFull) {
-		rel, _ := filepath.Rel(docsRoot, newFull)
-		if first, _, _ := strings.Cut(filepath.ToSlash(rel), "/"); slices.Contains(configmanager.ReservedDocsFolders(), first) {
-			return ErrReservedPath
-		}
-	}
 	if oldFull != "" && filepath.Base(oldFull) == filepath.Base(newFull) {
 		newFull = filepath.Dir(newFull)
 	}
@@ -361,7 +359,7 @@ func CheckTarget(oldFull, newFull string) error {
 	}
 }
 
-// CheckNewDocsPath is CheckTarget for creating the docs path p ("a/b.md" or "docs/a/b.md").
+// CheckNewDocsPath is CheckTarget for creating the docs path p ("docs/a/b.md").
 func CheckNewDocsPath(p string) error { return CheckTarget("", ToDocsPath(p)) }
 
 // CleanName replaces the chars of name that break the filename policy (see CheckTarget) with "_"
@@ -401,27 +399,40 @@ func escapeRelPath(rel string) string {
 	return strings.Join(parts, "/")
 }
 
-// ToFileURL returns a browser-safe URL for viewing a file.
-func ToFileURL(rel string) string { return "/files/" + escapeRelPath(rel) }
+// docsURLRel is the part of a docs metadata path ("docs/a/b.md") after the docs/ prefix, which
+// is how the /files/ routes name a docs file - taken literally, so "docs/media/x.md" is
+// /files/media/x.md.
+func docsURLRel(docsPath string) string {
+	return strings.TrimPrefix(strings.TrimPrefix(filepath.ToSlash(docsPath), "/"), "docs/")
+}
 
-// ToFileEditURL returns a browser-safe URL for editing a file.
-func ToFileEditURL(rel string) string { return "/files/edit/" + escapeRelPath(rel) }
+// ToFileURL returns a browser-safe URL for viewing a docs file (docsPath is its docs/ path).
+func ToFileURL(docsPath string) string { return "/files/" + escapeRelPath(docsURLRel(docsPath)) }
+
+// ToFileEditURL returns a browser-safe URL for editing a docs file.
+func ToFileEditURL(docsPath string) string {
+	return "/files/edit/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToMediaURL returns a browser-safe URL for viewing a media file.
 func ToMediaURL(rel string) string { return "/media/" + escapeRelPath(rel) }
 
 // ToFileEditTableURL returns a browser-safe URL for editing a file's table.
-func ToFileEditTableURL(rel string) string { return "/files/edittable/" + escapeRelPath(rel) }
+func ToFileEditTableURL(docsPath string) string {
+	return "/files/edittable/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
-func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelPath(rel) }
+func ToFileHistoryURL(docsPath string) string {
+	return "/files/history/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToRouteURL returns a browser-safe URL for a route that takes a path after its prefix
 // (route ends with "/"), e.g. ToRouteURL("/api/files/delete/", rel) - for api routes, the
 // /files/ and /media/ page urls have their own To*URL.
 func ToRouteURL(route, rel string) string { return route + escapeRelPath(rel) }
 
-// FileFromURL returns the docs-relative path of the file a page URL shows (the reverse of
+// FileFromURL returns the docs/ path of the file a page URL shows (the reverse of
 // ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page
 // or a path with a ".." segment.
 func FileFromURL(rawURL string) string {
@@ -433,10 +444,10 @@ func FileFromURL(rawURL string) string {
 	for _, prefix := range []string{ToFileEditURL(""), ToFileEditTableURL(""), ToFileHistoryURL(""), ToFileURL("")} {
 		if rel, ok := strings.CutPrefix(u.Path, prefix); ok {
 			// a ".." segment would point outside the docs folder
-			if slices.Contains(strings.Split(rel, "/"), "..") {
+			if rel == "" || slices.Contains(strings.Split(rel, "/"), "..") {
 				return ""
 			}
-			return rel
+			return DocsPath(rel)
 		}
 	}
 	return ""

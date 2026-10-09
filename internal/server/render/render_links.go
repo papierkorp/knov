@@ -128,7 +128,7 @@ func RenderLinksList(links []string, _ bool) string {
 			continue
 		}
 		rel := pathutils.ToRelative(link)
-		url := pathutils.ToFileURL(rel)
+		url := pathutils.ToFileURL(pathutils.DocsPath(rel))
 		displayText := GetLinkDisplayText(rel)
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
 	}
@@ -239,7 +239,7 @@ func RenderConflictBanner(originalFilePath string, conflictFile string) string {
 	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
 	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span> `,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "this file has an unresolved conflict:"))
-	fmt.Fprintf(&html, `<a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(conflictRelPath), display)
+	fmt.Fprintf(&html, `<a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(pathutils.DocsPath(conflictRelPath)), display)
 	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-diff-banner','%s')">%s</button>`,
 		showText, hideText, diffURL, showText)
 	html.WriteString(`<div id="conflict-diff-banner" class="conflict-diff-container"></div>`)
@@ -267,7 +267,7 @@ func RenderConflictOfBanner(conflictFilePath string, originalFilePath string) st
 	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
 	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "this is a conflict copy of"))
-	fmt.Fprintf(&html, ` <a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(origRelPath), origDisplay)
+	fmt.Fprintf(&html, ` <a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(pathutils.DocsPath(origRelPath)), origDisplay)
 	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-of-diff','%s')">%s</button>`,
 		showText, hideText, diffURL, showText)
 	html.WriteString(`<div id="conflict-of-diff" class="conflict-diff-container"></div>`)

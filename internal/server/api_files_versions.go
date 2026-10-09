@@ -31,6 +31,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	fullPath := pathutils.ToFullPath(filePath)
 	commit := r.URL.Query().Get("commit")
@@ -113,6 +114,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	fromCommit := r.URL.Query().Get("from")
 	toCommit := r.URL.Query().Get("to")
@@ -225,6 +227,7 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	commit := r.FormValue("commit")
 	if commit == "" {

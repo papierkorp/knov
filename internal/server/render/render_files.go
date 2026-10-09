@@ -83,7 +83,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="%s">→ %s</a></div>`, pathutils.ToFileURL(filepath), filepath)
+	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="%s">→ %s</a></div>`, pathutils.ToFileURL(pathutils.ToWithPrefix(filepath)), filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list.

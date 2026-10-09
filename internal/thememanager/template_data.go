@@ -231,13 +231,15 @@ func CreateFuncMap() template.FuncMap {
 		"join": func(elems []string, sep string) string {
 			return strings.Join(elems, sep)
 		},
-		// urlPath encodes a file path for use in href attributes.
+		// urlPath encodes a docs-relative file path for use in href attributes.
 		// Uses %20 for spaces (not + like urlQuery) so browsers resolve it correctly.
 		"urlPath": func(s string) string {
-			return pathutils.ToFileURL(s)
+			return pathutils.ToFileURL(pathutils.DocsPath(s))
 		},
-		// fileHistoryURL is the /files/history/ url of a docs file
-		"fileHistoryURL": pathutils.ToFileHistoryURL,
+		// docsPath is the docs/ path of a docs-relative file path, what the ?filepath= apis take
+		"docsPath": pathutils.DocsPath,
+		// fileHistoryURL is the /files/history/ url of a docs-relative file path
+		"fileHistoryURL": func(rel string) string { return pathutils.ToFileHistoryURL(pathutils.DocsPath(rel)) },
 		"marshalJSON": func(v interface{}) string {
 			data, err := json.MarshalIndent(v, "", "  ")
 			if err != nil {

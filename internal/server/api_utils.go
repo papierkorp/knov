@@ -40,6 +40,18 @@ func viewedFile(r *http.Request) string {
 	return pathutils.FileFromURL(r.Header.Get("HX-Current-URL"))
 }
 
+// metaPathParam reads the param name naming an existing file: its metadata path ("docs/..." or
+// "media/..."). An empty value is returned as is for the handler's own missing-param answer, any
+// other value without the prefix is answered with 400 and ok is false.
+func metaPathParam(w http.ResponseWriter, r *http.Request, name string) (path string, ok bool) {
+	path = r.FormValue(name)
+	if path != "" && !pathutils.IsMetaPath(path) {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", name))
+		return "", false
+	}
+	return path, true
+}
+
 // linkKindParam reads the "link" query param of the autocomplete apis - the link syntax a
 // suggestion is inserted into ("wiki" or "markdown"); ok is false without one.
 func linkKindParam(r *http.Request) (kind parser.LinkKind, ok bool) {
@@ -112,8 +124,7 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message s
 	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
 
-// writeNewPathError answers 400 if err is pathutils.ErrReservedPath or pathutils.ErrInvalidName
-// and reports whether it did.
+// writeNewPathError answers 400 if err is pathutils.ErrInvalidName and reports whether it did.
 func writeNewPathError(w http.ResponseWriter, r *http.Request, err error) bool {
 	message, ok := newPathMessage(err)
 	if ok {
@@ -122,12 +133,10 @@ func writeNewPathError(w http.ResponseWriter, r *http.Request, err error) bool {
 	return ok
 }
 
-// newPathMessage is the translated response text for pathutils.ErrReservedPath and
-// pathutils.ErrInvalidName, ok is false for any other error.
+// newPathMessage is the translated response text for pathutils.ErrInvalidName, ok is false for
+// any other error.
 func newPathMessage(err error) (message string, ok bool) {
 	switch {
-	case errors.Is(err, pathutils.ErrReservedPath):
-		return translation.SprintfForRequest(configmanager.GetLanguage(), "top-level folders named %s are reserved, choose another folder", strings.Join(configmanager.ReservedDocsFolders(), ", ")), true
 	case errors.Is(err, pathutils.ErrInvalidName):
 		return translation.SprintfForRequest(configmanager.GetLanguage(), "file and folder names can't contain %s or start or end with a space", `# ? | [ ] \`), true
 	}
@@ -156,7 +165,7 @@ func handleMoveError(err error, context, oldPath, newPath string, msgs moveError
 	case errors.Is(err, files.ErrMoveSourceMissing):
 		respond(http.StatusNotFound, msgs.sourceMissing)
 		return true
-	case errors.Is(err, pathutils.ErrReservedPath), errors.Is(err, pathutils.ErrInvalidName):
+	case errors.Is(err, pathutils.ErrInvalidName):
 		message, _ := newPathMessage(err)
 		respond(http.StatusBadRequest, message)
 		return true

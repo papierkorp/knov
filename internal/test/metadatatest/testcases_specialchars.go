@@ -54,10 +54,10 @@ func caseGetMetadataSpecialCharFilepath() test.CaseResult {
 	}
 
 	// correctly encoded: raw path -> url.Values.Encode adds one layer -> server decodes to relPath
-	okStatus, okBody := get(relPath)
+	okStatus, okBody := get(pathutils.DocsPath(relPath))
 	// double-encoded: the "ö" already came in as "%C3%B6" (as location.pathname serves it),
 	// then got encoded again -> server decodes to a literal-percent path that no row matches
-	bugStatus, _ := get(strings.ReplaceAll(relPath, "ö", "%C3%B6"))
+	bugStatus, _ := get(pathutils.DocsPath(strings.ReplaceAll(relPath, "ö", "%C3%B6")))
 
 	resolved := okStatus == http.StatusOK && strings.Contains(okBody, "tröte.md")
 	doubleEncoded404 := bugStatus == http.StatusNotFound

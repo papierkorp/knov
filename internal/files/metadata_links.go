@@ -647,16 +647,30 @@ func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
 	case media && (l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/")):
 		return "/media/" + rel
 	case l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/files/"):
-		return "/files/" + newPath
+		return "/files/" + strings.TrimPrefix(newPath, "docs/")
 	case media:
 		return newPath
 	case strings.HasPrefix(l.Path, "/"):
-		return "/" + strings.TrimPrefix(newPath, "docs/")
+		if rel := strings.TrimPrefix(newPath, "docs/"); !parser.WrittenAsMedia(rel) {
+			return "/" + rel
+		}
+		return "/files/" + strings.TrimPrefix(newPath, "docs/")
 	}
 	// bare like it was written - unless that would read as the media folder
-	relative := pathutils.RelativeLink(docPath, newPath)
+	relative := relativeDocLink(docPath, newPath)
 	if bare := strings.TrimPrefix(relative, "./"); !strings.HasPrefix(bare, "media/") {
 		return bare
+	}
+	return relative
+}
+
+// relativeDocLink is pathutils.RelativeLink to the target, except a docs file whose relative link
+// would read as the media folder (docs/media/x.md from the docs root: "./media/x.md") is linked
+// with its /files/ url.
+func relativeDocLink(docPath, target string) string {
+	relative := pathutils.RelativeLink(docPath, target)
+	if rel := pathutils.ToRelative(target); !pathutils.IsMedia(target) && parser.WrittenAsMedia(relative) {
+		return "/files/" + rel
 	}
 	return relative
 }
@@ -683,7 +697,11 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 		// a "./" or "../" link gets a new relative path (its docs-root path has no media/ prefix, a
 		// relative link to it reads as media anyway), html src/href a url, like rename writes them
 		if pathutils.IsRelativeLink(l.Path) && l.Kind != parser.LinkHTML {
-			return pathutils.RelativeLink(newPath, parser.ResolveLinkPath(oldPath, l)), true
+			target := parser.LinkTarget(oldPath, l)
+			if !strings.HasSuffix(l.Path, ".md") {
+				target = strings.TrimSuffix(target, ".md") // keep an extensionless link extensionless
+			}
+			return relativeDocLink(newPath, target), true
 		}
 		return rebuildLinkTarget(newPath, l, target), true
 	})
@@ -719,7 +737,7 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 			target = bare
 		}
 		if relative {
-			return pathutils.RelativeLink(filePath, target), true
+			return relativeDocLink(filePath, target), true
 		}
 		return target, true
 	}

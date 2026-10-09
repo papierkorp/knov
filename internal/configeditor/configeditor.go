@@ -7,6 +7,7 @@ package configeditor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -43,8 +44,7 @@ func MustNew(prefix string, editor files.EditorType, extKey string) Kind {
 
 // CleanID returns the normalized id (so "a/../b" and "a/" don't alias other keys),
 // rejecting ids (e.g. "../../x" from a hand-edited .book or a crafted request)
-// that would resolve outside the prefix. Ids starting with a reserved docs folder are rejected
-// with pathutils.ErrReservedPath, since their paired file wouldn't resolve back to the id.
+// that would resolve outside the prefix.
 func (k Kind) CleanID(id string) (string, error) {
 	root := filepath.Clean(k.label())
 	p := filepath.Join(root, id)
@@ -55,11 +55,43 @@ func (k Kind) CleanID(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid %s id: %q", k.label(), id)
 	}
-	rel = filepath.ToSlash(rel)
-	if first, _, _ := strings.Cut(rel, "/"); slices.Contains(configmanager.ReservedDocsFolders(), first) {
-		return "", fmt.Errorf("invalid %s id %q: %w", k.label(), id, pathutils.ErrReservedPath)
+	return filepath.ToSlash(rel), nil
+}
+
+// MigrateReservedIDs renames the stored configs whose id starts with docs/, media/ or files/ to
+// the id without that folder. Before docs paths were unambiguous such an id wrote its paired
+// file to the docs root without the folder, so the rename keeps the config on the file it was
+// paired with - an id whose paired file exists in that folder (docs/docs/x.index) is a real
+// one and stays, as does an id whose new name is taken. Safe to run again.
+func (k Kind) MigrateReservedIDs() error {
+	ids, err := k.List()
+	if err != nil {
+		return err
 	}
-	return rel, nil
+	for _, id := range ids {
+		folder, rest, ok := strings.Cut(id, "/")
+		if !ok || !slices.Contains([]string{"docs", "media", "files"}, folder) || rest == "" {
+			continue
+		}
+		if fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(id)))) || !fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(rest)))) {
+			continue
+		}
+		if existing, err := configStorage.Get(k.prefix + rest); err != nil || existing != nil {
+			continue
+		}
+		data, err := configStorage.Get(k.prefix + id)
+		if err != nil || data == nil {
+			continue
+		}
+		if err := configStorage.Set(k.prefix+rest, data); err != nil {
+			return err
+		}
+		if err := configStorage.Delete(k.prefix + id); err != nil {
+			return err
+		}
+		logging.LogInfo(logging.KeyApp, "migrated %s id %s -> %s", k.label(), id, rest)
+	}
+	return nil
 }
 
 // key returns the configStorage key for id, see CleanID.
@@ -102,7 +134,7 @@ func (k Kind) Set(id string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	if err := pathutils.CheckNewDocsPath(k.PairedPath(id)); err != nil {
+	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id))); err != nil {
 		return err
 	}
 	return configStorage.Set(k.prefix+id, data)
@@ -129,7 +161,7 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 	if err != nil {
 		return err
 	}
-	pairedPath := k.PairedPath(id)
+	pairedPath := pathutils.DocsPath(k.PairedPath(id))
 	fullPath := pathutils.ToDocsPath(pairedPath)
 
 	if err := contentStorage.WriteFile(fullPath, markdown, 0644); err != nil {
@@ -154,7 +186,7 @@ func (k Kind) Delete(id string) error {
 		return err
 	}
 	key := k.prefix + id
-	pairedPath := k.PairedPath(id)
+	pairedPath := pathutils.DocsPath(k.PairedPath(id))
 	fullPath := pathutils.ToDocsPath(pairedPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file %s: %v", k.label(), fullPath, err)
@@ -163,4 +195,9 @@ func (k Kind) Delete(id string) error {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file metadata %s: %v", k.label(), pairedPath, err)
 	}
 	return configStorage.Delete(key)
+}
+
+func fileExists(fullPath string) bool {
+	_, err := os.Stat(fullPath)
+	return err == nil
 }

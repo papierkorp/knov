@@ -28,7 +28,10 @@ import (
 // @Produce json,html
 // @Router /api/chat/messages [get]
 func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("file")
+	filePath, ok := metaPathParam(w, r, "file")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		filePath = pathutils.ToWithPrefix(filePath)
 	}
@@ -72,7 +75,10 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.URL.Query().Get("file")
+	filePath, ok := metaPathParam(w, r, "file")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		filePath = pathutils.ToWithPrefix(filePath)
 	}
@@ -178,6 +184,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target is required"))
 		return
 	}
+	target = pathutils.DocsPath(target)
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
@@ -276,6 +283,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"))
 		return
 	}
+	target = pathutils.DocsPath(target)
 
 	ids := strings.Split(rawIDs, ",")
 

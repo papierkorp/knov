@@ -27,24 +27,17 @@ func CleanseID(input string) string {
 // NormalizeLinkPath maps a link path to its metadata path (/files/ url prefix, missing
 // extension). Takes a plain path - a decoded one from parser.ParseLink (ExtractLinks /
 // RewriteLinks) or a picked one like a parent - so a "#", "?", "|", "\" or a leading / trailing
-// space in it is part of the filename.
+// space in it is part of the filename. A "/files/" url is the docs-relative path taken literally
+// ("/files/media/x.md" is docs/media/x.md), any other path keeps its docs/ or media/ prefix.
 func NormalizeLinkPath(cleanLink string) string {
-	// map URL path prefixes to metadata path prefixes
 	if cleanLink == "/" {
 		// the docs root (pathutils.ResolveRelativeLink), the same as a "/files/" link
 		return "docs/"
 	}
-	cleanLink = strings.TrimPrefix(cleanLink, "/")
-	if strings.HasPrefix(cleanLink, "files/") {
-		cleanLink = strings.TrimPrefix(cleanLink, "files/")
-		// ToFileURL already embeds the docs/media prefix (e.g. "files/docs/...",
-		// "files/media/..."); only add "docs/" back if it's missing entirely
-		if !strings.HasPrefix(cleanLink, "docs/") && !strings.HasPrefix(cleanLink, "media/") {
-			cleanLink = "docs/" + cleanLink
-		}
+	if rel, ok := strings.CutPrefix(cleanLink, "/files/"); ok {
+		return "docs/" + WithDefaultLinkExt(rel)
 	}
-
-	return WithDefaultLinkExt(cleanLink)
+	return WithDefaultLinkExt(strings.TrimPrefix(cleanLink, "/"))
 }
 
 // WithDefaultLinkExt adds ".md" to a link path without extension, the way links to a note are

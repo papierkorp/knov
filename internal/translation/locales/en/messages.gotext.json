@@ -2,6 +2,21 @@
   "language": "en",
   "messages": [
     {
+      "id": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "message": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "translation": ""
+    },
+    {
+      "id": "newpath must stay in {Arg_1}",
+      "message": "newpath must stay in {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "{Arg_1} must start with docs/ or media/",
+      "message": "{Arg_1} must start with docs/ or media/",
+      "translation": ""
+    },
+    {
       "id": "{Integer} files",
       "message": "{Integer} files",
       "translation": ""
@@ -5574,11 +5589,6 @@
     {
       "id": "todo mode",
       "message": "todo mode",
-      "translation": ""
-    },
-    {
-      "id": "top-level folders named {Arg_1} are reserved, choose another folder",
-      "message": "top-level folders named {Arg_1} are reserved, choose another folder",
       "translation": ""
     },
     {

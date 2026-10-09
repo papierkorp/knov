@@ -214,9 +214,9 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 
 	var fullPath string
 	if isMediaFile {
-		fullPath = pathutils.ToMediaPath(pathutils.ToRelative(metadata.Path))
+		fullPath = pathutils.ToMediaPath(metadata.Path)
 	} else {
-		fullPath = pathutils.ToDocsPath(pathutils.ToRelative(metadata.Path))
+		fullPath = pathutils.ToDocsPath(metadata.Path)
 	}
 
 	if fileInfo, err := os.Stat(fullPath); err != nil {

@@ -34,7 +34,10 @@ import (
 // @Produce json,html
 // @Router /api/editor [get]
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
-	fp := r.URL.Query().Get("filepath")
+	fp, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	editorParam := r.URL.Query().Get("editor")
 	sectionID := r.URL.Query().Get("section")
 	prefillPath := r.URL.Query().Get("prefillpath")
@@ -180,6 +183,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "missing filepath"))
 		return
 	}
+	filezpath = pathutils.DocsPath(filezpath)
 
 	kind := entryEditorKindFor(bookMode, lang)
 
@@ -243,7 +247,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessageWithLink(render.StatusOK,
-		kind.savedMsg, pathutils.ToFileURL(filezpath), translation.SprintfForRequest(lang, "view file")))
+		kind.savedMsg, pathutils.ToFileURL(pathutils.ToWithPrefix(filezpath)), translation.SprintfForRequest(lang, "view file")))
 }
 
 // @Summary Add index/book entry
@@ -304,6 +308,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	content := r.FormValue("content")
 	todoMode := r.FormValue("mode") == "todo"
@@ -366,7 +371,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -399,6 +404,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	headersJSON := r.FormValue("headers")
 	rowsJSON := r.FormValue("rows")
@@ -480,7 +486,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
@@ -493,7 +499,10 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/editor/tableeditor [get]
 func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -534,6 +543,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	if sectionID == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"))
@@ -566,7 +576,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 
@@ -589,7 +599,10 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -624,7 +637,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
-		pathutils.ToFileURL(markdownFileName), markdownFileName)
+		pathutils.ToFileURL(pathutils.ToWithPrefix(markdownFileName)), markdownFileName)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": markdownFileName}, html)
 }
 

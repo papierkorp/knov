@@ -25,7 +25,10 @@ import (
 // @Failure 500 {string} string "export failed"
 // @Router /api/files/export/pdf [get]
 func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	sectionID := r.URL.Query().Get("section")
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))

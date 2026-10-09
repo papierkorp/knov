@@ -46,7 +46,7 @@ func caseUpload() test.CaseResult {
 		if err != nil {
 			return errCase("links-upload", err)
 		}
-		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(doc)))
+		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc))))
 		if err != nil {
 			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
 			continue
@@ -155,8 +155,8 @@ func caseRename() test.CaseResult {
 			"bare":        parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: strings.TrimPrefix(old, dir+"/")}.String(),
 			"wiki":        parser.Link{Kind: parser.LinkWiki, Path: old}.String(),
 			"wiki no ext": parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSuffix(old, ".md")}.String(),
-			"file url":    "[x](" + pathutils.ToFileURL(old) + ")",
-			"html":        `<a href="` + pathutils.ToFileURL(old) + `">x</a>`,
+			"file url":    "[x](" + pathutils.ToFileURL(pathutils.DocsPath(old)) + ")",
+			"html":        `<a href="` + pathutils.ToFileURL(pathutils.DocsPath(old)) + `">x</a>`,
 		})
 		if err != nil {
 			return errCase("links-rename", err)
@@ -214,7 +214,7 @@ func caseRelative() test.CaseResult {
 	gaps = append(gaps, linkGaps(m2, []string{pathutils.ToWithPrefix(b)})...)
 	gaps = append(gaps, linkGaps(moved, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(m2)})...)
 	gaps = append(gaps, linkGaps(rMoved, []string{pathutils.ToWithPrefix(hT)})...)
-	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/docs/">y</a>`} {
+	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/">y</a>`} {
 		if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(doc)); err != nil || strings.TrimSpace(string(raw)) != want {
 			gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", doc, raw, want, err))
 		}
@@ -316,7 +316,7 @@ func caseBare() test.CaseResult {
 		}
 	}
 	gaps = append(gaps, metadataGaps(moved, []string{pathutils.ToWithPrefix(c), pathutils.ToWithPrefix(a)})...)
-	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/docs/" + a}.Dest() + "\">x</a>"
+	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/" + a}.Dest() + "\">x</a>"
 	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(moved)); err != nil || strings.TrimSpace(string(raw)) != want {
 		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", moved, raw, want, err))
 	}
@@ -339,7 +339,7 @@ func caseRelocate() test.CaseResult {
 		forms, err := saveForms(dir, map[string]string{
 			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: "/" + img}.String(),
 			"wiki":              parser.Link{Kind: parser.LinkWiki, Path: img}.String(),
-			"html":              `<img src="` + pathutils.ToFileURL(img) + `">`,
+			"html":              `<img src="` + pathutils.ToFileURL(pathutils.DocsPath(img)) + `">`,
 			"markdown relative": parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "y", Path: imgName(n)}.String(),
 		})
 		if err != nil {
@@ -452,7 +452,7 @@ func caseTable() test.CaseResult {
 	}
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()
-	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(doc), nil)
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(pathutils.DocsPath(doc)), nil)
 	req.Header.Set("Accept", "text/html")
 	resp, err := ts.Client().Do(req)
 	if err != nil {

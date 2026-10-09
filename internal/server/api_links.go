@@ -21,7 +21,10 @@ import (
 // @Produce json,html
 // @Router /api/links/parents [get]
 func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -49,7 +52,10 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/ancestors [get]
 func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -77,7 +83,10 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/kids [get]
 func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -105,7 +114,10 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/grandchildren [get]
 func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -136,7 +148,10 @@ func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/used [get]
 func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -164,7 +179,10 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/media [get]
 func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -186,7 +204,10 @@ func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/linkstohere [get]
 func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -259,7 +280,10 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/related [get]
 func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -278,7 +302,10 @@ func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/same-folder [get]
 func handleAPIGetSameFolderFiles(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -297,7 +324,10 @@ func handleAPIGetSameFolderFiles(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/same-tags [get]
 func handleAPIGetSameTagFiles(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -319,15 +349,21 @@ func handleAPIGetSameTagFiles(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "diff HTML"
 // @Router /api/links/conflicts/diff [get]
 func handleAPIGetConflictDiff(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-	conflictPath := r.URL.Query().Get("conflict")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
+	conflictPath, ok := metaPathParam(w, r, "conflict")
+	if !ok {
+		return
+	}
 	if filePath == "" || conflictPath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or conflict parameter"))
 		return
 	}
 
-	originalFull := pathutils.ToFullPath(pathutils.ToRelative(filePath))
-	conflictFull := pathutils.ToFullPath(pathutils.ToRelative(conflictPath))
+	originalFull := pathutils.ToFullPath(filePath)
+	conflictFull := pathutils.ToFullPath(conflictPath)
 
 	html := render.RenderConflictDiff(originalFull, conflictFull)
 	writeResponse(w, r, nil, html)
@@ -341,7 +377,10 @@ func handleAPIGetConflictDiff(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "banner HTML or empty"
 // @Router /api/links/conflicts/banner [get]
 func handleAPIGetConflictBanner(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeResponse(w, r, nil, "")
 		return
@@ -363,7 +402,10 @@ func handleAPIGetConflictBanner(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "banner HTML or empty"
 // @Router /api/links/conflicts/of-banner [get]
 func handleAPIGetConflictOfBanner(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeResponse(w, r, nil, "")
 		return

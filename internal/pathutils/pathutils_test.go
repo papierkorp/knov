@@ -54,15 +54,16 @@ func TestURLHelpers(t *testing.T) {
 		in   string
 		want string
 	}{
-		{"file url", ToFileURL, "notes.md", "/files/notes.md"},
-		{"file url with space", ToFileURL, "my notes.md", "/files/my%20notes.md"},
-		{"file url with subfolder", ToFileURL, "sub/notes.md", "/files/sub/notes.md"},
-		{"file url strips leading slash", ToFileURL, "/notes.md", "/files/notes.md"},
-		{"file url escapes unicode", ToFileURL, "nötes.md", "/files/n%C3%B6tes.md"},
-		{"edit url", ToFileEditURL, "notes.md", "/files/edit/notes.md"},
+		{"file url", ToFileURL, "docs/notes.md", "/files/notes.md"},
+		{"file url with space", ToFileURL, "docs/my notes.md", "/files/my%20notes.md"},
+		{"file url with subfolder", ToFileURL, "docs/sub/notes.md", "/files/sub/notes.md"},
+		{"file url escapes unicode", ToFileURL, "docs/nötes.md", "/files/n%C3%B6tes.md"},
+		{"file url of docs/media/x.md is literal", ToFileURL, "docs/media/x.md", "/files/media/x.md"},
+		{"file url of docs/docs/x.md is literal", ToFileURL, "docs/docs/x.md", "/files/docs/x.md"},
+		{"edit url", ToFileEditURL, "docs/notes.md", "/files/edit/notes.md"},
 		{"media url", ToMediaURL, "img.png", "/media/img.png"},
-		{"edit table url", ToFileEditTableURL, "data.csv", "/files/edittable/data.csv"},
-		{"history url", ToFileHistoryURL, "notes.md", "/files/history/notes.md"},
+		{"edit table url", ToFileEditTableURL, "docs/data.csv", "/files/edittable/data.csv"},
+		{"history url", ToFileHistoryURL, "docs/notes.md", "/files/history/notes.md"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -236,33 +237,17 @@ func TestPathContains(t *testing.T) {
 	}
 }
 
+// a docs file in a folder named docs, media or files is a valid new docs path and resolves to itself
 func TestCheckNewDocsPath(t *testing.T) {
-	for _, p := range []string{"docs/docs/x.md", "docs/media/x.md", "docs/files/a/x.md", "media"} {
-		if CheckNewDocsPath(p) != ErrReservedPath {
-			t.Errorf("%s should be reserved", p)
-		}
-	}
-	// every reserved name must really be read as a prefix, or the list drifted from parsePath
-	for _, name := range configmanager.ReservedDocsFolders() {
-		if ToRelative(name+"/x.md") == name+"/x.md" {
-			t.Errorf("%s is reserved but not stripped by parsePath", name)
-		}
-	}
 	dataName := filepath.Base(configmanager.GetAppConfig().DataPath)
-	for _, p := range []string{"x.md", "a/files/x.md", "mediafiles/x.md", "docs/" + dataName + "/x.md"} {
+	for _, rel := range []string{"x.md", "a/files/x.md", "mediafiles/x.md", "docs/x.md", "media/x.md", "files/a/x.md", "media", dataName + "/x.md"} {
+		p := DocsPath(rel)
 		if err := CheckNewDocsPath(p); err != nil {
-			t.Errorf("%s should not be reserved: %v", p, err)
+			t.Errorf("%s should be allowed: %v", p, err)
 		}
-	}
-	existing := filepath.Join(getDocsPath(), "media", "existing.md")
-	if err := os.MkdirAll(filepath.Dir(existing), 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(existing, nil, 0644); err != nil {
-		t.Fatal(err)
-	}
-	if err := CheckNewDocsPath("docs/media/existing.md"); err != nil {
-		t.Errorf("existing file should stay writable: %v", err)
+		if got, want := ToDocsPath(p), filepath.Join(getDocsPath(), filepath.FromSlash(rel)); got != want {
+			t.Errorf("ToDocsPath(%q) = %q, want %q", p, got, want)
+		}
 	}
 }
 
@@ -336,16 +321,17 @@ func TestFileFromURL(t *testing.T) {
 		url  string
 		want string
 	}{
-		{"http://localhost/files/notes/a.md", "notes/a.md"},
-		{"http://localhost/files/edit/notes/a.md?x=1#h", "notes/a.md"},
-		{"http://localhost/files/edittable/t.md", "t.md"},
-		{"http://localhost/files/history/notes/a.md", "notes/a.md"},
-		{"http://localhost/files/n%C3%B6tes/a%20b.md", "nötes/a b.md"},
+		{"http://localhost/files/notes/a.md", "docs/notes/a.md"},
+		{"http://localhost/files/edit/notes/a.md?x=1#h", "docs/notes/a.md"},
+		{"http://localhost/files/edittable/t.md", "docs/t.md"},
+		{"http://localhost/files/history/notes/a.md", "docs/notes/a.md"},
+		{"http://localhost/files/n%C3%B6tes/a%20b.md", "docs/nötes/a b.md"},
 		{"http://localhost/files/new/codemirror", ""},
 		{"http://localhost/files/../../etc/a.md", ""},
 		{"http://localhost/files/edit/a/%2e%2e/%2E%2E/b.md", ""},
-		{"http://localhost/files/a..b/c.md", "a..b/c.md"},
+		{"http://localhost/files/a..b/c.md", "docs/a..b/c.md"},
 		{"http://localhost/dashboard/home", ""},
+		{"http://localhost/files/media/x.md", "docs/media/x.md"},
 		{"", ""},
 	}
 	for _, c := range cases {

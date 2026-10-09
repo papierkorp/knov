@@ -86,7 +86,7 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 			"markdown <>":          "[x](<" + md + ">)",
 			"markdown anchor":      "[x](" + md + "#sec)",
 			"markdown relative":    "[x](./" + md + ")",
-			"markdown file url":    "[x](" + pathutils.ToFileURL(p) + ")",
+			"markdown file url":    "[x](" + fileURL(p) + ")",
 			"markdown media":       "[x](" + encodeLinkPath("media/"+pdf, LinkMarkdown) + ")",
 			"markdown media url":   "[x](" + pathutils.ToMediaURL(pdf) + ")",
 			"markdown bare media":  "[x](" + encodeLinkPath(pdf, LinkMarkdown) + ")",
@@ -99,7 +99,7 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 			"ref def bare media":   "[r][id]\n\n[id]: " + encodeLinkPath(pdf, LinkMarkdown),
 			"html href":            `<a href="` + htm + `">x</a>`,
 			"html href relative":   `<a href="./` + htm + `">x</a>`,
-			"html href file url":   `<a href="` + pathutils.ToFileURL(p) + `">x</a>`,
+			"html href file url":   `<a href="` + fileURL(p) + `">x</a>`,
 			"html src bare media":  `<img src="` + encodeLinkPath(img, LinkHTML) + `">`,
 			"html src media url":   `<img src="` + pathutils.ToMediaURL(img) + `">`,
 			"html href bare media": `<a href="` + encodeLinkPath(pdf, LinkHTML) + `">x</a>`,
@@ -115,6 +115,58 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 			want := metadataTarget(content, doc)
 			if got := renderedLinkTarget(content, doc); want == "" || got != want {
 				t.Errorf("%s %q: %q renders to %q, link metadata reads %q", form, p, content, got, want)
+			}
+		}
+	}
+}
+
+// docs files in the top-level docs folders named like a path prefix (docs/docs, docs/media,
+// docs/files) are linked as themselves: a /files/<rel> url is the docs-relative path taken
+// literally, a bare or ./ link from a doc inside such a folder stays in it, [[docs/media/x]]
+// names it with its prefix - while a link written media/... (wiki, bare, ./, /media/) stays media.
+func TestLinkTargetReservedFolders(t *testing.T) {
+	cases := []struct{ name, doc, link, want string }{
+		{"files url", "docs/a.md", "[x](/files/media/y.md)", "docs/media/y.md"},
+		{"files url docs", "docs/a.md", "[x](/files/docs/y.md)", "docs/docs/y.md"},
+		{"files url files", "docs/a.md", "[x](/files/files/y.md)", "docs/files/y.md"},
+		{"files url plain", "docs/a.md", "[x](/files/y.md)", "docs/y.md"},
+		{"files url html", "docs/a.md", `<a href="/files/media/y.md">x</a>`, "docs/media/y.md"},
+		{"wiki files folder", "docs/a.md", "[[files/y]]", "docs/files/y.md"},
+		{"wiki prefixed", "docs/a.md", "[[docs/media/y]]", "docs/media/y.md"},
+		{"wiki media", "docs/a.md", "[[media/y.png]]", "media/y.png"},
+		{"bare media", "docs/a.md", "[x](media/y.png)", "media/y.png"},
+		{"dot media", "docs/a.md", "[x](./media/y.png)", "media/y.png"},
+		{"parent media", "docs/s/a.md", "[x](../media/y.png)", "media/y.png"},
+		{"root media", "docs/a.md", "[x](/media/y.png)", "media/y.png"},
+		{"bare sibling in docs/media", "docs/media/k/a.md", "[x](y.md)", "docs/media/k/y.md"},
+		{"dot sibling in docs/media", "docs/media/k/a.md", "[x](./y.md)", "docs/media/k/y.md"},
+		{"parent in docs/media", "docs/media/k/a.md", "[x](../y.md)", "docs/media/y.md"},
+		{"bare sibling in docs/docs", "docs/docs/k/a.md", "[x](y.md)", "docs/docs/k/y.md"},
+		{"bare sibling in docs/files", "docs/files/k/a.md", "[x](y.md)", "docs/files/k/y.md"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := NewMarkdownHandler().ExtractLinks([]byte(c.link), c.doc)
+			if len(got) != 1 || got[0] != c.want {
+				t.Errorf("%s in %s reads %q, want %q", c.link, c.doc, got, c.want)
+			}
+		})
+	}
+}
+
+// a new link to a docs file in a folder named docs or media reads back as that file
+func TestFileLinkDestReservedFolders(t *testing.T) {
+	for _, rel := range []string{"a.md", "files/a.md", "media/a.md", "docs/a.md"} {
+		for _, kind := range []LinkKind{LinkWiki, LinkMarkdown} {
+			var link string
+			if kind == LinkWiki {
+				link = "[[" + FileLinkDest(rel, "", kind) + "]]"
+			} else {
+				link = "[x](" + FileLinkDest(rel, "", kind) + ")"
+			}
+			got := NewMarkdownHandler().ExtractLinks([]byte(link), "docs/n.md")
+			if len(got) != 1 || got[0] != "docs/"+rel {
+				t.Errorf("%s reads %q, want docs/%s", link, got, rel)
 			}
 		}
 	}

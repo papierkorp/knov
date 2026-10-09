@@ -2,6 +2,21 @@
   "language": "de",
   "messages": [
     {
+      "id": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "message": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "translation": "eine Docs-Datei in einem Ordner namens docs, media oder files (media/... allein ist der Media-Ordner)"
+    },
+    {
+      "id": "newpath must stay in {Arg_1}",
+      "message": "newpath must stay in {Arg_1}",
+      "translation": "newpath muss in {Arg_1} bleiben"
+    },
+    {
+      "id": "{Arg_1} must start with docs/ or media/",
+      "message": "{Arg_1} must start with docs/ or media/",
+      "translation": "{Arg_1} muss mit docs/ oder media/ beginnen"
+    },
+    {
       "id": "{Integer} files",
       "message": "{Integer} files",
       "translation": "{Integer} Dateien"
@@ -5575,11 +5590,6 @@
       "id": "todo mode",
       "message": "todo mode",
       "translation": "Todo-Modus"
-    },
-    {
-      "id": "top-level folders named {Arg_1} are reserved, choose another folder",
-      "message": "top-level folders named {Arg_1} are reserved, choose another folder",
-      "translation": "Ordner der obersten Ebene mit den Namen {Arg_1} sind reserviert, bitte einen anderen Ordner wählen"
     },
     {
       "id": "total",

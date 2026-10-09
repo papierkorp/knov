@@ -29,6 +29,15 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseListing,
 		caseMetadata,
+		caseView,
+		caseDelete,
+		caseParams,
+		caseLinks,
+		caseStoredPaths,
+		caseMigration,
+		caseLinkRename,
+		caseCreate,
+		caseRenameMoveDelete,
 	}
 
 	return test.RunCases("reserved-folders", cases), nil

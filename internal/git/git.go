@@ -712,7 +712,7 @@ type fileHistoryCacheEntry struct {
 
 // fileHistoryCacheKey builds the cacheStorage key for a file's history entry.
 func fileHistoryCacheKey(relPath string) string {
-	return "git_file_history_" + pathutils.ToRelative(relPath)
+	return "git_file_history_" + pathutils.ToWithPrefix(relPath)
 }
 
 // InvalidateFileHistoryCache removes the cached history entry for a file.

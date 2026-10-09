@@ -143,7 +143,10 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to get metadata"
 // @Router /api/metadata [get]
 func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
@@ -254,6 +257,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
@@ -437,7 +441,10 @@ func handleAPIMigrateRelativeLinks(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/collection [get]
 func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -464,7 +471,10 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/editor [get]
 func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -491,7 +501,10 @@ func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/path [get]
 func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -518,7 +531,10 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/createdat [get]
 func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -546,7 +562,10 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/lastedited [get]
 func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -581,7 +600,10 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/editor [post]
 func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	editor := r.FormValue("editor")
 
 	if filePath == "" {
@@ -608,8 +630,14 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/path [post]
 func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	newpath := r.FormValue("newpath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
+	newpath, ok := metaPathParam(w, r, "newpath")
+	if !ok {
+		return
+	}
 
 	if filePath == "" || newpath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
@@ -617,6 +645,10 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newpath = filepath.Clean(newpath)
+	if strings.HasPrefix(filePath, "media/") != strings.HasPrefix(newpath, "media/") {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath, "/", 2)[0]+"/"))
+		return
+	}
 
 	if filePath == newpath {
 		writeResponse(w, r, newpath, "")
@@ -632,7 +664,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		context = "move media via metadata"
 		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
 	} else {
-		err = files.MoveFileNoRefresh(logging.KeyApp, pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
+		err = files.MoveFileNoRefresh(logging.KeyApp, filePath, newpath)
 	}
 	msgs := moveErrorMessages{
 		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"),
@@ -647,9 +679,12 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	files.RefreshCaches()
 
 	logging.LogInfo(logging.KeyApp, "successfully moved file via metadata: %s -> %s", filePath, newpath)
-	newRelPath := pathutils.ToRelative(newpath)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
-	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newRelPath))
+	redirect := pathutils.ToFileURL(newpath)
+	if isMedia {
+		redirect = pathutils.ToMediaURL(pathutils.ToRelative(newpath))
+	}
+	w.Header().Set("HX-Redirect", redirect)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -663,7 +698,10 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/createdat [post]
 func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	createdAtStr := r.FormValue("createdat")
 
 	if filePath == "" || createdAtStr == "" {
@@ -696,7 +734,10 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/lastedited [post]
 func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	lastEditedStr := r.FormValue("lastedited")
 
 	if filePath == "" || lastEditedStr == "" {
@@ -729,7 +770,10 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/tags [post]
 func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	tagsStr := r.FormValue("tags")
 
 	if filePath == "" {
@@ -782,7 +826,10 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/parents [post]
 func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	parentsStr := r.FormValue("parents")
 
 	if filePath == "" {
@@ -799,6 +846,10 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		for _, parent := range parents {
 			if parent == "" {
 				continue
+			}
+			if !pathutils.IsMetaPath(parent) {
+				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "parents"))
+				return
 			}
 			fullParentPath := pathutils.ToFullPath(parent)
 			if _, err := os.Stat(fullParentPath); os.IsNotExist(err) {
@@ -832,7 +883,10 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} files.TagCount
 // @Router /api/metadata/tags [get]
 func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		handleAPIGetFileMetadataTags(w, r)
 		return
@@ -874,7 +928,10 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} files.CollectionCount
 // @Router /api/metadata/collections [get]
 func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		handleAPIGetFileMetadataCollection(w, r)
 		return
@@ -916,7 +973,10 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} files.FolderCount
 // @Router /api/metadata/folders [get]
 func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		handleAPIGetFileMetadataFolders(w, r)
 		return
@@ -1031,7 +1091,10 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} string
 // @Router /api/metadata/file/tags [get]
 func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -1058,7 +1121,10 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} string
 // @Router /api/metadata/file/folders [get]
 func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -1085,7 +1151,10 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string
 // @Router /api/metadata/file/collection [get]
 func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -1116,7 +1185,10 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 // @Success 200 {array} files.Reference
 // @Router /api/metadata/references [get]
 func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -1150,7 +1222,10 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	refURL := r.FormValue("url")
 	description := r.FormValue("description")
 
@@ -1203,7 +1278,10 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	refURL := r.FormValue("url")
 
 	if filePath == "" || refURL == "" {
@@ -1256,7 +1334,10 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/inline-display [get]
 func handleAPIMetadataInlineDisplay(w http.ResponseWriter, r *http.Request) {
 	field := r.URL.Query().Get("field")
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if field == "" || filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return
@@ -1275,7 +1356,10 @@ func handleAPIMetadataInlineDisplay(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/inline-edit [get]
 func handleAPIMetadataInlineEdit(w http.ResponseWriter, r *http.Request) {
 	field := r.URL.Query().Get("field")
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if field == "" || filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"))
 		return

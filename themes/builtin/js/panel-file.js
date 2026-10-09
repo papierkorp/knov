@@ -39,7 +39,7 @@ document.addEventListener("alpine:init", () => {
     },
 
     get fp() {
-      return encodeURIComponent(this.filepath);
+      return encodeURIComponent("docs/" + this.filepath);
     },
 
     // /files/edit/<path> url - unlike fp (a ?filepath= query param) "/" stays
@@ -148,13 +148,13 @@ function setupFilePage() {
   if (editMatch) {
     // location.pathname percent-encodes non-ASCII, so decode once here before
     // re-encoding for query use - otherwise "ö" etc. gets double-encoded (%25C3…)
-    // and every ?filepath= lookup misses.
+    // and every ?filepath= lookup misses. ?filepath= is the docs/ metadata path.
     const filepath = decodeURIComponent(editMatch[1].split("?")[0]);
-    const fp = encodeURIComponent(filepath);
+    const fp = encodeURIComponent("docs/" + filepath);
     document.body.setAttribute("data-has-file", "true");
     Alpine.store("filePanel").hasFile = true;
     const refFp = document.getElementById("fp-reference-filepath");
-    if (refFp) refFp.value = filepath;
+    if (refFp) refFp.value = "docs/" + filepath;
     const editFields = {
       "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
       "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
@@ -189,9 +189,9 @@ function setupFilePage() {
   // location.pathname percent-encodes non-ASCII, so decode once here: path-segment
   // concatenations below get re-encoded by the browser on send, and query uses go
   // through encodeURIComponent. Without the decode "ö" etc. double-encodes (%25C3…)
-  // and every ?filepath= lookup misses.
+  // and every ?filepath= lookup misses. ?filepath= is the docs/ metadata path.
   const filepath = decodeURIComponent(fileMatch[1]);
-  const fp = encodeURIComponent(filepath);
+  const fp = encodeURIComponent("docs/" + filepath);
 
   // reveal file rail button
   document.body.setAttribute("data-has-file", "true");
@@ -242,7 +242,7 @@ function setupFilePage() {
   }
 
   const refFp = document.getElementById("fp-reference-filepath");
-  if (refFp) refFp.value = filepath;
+  if (refFp) refFp.value = "docs/" + filepath;
   loadReferences(fp);
 
   // hide no-file message and show metadata rows
