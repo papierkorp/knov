@@ -269,7 +269,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "parent-of",
 					Operator: "equals",
-					Value:    "test/filter-tests/filterTestE.md",
+					Value:    "docs/test/filter-tests/filterTestE.md",
 					Action:   "include",
 				},
 			},

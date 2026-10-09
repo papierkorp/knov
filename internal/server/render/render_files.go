@@ -4,7 +4,7 @@ package render
 import (
 	"fmt"
 	"net/url"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -144,7 +144,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 
 		// add parent folder link if not at root
 		if currentPath != "" {
-			parentPath := filepath.Dir(currentPath)
+			parentPath := path.Dir(currentPath)
 			if parentPath == "." {
 				parentPath = ""
 			}

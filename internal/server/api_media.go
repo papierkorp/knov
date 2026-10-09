@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -523,7 +524,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newRel = strings.TrimPrefix(newRel, "media/")
-	newRel = filepath.Clean(newRel)
+	newRel = path.Clean(newRel)
 
 	if currentRel == newRel {
 		writeResponse(w, r, nil, render.RenderMediaPathDisplay(newRel))

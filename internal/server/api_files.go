@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -102,7 +103,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		if !configmanager.GetShowHiddenFiles() && strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
-		entryPath := filepath.Join(folderPath, entry.Name())
+		entryPath := path.Join(folderPath, entry.Name())
 		item := render.FolderEntry{
 			Name:  entry.Name(),
 			Path:  entryPath,
@@ -757,7 +758,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// use the new name as the new path (allows for directory moves)
-	newPath := pathutils.DocsPath(filepath.Clean(newName)).String()
+	newPath := pathutils.DocsPath(path.Clean(newName)).String()
 
 	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
@@ -829,7 +830,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
 		return
 	}
-	newRel := filepath.Clean(targetParent + "/" + folderName)
+	newRel := path.Clean(targetParent + "/" + folderName)
 	newPath := pathutils.DocsPath(newRel).String()
 
 	if newRel == currentRel {

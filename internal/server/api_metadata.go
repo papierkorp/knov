@@ -8,7 +8,7 @@ import (
 	"maps"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"slices"
 	"strings"
 	"time"
@@ -646,7 +646,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newpath = filepath.Clean(newpath)
+	newpath = path.Clean(newpath)
 	if strings.HasPrefix(filePath, "media/") != strings.HasPrefix(newpath, "media/") {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath, "/", 2)[0]+"/"))
 		return

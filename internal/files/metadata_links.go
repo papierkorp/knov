@@ -751,6 +751,8 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 // updateLinksInFile updates links within a single file from oldPath to newPath.
 // The returned bool reports whether a matching link was actually found and rewritten.
 func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool, error) {
+	// the callers hand over metadata paths or docs-relative ones: the one place that guesses, renameLinkFunc and rebuildLinkTarget take them literally
+	oldPath, newPath = pathutils.ToWithPrefix(oldPath), pathutils.ToWithPrefix(newPath)
 	fullPath := pathutils.ToFullPath(filePath)
 
 	contentData, err := os.ReadFile(fullPath)
