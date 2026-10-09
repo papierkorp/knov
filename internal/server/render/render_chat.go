@@ -305,5 +305,5 @@ func RenderChatMoveSuccess(filePath string) string {
 	<span>%s</span> <a href="%s">%s</a>
 </div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "moved to"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)), filePath)
+		pathutils.ToFileURL(pathutils.GuessMeta(filePath)), filePath)
 }

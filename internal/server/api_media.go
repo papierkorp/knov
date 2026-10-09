@@ -136,7 +136,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	// count orphaned only among the visible (hide-filtered) files
 	visiblePaths := make(map[string]struct{}, len(mediaFiles))
 	for _, f := range mediaFiles {
-		visiblePaths[f.Path] = struct{}{}
+		visiblePaths[f.Path.String()] = struct{}{}
 	}
 	visibleOrphanedCount := 0
 	for _, o := range orphanedMedia {
@@ -178,7 +178,7 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 
 	paths := make([]string, len(mediaFiles))
 	for i, f := range mediaFiles {
-		paths[i] = strings.TrimPrefix(f.Path, "media/")
+		paths[i] = strings.TrimPrefix(f.Path.String(), "media/")
 	}
 
 	matches := files.RankAutocompleteMatches(paths, q, 20)
@@ -235,7 +235,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if file is still referenced
-	metadata, err := files.MetaDataGet(fullMediaPath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(fullMediaPath))
 	if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
 		logging.LogWarning(logging.KeyApp, "cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
 
@@ -259,7 +259,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete metadata
-	if err := files.MetaDataDelete(fullMediaPath); err != nil {
+	if err := files.MetaDataDelete(pathutils.GuessMeta(fullMediaPath)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for media file %s: %v", fullMediaPath, err)
 		// don't fail the whole operation, just log warning
 	}

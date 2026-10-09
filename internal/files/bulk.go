@@ -24,7 +24,7 @@ func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string, r
 		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
 		} else {
-			if err := MetaDataDeleteNoRefresh(key, pathutils.ToWithPrefix(fullPath)); err != nil {
+			if err := MetaDataDeleteNoRefresh(key, pathutils.GuessMeta(fullPath)); err != nil {
 				logging.LogWarning(key, "bulk-delete-files: failed to delete metadata for %s: %v", fullPath, err)
 			}
 			deleted = append(deleted, fullPath)
@@ -69,12 +69,12 @@ func BulkUpdateMetadata(key logging.Key, matched []File, patch BulkUpdatePatch, 
 // instead of once per file.
 func applyBulkUpdatePatch(current *Metadata, p BulkUpdatePatch) error {
 	if p.Editor != nil {
-		return SetEditorNoRefresh(current.Path, *p.Editor)
+		return SetEditorNoRefresh(current.Path.String(), *p.Editor)
 	}
 	if len(p.TagsAdd) > 0 || len(p.TagsRemove) > 0 {
 		// PatchTagsNoRefresh re-reads tags under the path lock - never apply add/remove against
 		// the unlocked snapshot in current (that lost concurrent MoveCard/bulk edits).
-		_, err := PatchTagsNoRefresh(current.Path, p.TagsAdd, p.TagsRemove)
+		_, err := PatchTagsNoRefresh(current.Path.String(), p.TagsAdd, p.TagsRemove)
 		return err
 	}
 	return nil

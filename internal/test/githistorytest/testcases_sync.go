@@ -99,7 +99,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		return errCase(name, fmt.Errorf("rebuild metadata: %w", err))
 	}
 	files.RefreshCaches()
-	m, err := files.MetaDataGet(pathutils.DocsPath(linkerRel).String())
+	m, err := files.MetaDataGet(pathutils.DocsPath(linkerRel))
 	if err != nil || m == nil {
 		return errCase(name, fmt.Errorf("no metadata for the pulled linking doc (%v)", err))
 	}

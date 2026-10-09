@@ -54,7 +54,7 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(testPath(alphaFile)),
+		Path:   pathutils.GuessMeta(testPath(alphaFile)),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   []string{marker},
 	}); err != nil {
@@ -65,7 +65,7 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(testPath(betaFile)),
+		Path:   pathutils.GuessMeta(testPath(betaFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err
@@ -75,7 +75,7 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(testPath(tocFile)),
+		Path:   pathutils.GuessMeta(testPath(tocFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err
@@ -85,7 +85,7 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(testPath(hiddenFile)),
+		Path:   pathutils.GuessMeta(testPath(hiddenFile)),
 		Editor: files.EditorTypeTodo,
 	}); err != nil {
 		return err

@@ -289,14 +289,14 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 		switch {
 		case section != "":
 			var raw []byte
-			if raw, entryErr = readFile(path); entryErr == nil {
+			if raw, entryErr = readFile(path.String()); entryErr == nil {
 				content, entryErr = handler.ExtractSectionFromString(string(raw), section, e.IncludeSubheaders)
 			}
-		case !isInlineableWholeFile(path):
+		case !isInlineableWholeFile(path.String()):
 			entryErr = fmt.Errorf("not a text file, refusing to inline whole")
 		default:
 			var raw []byte
-			raw, entryErr = readFile(path)
+			raw, entryErr = readFile(path.String())
 			content = string(raw)
 		}
 
@@ -308,7 +308,7 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 			parts = append(parts, "> ⚠️ could not include `"+strings.ReplaceAll(e.Value, "`", "'")+"`")
 			continue
 		}
-		parts = append(parts, strings.TrimSpace(resolveRelativeLinks(path, content)))
+		parts = append(parts, strings.TrimSpace(resolveRelativeLinks(path.String(), content)))
 	}
 
 	// blank line between pieces so a "---" stays a rule, not a setext underline

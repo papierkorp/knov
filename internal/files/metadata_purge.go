@@ -24,7 +24,7 @@ func MetaDataPurgeStale() (int, error) {
 
 	valid := make(map[string]struct{}, len(physical))
 	for _, f := range physical {
-		valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
+		valid[pathutils.ToWithPrefix(f.Path.String())] = struct{}{}
 	}
 
 	// media files have metadata too — don't treat them as stale
@@ -33,7 +33,7 @@ func MetaDataPurgeStale() (int, error) {
 		logging.LogWarning(logging.KeyApp, "failed to get media files for stale purge, skipping media: %v", err)
 	} else {
 		for _, f := range mediaFiles {
-			valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
+			valid[pathutils.ToWithPrefix(f.Path.String())] = struct{}{}
 		}
 	}
 

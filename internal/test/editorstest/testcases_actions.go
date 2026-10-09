@@ -220,14 +220,14 @@ func caseEditPageEncodesPath() test.CaseResult {
 	defer ts.Close()
 	var gaps []string
 	for _, rel := range []string{"100%.md", "a&b.md", "x+y.md", "a#b.md", "my notes.md", "ö ü.md"} {
-		resp, err := ts.Client().Get(ts.URL + pathutils.ToFileEditURL(pathutils.DocsPath(rel).String()))
+		resp, err := ts.Client().Get(ts.URL + pathutils.ToFileEditURL(pathutils.DocsPath(rel)))
 		if err != nil {
 			return errCase(name, err)
 		}
 		b, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		body := html.UnescapeString(string(b))
-		for _, want := range []string{`href="` + pathutils.ToFileURL(pathutils.DocsPath(rel).String()) + `"`, `/api/editor?filepath=` + url.QueryEscape(pathutils.DocsPath(rel).String())} {
+		for _, want := range []string{`href="` + pathutils.ToFileURL(pathutils.DocsPath(rel)) + `"`, `/api/editor?filepath=` + url.QueryEscape(pathutils.DocsPath(rel).String())} {
 			if !strings.Contains(body, want) {
 				gaps = append(gaps, fmt.Sprintf("edit page of %q lacks %s", rel, want))
 			}

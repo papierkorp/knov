@@ -89,7 +89,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	if collection != "" || folder != "" {
 		var filtered []git.GitHistoryFile
 		for _, f := range allFiles {
-			meta, err := files.MetaDataGet(pathutils.ToWithPrefix(f.Path))
+			meta, err := files.MetaDataGet(pathutils.GuessMeta(f.Path))
 			if err != nil || meta == nil {
 				continue
 			}

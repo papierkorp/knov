@@ -116,8 +116,8 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 			}
 			folders = append(folders, item)
 		} else {
-			metadata, _ := files.MetaDataGet(entryPath)
-			if files.IsHidden(files.File{Path: pathutils.ToSlash(entryPath), Metadata: metadata}, hide) {
+			metadata, _ := files.MetaDataGet(pathutils.GuessMeta(entryPath))
+			if files.IsHidden(files.File{Path: pathutils.GuessMeta(pathutils.ToSlash(entryPath)), Metadata: metadata}, hide) {
 				continue
 			}
 			filesInDir = append(filesInDir, item)
@@ -173,7 +173,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]string{
 		"filepath": filepath,
-		"link":     pathutils.ToFileURL(pathutils.ToWithPrefix(filepath)),
+		"link":     pathutils.ToFileURL(pathutils.GuessMeta(filepath)),
 	}
 
 	html := render.RenderFileHeader(filepath)
@@ -227,7 +227,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 	lang := configmanager.GetLanguage()
 	result := map[string]string{}
 
-	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(lang, "failed to get metadata"))
 		return
@@ -253,7 +253,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 
 		var grandchildren []string
 		for _, kid := range metadata.Kids {
-			kidMeta, err := files.MetaDataGet(kid)
+			kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
 			if err != nil || kidMeta == nil {
 				continue
 			}
@@ -388,7 +388,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 
 		normalizedPath := pathutils.ToWithPrefix(filePath)
-		if err := files.MetaDataSync(normalizedPath); err != nil {
+		if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
 		} else if err := files.SetEditor(normalizedPath, editor); err != nil {
 			logging.LogError(logging.KeyApp, "failed to set editor for new file %s: %v", filePath, err)
@@ -428,7 +428,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// if this was a new file creation, redirect to the file view
 	if isNewFile {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)))
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.GuessMeta(filePath)))
 		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file created"))
 		writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 		return
@@ -438,7 +438,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
 	writeResponse(w, r, map[string]string{"filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
+		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -787,7 +787,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 	// only navigate away when the current page shows the moved file, otherwise toast in place
 	if viewedFile(r) == currentPath.String() {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath.String()))
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
 		notify.SetFlash(notify.LevelSuccess, message)
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, message)
@@ -874,7 +874,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved")
 	// follow a file of the moved folder that the current page shows, otherwise toast in place
 	if rel, ok := strings.CutPrefix(viewedFile(r), currentPath+"/"); ok {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.ToWithPrefix(newPath+"/"+rel)))
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.GuessMeta(newPath+"/"+rel)))
 		notify.SetFlash(notify.LevelSuccess, message)
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, message)
@@ -899,7 +899,7 @@ func removeFileAndMetadata(fullPath string) error {
 			logging.LogWarning(logging.KeyApp, "failed to delete filter config for %s: %v", relPath, err)
 		}
 	}
-	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, metaPath); err != nil {
+	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, pathutils.GuessMeta(metaPath)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
 	}
 	if err := git.InvalidateFileHistoryCache(metaPath); err != nil {
@@ -1060,7 +1060,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		toDelete = append(toDelete, pathutils.ToDocsPath(file.Path))
+		toDelete = append(toDelete, pathutils.ToDocsPath(file.Path.String()))
 	}
 
 	id, err := job.StartBulkDeleteFiles(toDelete, groupType, value)
@@ -1174,7 +1174,7 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 
 	paths := make([]string, len(allFiles))
 	for i, f := range allFiles {
-		paths[i] = pathutils.ToRelative(f.Path)
+		paths[i] = pathutils.ToRelative(f.Path.String())
 	}
 
 	matches := files.RankAutocompleteMatches(paths, q, 20)

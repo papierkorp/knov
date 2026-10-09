@@ -2,6 +2,7 @@ package connectionstest
 
 import (
 	"fmt"
+	"knov/internal/pathutils"
 	"slices"
 
 	"knov/internal/files"
@@ -16,7 +17,7 @@ import (
 func caseParentsAncestors() test.CaseResult {
 	name := "parents-ancestors"
 
-	child, err := files.MetaDataGet(withPrefix(childFile))
+	child, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(childFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -43,14 +44,14 @@ func caseParentsAncestors() test.CaseResult {
 func caseKidsGrandchildren() test.CaseResult {
 	name := "kids-grandchildren"
 
-	parent, err := files.MetaDataGet(withPrefix(parentFile))
+	parent, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(parentFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
 
 	var grandchildren []string
 	for _, kid := range parent.Kids {
-		kidMeta, err := files.MetaDataGet(kid)
+		kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
 		if err != nil || kidMeta == nil {
 			continue
 		}
@@ -75,7 +76,7 @@ func caseKidsGrandchildren() test.CaseResult {
 func caseUsedLinks() test.CaseResult {
 	name := "used-links"
 
-	linker, err := files.MetaDataGet(withPrefix(linkerFile))
+	linker, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkerFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -100,7 +101,7 @@ func caseUsedLinks() test.CaseResult {
 func caseLinksToHere() test.CaseResult {
 	name := "links-to-here"
 
-	got, err := files.MetaDataGet(withPrefix(linkedFile))
+	got, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkedFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -223,7 +224,7 @@ func caseConflictBanner() test.CaseResult {
 	if err := files.SetConflictFile(withPrefix(conflictOriginal), withPrefix(conflictCopy)); err != nil {
 		return errCase(name, err)
 	}
-	afterSet, err := files.MetaDataGet(withPrefix(conflictOriginal))
+	afterSet, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -232,7 +233,7 @@ func caseConflictBanner() test.CaseResult {
 	if err := files.ClearConflictFile(withPrefix(conflictOriginal)); err != nil {
 		return errCase(name, err)
 	}
-	afterClear, err := files.MetaDataGet(withPrefix(conflictOriginal))
+	afterClear, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -259,7 +260,7 @@ func caseConflictOfBanner() test.CaseResult {
 	if err := files.SetConflictOf(withPrefix(conflictCopy), withPrefix(conflictOriginal)); err != nil {
 		return errCase(name, err)
 	}
-	got, err := files.MetaDataGet(withPrefix(conflictCopy))
+	got, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictCopy)))
 	if err != nil {
 		return errCase(name, err)
 	}

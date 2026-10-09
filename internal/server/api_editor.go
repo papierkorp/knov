@@ -245,7 +245,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	go git.CommitFile(fullPath)
 
 	normalizedPath := pathutils.ToWithPrefix(filezpath)
-	if err := files.MetaDataSync(normalizedPath); err != nil {
+	if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for %s file %s: %v", kind.extKey, filezpath, err)
 	} else if err := files.SetEditor(normalizedPath, kind.editor); err != nil {
 		logging.LogError(logging.KeyApp, "failed to set editor for %s file %s: %v", kind.extKey, filezpath, err)
@@ -263,7 +263,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessageWithLink(render.StatusOK,
-		kind.savedMsg, pathutils.ToFileURL(pathutils.ToWithPrefix(filezpath)), translation.SprintfForRequest(lang, "view file")))
+		kind.savedMsg, pathutils.ToFileURL(pathutils.GuessMeta(filezpath)), translation.SprintfForRequest(lang, "view file")))
 }
 
 // @Summary Add index/book entry
@@ -366,7 +366,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	go git.CommitFile(fullPath)
 
 	normalizedPath := pathutils.ToWithPrefix(filePath)
-	if err := files.MetaDataSync(normalizedPath); err != nil {
+	if err := files.MetaDataSync(pathutils.GuessMeta(normalizedPath)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for list file %s: %v", filePath, err)
 	} else if err := files.SetEditor(normalizedPath, editorType); err != nil {
 		logging.LogError(logging.KeyApp, "failed to set editor for list file %s: %v", filePath, err)
@@ -387,7 +387,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
+		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -502,7 +502,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
+		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
@@ -592,7 +592,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
+		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 
@@ -653,7 +653,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
-		pathutils.ToFileURL(pathutils.ToWithPrefix(markdownFileName)), markdownFileName)
+		pathutils.ToFileURL(pathutils.GuessMeta(markdownFileName)), markdownFileName)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": markdownFileName}, html)
 }
 

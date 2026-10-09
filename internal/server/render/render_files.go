@@ -18,7 +18,7 @@ func RenderFilesOptions(allFiles []files.File) string {
 	var html strings.Builder
 	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select a file...") + `</option>`)
 	for _, file := range allFiles {
-		path := strings.TrimPrefix(file.Path, "data/")
+		path := strings.TrimPrefix(file.Path.String(), "data/")
 		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, path, path))
 	}
 	return html.String()
@@ -46,8 +46,8 @@ func RenderFilesList(allFiles []files.File, deletable bool) string {
 	}
 	deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 	for _, file := range allFiles {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
-		relPath := strings.TrimPrefix(file.Path, "docs/")
+		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		relPath := strings.TrimPrefix(file.Path.String(), "docs/")
 		if deletable {
 			confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + displayText + "?"
 			html.WriteString(fmt.Sprintf(`
@@ -83,7 +83,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="%s">→ %s</a></div>`, pathutils.ToFileURL(pathutils.ToWithPrefix(filepath)), filepath)
+	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="%s">→ %s</a></div>`, pathutils.ToFileURL(pathutils.GuessMeta(filepath)), filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list.
@@ -181,7 +181,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 						() %s
 					</a>
 				</li>`,
-				pathutils.ToFileURL(file.Path), GetLinkDisplayText(file.Path)))
+				pathutils.ToFileURL(pathutils.GuessMeta(file.Path)), GetLinkDisplayText(file.Path)))
 		}
 		html.WriteString(`</ul></div>`)
 	}
@@ -220,11 +220,11 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + child.Name + "?"
 				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="%s?inline=true" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
-					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, pathutils.ToRouteURL("/api/files/delete/", relPath), confirmMsg, deleteLabel)
+					relPath, pathutils.ToFileURL(pathutils.GuessMeta(child.Path)), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata), relPath, renameLabel, pathutils.ToRouteURL("/api/files/delete/", relPath), confirmMsg, deleteLabel)
 			} else {
 				relPath := strings.TrimPrefix(child.Path, "docs/")
 				fmt.Fprintf(html, `<a class="fp-tree-file" draggable="true" data-path="%s" data-type="file" href="%s">%s</a>`,
-					relPath, pathutils.ToFileURL(child.Path), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata))
+					relPath, pathutils.ToFileURL(pathutils.GuessMeta(child.Path)), GetLinkDisplayTextWithMetadata(child.Path, child.Metadata))
 			}
 		}
 		html.WriteString(`</li>`)

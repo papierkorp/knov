@@ -188,7 +188,7 @@ func caseRecoverInterruptedResumable() test.CaseResult {
 	if err := writeFile(testPath(fileName), "# asyncjob-resume-target.md\n\ncontent\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(fileName), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(fileName)), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 	fullPath := pathutils.ToDocsPath(testPath(fileName))

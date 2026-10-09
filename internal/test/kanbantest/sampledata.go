@@ -59,7 +59,7 @@ func writeCard(relPath, title string, tags []string, createdAt time.Time) error 
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(relPath),
+		Path:   pathutils.GuessMeta(relPath),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
 	}); err != nil {
@@ -77,7 +77,7 @@ func kanbanTag(status string) string {
 // bypassing metaDataUpdate's "empty Tags means unchanged" merge semantics.
 func clearKanbanStatus(relPath string) error {
 	normalizedPath := pathutils.ToWithPrefix(relPath)
-	return files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+	return files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(meta *files.Metadata, existed bool) (bool, error) {
 		filtered := meta.Tags[:0:0]
 		for _, t := range meta.Tags {
 			if !configmanager.IsKanbanTag(t) {
@@ -131,7 +131,7 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(testPath(excerptFile)),
+		Path:   pathutils.GuessMeta(testPath(excerptFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err

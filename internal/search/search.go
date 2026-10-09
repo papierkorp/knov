@@ -34,7 +34,7 @@ func IndexAllFiles() error {
 	newTrigram := newTrigramIndex()
 	indexed, skipped := 0, 0
 	for _, file := range allFiles {
-		fullPath := pathutils.ToDocsPath(file.Path)
+		fullPath := pathutils.ToDocsPath(file.Path.String())
 
 		info, err := os.Stat(fullPath)
 		if err != nil {
@@ -44,13 +44,13 @@ func IndexAllFiles() error {
 
 		// skip the FTS reindex if already indexed and unchanged, but still need
 		// its content to rebuild the trigram index below
-		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
-			content, err := searchStorage.GetIndexedContent(file.Path)
+		if indexedAt, err := searchStorage.GetIndexedAt(file.Path.String()); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
+			content, err := searchStorage.GetIndexedContent(file.Path.String())
 			if err != nil {
 				logging.LogWarning(logging.KeySearchReindex, "failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
 				continue
 			}
-			newTrigram.add(file.Path, content)
+			newTrigram.add(file.Path.String(), content)
 			skipped++
 			continue
 		}
@@ -61,12 +61,12 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		if err := searchStorage.IndexFile(file.Path, content); err != nil {
+		if err := searchStorage.IndexFile(file.Path.String(), content); err != nil {
 			logging.LogWarning(logging.KeySearchReindex, "failed to index file %s: %v", file.Path, err)
 			continue
 		}
 
-		newTrigram.add(file.Path, content)
+		newTrigram.add(file.Path.String(), content)
 		indexed++
 	}
 	replaceTrigramIndex(newTrigram)
@@ -122,18 +122,18 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 
 	seenPaths := make(map[string]bool, len(results))
 	for _, f := range results {
-		seenPaths[f.Path] = true
+		seenPaths[f.Path.String()] = true
 	}
 
 	queryLower := strings.ToLower(query)
 	for _, f := range allFiles {
-		if seenPaths[f.Path] {
+		if seenPaths[f.Path.String()] {
 			continue
 		}
 		// filename match
 		if strings.Contains(strings.ToLower(f.Name), queryLower) {
 			results = append(results, f)
-			seenPaths[f.Path] = true
+			seenPaths[f.Path.String()] = true
 			continue
 		}
 		// tag match
@@ -141,7 +141,7 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 			for _, tag := range f.Metadata.Tags {
 				if strings.Contains(strings.ToLower(tag), queryLower) {
 					results = append(results, f)
-					seenPaths[f.Path] = true
+					seenPaths[f.Path.String()] = true
 					break
 				}
 			}
@@ -175,7 +175,7 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 	// the search index is keyed by the docs-relative path (searchStorage.indexKey)
 	fileMap := make(map[string]files.File, len(allFiles))
 	for _, f := range allFiles {
-		fileMap[pathutils.ToRelative(f.Path)] = f
+		fileMap[pathutils.ToRelative(f.Path.String())] = f
 	}
 
 	var results []files.File
@@ -211,13 +211,13 @@ func searchFilesRepositoryFallback(query string, limit int, allFiles []files.Fil
 			break
 		}
 
-		contentData, err := searchStorage.GetIndexedContent(file.Path)
+		contentData, err := searchStorage.GetIndexedContent(file.Path.String())
 		if err != nil || contentData == nil {
 			var fullPath string
-			if pathutils.IsMedia(file.Path) {
-				fullPath = pathutils.ToMediaPath(file.Path)
+			if pathutils.IsMedia(file.Path.String()) {
+				fullPath = pathutils.ToMediaPath(file.Path.String())
 			} else {
-				fullPath = pathutils.ToDocsPath(file.Path)
+				fullPath = pathutils.ToDocsPath(file.Path.String())
 			}
 			contentData, err = os.ReadFile(fullPath)
 			if err != nil {
@@ -245,10 +245,10 @@ func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.Fi
 		}
 
 		var fullPath string
-		if pathutils.IsMedia(file.Path) {
-			fullPath = pathutils.ToMediaPath(file.Path)
+		if pathutils.IsMedia(file.Path.String()) {
+			fullPath = pathutils.ToMediaPath(file.Path.String())
 		} else {
-			fullPath = pathutils.ToDocsPath(file.Path)
+			fullPath = pathutils.ToDocsPath(file.Path.String())
 		}
 
 		content, err := os.ReadFile(fullPath)

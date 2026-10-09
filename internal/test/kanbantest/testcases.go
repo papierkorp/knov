@@ -420,7 +420,7 @@ func caseRenameStatusFolderSync() test.CaseResult {
 		return errCase(name, err)
 	}
 	movedAt := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
-	if err := files.MetaDataMutate(pathutils.ToWithPrefix(oldPath), func(m *files.Metadata, _ bool) (bool, error) {
+	if err := files.MetaDataMutate(pathutils.GuessMeta(oldPath), func(m *files.Metadata, _ bool) (bool, error) {
 		m.KanbanMovedAt = movedAt
 		return true, nil
 	}); err != nil {
@@ -436,7 +436,7 @@ func caseRenameStatusFolderSync() test.CaseResult {
 	}
 
 	_, statErr := os.Stat(pathutils.ToDocsPath(newPath))
-	meta, _ := files.MetaDataGet(pathutils.ToWithPrefix(newPath))
+	meta, _ := files.MetaDataGet(pathutils.GuessMeta(newPath))
 	tagged := meta != nil && slices.Contains(meta.Tags, kanbanTag(newStatus)) && !slices.Contains(meta.Tags, kanbanTag(oldStatus))
 	keptMovedAt := meta != nil && meta.KanbanMovedAt.Equal(movedAt)
 	order, _ := kanban.GetOrder(testFolder)
@@ -467,7 +467,7 @@ func caseMoveCardAPI() test.CaseResult {
 	}
 	defer func() {
 		_ = os.Remove(pathutils.ToDocsPath(card))
-		_ = files.MetaDataDelete(pathutils.DocsPath(card).String())
+		_ = files.MetaDataDelete(pathutils.DocsPath(card))
 	}()
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()

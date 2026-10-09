@@ -144,7 +144,7 @@ func searchFilesTrigram(query string, limit int, allFiles []files.File) ([]files
 
 	fileMap := make(map[string]files.File, len(allFiles))
 	for _, f := range allFiles {
-		fileMap[f.Path] = f
+		fileMap[f.Path.String()] = f
 	}
 
 	result := make([]files.File, 0, len(paths))

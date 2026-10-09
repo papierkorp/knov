@@ -182,7 +182,7 @@ func caseSingleMoveNewFile() test.CaseResult {
 
 	target, newContent, resolvedEditor := formatForEditorReplica(testPath("chat-single-new"), msg.Content, files.EditorTypeTodo)
 	fullPath := pathutils.ToDocsPath(target)
-	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.ToWithPrefix(target), Editor: resolvedEditor}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(target), Editor: resolvedEditor}); err != nil {
 		return errCase(name, err)
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
@@ -196,7 +196,7 @@ func caseSingleMoveNewFile() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	meta, _ := files.MetaDataGet(pathutils.ToWithPrefix(target))
+	meta, _ := files.MetaDataGet(pathutils.GuessMeta(target))
 	stillExists, _ := chat.GetByID(msg.ID)
 
 	success := strings.Contains(got, "- [ ] chattest single new-file message") &&
@@ -242,7 +242,7 @@ func caseBulkMoveNewFile() test.CaseResult {
 
 	target, newContent, resolvedEditor := formatForEditorReplica(testPath("chat-bulk-new"), combined, files.EditorTypeList)
 	fullPath := pathutils.ToDocsPath(target)
-	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.ToWithPrefix(target), Editor: resolvedEditor}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(target), Editor: resolvedEditor}); err != nil {
 		return errCase(name, err)
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {

@@ -484,7 +484,7 @@ func TestRenderDotFolderLinks(t *testing.T) {
 }
 
 // fileURL is the /files/ url of the docs-relative path rel
-func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel).String()) }
+func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel)) }
 
 // a "|" in a link path written into a table row is escaped (GFM ends the cell at an unescaped one),
 // in other lines it stays - and both read back as the same path

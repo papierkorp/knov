@@ -179,7 +179,7 @@ func relinkDocs(key logging.Key, paths []string, moved map[string]string) (updat
 			failed++
 			continue
 		}
-		if err := MetaDataSyncNoRefresh("docs/" + doc); err != nil {
+		if err := MetaDataSyncNoRefresh(pathutils.DocsPath(doc)); err != nil {
 			logging.LogWarning(key, "failed to update link metadata for %s: %v", doc, err)
 		}
 		logging.LogInfo(key, "updated media links in %s", doc)
@@ -241,7 +241,7 @@ func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 	}
 	// an html root link has no LinkTarget (read as app route), only its literal path
 	candidates = append(candidates, strings.TrimPrefix(path.Clean("/"+parser.ResolveLinkPath("docs/"+doc, l)), "/"))
-	if rel, ok := strings.CutPrefix(parser.LinkTarget("docs/"+doc, l), "docs/"); ok {
+	if rel, ok := strings.CutPrefix(parser.LinkTarget("docs/"+doc, l).String(), "docs/"); ok {
 		candidates = append(candidates, rel)
 	}
 	for _, p := range candidates {

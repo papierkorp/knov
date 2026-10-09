@@ -33,7 +33,7 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	var err error
 
 	if filePath != "" {
-		metadata, err = files.MetaDataGet(filePath)
+		metadata, err = files.MetaDataGet(pathutils.GuessMeta(filePath))
 		if err != nil {
 			return "", err
 		}
@@ -252,7 +252,7 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 		}
 
 		// escape csv values
-		path := escapeCSV(m.Path)
+		path := escapeCSV(m.Path.String())
 		name := escapeCSV(m.Title)
 		collection := escapeCSV(m.Collection)
 		editor := escapeCSV(string(m.Editor))
@@ -407,7 +407,7 @@ func RenderSidebarFieldEdit(field, filePath string, metadata *files.Metadata) st
 	case "path":
 		path := filePath
 		if metadata != nil {
-			path = metadata.Path
+			path = metadata.Path.String()
 		}
 		input = GenerateInputWithSaveOnBlur("sidebar-path", "newpath", path,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "enter file path"),

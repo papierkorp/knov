@@ -29,7 +29,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 			return errCase(name, err)
 		}
 		if err := test.SeedMetadataNoRefresh(&files.Metadata{
-			Path:   pathutils.ToWithPrefix(p),
+			Path:   pathutils.GuessMeta(p),
 			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{tag},
 		}); err != nil {
@@ -41,14 +41,14 @@ func caseBulkDeleteFiles() test.CaseResult {
 	deleted := 0
 	for _, p := range paths {
 		normalized := pathutils.ToWithPrefix(p)
-		meta, err := files.MetaDataGet(normalized)
+		meta, err := files.MetaDataGet(pathutils.GuessMeta(normalized))
 		if err != nil || meta == nil || !slices.Contains(meta.Tags, tag) {
 			continue
 		}
 		if err := os.Remove(pathutils.ToDocsPath(p)); err != nil {
 			continue
 		}
-		files.MetaDataDeleteNoRefresh(logging.KeyApp, normalized)
+		files.MetaDataDeleteNoRefresh(logging.KeyApp, pathutils.GuessMeta(normalized))
 		deleted++
 	}
 	files.RefreshCaches()
@@ -84,7 +84,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 			return errCase(name, err)
 		}
 		if err := test.SeedMetadata(&files.Metadata{
-			Path:   pathutils.ToWithPrefix(p),
+			Path:   pathutils.GuessMeta(p),
 			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{"edtest-patch-before"},
 		}); err != nil {
@@ -110,7 +110,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 
 	allTagged := true
 	for _, p := range paths {
-		meta, err := files.MetaDataGet(p)
+		meta, err := files.MetaDataGet(pathutils.GuessMeta(p))
 		if err != nil || meta == nil || !slices.Contains(meta.Tags, "edtest-patch-after") {
 			allTagged = false
 		}

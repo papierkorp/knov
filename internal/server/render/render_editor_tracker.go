@@ -64,13 +64,13 @@ func RenderTrackerEditor(filePath string) (string, error) {
 
 	cancelURL := "/"
 	if filePath != "" {
-		cancelURL = pathutils.ToFileURL(pathutils.ToWithPrefix(filePath))
+		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filePath))
 	}
 	h.WriteString(`<div class="form-actions">`)
 	fmt.Fprintf(&h, `<button type="submit" class="btn-primary">%s</button>`, t("save tracker"))
 	fmt.Fprintf(&h, `<button type="button" hx-post="/api/trackers/add-counter" hx-target="#tracker-counters" hx-swap="beforeend" class="btn-secondary">%s</button>`, t("add counter"))
 	if filePath != "" {
-		fmt.Fprintf(&h, `<a href="%s" target="_blank" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(pathutils.ToFileURL(pathutils.ToWithPrefix(filePath))), t("view file"))
+		fmt.Fprintf(&h, `<a href="%s" target="_blank" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(pathutils.ToFileURL(pathutils.GuessMeta(filePath))), t("view file"))
 	}
 	fmt.Fprintf(&h, `<a href="%s" role="button" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(cancelURL), t("cancel"))
 	h.WriteString(`</div>`)

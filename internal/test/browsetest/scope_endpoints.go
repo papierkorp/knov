@@ -44,7 +44,7 @@ func seedScopeProbes() error {
 			return err
 		}
 		if err := test.SeedMetadataNoRefresh(&files.Metadata{
-			Path:   pathutils.ToWithPrefix(relPath),
+			Path:   pathutils.GuessMeta(relPath),
 			Editor: files.EditorTypeCodeMirror,
 		}); err != nil {
 			return err

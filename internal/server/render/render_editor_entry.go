@@ -74,7 +74,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	isEdit := filePath != ""
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = pathutils.ToFileURL(pathutils.ToWithPrefix(filePath))
+		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filePath))
 	}
 
 	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#entry-editor-status" hx-swap="innerHTML" id="entry-form">`, action)
@@ -237,8 +237,8 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
 		if p := parser.LinkTarget(filePath, parser.ParseLink(entry.Value, parser.LinkWiki)); p != "" {
-			if ok, _ := contentStorage.FileExists(pathutils.ToFullPath(p)); !ok {
-				fmt.Fprintf(&html, `<span class="entry-file-missing" title="%s">%s</span>`, htmlpkg.EscapeString(p), t("file not found"))
+			if ok, _ := contentStorage.FileExists(pathutils.ToFullPath(p.String())); !ok {
+				fmt.Fprintf(&html, `<span class="entry-file-missing" title="%s">%s</span>`, htmlpkg.EscapeString(p.String()), t("file not found"))
 			}
 		}
 		if bookMode {

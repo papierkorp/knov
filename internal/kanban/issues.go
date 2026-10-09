@@ -48,7 +48,7 @@ func ScanIssues() ([]Issue, error) {
 	issues := []Issue{} // an empty scan is [], not null
 	for _, f := range allFiles {
 		if f.Metadata != nil {
-			issues = append(issues, fileIssues(pathutils.ToRelative(f.Path), strings.Join(f.Metadata.Folders, "/"), f.Metadata.Tags)...)
+			issues = append(issues, fileIssues(pathutils.ToRelative(f.Path.String()), strings.Join(f.Metadata.Folders, "/"), f.Metadata.Tags)...)
 		}
 	}
 	return issues, nil
@@ -120,7 +120,7 @@ func CleanupIssues() (CleanupResult, error) {
 		var oldStatus string
 		var applied bool
 		now := time.Now()
-		err := files.MetaDataMutate(pathutils.DocsPath(issue.Path).String(), func(meta *files.Metadata, existed bool) (bool, error) {
+		err := files.MetaDataMutate(pathutils.DocsPath(issue.Path), func(meta *files.Metadata, existed bool) (bool, error) {
 			if !existed {
 				return false, nil
 			}

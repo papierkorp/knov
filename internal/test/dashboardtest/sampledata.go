@@ -51,7 +51,7 @@ func writeFile(relPath, content string) error {
 
 func saveMetadata(relPath string, tags []string) error {
 	return test.SeedMetadata(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(relPath),
+		Path:   pathutils.GuessMeta(relPath),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
 	})

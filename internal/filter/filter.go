@@ -155,7 +155,7 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 	case "title":
 		metadataValue = metadata.Title
 		if metadataValue == "" {
-			metadataValue = metadata.Path
+			metadataValue = metadata.Path.String()
 		}
 	case "collection":
 		metadataValue = metadata.Collection
@@ -355,10 +355,10 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	// build markdown link list
 	var sb strings.Builder
 	for _, file := range result.Files {
-		rel := pathutils.ToRelative(file.Path)
-		linkPath := parser.FilesLinkPath(file.Path) // a docs file in a folder called docs, media or files too
-		if pathutils.IsMedia(file.Path) {
-			linkPath = "/" + file.Path
+		rel := pathutils.ToRelative(file.Path.String())
+		linkPath := parser.FilesLinkPath(file.Path.String()) // a docs file in a folder called docs, media or files too
+		if pathutils.IsMedia(file.Path.String()) {
+			linkPath = "/" + file.Path.String()
 		}
 		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: linkPath})
 	}
@@ -468,8 +468,8 @@ func SavedFilterPaths(filterID string) ([]string, error) {
 	}
 	var paths []string
 	for _, file := range result.Files {
-		if !files.IsBook(file.Path) {
-			paths = append(paths, parser.DocsWikiPath(pathutils.ToRelative(file.Path)))
+		if !files.IsBook(file.Path.String()) {
+			paths = append(paths, parser.DocsWikiPath(pathutils.ToRelative(file.Path.String())))
 		}
 	}
 	return paths, nil

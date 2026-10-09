@@ -64,7 +64,7 @@ func caseUpload() test.CaseResult {
 	expectedPath := mediaTestPath("upload-test.png")
 	_, statErr := os.Stat(pathutils.ToMediaPath(result.Path))
 	fileExists := statErr == nil
-	meta, err := files.MetaDataGet("media/" + result.Path)
+	meta, err := files.MetaDataGet(pathutils.MediaPath(result.Path))
 
 	success := result.Path == expectedPath && fileExists && err == nil && meta != nil
 	cr := test.CaseResult{
@@ -81,7 +81,7 @@ func caseUpload() test.CaseResult {
 
 func containsMediaPath(list []files.File, mediaPathWithPrefix string) bool {
 	for _, f := range list {
-		if f.Path == mediaPathWithPrefix {
+		if f.Path.String() == mediaPathWithPrefix {
 			return true
 		}
 	}
@@ -155,11 +155,11 @@ func caseRename() test.CaseResult {
 	}
 	linkRewritten := bytes.Contains(referencerContent, []byte(`src="`+pathutils.ToMediaURL(newRel)+`"`)) && !bytes.Contains(referencerContent, []byte(oldRel))
 
-	newMeta, err := files.MetaDataGet(newMediaPath)
+	newMeta, err := files.MetaDataGet(pathutils.GuessMeta(newMediaPath))
 	if err != nil {
 		return errCase(name, err)
 	}
-	oldMeta, _ := files.MetaDataGet(oldMediaPath)
+	oldMeta, _ := files.MetaDataGet(pathutils.GuessMeta(oldMediaPath))
 
 	success := linkRewritten && newMeta != nil && oldMeta == nil
 	cr := test.CaseResult{
@@ -189,12 +189,12 @@ func caseDelete() test.CaseResult {
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataDelete(fullMediaPath); err != nil {
+	if err := files.MetaDataDelete(pathutils.GuessMeta(fullMediaPath)); err != nil {
 		return errCase(name, err)
 	}
 
 	stillExists, _ := contentStorage.FileExists(fullPath)
-	meta, _ := files.MetaDataGet(fullMediaPath)
+	meta, _ := files.MetaDataGet(pathutils.GuessMeta(fullMediaPath))
 
 	success := !stillExists && meta == nil
 	cr := test.CaseResult{
@@ -216,7 +216,7 @@ func caseDeleteBlockedWhenReferenced() test.CaseResult {
 	name := "delete-blocked-when-referenced"
 
 	fullMediaPath := "media/" + mediaTestPath(blockedMediaFile)
-	metadata, err := files.MetaDataGet(fullMediaPath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(fullMediaPath))
 	if err != nil {
 		return errCase(name, err)
 	}

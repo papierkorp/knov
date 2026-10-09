@@ -49,7 +49,7 @@ func resetAndSeed() error {
 	}
 
 	for _, name := range []string{fieldsFile, deleteFile, exportFile, referencesFile, raceFile} {
-		if err := files.MetaDataDelete(pathutils.ToWithPrefix(testPath(name))); err != nil {
+		if err := files.MetaDataDelete(pathutils.GuessMeta(testPath(name))); err != nil {
 			return err
 		}
 		if err := writeFile(testPath(name), "# "+name+"\n\ncontent\n"); err != nil {

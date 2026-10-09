@@ -36,7 +36,7 @@ func createEditSaveCase(name, relPath string, editor files.EditorType, initial, 
 	if err != nil {
 		return errCase(name, err)
 	}
-	meta, err := files.MetaDataGet(relPath)
+	meta, err := files.MetaDataGet(pathutils.GuessMeta(relPath))
 	if err != nil || meta == nil {
 		return errCase(name, fmt.Errorf("metadata missing after save"))
 	}
@@ -190,7 +190,7 @@ func caseIndexCreateEditSave() test.CaseResult {
 		return errCase(name, err)
 	}
 	if err := test.SeedMetadata(&files.Metadata{
-		Path:       pathutils.ToWithPrefix(relPath),
+		Path:       pathutils.GuessMeta(relPath),
 		Editor:     files.EditorTypeIndex,
 		Collection: base,
 	}); err != nil {
@@ -209,7 +209,7 @@ func caseIndexCreateEditSave() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	meta, err := files.MetaDataGet(relPath)
+	meta, err := files.MetaDataGet(pathutils.GuessMeta(relPath))
 	if err != nil || meta == nil {
 		return errCase(name, fmt.Errorf("metadata missing after save"))
 	}
@@ -261,7 +261,7 @@ func caseBookCreateEditSave() test.CaseResult {
 		return errCase(name, err)
 	}
 	if err := test.SeedMetadata(&files.Metadata{
-		Path:       pathutils.ToWithPrefix(relPath),
+		Path:       pathutils.GuessMeta(relPath),
 		Editor:     files.EditorTypeBook,
 		Collection: base,
 	}); err != nil {
@@ -296,7 +296,7 @@ func caseBookCreateEditSave() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	meta, err := files.MetaDataGet(relPath)
+	meta, err := files.MetaDataGet(pathutils.GuessMeta(relPath))
 	if err != nil || meta == nil {
 		return errCase(name, fmt.Errorf("metadata missing after save"))
 	}
@@ -522,7 +522,7 @@ func caseBookFilterEntry() test.CaseResult {
 		if err := writeFile(p, content); err != nil {
 			return errCase(name, err)
 		}
-		meta := &files.Metadata{Path: pathutils.ToWithPrefix(p), Tags: []string{tag}}
+		meta := &files.Metadata{Path: pathutils.GuessMeta(p), Tags: []string{tag}}
 		if strings.HasSuffix(p, "-off.md") {
 			meta.Tags = nil
 		}

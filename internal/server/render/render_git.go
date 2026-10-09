@@ -26,7 +26,7 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, fr
 		linkPath := pathutils.ToWithPrefix(file.Path)
 		fmt.Fprintf(&b, `<li>%s - <a href="%s"><strong>%s</strong></a> (%s)</li>`,
 			configmanager.FormatDateTime(file.Date),
-			pathutils.ToFileURL(linkPath),
+			pathutils.ToFileURL(pathutils.GuessMeta(linkPath)),
 			file.Name,
 			strings.TrimSpace(file.Message))
 	}
@@ -88,7 +88,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 					</a>
 				</li>`,
 				cssClass,
-				pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(filePath)),
+				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
 				version.Commit,
 				configmanager.FormatDateTime(version.Date),
 				version.Message,
@@ -102,7 +102,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				<a href="%s" class="view-all-versions">
 					%s
 				</a>`,
-				pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(filePath)),
+				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
 			))
 		}
@@ -140,7 +140,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				html.WriteString(renderVersionCompareForm(versions, filePath))
 			} else {
 				fmt.Fprintf(&html, `<a href="%s" class="action-link">%s</a>`,
-					pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(filePath)),
+					pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
 					translation.SprintfForRequest(configmanager.GetLanguage(), "compare versions"))
 			}
 		}
@@ -169,7 +169,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				version.Message,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
 				version.Author,
-				pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(filePath)),
+				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
 				version.Commit,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
 			))
@@ -190,7 +190,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 func renderVersionCompareForm(versions []git.FileVersion, filePath string) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `<form id="component-version-compare" method="get" action="%s">`,
-		pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(filePath)))
+		pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)))
 	b.WriteString(renderVersionCompareSelect("from", versions, 1))
 	b.WriteString(`<span class="version-compare-arrow">&rarr;</span>`)
 	b.WriteString(renderVersionCompareSelect("to", versions, 0))

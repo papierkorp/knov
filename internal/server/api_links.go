@@ -27,7 +27,7 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no parents found"))
@@ -58,7 +58,7 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderNoLinksMessage("no ancestors found")
@@ -89,7 +89,7 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children found"))
@@ -120,14 +120,14 @@ func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		writeResponse(w, r, []string{}, render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no grandchildren")))
 		return
 	}
 	var grandchildren []string
 	for _, kid := range metadata.Kids {
-		kidMeta, err := files.MetaDataGet(kid)
+		kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
 		if err != nil || kidMeta == nil {
 			continue
 		}
@@ -154,7 +154,7 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links found"))
@@ -185,7 +185,7 @@ func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderMediaLinks(data)
@@ -210,7 +210,7 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		data := []string{}
 		html := render.RenderNoLinksMessage("no inbound links found")
@@ -376,7 +376,7 @@ func handleAPIGetConflictBanner(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, nil, "")
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil || metadata.ConflictFile == "" {
 		writeResponse(w, r, nil, "")
 		return
@@ -401,7 +401,7 @@ func handleAPIGetConflictOfBanner(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, nil, "")
 		return
 	}
-	metadata, err := files.MetaDataGet(filePath)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil || metadata.ConflictOf == "" {
 		writeResponse(w, r, nil, "")
 		return

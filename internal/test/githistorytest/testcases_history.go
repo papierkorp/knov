@@ -68,7 +68,7 @@ func caseGitLatestChangesCollectionFilter(_ *sampleState) test.CaseResult {
 		}
 		var filtered []string
 		for _, f := range all {
-			meta, err := files.MetaDataGet(f.Path)
+			meta, err := files.MetaDataGet(pathutils.GuessMeta(f.Path))
 			if err != nil || meta == nil {
 				continue
 			}

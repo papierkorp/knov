@@ -90,7 +90,7 @@ func caseFolderContents() test.CaseResult {
 			folders = append(folders, entryPath)
 			continue
 		}
-		metadata, _ := files.MetaDataGet(pathutils.ToWithPrefix(entryPath))
+		metadata, _ := files.MetaDataGet(pathutils.GuessMeta(entryPath))
 		if metadata != nil && configmanager.IsFileTypeHidden(string(metadata.Editor)) {
 			continue
 		}
@@ -130,7 +130,7 @@ func browseByField(urlField, value string) ([]files.File, error) {
 
 func containsFilePath(list []files.File, path string) bool {
 	for _, f := range list {
-		if pathutils.ToRelative(f.Path) == path {
+		if pathutils.ToRelative(f.Path.String()) == path {
 			return true
 		}
 	}
@@ -196,7 +196,7 @@ func caseAutocomplete() test.CaseResult {
 	q := strings.ToLower("browse-alpha")
 	found := false
 	for _, f := range allFiles {
-		if strings.Contains(strings.ToLower(pathutils.ToRelative(f.Path)), q) {
+		if strings.Contains(strings.ToLower(pathutils.ToRelative(f.Path.String())), q) {
 			found = true
 			break
 		}
@@ -271,7 +271,7 @@ func caseHiddenFileTypeFilter() test.CaseResult {
 	prev := configmanager.HideTodo.Get()
 	defer configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", prev))
 
-	sample := []files.File{{Path: testPath(hiddenFile), Metadata: &files.Metadata{Editor: files.EditorTypeTodo}}}
+	sample := []files.File{{Path: pathutils.GuessMeta(testPath(hiddenFile)), Metadata: &files.Metadata{Editor: files.EditorTypeTodo}}}
 
 	configmanager.SetSetting(configmanager.HideTodo, "false")
 	shown := files.FilterByVisibility(sample, "")

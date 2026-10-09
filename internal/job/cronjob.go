@@ -136,7 +136,7 @@ func (j *fileJob) Run(_ context.Context) error {
 		logging.LogInfo(logging.KeyFileSync, "deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
-			if err := files.MetaDataDeleteNoRefresh(logging.KeyFileSync, normalizedPath); err != nil {
+			if err := files.MetaDataDeleteNoRefresh(logging.KeyFileSync, pathutils.GuessMeta(normalizedPath)); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
 			}
@@ -169,7 +169,7 @@ func (j *fileJob) Run(_ context.Context) error {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
 			// Sync only fills the default editor when the field is empty - unlike the old
 			// blind save, it can't clobber a user-picked editor on a file edited externally
-			if err := files.MetaDataSyncNoRefresh(normalizedPath); err != nil {
+			if err := files.MetaDataSyncNoRefresh(pathutils.GuessMeta(normalizedPath)); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to save metadata for %s: %v", normalizedPath, err)
 				continue
 			}

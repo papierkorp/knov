@@ -1861,7 +1861,7 @@ func HandleConflict(localFilePaths []string) {
 	for _, path := range localFilePaths {
 		// remove previous conflict file if one exists
 		origMeta := pathutils.ToWithPrefix(path)
-		if existingMeta, err := files.MetaDataGet(origMeta); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
+		if existingMeta, err := files.MetaDataGet(pathutils.GuessMeta(origMeta)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
 			existingConflictFull := pathutils.ToFullPath(existingMeta.ConflictFile)
 			os.Remove(existingConflictFull)
 		}
@@ -1950,7 +1950,7 @@ func SyncBeforeCommit(localFiles []string) {
 		ext := filepath.Ext(snap.fullPath)
 		base := snap.fullPath[:len(snap.fullPath)-len(ext)]
 		// remove previous conflict file if one exists
-		if existingMeta, err := files.MetaDataGet(pathutils.ToWithPrefix(snap.fullPath)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
+		if existingMeta, err := files.MetaDataGet(pathutils.GuessMeta(snap.fullPath)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
 			existingConflictFull := pathutils.ToFullPath(existingMeta.ConflictFile)
 			os.Remove(existingConflictFull)
 		}

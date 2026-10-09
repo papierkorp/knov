@@ -48,9 +48,9 @@ func ScanRelativeLinks() ([]RelativeLinkChange, error) {
 				return "", false
 			}
 			old, cur := parser.DocsRootLinkTarget(src, l), parser.LinkTarget(src, l)
-			if old != cur && !seen[old] {
-				seen[old] = true
-				changes = append(changes, RelativeLinkChange{SourceFile: src, Link: l.Path, OldTarget: old, NewTarget: cur, OldTargetExists: fileExists(pathutils.ToFullPath(old))})
+			if old != cur && !seen[old.String()] {
+				seen[old.String()] = true
+				changes = append(changes, RelativeLinkChange{SourceFile: src, Link: l.Path, OldTarget: old.String(), NewTarget: cur.String(), OldTargetExists: fileExists(pathutils.ToFullPath(old.String()))})
 			}
 			return "", false
 		})
@@ -69,7 +69,7 @@ func MigrateRelativeLinks(sourceFile, oldTarget string) (bool, error) {
 		return false, fmt.Errorf("failed to read file %s: %w", sourceFile, err)
 	}
 	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
-		if !parser.IsBareLink(l) || parser.DocsRootLinkTarget(sourceFile, l) != oldTarget {
+		if !parser.IsBareLink(l) || parser.DocsRootLinkTarget(sourceFile, l).String() != oldTarget {
 			return "", false
 		}
 		// written like a "/" link, which reads from the docs root

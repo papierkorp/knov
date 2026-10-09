@@ -55,16 +55,16 @@ func TestURLHelpers(t *testing.T) {
 		in   string
 		want string
 	}{
-		{"file url", ToFileURL, "docs/notes.md", "/files/notes.md"},
-		{"file url with space", ToFileURL, "docs/my notes.md", "/files/my%20notes.md"},
-		{"file url with subfolder", ToFileURL, "docs/sub/notes.md", "/files/sub/notes.md"},
-		{"file url escapes unicode", ToFileURL, "docs/nötes.md", "/files/n%C3%B6tes.md"},
-		{"file url of docs/media/x.md is literal", ToFileURL, "docs/media/x.md", "/files/media/x.md"},
-		{"file url of docs/docs/x.md is literal", ToFileURL, "docs/docs/x.md", "/files/docs/x.md"},
-		{"edit url", ToFileEditURL, "docs/notes.md", "/files/edit/notes.md"},
+		{"file url", meta(ToFileURL), "docs/notes.md", "/files/notes.md"},
+		{"file url with space", meta(ToFileURL), "docs/my notes.md", "/files/my%20notes.md"},
+		{"file url with subfolder", meta(ToFileURL), "docs/sub/notes.md", "/files/sub/notes.md"},
+		{"file url escapes unicode", meta(ToFileURL), "docs/nötes.md", "/files/n%C3%B6tes.md"},
+		{"file url of docs/media/x.md is literal", meta(ToFileURL), "docs/media/x.md", "/files/media/x.md"},
+		{"file url of docs/docs/x.md is literal", meta(ToFileURL), "docs/docs/x.md", "/files/docs/x.md"},
+		{"edit url", meta(ToFileEditURL), "docs/notes.md", "/files/edit/notes.md"},
 		{"media url", ToMediaURL, "img.png", "/media/img.png"},
-		{"edit table url", ToFileEditTableURL, "docs/data.csv", "/files/edittable/data.csv"},
-		{"history url", ToFileHistoryURL, "docs/notes.md", "/files/history/notes.md"},
+		{"edit table url", meta(ToFileEditTableURL), "docs/data.csv", "/files/edittable/data.csv"},
+		{"history url", meta(ToFileHistoryURL), "docs/notes.md", "/files/history/notes.md"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -374,4 +374,9 @@ func TestMetaPathConstructors(t *testing.T) {
 			t.Errorf("ParseMeta(%q) = %q, want not a metadata path", s, m)
 		}
 	}
+}
+
+// meta adapts a url helper of a metadata path to the string table of the tests.
+func meta(fn func(MetaPath) string) func(string) string {
+	return func(s string) string { return fn(MetaPath(s)) }
 }

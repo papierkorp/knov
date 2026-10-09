@@ -76,7 +76,7 @@ func RenderFilterForm(opts FilterFormOpts) string {
 			translation.SprintfForRequest(configmanager.GetLanguage(), "preview results")))
 		cancelURL := "/"
 		if opts.IsEdit {
-			cancelURL = pathutils.ToFileURL(pathutils.DocsPath(filter.FilterIndexPath(opts.FilterID)).String())
+			cancelURL = pathutils.ToFileURL(pathutils.DocsPath(filter.FilterIndexPath(opts.FilterID)))
 		}
 		html.WriteString(fmt.Sprintf(`<button type="button" data-href="%s" onclick="window.location.href=this.dataset.href" class="btn-secondary">%s</button>`,
 			cancelURL,
@@ -275,7 +275,7 @@ func RenderFilterFileView(relPath string) (string, bool) {
 func renderFileListItems(fileList []files.File) string {
 	var b strings.Builder
 	for _, file := range fileList {
-		b.WriteString(fmt.Sprintf(`<a class="filter-list-item" href="%s">%s</a>`, file.ViewURL(), GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)))
+		b.WriteString(fmt.Sprintf(`<a class="filter-list-item" href="%s">%s</a>`, file.ViewURL(), GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)))
 	}
 	return b.String()
 }

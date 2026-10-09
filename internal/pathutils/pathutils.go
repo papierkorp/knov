@@ -455,24 +455,26 @@ func docsURLRel(docsPath string) string {
 }
 
 // ToFileURL returns a browser-safe URL for viewing a docs file (docsPath is its docs/ path).
-func ToFileURL(docsPath string) string { return "/files/" + escapeRelPath(docsURLRel(docsPath)) }
+func ToFileURL(docsPath MetaPath) string {
+	return "/files/" + escapeRelPath(docsURLRel(docsPath.String()))
+}
 
 // ToFileEditURL returns a browser-safe URL for editing a docs file.
-func ToFileEditURL(docsPath string) string {
-	return "/files/edit/" + escapeRelPath(docsURLRel(docsPath))
+func ToFileEditURL(docsPath MetaPath) string {
+	return "/files/edit/" + escapeRelPath(docsURLRel(docsPath.String()))
 }
 
 // ToMediaURL returns a browser-safe URL for viewing a media file.
 func ToMediaURL(rel string) string { return "/media/" + escapeRelPath(rel) }
 
 // ToFileEditTableURL returns a browser-safe URL for editing a file's table.
-func ToFileEditTableURL(docsPath string) string {
-	return "/files/edittable/" + escapeRelPath(docsURLRel(docsPath))
+func ToFileEditTableURL(docsPath MetaPath) string {
+	return "/files/edittable/" + escapeRelPath(docsURLRel(docsPath.String()))
 }
 
 // ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
-func ToFileHistoryURL(docsPath string) string {
-	return "/files/history/" + escapeRelPath(docsURLRel(docsPath))
+func ToFileHistoryURL(docsPath MetaPath) string {
+	return "/files/history/" + escapeRelPath(docsURLRel(docsPath.String()))
 }
 
 // ToRouteURL returns a browser-safe URL for a route that takes a path after its prefix
@@ -529,4 +531,13 @@ func (m MetaPath) FullPath() string {
 		rel = string(r)
 	}
 	return containPath(root, filepath.Join(root, rel))
+}
+
+// GuessMeta reads s as a metadata path where its kind is not known: "docs/..." and "media/..." as
+// they are, a data path prefix dropped, any other path as a docs path. Only for input that is
+// entered by a user or another system (a form value, a typed link, a settings value) - a value that
+// is known to be a docs-relative path goes through DocsPath, one that is known to be a metadata
+// path through ParseMeta.
+func GuessMeta(s string) MetaPath {
+	return MetaPath(ToWithPrefix(s))
 }

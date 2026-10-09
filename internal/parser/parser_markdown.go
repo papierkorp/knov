@@ -728,7 +728,7 @@ func (r *knovNodeRenderer) headerButtons() string {
 	}
 	editBtn := fmt.Sprintf(
 		`<a href="%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
-		pathutils.ToFileEditURL(pathutils.DocsPath(r.relPath).String()), url.QueryEscape(r.headingID),
+		pathutils.ToFileEditURL(pathutils.DocsPath(r.relPath)), url.QueryEscape(r.headingID),
 		translation.SprintfForRequest(lang, "edit section"),
 	)
 	return pdfBtn + editBtn
@@ -798,7 +798,7 @@ func (s *sectionWriter) closeSection() {
 	if s.editID != "" && s.relPath != PathlessRender && s.editableSections {
 		editBtn = fmt.Sprintf(
 			`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
-			pathutils.ToFileEditURL(pathutils.DocsPath(s.relPath).String()), url.QueryEscape(s.editID),
+			pathutils.ToFileEditURL(pathutils.DocsPath(s.relPath)), url.QueryEscape(s.editID),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 		)
@@ -873,9 +873,9 @@ func fallbackLinkText(l Link) string {
 // pure anchor): a docs file its /files/ url, a media file its detail page - the file itself for
 // a link written as url (/media/, /files/media/) and in html. The path is decoded, the app url
 // encodes it so goldmark accepts spaces/unicode; query, anchor and title are kept for every target.
-func appLinkDest(l Link, target string) string {
-	anchor := linkAnchor(l, target)
-	rel, media := strings.CutPrefix(target, "media/")
+func appLinkDest(l Link, target pathutils.MetaPath) string {
+	anchor := linkAnchor(l, target.String())
+	rel, media := target.MediaRel()
 	var u string
 	switch {
 	case target == "":
@@ -914,16 +914,16 @@ func linkAnchor(l Link, target string) string {
 // renderImage and goldmark in an interactive table cell render the same: a media file its
 // /media/ url, a docs file its /files/ url - and a file that exists nowhere its /media/ url too,
 // so the preview says it is missing.
-func imageDest(l Link, target string) string {
-	rel, media := strings.CutPrefix(target, "media/")
+func imageDest(l Link, target pathutils.MetaPath) string {
+	rel, media := target.MediaRel()
 	var u string
-	switch _, err := os.Stat(pathutils.ToFullPath(target)); {
+	switch _, err := os.Stat(target.FullPath()); {
 	case media:
 		u = pathutils.ToMediaURL(rel)
 	case err == nil:
 		u = pathutils.ToFileURL(target)
 	default:
-		u = pathutils.ToMediaURL(strings.TrimPrefix(target, "docs/"))
+		u = pathutils.ToMediaURL(strings.TrimPrefix(target.String(), "docs/"))
 	}
 	return u + l.Query + l.Anchor + l.Title
 }
@@ -938,7 +938,7 @@ func refDefDest(m linkMatch, docPath string) string {
 		return m.Dest
 	}
 	l.Path = ResolveLinkPath(docPath, l)
-	if configmanager.IsImageExtension(strings.ToLower(path.Ext(target))) {
+	if configmanager.IsImageExtension(strings.ToLower(path.Ext(target.String()))) {
 		return imageDest(l, target)
 	}
 	return appLinkDest(l, target)
@@ -978,7 +978,7 @@ func (h *MarkdownHandler) ExtractLinks(content []byte, docPath string) []string 
 	// never replaces one, so the (unchanged) content it returns is discarded
 	RewriteLinks(string(content), func(l Link) (string, bool) {
 		if target := LinkTarget(docPath, l); target != "" {
-			links = append(links, target)
+			links = append(links, target.String())
 		}
 		return "", false
 	})

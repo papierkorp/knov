@@ -70,7 +70,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
+		normalizedPath := file.Path
 		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			if !existed {
 				return false, nil
@@ -93,7 +93,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 		bump()
 		normalizedPath := pathutils.DocsPath(rawPath).String()
-		metadata, err := MetaDataGet(normalizedPath)
+		metadata, err := MetaDataGet(pathutils.GuessMeta(normalizedPath))
 		if err != nil || metadata == nil {
 			continue
 		}
@@ -124,13 +124,13 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 
 		updateAncestors(metadata, metaCache)
 
-		fullPath := pathutils.ToDocsPath(metadata.Path)
+		fullPath := pathutils.ToDocsPath(metadata.Path.String())
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
 			handler := parser.GetParserRegistry().GetHandler(fullPath)
 			if handler != nil {
-				for _, target := range handler.ExtractLinks(contentData, metadata.Path) {
-					if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
+				for _, target := range handler.ExtractLinks(contentData, metadata.Path.String()) {
+					if target != metadata.Path.String() && !slices.Contains(metadata.UsedLinks, target) {
 						metadata.UsedLinks = append(metadata.UsedLinks, target)
 					}
 				}
@@ -148,7 +148,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		updateTitle(metadata)
 
 		ancestor, usedLinks, title := metadata.Ancestor, metadata.UsedLinks, metadata.Title
-		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
 			m.Ancestor = ancestor
 			m.UsedLinks = usedLinks
 			m.Title = title
@@ -181,7 +181,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 
 		kids, linksToHere := metadata.Kids, metadata.LinksToHere
-		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
 			m.Kids = kids
 			m.LinksToHere = linksToHere
 			return true, nil
@@ -203,7 +203,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 		related := computeRelated(metadata, metaCache, 5)
 		metadata.Related = related
-		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
 			m.Related = related
 			return true, nil
 		}); err != nil {
@@ -218,8 +218,8 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
-		linksToHere := linksToHereMap[normalizedPath]
+		normalizedPath := file.Path
+		linksToHere := linksToHereMap[normalizedPath.String()]
 		if linksToHere == nil {
 			linksToHere = []string{}
 		}
@@ -258,9 +258,9 @@ func MetaDataLinksRebuildForFile(filePath string) error {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	logging.LogInfo(logging.KeyApp, "rebuilding metadata links for file: %s", normalizedPath)
 
-	unlock := lockMetaPath(normalizedPath)
+	unlock := lockMetaPath(pathutils.GuessMeta(normalizedPath))
 
-	metadata, err := MetaDataGet(normalizedPath)
+	metadata, err := MetaDataGet(pathutils.GuessMeta(normalizedPath))
 	if err != nil {
 		unlock()
 		return err
@@ -316,7 +316,7 @@ func updateAncestors(metadata *Metadata, cache map[string]*Metadata) {
 		visited[parent] = true
 
 		ancestor := findTopAncestor(parent, make(map[string]bool), cache)
-		if ancestor != "" && ancestor != metadata.Path {
+		if ancestor != "" && ancestor != metadata.Path.String() {
 			ancestors = append(ancestors, ancestor)
 		}
 	}
@@ -340,7 +340,7 @@ func findTopAncestor(filePath string, visited map[string]bool, cache map[string]
 
 	if metadata == nil {
 		var err error
-		metadata, err = MetaDataGet(filePath)
+		metadata, err = MetaDataGet(pathutils.GuessMeta(filePath))
 		if err != nil || metadata == nil {
 			logging.LogWarning(logging.KeyApp, "cannot find metadata for parent %s", filePath)
 			return filePath
@@ -364,11 +364,11 @@ func findTopAncestor(filePath string, visited map[string]bool, cache map[string]
 // metadata.Path's own write lock - see updateLinksToHereFanOut.
 func updateUsedLinks(metadata *Metadata) []func() {
 	// skip link extraction for media files
-	if strings.HasPrefix(metadata.Path, "media/") {
+	if strings.HasPrefix(metadata.Path.String(), "media/") {
 		return nil
 	}
 
-	fullPath := pathutils.ToFullPath(metadata.Path)
+	fullPath := pathutils.ToFullPath(metadata.Path.String())
 
 	logging.LogInfo(logging.KeyApp, "processing file for links: %s", fullPath)
 
@@ -384,7 +384,7 @@ func updateUsedLinks(metadata *Metadata) []func() {
 		return nil
 	}
 
-	links := handler.ExtractLinks(contentData, metadata.Path)
+	links := handler.ExtractLinks(contentData, metadata.Path.String())
 	logging.LogInfo(logging.KeyApp, "extracted %d links from %s", len(links), metadata.Path)
 
 	// store old links to detect removals
@@ -394,14 +394,14 @@ func updateUsedLinks(metadata *Metadata) []func() {
 	metadata.UsedLinks = []string{}
 
 	for _, target := range links {
-		if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
+		if target != metadata.Path.String() && !slices.Contains(metadata.UsedLinks, target) {
 			metadata.UsedLinks = append(metadata.UsedLinks, target)
 		}
 	}
 
 	logging.LogDebug(logging.KeyApp, "cleaned used links for %s: %v", metadata.Path, metadata.UsedLinks)
 
-	return updateLinksToHereFanOut(metadata.Path, oldUsedLinks, metadata.UsedLinks)
+	return updateLinksToHereFanOut(metadata.Path.String(), oldUsedLinks, metadata.UsedLinks)
 }
 
 // updateLinksToHereFanOut builds the closures that add/remove sourcePath from the LinksToHere
@@ -445,7 +445,7 @@ func updateLinksToHereFanOut(sourcePath string, oldLinks, newLinks []string) []f
 // addLinksToHere adds sourcePath to path's LinksToHere if not already present. changed is
 // false (with a nil error) when path has no metadata yet or already lists sourcePath.
 func addLinksToHere(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed || slices.Contains(m.LinksToHere, sourcePath) {
 			return false, nil
 		}
@@ -458,7 +458,7 @@ func addLinksToHere(path, sourcePath string) (changed bool, err error) {
 
 // removeLinksToHere removes sourcePath from path's LinksToHere if present.
 func removeLinksToHere(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -493,12 +493,12 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 			continue
 		}
 
-		if slices.Contains(otherMetadata.Parents, metadata.Path) {
-			kids = append(kids, file.Path)
+		if slices.Contains(otherMetadata.Parents, metadata.Path.String()) {
+			kids = append(kids, file.Path.String())
 		}
 
-		if slices.Contains(otherMetadata.UsedLinks, metadata.Path) {
-			linksToHere = append(linksToHere, file.Path)
+		if slices.Contains(otherMetadata.UsedLinks, metadata.Path.String()) {
+			linksToHere = append(linksToHere, file.Path.String())
 		}
 	}
 
@@ -530,7 +530,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)
 
-	oldMetadata, err := MetaDataGet(normalizedOldPath)
+	oldMetadata, err := MetaDataGet(pathutils.GuessMeta(normalizedOldPath))
 	if err != nil {
 		logging.LogWarning(key, "could not get metadata for moved file %s: %v", normalizedOldPath, err)
 		return err
@@ -550,7 +550,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 	// step 1: rebuild outbound links for the moved file
 	var movedMetadata *Metadata
 	var movedFanOut []func()
-	if err := MetaDataMutate(normalizedNewPath, func(m *Metadata, existed bool) (bool, error) {
+	if err := MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -604,7 +604,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 				continue
 			}
 			linkedPath := linkedPath
-			err := MetaDataMutate(linkedPath, func(m *Metadata, existed bool) (bool, error) {
+			err := MetaDataMutate(pathutils.GuessMeta(linkedPath), func(m *Metadata, existed bool) (bool, error) {
 				if !existed {
 					logging.LogWarning(key, "could not get metadata for linked file %s", linkedPath)
 					return false, nil
@@ -694,7 +694,7 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 	}
 	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
 		target := parser.LinkTarget(oldPath, l)
-		if !pathutils.IsRelativeLink(l.Path) && !parser.IsBareLink(l) || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target)) {
+		if !pathutils.IsRelativeLink(l.Path) && !parser.IsBareLink(l) || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target.String())) {
 			return "", false
 		}
 		// a "./" or "../" link gets a new relative path (its docs-root path has no media/ prefix, a
@@ -702,11 +702,11 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 		if pathutils.IsRelativeLink(l.Path) && l.Kind != parser.LinkHTML {
 			target := parser.LinkTarget(oldPath, l)
 			if !strings.HasSuffix(l.Path, ".md") {
-				target = strings.TrimSuffix(target, ".md") // keep an extensionless link extensionless
+				target = pathutils.GuessMeta(strings.TrimSuffix(target.String(), ".md")) // keep an extensionless link extensionless
 			}
-			return relativeDocLink(newPath, target), true
+			return relativeDocLink(newPath, target.String()), true
 		}
-		return rebuildLinkTarget(newPath, l, target), true
+		return rebuildLinkTarget(newPath, l, target.String()), true
 	})
 	if !changed {
 		return
@@ -727,7 +727,7 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 // the new name would then read as another file ([[v1.2]] isn't v1.2.md)
 func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (string, bool) {
 	return func(l parser.Link) (string, bool) {
-		if parser.LinkTarget(filePath, l) != oldPath {
+		if parser.LinkTarget(filePath, l).String() != oldPath {
 			return "", false
 		}
 		relative := pathutils.IsRelativeLink(l.Path)
@@ -800,13 +800,13 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)
 
-	oldMetadata, err := MetaDataGet(normalizedOldPath)
+	oldMetadata, err := MetaDataGet(pathutils.GuessMeta(normalizedOldPath))
 	if err != nil {
 		logging.LogDebug(key, "no metadata found for %s, creating new metadata for %s", normalizedOldPath, normalizedNewPath)
 	}
 
 	if oldMetadata != nil {
-		if err := MetaDataMutate(normalizedNewPath, func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(m *Metadata, existed bool) (bool, error) {
 			m.Tags = oldMetadata.Tags
 			m.Parents = oldMetadata.Parents
 			m.Editor = oldMetadata.Editor
@@ -820,11 +820,11 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 		}
 	}
 
-	if err := MetaDataSyncNoRefresh(normalizedNewPath); err != nil {
+	if err := MetaDataSyncNoRefresh(pathutils.GuessMeta(normalizedNewPath)); err != nil {
 		return fmt.Errorf("failed to sync metadata for new path %s: %w", normalizedNewPath, err)
 	}
 
-	if err := MetaDataDelete(normalizedOldPath); err != nil {
+	if err := MetaDataDelete(pathutils.GuessMeta(normalizedOldPath)); err != nil {
 		logging.LogWarning(key, "failed to delete old metadata for %s: %v", normalizedOldPath, err)
 	}
 
@@ -834,11 +834,11 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 
 // updateTitle extracts the title from the first markdown header in the file.
 func updateTitle(metadata *Metadata) {
-	if strings.HasPrefix(metadata.Path, "media/") {
+	if strings.HasPrefix(metadata.Path.String(), "media/") {
 		return
 	}
 
-	fullPath := pathutils.ToFullPath(metadata.Path)
+	fullPath := pathutils.ToFullPath(metadata.Path.String())
 
 	logging.LogDebug(logging.KeyApp, "extracting title for %s", metadata.Path)
 
@@ -902,7 +902,7 @@ func SetParentsNoRefresh(path string, parents []string) error {
 	normalized := pathutils.ToWithPrefix(path)
 
 	var oldParents, newParents []string
-	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
+	err := MetaDataMutate(pathutils.GuessMeta(normalized), func(m *Metadata, existed bool) (bool, error) {
 		oldParents = append(oldParents, m.Parents...)
 		for _, parent := range parents {
 			newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
@@ -935,7 +935,7 @@ func SetMetadataNoRefresh(path string, patch *Metadata) error {
 
 	var oldParents, newParents []string
 	var fanOut []func()
-	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
+	err := MetaDataMutate(pathutils.GuessMeta(normalized), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			m.CreatedAt = time.Now()
 		}
@@ -1028,7 +1028,7 @@ func parentChildFanOut(sourcePath string, oldParents, newParents []string) []fun
 
 // addKid adds sourcePath to path's Kids if not already present.
 func addKid(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed || slices.Contains(m.Kids, sourcePath) {
 			return false, nil
 		}
@@ -1041,7 +1041,7 @@ func addKid(path, sourcePath string) (changed bool, err error) {
 
 // removeKid removes sourcePath from path's Kids if present.
 func removeKid(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -1060,9 +1060,9 @@ func removeKid(path, sourcePath string) (changed bool, err error) {
 func UpdateLinksForSingleFile(filePath string) error {
 	logging.LogInfo(logging.KeyApp, "updating links for file: %s", filePath)
 
-	unlock := lockMetaPath(filePath)
+	unlock := lockMetaPath(pathutils.GuessMeta(filePath))
 
-	metadata, err := MetaDataGet(filePath)
+	metadata, err := MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil {
 		unlock()
 		logging.LogWarning(logging.KeyApp, "failed to get metadata for file %s: %v", filePath, err)
@@ -1108,7 +1108,7 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 	scores := make(map[string]int)
 	if cache != nil {
 		for path, other := range cache {
-			if path == target.Path {
+			if path == target.Path.String() {
 				continue
 			}
 			score := 0
@@ -1151,7 +1151,7 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 				}
 			}
 			if score > 0 {
-				scores[f.Path] = score
+				scores[f.Path.String()] = score
 			}
 		}
 	}
@@ -1213,7 +1213,7 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
 		if !slices.Contains(metadata.UsedLinks, normalizedOld) {
 			continue
 		}
-		ok, err := updateLinksInFile(logging.KeyApp, file.Path, oldMediaPath, newMediaPath)
+		ok, err := updateLinksInFile(logging.KeyApp, file.Path.String(), oldMediaPath, newMediaPath)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to update media links in %s: %v", file.Path, err)
 		} else if ok {
@@ -1264,14 +1264,14 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 	for _, f := range docFiles {
 		// links may be written either relative ("note.md") or with the docs/
 		// prefix ("docs/note.md", as produced by the app's own file-view URLs)
-		validPaths[f.Path] = true
-		validPaths[pathutils.ToWithPrefix(f.Path)] = true
-		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
+		validPaths[f.Path.String()] = true
+		validPaths[pathutils.ToWithPrefix(f.Path.String())] = true
+		byBasename[filepath.Base(f.Path.String())] = append(byBasename[filepath.Base(f.Path.String())], f.Path.String())
 	}
 	for _, f := range mediaFiles {
-		validPaths[f.Path] = true
-		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
-		byLinkText[parser.LinkTarget(parser.PathlessRender, parser.ParseLink(f.Path, parser.LinkMarkdown))] = f.Path
+		validPaths[f.Path.String()] = true
+		byBasename[filepath.Base(f.Path.String())] = append(byBasename[filepath.Base(f.Path.String())], f.Path.String())
+		byLinkText[parser.LinkTarget(parser.PathlessRender, parser.ParseLink(f.Path.String(), parser.LinkMarkdown)).String()] = f.Path.String()
 	}
 
 	var broken []BrokenLink
@@ -1280,16 +1280,16 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 		if err != nil || metadata == nil {
 			continue
 		}
-		for _, target := range aboveRootTargets(metadata.Path) {
+		for _, target := range aboveRootTargets(metadata.Path.String()) {
 			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
-				broken = append(broken, BrokenLink{SourceFile: metadata.Path, Target: target, Suggested: target, AboveRoot: true})
+				broken = append(broken, BrokenLink{SourceFile: metadata.Path.String(), Target: target, Suggested: target, AboveRoot: true})
 			}
 		}
 		for _, target := range metadata.UsedLinks {
 			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
 				continue
 			}
-			bl := BrokenLink{SourceFile: metadata.Path, Target: target}
+			bl := BrokenLink{SourceFile: metadata.Path.String(), Target: target}
 			if p, ok := byLinkText[target]; ok {
 				bl.Suggested = p
 			} else if candidates := byBasename[filepath.Base(target)]; len(candidates) == 1 {
@@ -1318,8 +1318,8 @@ func aboveRootTargets(docPath string) []string {
 		if parser.IsBareLink(l) {
 			p = "./" + p
 		}
-		if target := parser.LinkTarget(docPath, l); pathutils.LinkClimbsAboveRoot(docPath, p) && target != "" && !slices.Contains(targets, target) {
-			targets = append(targets, target)
+		if target := parser.LinkTarget(docPath, l); pathutils.LinkClimbsAboveRoot(docPath, p) && target != "" && !slices.Contains(targets, target.String()) {
+			targets = append(targets, target.String())
 		}
 		return "", false
 	})

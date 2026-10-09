@@ -67,8 +67,7 @@ var consumers = []consumer{
 
 // knownBugs are the disagreements that are not fixed yet, keyed "consumer loc". The test fails
 // when one of them agrees again (remove it) and when any other one disagrees.
-var knownBugs = map[string]string{
-}
+var knownBugs = map[string]string{}
 
 func TestPathAgreement(t *testing.T) {
 	for _, c := range consumers {
@@ -189,7 +188,7 @@ func linkForms(loc string) map[string]parser.Link {
 func resolved(docPath, content string) string {
 	var targets []string
 	parser.RewriteLinks(content, func(l parser.Link) (string, bool) {
-		targets = append(targets, parser.LinkTarget(docPath, l))
+		targets = append(targets, parser.LinkTarget(docPath, l).String())
 		return "", false
 	})
 	return strings.Join(targets, "|")
@@ -268,8 +267,8 @@ func filterIndex(t *testing.T, loc string) string {
 	}
 	var got []string
 	parser.RewriteLinks(string(b), func(l parser.Link) (string, bool) {
-		if tgt := parser.LinkTarget("docs/agree.md", l); strings.HasSuffix(tgt, "x.png") || strings.HasSuffix(tgt, "x.md") || strings.HasSuffix(tgt, "'q' x.md") {
-			got = append(got, tgt)
+		if tgt := parser.LinkTarget("docs/agree.md", l); strings.HasSuffix(tgt.String(), "x.png") || strings.HasSuffix(tgt.String(), "x.md") || strings.HasSuffix(tgt.String(), "'q' x.md") {
+			got = append(got, tgt.String())
 		}
 		return "", false
 	})

@@ -15,7 +15,7 @@ import (
 
 func containsFilePath(list []files.File, path string) bool {
 	for _, f := range list {
-		if pathutils.ToRelative(f.Path) == path {
+		if pathutils.ToRelative(f.Path.String()) == path {
 			return true
 		}
 	}
@@ -33,15 +33,15 @@ func caseMetadataFullRebuild() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	child, err := files.MetaDataGet(withPrefix(childFile))
+	child, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(childFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
-	parent, err := files.MetaDataGet(withPrefix(parentFile))
+	parent, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(parentFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
-	linker, err := files.MetaDataGet(withPrefix(linkerFile))
+	linker, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkerFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -108,7 +108,7 @@ func caseCacheInvalidate() test.CaseResult {
 	if err := writeFile(newFile, "# jobs-cache-new.md\n\ncontent\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := test.SeedMetadataRaw(&files.Metadata{Path: pathutils.ToWithPrefix(newFile), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataRaw(&files.Metadata{Path: pathutils.GuessMeta(newFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -165,7 +165,7 @@ func caseMediaCleanup() test.CaseResult {
 
 	_, orphanStatErr := os.Stat(pathutils.ToMediaPath(mediaPath(orphanMediaFile)))
 	orphanGone := os.IsNotExist(orphanStatErr)
-	orphanMeta, _ := files.MetaDataGet("media/" + mediaPath(orphanMediaFile))
+	orphanMeta, _ := files.MetaDataGet(pathutils.MediaPath(mediaPath(orphanMediaFile)))
 
 	_, usedStatErr := os.Stat(pathutils.ToMediaPath(mediaPath(usedMediaFile)))
 	usedKept := usedStatErr == nil

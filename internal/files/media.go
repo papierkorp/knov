@@ -100,7 +100,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// Editor is intentionally left unset for media files — recomputeDerivedFields skips
 	// the editor fallback for media/ paths, so it stays empty. Filtering uses the path
 	// prefix + mime type via isHiddenByType instead.
-	if err := MetaDataSync(metadataPath); err != nil {
+	if err := MetaDataSync(pathutils.GuessMeta(metadataPath)); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for media file %s: %v", metadataPath, err)
 		// don't fail the whole request, just log the error
 	} else {
@@ -183,7 +183,7 @@ func FilterMediaFiles(mediaFiles []File, orphanedMedia []string, filter string) 
 	for _, media := range mediaFiles {
 		isOrphaned := false
 		for _, orphaned := range orphanedMedia {
-			if orphaned == media.Path {
+			if orphaned == media.Path.String() {
 				isOrphaned = true
 				break
 			}
@@ -256,17 +256,17 @@ func GetMediaStorageStats() (*MediaStorageStats, error) {
 	for _, file := range mediaFiles {
 		// size stays 0 if the file info can't be read
 		var fileSize int64
-		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path, "media/"))
+		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path.String(), "media/"))
 		if fileInfo, err := contentStorage.GetFileInfo(fullPath); err == nil && fileInfo != nil {
 			fileSize = fileInfo.Size()
 		}
 
-		c := types.MediaCategory(file.Path)
+		c := types.MediaCategory(file.Path.String())
 		if byCategory[c] == nil {
 			byCategory[c] = &MediaCategoryStats{Category: c}
 		}
-		byCategory[c].add(fileSize, orphaned[file.Path])
-		stats.add(fileSize, orphaned[file.Path])
+		byCategory[c].add(fileSize, orphaned[file.Path.String()])
+		stats.add(fileSize, orphaned[file.Path.String()])
 	}
 
 	for _, c := range byCategory {

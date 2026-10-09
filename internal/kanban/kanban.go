@@ -113,7 +113,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 
 		if lq != "" {
 			title := strings.ToLower(meta.Title)
-			fp := strings.ToLower(file.Path)
+			fp := strings.ToLower(file.Path.String())
 			if !strings.Contains(title, lq) && !strings.Contains(fp, lq) {
 				continue
 			}
@@ -236,7 +236,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 	// physical move below fail with ErrMoveSourceMissing under a concurrent mover of the same
 	// path, which is an accepted, fail-safe race (returns an error, changes nothing) rather than
 	// one worth retrying - see prior review discussion for why a retry can't actually recover it
-	meta, err := files.MetaDataGet(normalizedPath)
+	meta, err := files.MetaDataGet(pathutils.GuessMeta(normalizedPath))
 	if err != nil || meta == nil {
 		return "", filePath, err
 	}
@@ -285,7 +285,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 	// concurrent writer of the same file (e.g. file-sync's per-changed-file metadata
 	// refresh) can't read stale tags in between and silently revert this move on its own
 	// save.
-	err = files.MetaDataMutate(normalizedNewPath, func(meta *files.Metadata, existed bool) (bool, error) {
+	err = files.MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(meta *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -376,7 +376,7 @@ func SyncFolderTag(path string, changedAt time.Time) error {
 
 	var oldStatus, status, board string
 	var applied bool
-	err := files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+	err := files.MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(meta *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -441,7 +441,7 @@ func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]k
 // cardFromFile builds a Card from a cached file entry and its already-resolved kanban status.
 func cardFromFile(file files.File, status string) Card {
 	meta := file.Metadata
-	relPath := pathutils.ToRelative(file.Path)
+	relPath := pathutils.ToRelative(file.Path.String())
 	card := Card{
 		FilePath:   relPath,
 		Title:      meta.Title,
@@ -584,7 +584,7 @@ func FilesForFolder(folderPath string) ([]string, error) {
 
 	paths := make([]string, 0, len(cards))
 	for _, file := range cards {
-		paths = append(paths, pathutils.ToRelative(file.Path))
+		paths = append(paths, pathutils.ToRelative(file.Path.String()))
 	}
 	slices.Sort(paths)
 	return paths, nil

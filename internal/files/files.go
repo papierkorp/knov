@@ -45,10 +45,10 @@ func FolderFromPath(path string) string {
 
 // File represents a file in the system
 type File struct {
-	Name       string    `json:"name"`
-	Path       string    `json:"path"`
-	Metadata   *Metadata `json:"metadata,omitempty"`
-	FuzzyMatch bool      `json:"-"` // set by search when the result comes from fuzzy (trigram) matching rather than an exact match
+	Name       string             `json:"name"`
+	Path       pathutils.MetaPath `json:"path"`
+	Metadata   *Metadata          `json:"metadata,omitempty"`
+	FuzzyMatch bool               `json:"-"` // set by search when the result comes from fuzzy (trigram) matching rather than an exact match
 }
 
 type FileContent struct {
@@ -68,11 +68,11 @@ func pathsToFiles(paths []string, prefix string) []File {
 		fullPath := pathutils.ToSlash(filepath.Join(prefix, path))
 
 		// get metadata if it exists
-		metadata, _ := MetaDataGet(fullPath)
+		metadata, _ := MetaDataGet(pathutils.GuessMeta(fullPath))
 
 		file := File{
 			Name:     fileName,
-			Path:     fullPath,
+			Path:     pathutils.GuessMeta(fullPath),
 			Metadata: metadata,
 		}
 		files = append(files, file)
@@ -195,7 +195,7 @@ func FilterByVisibility(files []File, scope string) []File {
 // For media paths the mime type (derived from extension) is used.
 // For docs paths the metadata Editor field is used.
 func isHiddenByType(file File) bool {
-	ext := strings.ToLower(filepath.Ext(file.Path))
+	ext := strings.ToLower(filepath.Ext(file.Path.String()))
 	mime := types.MimeTypeByExtension(ext)
 
 	// check by mime (image, video, pdf — reliable on all platforms)
@@ -219,7 +219,7 @@ func isHiddenByType(file File) bool {
 // isInHiddenFolder returns true if the file's containing folder path matches a configured
 // hide-path pattern.
 func isInHiddenFolder(file File, hide *configmanager.HideMatcher) bool {
-	rel := pathutils.ToRelative(file.Path)
+	rel := pathutils.ToRelative(file.Path.String())
 	parts := strings.Split(rel, "/")
 	if len(parts) < 2 {
 		return false
@@ -240,9 +240,9 @@ type TreeNode struct {
 func BuildFileTree(allFiles []File) *TreeNode {
 	root := &TreeNode{IsDir: true}
 	for _, file := range allFiles {
-		rel := pathutils.ToRelative(file.Path)
+		rel := pathutils.ToRelative(file.Path.String())
 		parts := strings.Split(rel, "/")
-		insertTreeNode(root, parts, file.Path, file.Metadata)
+		insertTreeNode(root, parts, file.Path.String(), file.Metadata)
 	}
 	sortTreeNode(root)
 	return root

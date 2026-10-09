@@ -54,7 +54,7 @@ func writeFile(relPath, content string) error {
 }
 
 func saveMetadata(name string, m *files.Metadata) error {
-	m.Path = withPrefix(name)
+	m.Path = pathutils.GuessMeta(withPrefix(name))
 	return test.SeedMetadata(m)
 }
 
@@ -117,7 +117,7 @@ func resetAndSeed() error {
 		return err
 	}
 	related := []string{withPrefix(childFile), withPrefix(grandchild), withPrefix(parent2File)}
-	if err := files.MetaDataMutate(withPrefix(relatedFile), func(m *files.Metadata, existed bool) (bool, error) {
+	if err := files.MetaDataMutate(pathutils.GuessMeta(withPrefix(relatedFile)), func(m *files.Metadata, existed bool) (bool, error) {
 		m.Related = related
 		return true, nil
 	}); err != nil {

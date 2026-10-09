@@ -360,7 +360,7 @@ func RenderTableHTML(data, fullData *types.TableData, filepath string, tableInde
 	html += `<div class="table-footer">`
 
 	html += fmt.Sprintf(`<a href="%s?tableindex=%d" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a>`,
-		pathutils.ToFileEditTableURL(pathutils.ToWithPrefix(filepath)), tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
+		pathutils.ToFileEditTableURL(pathutils.GuessMeta(filepath)), tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
 
 	html += `<div class="table-footer-right">`
 

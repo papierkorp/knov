@@ -40,7 +40,7 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 		return 0, err
 	}
 	// .book is a markdown extension, so books pass this check too
-	allFiles = slices.DeleteFunc(allFiles, func(f files.File) bool { return !parser.IsMarkdownExtension(f.Path) })
+	allFiles = slices.DeleteFunc(allFiles, func(f files.File) bool { return !parser.IsMarkdownExtension(f.Path.String()) })
 	opts := settingsOptions()
 
 	for i, f := range allFiles {
@@ -49,14 +49,14 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 		}
 		report(i, len(allFiles))
 
-		content, err := LoadSource(f.Path)
+		content, err := LoadSource(f.Path.String())
 		if err != nil {
 			logging.LogWarning(logging.KeyExport, "pdf export all: skip %s (load failed): %v", f.Path, err)
 			skipped++
 			continue
 		}
 
-		pdf, err := render(opts, f.Path, content)
+		pdf, err := render(opts, f.Path.String(), content)
 		if err != nil {
 			logging.LogWarning(logging.KeyExport, "pdf export all: skip %s (convert failed): %v", f.Path, err)
 			skipped++
@@ -64,11 +64,11 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 		}
 
 		var modified time.Time
-		if info, err := os.Stat(pathutils.ToDocsPath(f.Path)); err == nil {
+		if info, err := os.Stat(pathutils.ToDocsPath(f.Path.String())); err == nil {
 			modified = info.ModTime()
 		}
 		// keep the source extension so e.g. a.md and a.todo don't collide
-		if err := add(pathutils.ToSlash(pathutils.ToRelative(f.Path))+".pdf", modified, bytes.NewReader(pdf)); err != nil {
+		if err := add(pathutils.ToSlash(pathutils.ToRelative(f.Path.String()))+".pdf", modified, bytes.NewReader(pdf)); err != nil {
 			return skipped, err
 		}
 	}
@@ -154,7 +154,7 @@ func zoneTokens(filePath string) map[string]string {
 		"filepath": relPath,
 		"folder":   files.FolderFromPath(filePath),
 	}
-	if metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath)); err == nil && metadata != nil {
+	if metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath)); err == nil && metadata != nil {
 		tokens["created"] = configmanager.FormatDateTime(metadata.CreatedAt)
 		tokens["edited"] = configmanager.FormatDateTime(metadata.LastEdited)
 		tokens["tags"] = strings.Join(metadata.Tags, ", ")

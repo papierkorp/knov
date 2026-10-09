@@ -171,7 +171,7 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 	// the physical file may use a non-markdown extension (e.g. ".index"), so the
 	// editor type must be forced rather than left to extension inference
 	normalized := pathutils.ToWithPrefix(pairedPath)
-	if err := files.MetaDataSync(normalized); err != nil {
+	if err := files.MetaDataSync(pathutils.GuessMeta(normalized)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to save metadata for %s paired file %s: %v", k.label(), pairedPath, err)
 	} else if err := files.SetEditor(normalized, k.editor); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to set editor for %s paired file %s: %v", k.label(), pairedPath, err)
@@ -191,7 +191,7 @@ func (k Kind) Delete(id string) error {
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file %s: %v", k.label(), fullPath, err)
 	}
-	if err := files.MetaDataDelete(pathutils.ToWithPrefix(pairedPath)); err != nil {
+	if err := files.MetaDataDelete(pathutils.GuessMeta(pairedPath)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file metadata %s: %v", k.label(), pairedPath, err)
 	}
 	return configStorage.Delete(key)

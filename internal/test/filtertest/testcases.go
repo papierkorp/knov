@@ -532,7 +532,7 @@ func runCase(tc testConfig) test.CaseResult {
 
 	actualBasenames := make([]string, len(filterResult.Files))
 	for i, file := range filterResult.Files {
-		actualBasenames[i] = filepath.Base(file.Path)
+		actualBasenames[i] = filepath.Base(file.Path.String())
 	}
 	actual := fmt.Sprintf("%d files: %v", len(actualBasenames), actualBasenames)
 

@@ -232,7 +232,7 @@ func doMediaCleanup(paths []string) (MediaCleanupResult, error) {
 			continue
 		}
 		// double-check the file is still orphaned (cache may be stale)
-		meta, err := files.MetaDataGet(mediaPath)
+		meta, err := files.MetaDataGet(pathutils.GuessMeta(mediaPath))
 		if err == nil && meta != nil && len(meta.LinksToHere) > 0 {
 			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: skipping %s: no longer orphaned", mediaPath)
 			continue
@@ -250,7 +250,7 @@ func doMediaCleanup(paths []string) (MediaCleanupResult, error) {
 		}
 		// no-refresh: avoid a full background cache rebuild per deleted file
 		// when cleaning up dozens of orphaned media at once; refreshed once below.
-		if err := files.MetaDataDeleteNoRefresh(logging.KeyMediaCleanup, mediaPath); err != nil {
+		if err := files.MetaDataDeleteNoRefresh(logging.KeyMediaCleanup, pathutils.GuessMeta(mediaPath)); err != nil {
 			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
 		}
 		result.Deleted++

@@ -31,10 +31,10 @@ func caseGetMetadataSpecialCharFilepath() test.CaseResult {
 	if err := writeFile(relPath, "# "+specialCharFile+"\n\ncontent\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataSync(pathutils.ToWithPrefix(relPath)); err != nil {
+	if err := files.MetaDataSync(pathutils.GuessMeta(relPath)); err != nil {
 		return errCase(name, err)
 	}
-	defer func() { _ = files.MetaDataDelete(pathutils.ToWithPrefix(relPath)) }()
+	defer func() { _ = files.MetaDataDelete(pathutils.GuessMeta(relPath)) }()
 
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()

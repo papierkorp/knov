@@ -46,7 +46,7 @@ func caseUpload() test.CaseResult {
 		if err != nil {
 			return errCase("links-upload", err)
 		}
-		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc).String())).String())
+		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc))).String())
 		if err != nil {
 			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
 			continue
@@ -93,7 +93,7 @@ func caseRepairOldUpload() test.CaseResult {
 			if err := contentStorage.WriteFile(full, pngMagic, 0644); err != nil {
 				return nil, err
 			}
-			if err := files.MetaDataSync("media/" + literal); err != nil {
+			if err := files.MetaDataSync(pathutils.MediaPath(literal)); err != nil {
 				return nil, err
 			}
 			if err := saveDoc(folder+"/doc.md", "![pic.png](media/"+literal+")\n"); err != nil {
@@ -155,8 +155,8 @@ func caseRename() test.CaseResult {
 			"bare":        parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: strings.TrimPrefix(old, dir+"/")}.String(),
 			"wiki":        parser.Link{Kind: parser.LinkWiki, Path: old}.String(),
 			"wiki no ext": parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSuffix(old, ".md")}.String(),
-			"file url":    "[x](" + pathutils.ToFileURL(pathutils.DocsPath(old).String()) + ")",
-			"html":        `<a href="` + pathutils.ToFileURL(pathutils.DocsPath(old).String()) + `">x</a>`,
+			"file url":    "[x](" + pathutils.ToFileURL(pathutils.DocsPath(old)) + ")",
+			"html":        `<a href="` + pathutils.ToFileURL(pathutils.DocsPath(old)) + `">x</a>`,
 		})
 		if err != nil {
 			return errCase("links-rename", err)
@@ -227,7 +227,7 @@ func caseRelative() test.CaseResult {
 	gaps = append(gaps, linkGaps(dir+"/g/o.md", []string{pathutils.ToWithPrefix(dir + "/g/q.md")})...)
 	files.RefreshCaches()
 	// rt's links to the docs root are folder links, not broken ones
-	if meta, err := files.MetaDataGet(pathutils.ToWithPrefix(rtMoved)); err != nil || meta == nil || !slices.Contains(meta.UsedLinks, "docs/") {
+	if meta, err := files.MetaDataGet(pathutils.GuessMeta(rtMoved)); err != nil || meta == nil || !slices.Contains(meta.UsedLinks, "docs/") {
 		gaps = append(gaps, fmt.Sprintf("%s: folder link %q not in used links (%v)", rtMoved, "docs/", err))
 	}
 	broken, err := files.FindBrokenLinks()
@@ -339,7 +339,7 @@ func caseRelocate() test.CaseResult {
 		forms, err := saveForms(dir, map[string]string{
 			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: "/" + img}.String(),
 			"wiki":              parser.Link{Kind: parser.LinkWiki, Path: img}.String(),
-			"html":              `<img src="` + pathutils.ToFileURL(pathutils.DocsPath(img).String()) + `">`,
+			"html":              `<img src="` + pathutils.ToFileURL(pathutils.DocsPath(img)) + `">`,
 			"markdown relative": parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "y", Path: imgName(n)}.String(),
 		})
 		if err != nil {

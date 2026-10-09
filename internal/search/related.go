@@ -4,6 +4,7 @@ package search
 import (
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // GetRelatedFiles returns pre-computed related files stored in metadata during rebuild.
@@ -12,7 +13,7 @@ func GetRelatedFiles(filePath string, limit int) ([]string, error) {
 		limit = 5
 	}
 
-	meta, err := files.MetaDataGet(filePath)
+	meta, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || meta == nil {
 		return nil, nil
 	}

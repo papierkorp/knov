@@ -60,7 +60,7 @@ func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
 	}
 
 	for _, file := range mediaFiles {
-		relativePath := strings.TrimPrefix(file.Path, "media/")
+		relativePath := strings.TrimPrefix(file.Path.String(), "media/")
 		fileExt := strings.ToLower(filepath.Ext(relativePath))
 		filename := filepath.Base(relativePath)
 		mediaURL := pathutils.ToMediaURL(relativePath)
@@ -168,10 +168,10 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 
 	for _, file := range mediaFiles {
 		// check if this media is orphaned
-		isOrphaned := slices.Contains(orphanedMedia, file.Path)
+		isOrphaned := slices.Contains(orphanedMedia, file.Path.String())
 
 		// ensure media path is relative (remove media/ prefix)
-		relativePath := strings.TrimPrefix(file.Path, "media/")
+		relativePath := strings.TrimPrefix(file.Path.String(), "media/")
 		fileExt := strings.ToLower(filepath.Ext(relativePath))
 		filename := filepath.Base(relativePath)
 		mediaURL := pathutils.ToMediaURL(relativePath)
@@ -293,7 +293,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 			`</div>`
 	}
 
-	relativePath := strings.TrimPrefix(metadata.Path, "media/")
+	relativePath := strings.TrimPrefix(metadata.Path.String(), "media/")
 	fileExt := strings.ToLower(filepath.Ext(relativePath))
 	filename := filepath.Base(relativePath)
 	mediaURL := pathutils.ToMediaURL(relativePath)
@@ -372,7 +372,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 		for _, link := range metadata.LinksToHere {
 			linkPath := pathutils.ToRelative(link)
 			displayText := GetLinkDisplayText(pathutils.ToWithPrefix(link))
-			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(pathutils.DocsPath(linkPath).String()), linkPath, displayText)
+			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(pathutils.DocsPath(linkPath)), linkPath, displayText)
 		}
 		html.WriteString(`</ul>`)
 	}
@@ -387,14 +387,14 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "tags"))
 	html.WriteString(GenerateTagChipsInputWithSave("media-tags", "tags", tagsStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add tags"),
-		"/api/metadata/tags?format=options", metadata.Path, "/api/metadata/tags"))
+		"/api/metadata/tags?format=options", metadata.Path.String(), "/api/metadata/tags"))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`<div class="form-field">`)
 	fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "parents"))
 	html.WriteString(GenerateTagChipsInputWithSave("media-parents", "parents", parentsStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add parent files"),
-		"/api/files/list?format=options", metadata.Path, "/api/metadata/parents"))
+		"/api/files/list?format=options", metadata.Path.String(), "/api/metadata/parents"))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</div>`)

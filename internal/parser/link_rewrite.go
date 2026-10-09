@@ -748,45 +748,46 @@ func IsAppRouteLink(p string, kind LinkKind) bool {
 // "/media/" from the media folder and one written "docs/" as that docs path ("[[docs/media/x]]");
 // a path without a prefix is the docs file when it exists, else the media file of that name when
 // that exists (links copied from the media page have no "media/" prefix).
-func LinkTarget(docPath string, l Link) string {
+func LinkTarget(docPath string, l Link) pathutils.MetaPath {
 	return linkTarget(ResolveLinkPath(docPath, l), l, IsBareLink(l) || pathutils.IsRelativeLink(l.Path))
 }
 
 // DocsRootLinkTarget is the LinkTarget l had while a bare markdown or html path was read from the
 // docs root - for the relative links migration (files.ScanRelativeLinks).
-func DocsRootLinkTarget(docPath string, l Link) string {
+func DocsRootLinkTarget(docPath string, l Link) pathutils.MetaPath {
 	return linkTarget(pathutils.ResolveRelativeLink(docPath, l.Path), l, pathutils.IsRelativeLink(l.Path))
 }
 
 // linkTarget is the LinkTarget of l with its path p read from the docs root; joined is whether p
 // was resolved from the doc's folder, which makes it a docs-root path whatever its first folder
 // is called - unless l is written as a media link.
-func linkTarget(p string, l Link, joined bool) string {
+func linkTarget(p string, l Link, joined bool) pathutils.MetaPath {
 	if l.External || l.Path == "" || IsAppRouteLink(l.Path, l.Kind) {
 		return ""
 	}
 	if p == "/" {
-		return "docs/" // the docs root itself
+		return pathutils.DocsPath("") // the docs root itself
 	}
 	p = utils.NormalizeLinkPath(p)
 	switch {
 	case joined && !(strings.HasPrefix(p, "media/") && WrittenAsMedia(l.Path)):
 		return docsOrMediaTarget(p)
-	case strings.HasPrefix(p, "media/") || strings.HasPrefix(p, "docs/"):
-		return p
+	}
+	if m, ok := pathutils.ParseMeta(p); ok {
+		return m // written with its docs/ or media/ prefix
 	}
 	return docsOrMediaTarget(p)
 }
 
 // docsOrMediaTarget is the docs file p (a docs-root path) when it exists, else the media file of
 // that name when that exists, else the (missing) docs file.
-func docsOrMediaTarget(p string) string {
-	docs := pathutils.DocsPath(p).String()
-	if _, err := os.Stat(pathutils.ToFullPath(docs)); err == nil {
+func docsOrMediaTarget(p string) pathutils.MetaPath {
+	docs := pathutils.DocsPath(p)
+	if _, err := os.Stat(docs.FullPath()); err == nil {
 		return docs
 	}
-	if _, err := os.Stat(pathutils.ToMediaPath("media/" + p)); err == nil {
-		return "media/" + p
+	if media := pathutils.MediaPath(p); fileExistsAt(media) {
+		return media
 	}
 	return docs
 }
@@ -864,4 +865,9 @@ func (t tableRows) contains(offset int) bool {
 		}
 	}
 	return false
+}
+
+func fileExistsAt(m pathutils.MetaPath) bool {
+	_, err := os.Stat(m.FullPath())
+	return err == nil
 }

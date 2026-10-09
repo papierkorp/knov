@@ -24,10 +24,10 @@ func MigrateReservedFolderMetadata() int {
 		if fileExists(pathutils.ToFullPath(oldKey)) {
 			return
 		}
-		if old, _ := MetaDataGet(oldKey); old == nil {
+		if old, _ := MetaDataGet(pathutils.GuessMeta(oldKey)); old == nil {
 			return
 		}
-		if existing, _ := MetaDataGet(newKey); existing != nil {
+		if existing, _ := MetaDataGet(pathutils.GuessMeta(newKey)); existing != nil {
 			return
 		}
 		if err := moveFileMetadata(logging.KeyApp, oldKey, newKey); err != nil {

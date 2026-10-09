@@ -132,7 +132,7 @@ func createAutoMetadata() error {
 	// build skip set from copied files so parent logic ignores them
 	skipPaths := map[string]bool{}
 	for _, m := range getCopiedFilesMetadata() {
-		skipPaths[m.Path] = true
+		skipPaths[m.Path.String()] = true
 	}
 
 	for i, file := range autoTestFiles {
@@ -171,7 +171,7 @@ func createAutoMetadata() error {
 		}
 
 		metadata := &files.Metadata{
-			Path:    metadataPath,
+			Path:    pathutils.GuessMeta(metadataPath),
 			Tags:    extractFilenameTags(filepath.Base(file)),
 			Parents: parents,
 			Editor:  files.EditorTypeCodeMirror,

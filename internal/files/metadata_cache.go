@@ -286,7 +286,7 @@ func SaveAllFilePathsToCache() error {
 
 	var fileList []string
 	for _, file := range allFiles {
-		fileList = append(fileList, file.Path)
+		fileList = append(fileList, file.Path.String())
 	}
 
 	return saveStringListToCache(CacheKeyFilePaths, fileList)
@@ -421,7 +421,7 @@ func RebuildAllCaches() error {
 		if file.Metadata == nil {
 			continue
 		}
-		collector.CollectFromMetadata(file.Path, file.Metadata)
+		collector.CollectFromMetadata(file.Path.String(), file.Metadata)
 	}
 
 	// persist the full file list too, so tree/list requests can reuse this same
@@ -436,13 +436,13 @@ func RebuildAllCaches() error {
 		logging.LogWarning(logging.KeyFileSync, "failed to get media files for cache update: %v", err)
 	} else {
 		for _, file := range mediaFiles {
-			normalizedPath := pathutils.ToWithPrefix(file.Path)
+			normalizedPath := file.Path
 			if file.Metadata == nil {
 				// no metadata → never referenced → orphaned
-				collector.OrphanedMedia = append(collector.OrphanedMedia, normalizedPath)
+				collector.OrphanedMedia = append(collector.OrphanedMedia, normalizedPath.String())
 				continue
 			}
-			collector.CollectFromMetadata(normalizedPath, file.Metadata)
+			collector.CollectFromMetadata(normalizedPath.String(), file.Metadata)
 		}
 	}
 
@@ -487,7 +487,7 @@ func GetAllFolderPaths() ([]string, error) {
 	folderPaths := make(map[string]bool)
 
 	for _, file := range allFiles {
-		for _, path := range ancestorFolderPaths(file.Path) {
+		for _, path := range ancestorFolderPaths(file.Path.String()) {
 			folderPaths[path] = true
 		}
 	}
@@ -543,7 +543,7 @@ func UpdateOrphanedMediaCache() error {
 
 		// media is orphaned if it has no links to it
 		if len(metadata.LinksToHere) == 0 {
-			orphanedMedia = append(orphanedMedia, mediaFile.Path)
+			orphanedMedia = append(orphanedMedia, mediaFile.Path.String())
 		}
 	}
 
@@ -561,7 +561,7 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 	logging.LogDebug(logging.KeyApp, "incrementally updating orphaned media cache for file: %s", filePath)
 
 	// get file metadata to find affected media files
-	metadata, err := MetaDataGet(filePath)
+	metadata, err := MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || metadata == nil {
 		logging.LogDebug(logging.KeyApp, "no metadata found for %s, skipping cache update", filePath)
 		return nil
@@ -602,7 +602,7 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 
 	// check each affected media file and update orphaned status
 	for _, mediaPath := range affectedMediaFiles {
-		mediaMetadata, err := MetaDataGet(mediaPath)
+		mediaMetadata, err := MetaDataGet(pathutils.GuessMeta(mediaPath))
 		if err != nil || mediaMetadata == nil {
 			continue
 		}
@@ -678,7 +678,7 @@ func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
 		limit = 5
 	}
 
-	meta, err := MetaDataGet(filePath)
+	meta, err := MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || meta == nil {
 		return nil, err
 	}
@@ -698,7 +698,7 @@ func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
 		if strings.Join(f.Metadata.Folders, "/") != folder {
 			continue
 		}
-		result = append(result, f.Metadata.Path)
+		result = append(result, f.Metadata.Path.String())
 		if len(result) >= limit {
 			break
 		}
@@ -713,7 +713,7 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 		limit = 5
 	}
 
-	meta, err := MetaDataGet(filePath)
+	meta, err := MetaDataGet(pathutils.GuessMeta(filePath))
 	if err != nil || meta == nil || len(meta.Tags) == 0 {
 		return nil, err
 	}
@@ -740,7 +740,7 @@ func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
 			}
 		}
 		if score > 0 {
-			candidates = append(candidates, scored{f.Metadata.Path, score})
+			candidates = append(candidates, scored{f.Metadata.Path.String(), score})
 		}
 	}
 	slices.SortStableFunc(candidates, func(a, b scored) int { return b.score - a.score })

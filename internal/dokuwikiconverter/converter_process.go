@@ -302,7 +302,7 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 						if !strings.HasSuffix(url, ".md") {
 							url += ".md"
 						}
-						convertedURL = pathutils.ToFileURL("docs/"+url) + anchor
+						convertedURL = pathutils.ToFileURL(pathutils.DocsPath(url)) + anchor
 						l.Path = "/files/" + url
 					}
 				} else {
@@ -490,7 +490,7 @@ func (h *Converter) convertIncludeSections(content string, outputFormat string) 
 
 		// use the /files/ url consistently
 		if outputFormat == "html" {
-			return fmt.Sprintf(`<a href="%s">%s</a>`, pathutils.ToFileURL("docs/"+url)+anchor, pathSection)
+			return fmt.Sprintf(`<a href="%s">%s</a>`, pathutils.ToFileURL(pathutils.DocsPath(url))+anchor, pathSection)
 		}
 		return parser.Link{Kind: parser.LinkMarkdown, Text: pathSection, Path: "/files/" + url, Anchor: anchor}.String()
 	})

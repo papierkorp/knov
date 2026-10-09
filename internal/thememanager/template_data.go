@@ -234,14 +234,14 @@ func CreateFuncMap() template.FuncMap {
 		// urlPath encodes a docs-relative file path for use in href attributes.
 		// Uses %20 for spaces (not + like urlQuery) so browsers resolve it correctly.
 		"urlPath": func(s string) string {
-			return pathutils.ToFileURL(pathutils.DocsPath(s).String())
+			return pathutils.ToFileURL(pathutils.DocsPath(s))
 		},
 		// docsPath is the docs/ path of a docs-relative file path, what the ?filepath= apis take
 		"docsPath": func(rel string) string { return pathutils.DocsPath(rel).String() },
 		// mediaPath is the media/ path of a media-relative file path, what the ?filepath= apis take
 		"mediaPath": func(rel string) string { return pathutils.MediaPath(rel).String() },
 		// fileHistoryURL is the /files/history/ url of a docs-relative file path
-		"fileHistoryURL": func(rel string) string { return pathutils.ToFileHistoryURL(pathutils.DocsPath(rel).String()) },
+		"fileHistoryURL": func(rel string) string { return pathutils.ToFileHistoryURL(pathutils.DocsPath(rel)) },
 		"marshalJSON": func(v interface{}) string {
 			data, err := json.MarshalIndent(v, "", "  ")
 			if err != nil {

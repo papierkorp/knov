@@ -40,8 +40,8 @@ var metaLocks = keylock.New()
 // reentrant, and fan-out onto other paths must wait until this path's lock is released (see
 // MetaDataSyncNoRefresh's fanOut handling) to avoid an ABBA deadlock against another goroutine
 // doing the mirror-image update.
-func lockMetaPath(path string) (unlock func()) {
-	return metaLocks.Lock(pathutils.ToWithPrefix(path))
+func lockMetaPath(path pathutils.MetaPath) (unlock func()) {
+	return metaLocks.Lock(path.String())
 }
 
 // MetaDataMutate is the only general write primitive for metadata: the sole way to change
@@ -57,18 +57,17 @@ func lockMetaPath(path string) (unlock func()) {
 // path's metadata from within fn (including calling MetaDataMutate again) risks deadlock,
 // since these locks aren't reentrant - return fan-out closures and run them after this
 // function returns instead (see updateLinksToHereFanOut/parentChildFanOut).
-func MetaDataMutate(path string, fn func(m *Metadata, existed bool) (save bool, err error)) error {
-	normalized := pathutils.ToWithPrefix(path)
-	unlock := lockMetaPath(normalized)
+func MetaDataMutate(path pathutils.MetaPath, fn func(m *Metadata, existed bool) (save bool, err error)) error {
+	unlock := lockMetaPath(path)
 	defer unlock()
 
-	metadata, err := MetaDataGet(normalized)
+	metadata, err := MetaDataGet(path)
 	if err != nil {
 		return err
 	}
 	existed := metadata != nil
 	if !existed {
-		metadata = &Metadata{Path: normalized}
+		metadata = &Metadata{Path: path}
 	}
 
 	save, err := fn(metadata, existed)
@@ -135,7 +134,7 @@ func EditorFromExtension(path string) EditorType {
 // ResolveEditor picks the editor for an existing file: metadata first, then the extension,
 // then "" for the caller to default. The one place the metadata→extension precedence lives.
 func ResolveEditor(path string) EditorType {
-	if meta, err := MetaDataGet(path); err == nil && meta != nil && meta.Editor != "" {
+	if meta, err := MetaDataGet(pathutils.GuessMeta(path)); err == nil && meta != nil && meta.Editor != "" {
 		return meta.Editor
 	}
 	return EditorFromExtension(path)
@@ -149,26 +148,26 @@ func IsBook(path string) bool {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Path          string      `json:"path"`                    // auto
-	Title         string      `json:"title"`                   // auto
-	CreatedAt     time.Time   `json:"createdAt"`               // auto
-	LastEdited    time.Time   `json:"lastEdited"`              // auto
-	Collection    string      `json:"collection"`              // auto
-	Folders       []string    `json:"folders"`                 // auto
-	Tags          []string    `json:"tags"`                    // manual
-	Ancestor      []string    `json:"ancestor"`                // auto
-	Parents       []string    `json:"parents"`                 // manual
-	Kids          []string    `json:"kids"`                    // auto
-	UsedLinks     []string    `json:"usedLinks"`               // auto
-	LinksToHere   []string    `json:"linksToHere"`             // auto
-	Related       []string    `json:"related,omitempty"`       // auto
-	Editor        EditorType  `json:"editor"`                  // manual
-	Size          int64       `json:"size"`                    // auto
-	References    []Reference `json:"references,omitempty"`    // manual
-	ConflictFile  string      `json:"conflictFile,omitempty"`  // auto
-	ConflictOf    string      `json:"conflictOf,omitempty"`    // auto
-	KanbanAddedAt time.Time   `json:"kanbanAddedAt,omitempty"` // auto
-	KanbanMovedAt time.Time   `json:"kanbanMovedAt,omitempty"` // auto
+	Path          pathutils.MetaPath `json:"path"`                    // auto
+	Title         string             `json:"title"`                   // auto
+	CreatedAt     time.Time          `json:"createdAt"`               // auto
+	LastEdited    time.Time          `json:"lastEdited"`              // auto
+	Collection    string             `json:"collection"`              // auto
+	Folders       []string           `json:"folders"`                 // auto
+	Tags          []string           `json:"tags"`                    // manual
+	Ancestor      []string           `json:"ancestor"`                // auto
+	Parents       []string           `json:"parents"`                 // manual
+	Kids          []string           `json:"kids"`                    // auto
+	UsedLinks     []string           `json:"usedLinks"`               // auto
+	LinksToHere   []string           `json:"linksToHere"`             // auto
+	Related       []string           `json:"related,omitempty"`       // auto
+	Editor        EditorType         `json:"editor"`                  // manual
+	Size          int64              `json:"size"`                    // auto
+	References    []Reference        `json:"references,omitempty"`    // manual
+	ConflictFile  string             `json:"conflictFile,omitempty"`  // auto
+	ConflictOf    string             `json:"conflictOf,omitempty"`    // auto
+	KanbanAddedAt time.Time          `json:"kanbanAddedAt,omitempty"` // auto
+	KanbanMovedAt time.Time          `json:"kanbanMovedAt,omitempty"` // auto
 }
 
 // Reference represents an external resource linked to a file
@@ -210,13 +209,13 @@ func applyKanbanTimestamps(m *Metadata, oldStatus string) {
 // ConflictFile, kanban timestamps) are left untouched. The caller must invoke the returned
 // closures only after releasing metadata.Path's own write lock - see updateUsedLinks.
 func recomputeDerivedFields(metadata *Metadata) []func() {
-	isMediaFile := pathutils.IsMedia(metadata.Path)
+	isMediaFile := pathutils.IsMedia(metadata.Path.String())
 
 	var fullPath string
 	if isMediaFile {
-		fullPath = pathutils.ToMediaPath(metadata.Path)
+		fullPath = pathutils.ToMediaPath(metadata.Path.String())
 	} else {
-		fullPath = pathutils.ToDocsPath(metadata.Path)
+		fullPath = pathutils.ToDocsPath(metadata.Path.String())
 	}
 
 	if fileInfo, err := os.Stat(fullPath); err != nil {
@@ -227,18 +226,18 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 
 	metadata.LastEdited = time.Now()
 
-	folderPath := FolderFromPath(metadata.Path)
+	folderPath := FolderFromPath(metadata.Path.String())
 	if folderPath != "" {
 		metadata.Folders = strings.Split(folderPath, "/")
 	} else {
 		metadata.Folders = []string{}
 	}
-	metadata.Collection = CollectionFromPath(metadata.Path)
+	metadata.Collection = CollectionFromPath(metadata.Path.String())
 
 	// only infer editor type for docs files — media files are identified
 	// by path prefix + mime type in filtering, not by editor type
 	if !isMediaFile && metadata.Editor == "" {
-		if et := EditorFromExtension(metadata.Path); et != "" {
+		if et := EditorFromExtension(metadata.Path.String()); et != "" {
 			metadata.Editor = et
 		} else {
 			metadata.Editor = EditorType(configmanager.DefaultMarkdownEditor.Get())
@@ -281,22 +280,21 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 // (e.g. a kanban move) can never be reverted by a stale sync - see metaLocks. For
 // syncing many files in one batch, use MetaDataSyncNoRefresh in the loop and RefreshCaches()
 // once afterwards instead.
-func MetaDataSync(path string) error {
+func MetaDataSync(path pathutils.MetaPath) error {
 	return withRefresh(func() error { return MetaDataSyncNoRefresh(path) })
 }
 
 // MetaDataSyncNoRefresh is MetaDataSync without the aggregate cache refresh. See MetaDataSync.
-func MetaDataSyncNoRefresh(path string) error {
-	normalized := pathutils.ToWithPrefix(path)
-	unlock := lockMetaPath(normalized)
+func MetaDataSyncNoRefresh(path pathutils.MetaPath) error {
+	unlock := lockMetaPath(path)
 
-	metadata, err := MetaDataGet(normalized)
+	metadata, err := MetaDataGet(path)
 	if err != nil {
 		unlock()
 		return err
 	}
 	if metadata == nil {
-		metadata = &Metadata{Path: normalized, CreatedAt: time.Now()}
+		metadata = &Metadata{Path: path, CreatedAt: time.Now()}
 	}
 
 	fanOut := recomputeDerivedFields(metadata)
@@ -355,7 +353,7 @@ func SanitizeKanbanTags(oldTags, tags []string) ([]string, error) {
 // originalFilePath has no metadata yet — its caller always names an already-tracked file, so a
 // miss means a bad path rather than something to paper over with a phantom record.
 func SetConflictFile(originalFilePath, conflictFilePath string) error {
-	return MetaDataMutate(originalFilePath, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(originalFilePath), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", originalFilePath)
 		}
@@ -369,7 +367,7 @@ func SetConflictFile(originalFilePath, conflictFilePath string) error {
 // writes the conflict copy straight to disk without ever syncing metadata for it first, so this
 // is the only place that record gets created.
 func SetConflictOf(conflictFilePath, originalFilePath string) error {
-	return MetaDataMutate(conflictFilePath, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(conflictFilePath), func(m *Metadata, existed bool) (bool, error) {
 		m.ConflictOf = originalFilePath
 		return true, nil
 	})
@@ -377,7 +375,7 @@ func SetConflictOf(conflictFilePath, originalFilePath string) error {
 
 // ClearConflictFile removes the conflict file reference from the original file's metadata.
 func ClearConflictFile(originalFilePath string) error {
-	return MetaDataMutate(originalFilePath, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(originalFilePath), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -398,7 +396,7 @@ func SetEditor(path string, editor EditorType) error {
 // several fields or loop over many files in one request, so use SetEditor and call
 // RefreshCaches() once afterwards instead of paying for a full cache rebuild per field/file.
 func SetEditorNoRefresh(path string, editor EditorType) error {
-	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -418,7 +416,7 @@ func SetTags(path string, tags []string) error {
 // of being dropped. Returns the tags before and after the save as seen under the lock.
 func SetTagsStrict(path string, tags []string) (oldTags, newTags []string, err error) {
 	err = withRefresh(func() error {
-		return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+		return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 			cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 			if err != nil {
 				return false, err
@@ -435,7 +433,7 @@ func SetTagsStrict(path string, tags []string) (oldTags, newTags []string, err e
 
 // SetTagsNoRefresh is SetTags without the aggregate cache refresh. See SetEditorNoRefresh.
 func SetTagsNoRefresh(path string, tags []string) error {
-	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		oldKanbanStatus := kanbanStatusFromTags(m.Tags)
 		cleaned, err := SanitizeKanbanTags(m.Tags, tags)
 		if err != nil {
@@ -453,7 +451,7 @@ func SetTagsNoRefresh(path string, tags []string) error {
 // Skips the save when the result would be empty - clearing every tag via bulk is not supported.
 func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err error) {
 	skipped := false
-	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -498,7 +496,7 @@ func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err er
 
 // SetCreatedAt sets path's creation timestamp. Errors if path has no metadata yet.
 func SetCreatedAt(path string, createdAt time.Time) error {
-	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -510,7 +508,7 @@ func SetCreatedAt(path string, createdAt time.Time) error {
 // SetLastEdited sets path's last-edited timestamp (manual override of the Sync-stamped value).
 // Errors if path has no metadata yet.
 func SetLastEdited(path string, lastEdited time.Time) error {
-	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -521,7 +519,7 @@ func SetLastEdited(path string, lastEdited time.Time) error {
 
 // SetReferences sets path's external reference list. Errors if path has no metadata yet.
 func SetReferences(path string, references []Reference) error {
-	return MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
+	return MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", path)
 		}
@@ -540,7 +538,7 @@ func metaDataSaveRaw(m *Metadata) error {
 		return err
 	}
 
-	if err := metadataStorage.Set(m.Path, data); err != nil {
+	if err := metadataStorage.Set(m.Path.String(), data); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", m.Path, err)
 		return err
 	}
@@ -550,16 +548,11 @@ func metaDataSaveRaw(m *Metadata) error {
 }
 
 // MetaDataGet retrieves metadata for a file path
-func MetaDataGet(filepath string) (*Metadata, error) {
+func MetaDataGet(path pathutils.MetaPath) (*Metadata, error) {
 	if rebuildMetaGetCount != nil {
 		*rebuildMetaGetCount++
 	}
-	// normalize path for metadata lookup - add docs/ prefix if not present and not media
-	normalizedPath := pathutils.ToWithPrefix(filepath)
-
-	logging.LogDebug(logging.KeyApp, "MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
-
-	data, err := metadataStorage.Get(normalizedPath)
+	data, err := metadataStorage.Get(path.String())
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +563,7 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 
 	var metadata Metadata
 	if err := json.Unmarshal(data, &metadata); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal metadata for %s: %w", normalizedPath, err)
+		return nil, fmt.Errorf("failed to unmarshal metadata for %s: %w", path, err)
 	}
 
 	return &metadata, nil
@@ -586,7 +579,7 @@ func MetaDataInitializeAll() error {
 	}
 
 	for _, file := range allFiles {
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
+		normalizedPath := file.Path
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
@@ -611,7 +604,7 @@ func MetaDataInitializeAll() error {
 		logging.LogWarning(logging.KeyApp, "failed to get media files for initialization: %v", err)
 	} else {
 		for _, file := range allMediaFiles {
-			normalizedPath := pathutils.ToWithPrefix(file.Path)
+			normalizedPath := file.Path
 
 			created := false
 			err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
@@ -637,18 +630,18 @@ func MetaDataInitializeAll() error {
 // caches. For deleting many files in one request, call MetaDataDeleteNoRefresh
 // in the loop and RefreshCaches() once afterwards instead - otherwise each
 // deletion kicks off its own full background cache rebuild.
-func MetaDataDelete(filepath string) error {
-	return withRefresh(func() error { return MetaDataDeleteNoRefresh(logging.KeyApp, filepath) })
+func MetaDataDelete(path pathutils.MetaPath) error {
+	return withRefresh(func() error { return MetaDataDeleteNoRefresh(logging.KeyApp, path) })
 }
 
 // MetaDataDeleteNoRefresh removes metadata for a file path without refreshing
 // the aggregate caches (tags/collections/folders/editors/file list). See
 // MetaDataDelete.
-func MetaDataDeleteNoRefresh(key logging.Key, filepath string) error {
-	unlock := lockMetaPath(filepath)
+func MetaDataDeleteNoRefresh(key logging.Key, path pathutils.MetaPath) error {
+	unlock := lockMetaPath(path)
 	defer unlock()
 
-	normalized := pathutils.ToWithPrefix(filepath)
+	normalized := path.String()
 	if err := chat.DeleteForFile(normalized); err != nil {
 		logging.LogWarning(key, "failed to delete chat messages for %s: %v", normalized, err)
 	}

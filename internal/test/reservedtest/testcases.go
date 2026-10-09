@@ -65,12 +65,12 @@ func caseListing() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		want := "docs/" + doc(top, "synced.md")
-		i := slices.IndexFunc(all, func(f files.File) bool { return f.Path == want })
+		i := slices.IndexFunc(all, func(f files.File) bool { return f.Path.String() == want })
 		if i == -1 {
 			gaps = append(gaps, fmt.Sprintf("%q not listed", want))
 			continue
 		}
-		if got := all[i].ViewURL(); got != pathutils.ToFileURL("docs/"+doc(top, "synced.md")) {
+		if got := all[i].ViewURL(); got != pathutils.ToFileURL(pathutils.DocsPath(doc(top, "synced.md"))) {
 			gaps = append(gaps, fmt.Sprintf("%q: view url %q", want, got))
 		}
 	}
@@ -82,7 +82,7 @@ func caseView() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		rel := doc(top, "synced.md")
-		for _, target := range []string{pathutils.ToFileURL("docs/" + rel), "/api/files/content/" + rel} {
+		for _, target := range []string{pathutils.ToFileURL(pathutils.DocsPath(rel)), "/api/files/content/" + rel} {
 			status, body, err := request(http.MethodGet, target, nil)
 			if err != nil {
 				return errCase("reserved-view", err)
@@ -95,7 +95,7 @@ func caseView() test.CaseResult {
 	// the edit page names the doc by its docs/ path
 	for _, top := range reserved {
 		rel := doc(top, "synced.md")
-		for _, target := range []string{pathutils.ToFileEditURL("docs/" + rel)} {
+		for _, target := range []string{pathutils.ToFileEditURL(pathutils.DocsPath(rel))} {
 			status, body, err := request(http.MethodGet, target, nil)
 			if err != nil {
 				return errCase("reserved-view", err)
@@ -113,18 +113,18 @@ func caseMetadata() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		key, other := "docs/"+doc(top, "synced.md"), partner(top, "synced.md")
-		m, err := files.MetaDataGet(key)
-		if err != nil || m == nil || m.Path != key {
+		m, err := files.MetaDataGet(pathutils.GuessMeta(key))
+		if err != nil || m == nil || m.Path.String() != key {
 			gaps = append(gaps, fmt.Sprintf("%q: metadata %+v, %v", key, m, err))
 			continue
 		}
-		if err := files.MetaDataMutate(key, func(m *files.Metadata, _ bool) (bool, error) {
+		if err := files.MetaDataMutate(pathutils.GuessMeta(key), func(m *files.Metadata, _ bool) (bool, error) {
 			m.Tags = []string{"reserved-" + top}
 			return true, nil
 		}); err != nil {
 			return errCase("reserved-metadata", err)
 		}
-		if o, err := files.MetaDataGet(other); err != nil || o == nil || o.Path != other || slices.Contains(o.Tags, "reserved-"+top) {
+		if o, err := files.MetaDataGet(pathutils.GuessMeta(other)); err != nil || o == nil || o.Path.String() != other || slices.Contains(o.Tags, "reserved-"+top) {
 			gaps = append(gaps, fmt.Sprintf("%q: partner metadata %+v, %v", other, o, err))
 		}
 	}
@@ -141,7 +141,7 @@ func caseLinks() test.CaseResult {
 		forms := map[string][3]string{
 			"wiki":       {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: want}.String(), want},
 			"file url":   {"docs/" + sub + "/linker.md", "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + doc(top, "synced.md")}.Dest() + ")", want},
-			"html":       {"docs/" + sub + "/linker.md", `<a href="` + pathutils.ToFileURL(want) + `">x</a>`, want},
+			"html":       {"docs/" + sub + "/linker.md", `<a href="` + pathutils.ToFileURL(pathutils.GuessMeta(want)) + `">x</a>`, want},
 			"bare":       {"docs/" + doc(top, "linker.md"), "[x](synced.md)", want},
 			"dot":        {"docs/" + doc(top, "linker.md"), "[x](./synced.md)", want},
 			"wiki media": {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: "media/" + sub + "/synced.md"}.String(), "media/" + sub + "/synced.md"},
@@ -151,7 +151,7 @@ func caseLinks() test.CaseResult {
 			if !slices.Equal(got, []string{f[2]}) {
 				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, want %q", form, f[1], f[0], got, f[2]))
 			}
-			if rendered := parser.RenderLinks(f[1], f[0]); f[2] == want && !strings.Contains(rendered, pathutils.ToFileURL(want)) {
+			if rendered := parser.RenderLinks(f[1], f[0]); f[2] == want && !strings.Contains(rendered, pathutils.ToFileURL(pathutils.GuessMeta(want))) {
 				gaps = append(gaps, fmt.Sprintf("%s %q in %s: renders %q", form, f[1], f[0], rendered))
 			}
 		}
@@ -285,7 +285,7 @@ func caseStoredPaths() test.CaseResult {
 		if err != nil {
 			return errCase("reserved-stored-paths", err)
 		}
-		if m, _ := files.MetaDataGet(meta); status != http.StatusOK || m == nil || !slices.Equal(m.Parents, []string{parent}) {
+		if m, _ := files.MetaDataGet(pathutils.GuessMeta(meta)); status != http.StatusOK || m == nil || !slices.Equal(m.Parents, []string{parent}) {
 			gaps = append(gaps, fmt.Sprintf("parents of %q: status %d (%s), stored %+v", meta, status, strings.TrimSpace(body), m))
 		}
 		// for docs/ and media/ the docs-relative path is itself a metadata path
@@ -303,7 +303,7 @@ func caseStoredPaths() test.CaseResult {
 				return errCase("reserved-stored-paths", err)
 			}
 			matched := filter.FilterFileList(all, []filter.Criteria{c}, "and")
-			if !slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == meta }) || slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == partner(top, "synced.md") }) {
+			if !slices.ContainsFunc(matched, func(f files.File) bool { return f.Path.String() == meta }) || slices.ContainsFunc(matched, func(f files.File) bool { return f.Path.String() == partner(top, "synced.md") }) {
 				gaps = append(gaps, fmt.Sprintf("filter %s=%q: matches %d files, the doc %q not found or its partner found", c.Metadata, c.Value, len(matched), meta))
 			}
 		}
@@ -323,7 +323,7 @@ func caseMigration() test.CaseResult {
 		if err := write(fullPath(key), "# migrate\n"); err != nil {
 			return errCase("reserved-migration", err)
 		}
-		if err := files.MetaDataMutate(legacy, func(m *files.Metadata, _ bool) (bool, error) {
+		if err := files.MetaDataMutate(pathutils.GuessMeta(legacy), func(m *files.Metadata, _ bool) (bool, error) {
 			m.Tags = []string{"legacy-" + top}
 			return true, nil
 		}); err != nil {
@@ -336,13 +336,13 @@ func caseMigration() test.CaseResult {
 	for _, top := range []string{"media", "docs"} {
 		rel := doc(top, "migrate.md")
 		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
-		if m, _ := files.MetaDataGet(key); m == nil || !slices.Contains(m.Tags, "legacy-"+top) {
+		if m, _ := files.MetaDataGet(pathutils.GuessMeta(key)); m == nil || !slices.Contains(m.Tags, "legacy-"+top) {
 			gaps = append(gaps, fmt.Sprintf("%q: record not moved from %q: %+v", key, legacy, m))
 		}
-		if m, _ := files.MetaDataGet(legacy); m != nil && !exists(legacy) {
+		if m, _ := files.MetaDataGet(pathutils.GuessMeta(legacy)); m != nil && !exists(legacy) {
 			gaps = append(gaps, fmt.Sprintf("%q: old record left", legacy))
 		}
-		_ = files.MetaDataDelete(key)
+		_ = files.MetaDataDelete(pathutils.GuessMeta(key))
 	}
 
 	for _, top := range reserved {
@@ -388,7 +388,7 @@ func caseLinkRename() test.CaseResult {
 			if err := write(fullPath(p), c); err != nil {
 				return errCase("reserved-link-rename", err)
 			}
-			if err := files.MetaDataSync(p); err != nil {
+			if err := files.MetaDataSync(pathutils.GuessMeta(p)); err != nil {
 				return errCase("reserved-link-rename", err)
 			}
 		}
@@ -421,14 +421,14 @@ func caseTree() test.CaseResult {
 	}
 	var sampleDocs []files.File
 	for _, f := range all {
-		if strings.Contains(f.Path, "/"+sub+"/synced.md") || f.Path == "docs/"+sub+"/synced.md" {
+		if strings.Contains(f.Path.String(), "/"+sub+"/synced.md") || f.Path == "docs/"+sub+"/synced.md" {
 			sampleDocs = append(sampleDocs, f)
 		}
 	}
 	rendered := render.RenderTreeOverview(files.BuildFileTree(sampleDocs), true)
 	for _, top := range reserved {
 		rel := doc(top, "synced.md")
-		for _, want := range []string{`data-path="` + rel + `"`, `href="` + pathutils.ToFileURL("docs/"+rel) + `"`, `hx-delete="` + pathutils.ToRouteURL("/api/files/delete/", rel) + `?inline=true"`} {
+		for _, want := range []string{`data-path="` + rel + `"`, `href="` + pathutils.ToFileURL(pathutils.DocsPath(rel)) + `"`, `hx-delete="` + pathutils.ToRouteURL("/api/files/delete/", rel) + `?inline=true"`} {
 			if !strings.Contains(rendered, want) {
 				gaps = append(gaps, fmt.Sprintf("tree of %q lacks %s", rel, want))
 			}
@@ -467,7 +467,7 @@ func caseUpload() test.CaseResult {
 	w := multipart.NewWriter(&buf)
 	part, _ := w.CreateFormFile("file", "pic.png")
 	_, _ = part.Write([]byte("\x89PNG\r\n\x1a\n"))
-	_ = w.WriteField("context_path", pathutils.ToFileEditURL("docs/"+doc("media", "synced.md")))
+	_ = w.WriteField("context_path", pathutils.ToFileEditURL(pathutils.DocsPath(doc("media", "synced.md"))))
 	_ = w.Close()
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()

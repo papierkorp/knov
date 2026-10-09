@@ -64,7 +64,7 @@ func writeFile(relPath, content string) error {
 // always derives it from the file's top-level folder (files.CollectionFromPath).
 func saveMetadata(relPath string) error {
 	return test.SeedMetadata(&files.Metadata{
-		Path:   pathutils.ToWithPrefix(relPath),
+		Path:   pathutils.GuessMeta(relPath),
 		Editor: files.EditorTypeCodeMirror,
 	})
 }

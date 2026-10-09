@@ -25,7 +25,7 @@ func caseMetadataGetSetFields() test.CaseResult {
 	name := "metadata-get-set-fields"
 
 	err := test.SeedMetadata(&files.Metadata{
-		Path:      pathutils.ToWithPrefix(testPath(fieldsFile)),
+		Path:      pathutils.GuessMeta(testPath(fieldsFile)),
 		Editor:    files.EditorTypeCodeMirror,
 		Tags:      []string{"metadatatest-alpha"},
 		CreatedAt: fixedCreatedAt,
@@ -34,7 +34,7 @@ func caseMetadataGetSetFields() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(pathutils.ToWithPrefix(testPath(fieldsFile)))
+	got, err := files.MetaDataGet(pathutils.GuessMeta(testPath(fieldsFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -74,7 +74,7 @@ func caseMetadataPartialUpdate() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(pathutils.ToWithPrefix(testPath(fieldsFile)))
+	got, err := files.MetaDataGet(pathutils.GuessMeta(testPath(fieldsFile)))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -99,14 +99,14 @@ func caseMetadataDelete() test.CaseResult {
 	name := "metadata-delete"
 
 	path := pathutils.ToWithPrefix(testPath(deleteFile))
-	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(path), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataDelete(path); err != nil {
+	if err := files.MetaDataDelete(pathutils.GuessMeta(path)); err != nil {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(path)
+	got, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -128,7 +128,7 @@ func caseMetadataExportAll() test.CaseResult {
 	name := "metadata-export-all"
 
 	path := pathutils.ToWithPrefix(testPath(exportFile))
-	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(path), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -139,7 +139,7 @@ func caseMetadataExportAll() test.CaseResult {
 
 	found := false
 	for _, m := range all {
-		if m.Path == path {
+		if m.Path.String() == path {
 			found = true
 			break
 		}
@@ -163,7 +163,7 @@ func caseReferencesAdd() test.CaseResult {
 	name := "references-add"
 
 	path := pathutils.ToWithPrefix(testPath(referencesFile))
-	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(path), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -175,7 +175,7 @@ func caseReferencesAdd() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(path)
+	got, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -199,7 +199,7 @@ func caseReferencesRemove() test.CaseResult {
 	name := "references-remove"
 
 	path := pathutils.ToWithPrefix(testPath(referencesFile))
-	metadata, err := files.MetaDataGet(path)
+	metadata, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -214,7 +214,7 @@ func caseReferencesRemove() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(path)
+	got, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -240,7 +240,7 @@ func caseMutateVsSyncRace() test.CaseResult {
 	path := pathutils.ToWithPrefix(testPath(raceFile))
 	inbox := configmanager.KanbanStatusTag("inbox")
 	if err := test.SeedMetadata(&files.Metadata{
-		Path:   path,
+		Path:   pathutils.GuessMeta(path),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   []string{"metadatatest-race", inbox},
 	}); err != nil {
@@ -253,7 +253,7 @@ func caseMutateVsSyncRace() test.CaseResult {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 40; i++ {
-			if err := files.MetaDataSyncNoRefresh(path); err != nil {
+			if err := files.MetaDataSyncNoRefresh(pathutils.GuessMeta(path)); err != nil {
 				errCh <- err
 				return
 			}
@@ -273,7 +273,7 @@ func caseMutateVsSyncRace() test.CaseResult {
 		}
 	}
 
-	got, err := files.MetaDataGet(path)
+	got, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -296,9 +296,9 @@ func caseMutateMissingPath() test.CaseResult {
 	name := "mutate-missing-path"
 
 	path := pathutils.ToWithPrefix(testPath("metadata-missing-created.md"))
-	_ = files.MetaDataDelete(path)
+	_ = files.MetaDataDelete(pathutils.GuessMeta(path))
 
-	err := files.MetaDataMutate(path, func(m *files.Metadata, existed bool) (bool, error) {
+	err := files.MetaDataMutate(pathutils.GuessMeta(path), func(m *files.Metadata, existed bool) (bool, error) {
 		if existed {
 			return false, fmt.Errorf("expected existed=false")
 		}
@@ -309,7 +309,7 @@ func caseMutateMissingPath() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	got, err := files.MetaDataGet(path)
+	got, err := files.MetaDataGet(pathutils.GuessMeta(path))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -323,7 +323,7 @@ func caseMutateMissingPath() test.CaseResult {
 	if !success {
 		cr.Error = "MetaDataMutate did not create metadata for a missing path"
 	}
-	_ = files.MetaDataDelete(path)
+	_ = files.MetaDataDelete(pathutils.GuessMeta(path))
 	return cr
 }
 
@@ -396,7 +396,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 		return errCase(name, err)
 	}
 	if err := test.SeedMetadata(&files.Metadata{
-		Path:   probePath,
+		Path:   pathutils.GuessMeta(probePath),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   []string{tag},
 	}); err != nil {
@@ -415,7 +415,7 @@ func caseAggregatesRespectHiddenPaths() test.CaseResult {
 	prev := configmanager.HidePaths.Get()
 	defer func() {
 		configmanager.SetSetting(configmanager.HidePaths, strings.Join(prev, ","))
-		_ = files.MetaDataDelete(probePath)
+		_ = files.MetaDataDelete(pathutils.GuessMeta(probePath))
 	}()
 	if err := configmanager.SetSetting(configmanager.HidePaths, hideFolder); err != nil {
 		return errCase(name, err)

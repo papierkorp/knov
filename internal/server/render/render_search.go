@@ -30,7 +30,7 @@ func RenderSearchDropdown(results []files.File, query string) string {
 		if i >= displayCount {
 			break
 		}
-		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
 		html.WriteString(fmt.Sprintf(`
 		<li><a href="%s">%s</a></li>`, file.ViewURL(), displayText))
 	}
@@ -77,8 +77,8 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 	html.WriteString(`<div id="search-results-cards">`)
 
 	for _, file := range files {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
-		context := extractSearchContext(file.Path, query, file.FuzzyMatch)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		context := extractSearchContext(file.Path.String(), query, file.FuzzyMatch)
 
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
@@ -188,7 +188,7 @@ func RenderSearchHistoryResults(results []git.GitHistoryFile, query string) stri
 	b.WriteString(`<ul class="search-history-list">`)
 	for _, f := range results {
 		fmt.Fprintf(&b, `<li class="search-history-item"><a class="search-history-name" href="%s?commit=%s">%s</a><span class="search-history-meta">%s &mdash; %s</span></li>`,
-			pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(f.Path)),
+			pathutils.ToFileHistoryURL(pathutils.GuessMeta(f.Path)),
 			html.EscapeString(f.Commit),
 			html.EscapeString(f.Name),
 			html.EscapeString(configmanager.FormatDateTime(f.Date)),

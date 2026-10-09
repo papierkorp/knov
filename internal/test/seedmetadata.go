@@ -30,27 +30,27 @@ func SeedMetadataNoRefresh(meta *files.Metadata) error {
 		return err
 	}
 	if meta.Editor != "" {
-		if err := files.SetEditorNoRefresh(meta.Path, meta.Editor); err != nil {
+		if err := files.SetEditorNoRefresh(meta.Path.String(), meta.Editor); err != nil {
 			return err
 		}
 	}
 	if len(meta.Tags) > 0 {
-		if err := files.SetTagsNoRefresh(meta.Path, meta.Tags); err != nil {
+		if err := files.SetTagsNoRefresh(meta.Path.String(), meta.Tags); err != nil {
 			return err
 		}
 	}
 	if len(meta.Parents) > 0 {
-		if err := files.SetParentsNoRefresh(meta.Path, meta.Parents); err != nil {
+		if err := files.SetParentsNoRefresh(meta.Path.String(), meta.Parents); err != nil {
 			return err
 		}
 	}
 	if !meta.CreatedAt.IsZero() {
-		if err := files.SetCreatedAt(meta.Path, meta.CreatedAt); err != nil {
+		if err := files.SetCreatedAt(meta.Path.String(), meta.CreatedAt); err != nil {
 			return err
 		}
 	}
 	if meta.References != nil {
-		if err := files.SetReferences(meta.Path, meta.References); err != nil {
+		if err := files.SetReferences(meta.Path.String(), meta.References); err != nil {
 			return err
 		}
 	}
