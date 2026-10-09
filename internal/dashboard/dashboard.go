@@ -10,7 +10,6 @@ import (
 	"knov/internal/configStorage"
 	"knov/internal/keylock"
 	"knov/internal/logging"
-	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
@@ -179,7 +178,7 @@ func Update(dashboard *Dashboard) error {
 
 // PatchFilePathForMove updates every dashboard's fileContent widgets that reference oldPath,
 // replacing it with newPath - so a rename/move doesn't leave a widget silently pointing at a
-// path that no longer exists. Registered onto files.OnFileMoved at startup (see main.go). A
+// path that no longer exists (oldPath and newPath are docs-relative, as the widgets hold them). Registered onto files.OnFileMoved at startup (see main.go). A
 // no-op for a path no widget references.
 func PatchFilePathForMove(oldPath, newPath string) {
 	dashboards, err := GetAll()
@@ -188,12 +187,9 @@ func PatchFilePathForMove(oldPath, newPath string) {
 		return
 	}
 
-	oldRel := pathutils.ToRelative(oldPath)
-	newRel := pathutils.ToRelative(newPath)
-
 	referencesOld := func(w Widget) bool {
 		return w.Type == WidgetTypeFileContent && w.Config.FileContent != nil &&
-			pathutils.ToRelative(w.Config.FileContent.FilePath) == oldRel
+			w.Config.FileContent.FilePath == oldPath
 	}
 
 	for _, d := range dashboards {
@@ -204,7 +200,7 @@ func PatchFilePathForMove(oldPath, newPath string) {
 		_, err := Mutate(d.ID, func(dash *Dashboard) error {
 			for i := range dash.Widgets {
 				if w := &dash.Widgets[i]; referencesOld(*w) {
-					w.Config.FileContent.FilePath = newRel
+					w.Config.FileContent.FilePath = newPath
 				}
 			}
 			return nil

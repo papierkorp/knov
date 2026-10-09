@@ -69,14 +69,9 @@ var consumers = []consumer{
 // when one of them agrees again (remove it) and when any other one disagrees.
 var knownBugs = map[string]string{
 	"filter-index docs/docs/x.md":            "GenerateFilterIndex writes /docs/x.md, which reads as docs/x.md",
-	"filter-index docs/media/x.md":           "GenerateFilterIndex writes /media/x.md, which reads as the media file",
 	"filter-index docs/files/x.md":           "GenerateFilterIndex writes /files/x.md, which reads as docs/x.md",
-	"dashboard-move docs/docs/x.md":          "PatchFilePathForMove runs ToRelative on a docs-relative path again",
-	"dashboard-move docs/media/x.md":         "PatchFilePathForMove runs ToRelative on a docs-relative path again",
 	"kanban-ancestor-select docs/media/x.md": "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
 	"kanban-ancestor-select docs/docs/x.md":  "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
-	"rename docs/docs/x.md":                  "not in the todo: the link update of a moved doc guesses the prefix of its docs-relative path",
-	"rename docs/media/x.md":                 "not in the todo: the link update of a moved doc guesses the prefix of its docs-relative path",
 }
 
 func TestPathAgreement(t *testing.T) {
@@ -162,9 +157,9 @@ func setup(t *testing.T) {
 // put writes content to the file at the metadata path meta.
 func put(t *testing.T, meta, content string) {
 	t.Helper()
-	full := pathutils.ToDocsPath(strings.TrimPrefix(meta, "docs/"))
+	full := pathutils.ToDocsPath(meta) // the meta path names its root, no guessing
 	if strings.HasPrefix(meta, "media/") {
-		full = pathutils.ToMediaPath(strings.TrimPrefix(meta, "media/"))
+		full = pathutils.ToMediaPath(meta)
 	}
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		t.Fatal(err)
@@ -238,7 +233,7 @@ func rename(t *testing.T, loc string) string {
 	if rel, ok := strings.CutPrefix(loc, "media/"); ok {
 		err = files.MoveMediaFileNoRefresh(rel, strings.TrimPrefix(to, "media/"))
 	} else {
-		err = files.MoveFileNoRefresh(logging.KeyApp, strings.TrimPrefix(loc, "docs/"), strings.TrimPrefix(to, "docs/"))
+		err = files.MoveFileNoRefresh(logging.KeyApp, loc, to)
 	}
 	if err != nil {
 		t.Fatalf("move %s: %v", loc, err)
@@ -303,7 +298,7 @@ func dashboardMove(t *testing.T, loc string) string {
 		t.Fatal(err)
 	}
 	files.OnFileMoved = dashboard.PatchFilePathForMove
-	if err := files.MoveFileNoRefresh(logging.KeyApp, rel(loc), rel(movedTo(loc))); err != nil {
+	if err := files.MoveFileNoRefresh(logging.KeyApp, loc, movedTo(loc)); err != nil {
 		t.Fatalf("move %s: %v", loc, err)
 	}
 	got, err := dashboard.Get("agree")

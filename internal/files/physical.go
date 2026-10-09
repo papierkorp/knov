@@ -25,8 +25,8 @@ var ErrMoveTargetExists = errors.New("target file already exists")
 // move as failed.
 var ErrLinkUpdateFailed = errors.New("failed to update links after move")
 
-// OnFileMoved is called after a doc file's on-disk location changes, with its relative old and
-// new paths (the same form MoveFileNoRefresh/MoveFolder take - no docs/ prefix). Packages that
+// OnFileMoved is called after a doc file's on-disk location changes, with its docs-relative old and
+// new paths (the docs/ prefix of the metadata path MoveFileNoRefresh/MoveFolder take dropped). Packages that
 // keep their own stored reference to a file's path (kanban board order, dashboard widgets)
 // register here at startup (see main.go) to patch that reference instead of silently going
 // stale - files can't import them directly without an import cycle (kanban already imports
@@ -77,7 +77,7 @@ func moveDocsToMedia(oldFullPath, newFullPath string) error {
 	return movePhysical(oldFullPath, newFullPath, true)
 }
 
-// MoveFileNoRefresh moves a single doc file from oldRelPath to newRelPath on disk and updates
+// MoveFileNoRefresh moves a single doc file from the metadata path oldRelPath to newRelPath on disk and updates
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.
 func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
