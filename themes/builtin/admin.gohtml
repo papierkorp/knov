@@ -288,6 +288,17 @@
             </div>
         </section>
 
+        <section class="settings-section settings-section-wide">
+            <h2>{{T "Reserved Folders Migration"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "the metadata of docs files in the folders docs, media and files and the filters / trackers named like them were stored without their docs/ prefix. run this once after upgrading to move them to their own key, it can be run again safely"}}</div>
+                <button type="button" class="btn-secondary"
+                        hx-post="/api/metadata/reserved-folders/migrate"
+                        hx-target="#reserved-folders-result" hx-swap="innerHTML">{{T "Migrate Reserved Folders"}}</button>
+                <div id="reserved-folders-result" style="margin-top:12px;"></div>
+            </div>
+        </section>
+
     </div>
 </div>
 {{ end }}

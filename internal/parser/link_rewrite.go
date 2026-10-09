@@ -44,7 +44,7 @@ var (
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	// a reference definition whose destination is on the next line: "[id]:" alone, then the destination part
-	rewriteRefDefOpenRe = regexp.MustCompile(`^ {0,3}\[[^\]^][^\]]*\]:[ \t]*$`)
+	rewriteRefDefOpenRe = regexp.MustCompile(`^ {0,3}\[[^\]^][^\]]*\]:[ \t\r]*$`)
 	rewriteRefDefDestRe = regexp.MustCompile(`^([ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	// a line starting a new block (heading, list item, quote, table row) - a code span doesn't continue onto it
 	blockStartRe      = regexp.MustCompile(`^ {0,3}(?:#{1,6}(?:[ \t]|$)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|\|)`)
@@ -285,6 +285,7 @@ func encodeLinkPath(p string, kind LinkKind) string {
 func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool) {
 	changed := false
 	var rows tableRows
+	rowsFound := false
 	content = walkLinks(content, func(m linkMatch) string {
 		l := m.Link
 		if l.External {
@@ -298,8 +299,8 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		l.Path = newPath
 		dest := l.Dest()
 		if l.Kind != LinkWiki && strings.Contains(dest, "|") {
-			if rows == nil {
-				rows = newTableRows(content)
+			if !rowsFound {
+				rows, rowsFound = newTableRows(content), true
 			}
 			if rows.contains(m.Start) {
 				// GFM ends a table cell at an unescaped "|"; in html the cell unescaping isn't applied to the attribute
@@ -356,14 +357,14 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 		m                 linkMatch
 	}
 	var spans []span
-	masked := maskCode(content)
-	for _, i := range mdLinkRe.FindAllStringSubmatchIndex(masked, -1) {
+	masked, mdMasked := maskCode(content)
+	for _, i := range mdLinkRe.FindAllStringSubmatchIndex(mdMasked, -1) {
 		if i[2] != -1 {
 			body := content[i[2]:i[3]]
 			spans = append(spans, span{i[0], i[1], 1, linkMatch{Link: ParseLink(body, LinkWiki), Prefix: "[[", Dest: body, Suffix: "]]"}})
 			continue
 		}
-		if strings.Contains(masked[i[6]:i[7]], "\x00") || i[4] != -1 && escapedAt(masked, i[4]+strings.IndexByte(masked[i[4]:i[5]], '[')) {
+		if strings.Contains(mdMasked[i[6]:i[7]], "\x00") || i[4] != -1 && escapedAt(mdMasked, i[4]+strings.IndexByte(mdMasked[i[4]:i[5]], '[')) {
 			continue
 		}
 		m := linkMatch{Prefix: content[i[0]:i[6]], Dest: content[i[6]:i[7]], Suffix: ")"}
@@ -375,14 +376,15 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 		spans = append(spans, span{i[0], i[1], 1, m})
 	}
 	offset := 0
-	maskedLines := strings.Split(masked, "\n")
+	maskedLines, mdMaskedLines := strings.Split(masked, "\n"), strings.Split(mdMasked, "\n")
 	for n, line := range maskedLines {
 		text := content[offset : offset+len(line)]
-		if i := rewriteRefDefRe.FindStringSubmatchIndex(text); i != nil && !strings.Contains(line, "\x00") {
+		mdLine := mdMaskedLines[n]
+		if i := rewriteRefDefRe.FindStringSubmatchIndex(text); i != nil && !strings.Contains(mdLine, "\x00") {
 			m := linkMatch{Prefix: text[i[2]:i[3]], Dest: text[i[4]:i[5]], RefDef: true}
 			m.Link = ParseLink(m.Dest, LinkMarkdown)
 			spans = append(spans, span{offset, offset + len(text), 0, m})
-		} else if rewriteRefDefOpenRe.MatchString(text) && !strings.Contains(line, "\x00") && n+1 < len(maskedLines) && !strings.Contains(maskedLines[n+1], "\x00") {
+		} else if rewriteRefDefOpenRe.MatchString(text) && !strings.Contains(mdLine, "\x00") && n+1 < len(maskedLines) && !strings.Contains(mdMaskedLines[n+1], "\x00") {
 			// the destination on the next line
 			next := content[offset+len(line)+1 : offset+len(line)+1+len(maskedLines[n+1])]
 			if j := rewriteRefDefDestRe.FindStringSubmatchIndex(next); j != nil {
@@ -428,13 +430,18 @@ func escapedAt(s string, i int) bool {
 	return n%2 == 1
 }
 
-// maskCode replaces every byte of fenced code blocks and inline `code` spans with "\x00" (line
-// breaks kept), so a regex over the result never sees code and its indexes match content. a code
-// span may span the lines of a paragraph, but not a blank line, a fence, a heading or a new list
-// item, quote or table row (blockStartRe).
-func maskCode(content string) string {
+// maskCode replaces every byte of YAML front matter (stripped before a doc renders), fenced code
+// blocks, indented code blocks, inline `code` spans and html comments with "\x00" (line breaks
+// kept), so a regex over the result never sees code and its indexes match content. a code span may
+// span the lines of a paragraph, but not a blank line, a fence, a heading or a new list item, quote
+// or table row (blockStartRe). The second result also masks raw html blocks (rawHTMLBlockRanges),
+// where markdown isn't read - html attributes are, so they are matched on the first.
+func maskCode(content string) (masked, mdMasked string) {
 	lines := strings.Split(content, "\n")
 	fenced := markdown.FenceMask(lines)
+	for i := 0; i < markdown.FrontMatterBodyLine(lines) && i < len(lines); i++ {
+		fenced[i] = true
+	}
 	for i, indented := range indentedCodeMask(lines, fenced) {
 		fenced[i] = fenced[i] || indented
 	}
@@ -467,12 +474,46 @@ func maskCode(content string) string {
 		copy(lines[i:j], strings.Split(strings.Join(parts, ""), "\n"))
 		i = j
 	}
-	return htmlCommentRe.ReplaceAllStringFunc(strings.Join(lines, "\n"), maskNonNewlines)
+	htmlBlock := make([]bool, len(lines))
+	for _, r := range rawHTMLBlockRanges(lines, fenced) {
+		for i := r[0]; i < r[1]; i++ {
+			htmlBlock[i] = true
+		}
+	}
+	mdLines := slices.Clone(lines)
+	for i, isBlock := range htmlBlock {
+		if isBlock {
+			mdLines[i] = strings.Repeat("\x00", len(lines[i]))
+		}
+	}
+	mask := func(ls []string) string {
+		return htmlCommentRe.ReplaceAllStringFunc(strings.Join(ls, "\n"), maskNonNewlines)
+	}
+	return mask(lines), mask(mdLines)
 }
 
-// an html comment (inline, or a block starting a line and running to the end of the content if it
-// is never closed), where markdown links aren't read
-var htmlCommentRe = regexp.MustCompile(`(?s)<!--.*?-->|(?m)^ {0,3}<!--.*\z`)
+// rawHTMLBlockRanges are the [start, end) line ranges of the raw html blocks the renderer shows as code
+// (wrapRawHTMLBlocks: a line starting a block tag up to the next blank line), outside fenced code.
+func rawHTMLBlockRanges(lines []string, skip []bool) [][2]int {
+	var ranges [][2]int
+	for i := 0; i < len(lines); i++ {
+		if skip[i] || !isRawHTMLBlockStart(strings.TrimSpace(lines[i])) {
+			continue
+		}
+		j := i + 1
+		for j < len(lines) && strings.TrimSpace(lines[j]) != "" && !skip[j] {
+			j++
+		}
+		ranges = append(ranges, [2]int{i, j})
+		i = j
+	}
+	return ranges
+}
+
+// an html comment, where markdown links aren't read: a block starting a line runs through the rest of
+// the line holding its end (across blank lines, to the end of the content if it is never closed), an
+// inline one stays in its paragraph
+var htmlCommentRe = regexp.MustCompile(`(?m)^ {0,3}<!--(?s:.*?)-->[^\n]*|<!--(?:[^\n]|\n[^\n])*?-->|(?m)^ {0,3}<!--(?s:.*)\z`)
 
 func maskNonNewlines(s string) string {
 	b := []byte(s)
@@ -495,8 +536,10 @@ func protectDestBackticks(s string) string {
 }
 
 var (
-	listMarkerRe = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`)
-	quotePrefix  = regexp.MustCompile(`^ {0,3}>[ ]?`)
+	thematicBreakRe   = regexp.MustCompile(`^ {0,3}(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$`)
+	setextUnderlineRe = regexp.MustCompile(`^ {0,3}(?:=+|-+)[ \t]*$`)
+	listMarkerRe      = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`)
+	quotePrefix       = regexp.MustCompile(`^ {0,3}>[ ]?`)
 )
 
 // indentedCodeMask marks the lines of indented code blocks (4 spaces or a tab more than the content
@@ -550,7 +593,7 @@ func indentedCodeMask(lines []string, fenced []bool) []bool {
 			continue
 		}
 		inCode, prevBlank = false, false
-		prevPara = !isATXHeading(line)
+		prevPara = !isATXHeading(line) && !thematicBreakRe.MatchString(line) && !setextUnderlineRe.MatchString(line)
 	}
 	return mask
 }

@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"knov/internal/pathutils"
 	"knov/internal/test/specialchars"
@@ -503,5 +504,47 @@ func TestRewriteLinksEscapesPipeInTableRows(t *testing.T) {
 		if l != "docs/old.md" && l != "docs/a|b.md" {
 			t.Errorf("ExtractLinks read %q", l)
 		}
+	}
+}
+
+// rewriting many links to a path with a "|" in a doc without a table finds the tables once, not
+// once per link (20k reference definitions took 10s)
+func TestRewriteLinksPipeNoTableIsLinear(t *testing.T) {
+	content := strings.Repeat("[i]: a.md\n", 20000)
+	start := time.Now()
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) { return "z|q.md", true })
+	if !changed || !strings.Contains(got, "[i]: z|q.md\n") {
+		t.Fatalf("RewriteLinks changed=%v", changed)
+	}
+	if d := time.Since(start); d > 3*time.Second {
+		t.Errorf("rewriting 20k links took %s, want well under 3s", d)
+	}
+}
+
+// YAML front matter is stripped before a doc renders (MarkdownHandler.Parse), so a link in it is
+// no used link and rename / move leave it alone
+func TestFrontMatterLinksAreNoLinks(t *testing.T) {
+	content := "---\ntitle: [x](a.md)\nparent: [[b]]\nsrc: <img src=\"c.png\">\n---\n[y](a.md) [[b]]\n"
+	if got := NewMarkdownHandler().ExtractLinks([]byte(content), "docs/n.md"); !slices.Equal(got, []string{"docs/a.md", "docs/b.md"}) {
+		t.Errorf("ExtractLinks = %q, want the two body links", got)
+	}
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) { return "new.md", true })
+	want := "---\ntitle: [x](a.md)\nparent: [[b]]\nsrc: <img src=\"c.png\">\n---\n[y](new.md) [[new.md]]\n"
+	if !changed || got != want {
+		t.Errorf("RewriteLinks = %q, want %q", got, want)
+	}
+	// an unclosed "---" is no front matter
+	if got := NewMarkdownHandler().ExtractLinks([]byte("---\n[y](a.md)\n"), "docs/n.md"); len(got) != 1 {
+		t.Errorf("ExtractLinks without closing --- = %q", got)
+	}
+}
+
+// CRLF line endings: links are read and rewritten like with LF, the line endings stay
+func TestRewriteLinksCRLF(t *testing.T) {
+	in := "# t\r\n\r\n[x](a.md)\r\n\r\n```\r\n[y](a.md)\r\n```\r\n\r\n[id]:\r\n  a.md\r\n\r\n    [z](a.md)\r\n"
+	got, ok := RewriteLinks(in, func(l Link) (string, bool) { return "b.md", true })
+	want := "# t\r\n\r\n[x](b.md)\r\n\r\n```\r\n[y](a.md)\r\n```\r\n\r\n[id]:\r\n  b.md\r\n\r\n    [z](a.md)\r\n"
+	if !ok || got != want {
+		t.Errorf("got %q, want %q", got, want)
 	}
 }

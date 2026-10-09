@@ -2,6 +2,7 @@ package files
 
 import (
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -148,4 +149,27 @@ func TestStaleFileListIsNotCached(t *testing.T) {
 		t.Errorf("fresh file list not cached: %v, %v", got, err)
 	}
 	InvalidateFileListCache()
+}
+
+// a relative link to a media file keeps its media/ segment when renamed, so it reads back as the
+// media file even where a docs file of the same joined path exists
+func TestRenamedRelativeMediaLinkKeepsMediaSegment(t *testing.T) {
+	dir := t.TempDir()
+	prevData, prevStorage := configmanager.GetDataPath(), configmanager.GetStoragePath()
+	configmanager.SetDataAndStoragePaths(dir, dir)
+	t.Cleanup(func() { configmanager.SetDataAndStoragePaths(prevData, prevStorage) })
+	for _, f := range []string{"docs/x.png", "media/x.png", "docs/sub/x.png"} {
+		full := filepath.Join(dir, filepath.FromSlash(f))
+		os.MkdirAll(filepath.Dir(full), 0755)
+		os.WriteFile(full, []byte("x"), 0644)
+	}
+	for _, c := range []struct{ doc, link, want string }{
+		{"docs/n.md", "![a](./media/pic.png)", "![a](./media/x.png)"},
+		{"docs/sub/n.md", "![a](../media/pic.png)", "![a](../media/x.png)"},
+	} {
+		got, ok := parser.RewriteLinks(c.link, renameLinkFunc(c.doc, "media/pic.png", "media/x.png"))
+		if !ok || got != c.want {
+			t.Errorf("%s: %q = %q, want %q", c.doc, c.link, got, c.want)
+		}
+	}
 }

@@ -17,6 +17,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
+	"knov/internal/tracker"
 	"knov/internal/utils"
 )
 
@@ -630,4 +631,25 @@ func (j *bulkUpdateMetadataJob) Message() string {
 		msg += fmt.Sprintf(", %d failed", j.result.Failed)
 	}
 	return msg
+}
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------- migrateReservedFoldersJob ---------------------------------
+// ----------------------------------------------------------------------------------------
+
+type migrateReservedFoldersJob struct {
+	result MigrateReservedFoldersResult
+}
+
+func (j *migrateReservedFoldersJob) Name() string { return "migrate-reserved-folders" }
+
+func (j *migrateReservedFoldersJob) Run(_ context.Context) error {
+	j.result.Metadata = files.MigrateReservedFolderMetadata()
+	return errors.Join(filter.MigrateReservedIDs(), tracker.MigrateReservedIDs())
+}
+
+func (j *migrateReservedFoldersJob) Output() any { return j.result }
+
+func (j *migrateReservedFoldersJob) Message() string {
+	return fmt.Sprintf("migrated the metadata of %d files in reserved folders", j.result.Metadata)
 }

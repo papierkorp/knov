@@ -5632,6 +5632,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/reserved-folders/migrate": {
+            "post": {
+                "description": "Moves the metadata of docs files in docs/docs, docs/media and docs/files from the key they were stored under before docs paths carried their docs/ prefix to their own docs/ key, and renames filters and trackers whose id starts with docs/, media/ or files/. Safe to run again.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Migrate the metadata of docs files in reserved folders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/tags": {
             "get": {
                 "description": "Get all tags with counts, or tags for a specific file if filepath is provided",

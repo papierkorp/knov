@@ -3,6 +3,8 @@ package editorstest
 import (
 	"encoding/json"
 	"fmt"
+	"html"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,6 +16,7 @@ import (
 	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/server"
 	"knov/internal/test"
 	"knov/internal/utils"
@@ -204,6 +207,35 @@ func caseEditorTOC() test.CaseResult {
 	cr := test.CaseResult{Name: name, Expected: "the headings of the posted markdown as the rendered page shows them", Actual: fmt.Sprintf("%d %+v", resp.StatusCode, got), Success: success}
 	if !success {
 		cr.Error = fmt.Sprintf("want %+v", want)
+	}
+	return cr
+}
+
+// caseEditPageEncodesPath renders the edit page of files whose names need encoding in a url
+// (% & + # space): its links to the file and its editor request carry the path encoded, so the
+// editor loads that file.
+func caseEditPageEncodesPath() test.CaseResult {
+	name := "edit-page-encodes-path"
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	var gaps []string
+	for _, rel := range []string{"100%.md", "a&b.md", "x+y.md", "a#b.md", "my notes.md", "ö ü.md"} {
+		resp, err := ts.Client().Get(ts.URL + pathutils.ToFileEditURL(pathutils.DocsPath(rel)))
+		if err != nil {
+			return errCase(name, err)
+		}
+		b, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		body := html.UnescapeString(string(b))
+		for _, want := range []string{`href="` + pathutils.ToFileURL(pathutils.DocsPath(rel)) + `"`, `/api/editor?filepath=` + url.QueryEscape(pathutils.DocsPath(rel))} {
+			if !strings.Contains(body, want) {
+				gaps = append(gaps, fmt.Sprintf("edit page of %q lacks %s", rel, want))
+			}
+		}
+	}
+	cr := test.CaseResult{Name: name, Expected: "links and editor request of the edit page carry the encoded path", Actual: fmt.Sprintf("%d gaps", len(gaps)), Success: len(gaps) == 0}
+	if !cr.Success {
+		cr.Error = "\n    " + strings.Join(gaps, "\n    ")
 	}
 	return cr
 }

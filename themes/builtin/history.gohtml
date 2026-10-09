@@ -4,7 +4,7 @@
     {{if .Data.FilePath}}
         <!-- File-specific history -->
         <div class="file-history-header">
-            <h1>{{T "History"}}: <a href="/files/{{.Data.FilePath}}" class="file-link">{{.Data.FilePath}}</a></h1>
+            <h1>{{T "History"}}: <a href="{{urlPath .Data.FilePath}}" class="file-link">{{.Data.FilePath}}</a></h1>
             {{if or .Data.SelectedVersion (and .Data.CompareFrom .Data.CompareTo)}}
                 <div class="version-actions">
                     <a href="{{fileHistoryURL .Data.FilePath}}" class="action-link">{{T "view all versions"}}</a>
@@ -56,7 +56,7 @@
                autocomplete="off"
                oninput="updateLatestChangesSearch(this.value)"/>
         <div id="latestchanges-results"
-             hx-get="/api/git/latestchanges?count=50{{if .Data.Collection}}&collection={{.Data.Collection}}{{end}}{{if .Data.Folder}}&folder={{.Data.Folder}}{{end}}"
+             hx-get="/api/git/latestchanges?count=50{{if .Data.Collection}}&collection={{urlQuery .Data.Collection}}{{end}}{{if .Data.Folder}}&folder={{urlQuery .Data.Folder}}{{end}}"
              hx-trigger="load"
              hx-headers='{"Accept": "text/html"}'
              data-collection="{{.Data.Collection}}"

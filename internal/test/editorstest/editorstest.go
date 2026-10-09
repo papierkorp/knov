@@ -38,6 +38,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseTodoClearDate,
 		caseConvertToMarkdown,
 		caseEditorTOC,
+		caseEditPageEncodesPath,
 		caseCodeMirrorLiveToc,
 		caseFileRename,
 		caseFileMove,

@@ -26,57 +26,12 @@
 - test
   - remote git in mobile
 
-# reserved folders refactoring
+# link refactor follow-ups
 
-goal: docs paths are unambiguous, so no top-level docs folder name (docs, media, files) has to be reserved. rule: a docs path entering pathutils always carries an explicit "docs/" prefix - user input, /files/<rel> urls and listings are docs-relative and taken literally, the prefix guessing of pathutils.parsePath only stays for links and old metadata. own run, one commit per step, `--start-tests --remove` at the end.
+found by the review of 93f0bbd1..HEAD, details in the review notes of the session:
 
-- [x] R1 path model: pathutils.DocsPath(rel) - a literal docs-relative path as "docs/" path (no prefix stripping), go tests that docs/media/x.md, docs/docs/x.md and docs/files/x.md resolve to themselves through ToDocsPath / ToFullPath / ToWithPrefix / ToRelative
-- [x] R2 listing: contentStorage.ListFiles callers and files.pathsToFiles give docs files a "docs/" File.Path, fix the File.Path consumers that expect it unprefixed (ViewURL, display, filters)
-- [x] R3 url routes (the url builders ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL take the docs metadata path, FileFromURL returns it): /files/, /files/edit/, /files/edittable/, /files/history/, pathutils.FileFromURL (upload context_path, viewedFile / HX-Current-URL) and the api path routes reading r.URL.Path (content, rename, move-folder, delete, delete-folder, versions, versions/diff, versions/restore) read their rel literally (DocsPath)
-- [x] R4 query / form params (done except the kanban apis - their card paths are stored docs-relative, R6; reserved-folders create / rename / move cases are registered with R8, the reserved check rejects them until then) (decided: a param naming an existing file - filepath and the like - is its metadata path `docs/...` / `media/...`, unprefixed input is answered with 400; what a user types - new file path, rename / move target, folder fields, prefillpath - is docs-relative and read literally): every handler path param (~100) and its senders (templates, js, render ~130)
-- [x] R5 links: one place since the link cleanup - parser.LinkTarget / ResolveLinkPath / utils.NormalizeLinkPath. a /files/<rel> link is literal; decide and document how a docs file in docs/media/ is linked ([[media/x]] and bare media/ stay media), help page, links suite case for docs/media/, docs/docs/, docs/files/
-- [x] R6 other stored paths: metadata parents, kanban folders, filter criteria folder values, Auto-Create Tags folders, configeditor ids / PairedPath (filter, tracker)
-- [x] R7 migration: metadata of docs files under docs/docs/, docs/media/, docs/files/ (their old keys collide with real media / docs keys), filter / tracker configStorage ids starting with docs/, media/ or files/ (configeditor.CleanID)
-- [x] R8 remove the workaround: configmanager.ReservedDocsFolders, the reserved check in pathutils.CheckTarget, ErrReservedPath (+ server newPathMessage / handleMoveError), the reserved checks in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), turn the reserved cases of TestCheckNewDocsPath into "these paths resolve correctly" tests. keep the filename policy (CheckTarget / ErrInvalidName)
-- [x] R9 suite (internal/test/reservedtest, listing + metadata registered, the other cases with their step): files in docs/docs/, docs/media/, docs/files/ created by the app and written directly (git sync) - list, view, edit, metadata, links, rename, move, delete
-- [x] R10 upgrade note, run every suite (`--start-tests --remove`)
-
-context (from the review, decisions included):
-
-- todo: make docs paths unambiguous so no top-level docs folder name has to be reserved
-  - problem: pathutils.parsePath guesses the type from free text - a leading "files/" is stripped, "media/..." is read as a media file and "docs/..." as a docs file. a docs file at data/docs/media/x.md (or docs/docs/..., docs/files/...) therefore can't be resolved back to itself
-    - current workaround (keep until this is done): configmanager.ReservedDocsFolders + pathutils.ErrReservedPath (checked first in pathutils.CheckTarget, before the filename policy) reject creating/moving files there (handlers, files.MoveFileNoRefresh/MoveFolder, configeditor.CleanID, validateKanbanFolder), existing files are exempt via os.Stat
-    - the workaround only covers files created by the app - files that arrive via git pull/sync or are copied into the filesystem are still broken:
-      - contentStorage.ListFiles + files.pathsToFiles list them as "media/x.md" without a docs/ prefix
-      - File.ViewURL points to /files/x.md => docs/x.md (404 or the wrong file)
-      - their metadata key "media/x.md" is the same key as a real media file data/media/x.md, so the two overwrite each other's metadata
-  - fix:
-    - docs paths always carry an explicit "docs/" prefix internally (listing, metadata keys, File.Path)
-    - user input (form paths, rename/move targets) and /files/<rel> URLs are treated as literal docs-relative paths - no prefix stripping (e.g. a separate docs-rel => full path function next to ToDocsPath). this includes pathutils.FileFromURL (upload context_path, viewedFile / HX-Current-URL) and the path routes that read r.URL.Path (rename, delete, move-folder, metadata rebuild, versions) - today their rel goes through ToDocsPath, so /files/media/x.md resolves to the media folder
-    - do this after "link refactor cleanup" steps 1-2 (one link target resolver, one link walker) - then the link part below is a change in that one resolver instead of three places
-    - keep the prefix guessing only where it's really needed (old metadata) - for links in content that's one place since the link refactor: utils.NormalizeLinkPath (after parser.ParseLink decoded the path), used by metadata, rename (renameLinkFunc) and FindBrokenLinks; the renderer has its own branch in parser.appLinkDest (media/ and /media/ -> ToMediaURL, the rest -> docLinkDest) and media relocate its candidates in relocateIndex.resolve - change all three together, the links suite (internal/test/linkstest) covers them
-    - catch: a link like [[media/x.md]] still resolves to media, so docs files in docs/media/ need a "docs/media/x.md" link - decide and document this (in NormalizeLinkPath + appLinkDest), add a docs/media/ case to the links suite
-  - migration: metadata keys of docs files that currently collide with media keys, and filter/tracker configStorage ids starting with docs/, media/ or files/ (see configeditor.CleanID)
-  - afterwards delete: ReservedDocsFolders, the reserved check in CheckTarget, ErrReservedPath (+ its case in server newPathMessage / handleMoveError), the reserved check in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), and turn the reserved cases of TestCheckNewDocsPath (pathutils_test.go) into "these paths now resolve correctly" tests
-  - keep: the filename policy from the link refactor (CheckTarget / ErrInvalidName, writeNewPathError / newPathMessage)
-  - touches many ToDocsPath/ToWithPrefix/ToRelative callers - do it as its own refactor, run `--start-tests --remove` afterwards
-
-# link refactor cleanup
-
-done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgrade.md):
-
-- [x] 1 one link target resolver - parser.LinkTarget (`fix:` ae7de291)
-- [x] 2 one link walker - parser.walkLinks (`refactor:` 6af90df0)
-- [x] 7 guard tests - FuzzLinkCodec / FuzzRewriteLinksIdentity, TestScannerMatchesGoldmark, TestNoHandRolledLinkHandling (`test:` ae2eb2c4)
-- [x] 3 bare markdown / html links read from the doc's folder + admin "Bare Links Migration" - a bare `media/...` link stays media, html follows markdown (`feat!:` 2ace0341)
-- [x] 4 `../` above the docs root listed and repaired in "Repair Broken Links", content scan, no metadata field (`feat:` f6a32955)
-- [x] 5 no warning noise for folder links / files moved along in folder moves (`fix:` f7095680)
-- [x] 6 table cells through RenderLinks, fileHistoryURL template func, dead dokuwiki branch and media select list removed (`fix!:` d74e1dd0)
-- [x] 7 rest - guard allow-list lowered after 6
-- [x] 8 every suite run: 182 passed, 1 skipped (s3)
-- decided, nothing to do: keep the filename policy (pathutils.CheckTarget / ErrInvalidName), keep the title fallback removal
-
-follow-ups: all done (codec, walker, images, hand-rolled readers, table pipe, flaky dashboard test, table editor tests - see the commits and docs/upgrade.md)
+- [ ] walker vs goldmark: a 4-space indented fence marker (`    ` + three backticks) masks the following lines in `markdown.FenceMask` (goldmark: indented code) - documented in knownDivergences, shared with the code block extraction, fix there or accept
+- [ ] untested: git-sync written files through the in-app suites (only the reserved-folders suite writes files directly), the s3 target round trip (needs KNOV_TEST_S3_ENDPOINT, cannot run without an endpoint)
 
 # every other time
 

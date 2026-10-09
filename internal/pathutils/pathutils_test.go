@@ -84,7 +84,7 @@ func TestToRelative(t *testing.T) {
 		{"plain media path", "media/img.png", "img.png"},
 		{"no prefix defaults to docs", "notes.md", "notes.md"},
 		{"leading slash stripped", "/docs/notes.md", "notes.md"},
-		{"files prefix stripped", "files/notes.md", "notes.md"},
+		{"files folder kept", "files/notes.md", "files/notes.md"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

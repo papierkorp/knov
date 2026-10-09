@@ -17,8 +17,8 @@ var reservedDocsFolders = []string{"docs", "media", "files"}
 // docs/files/ from the key they were stored under before (the path without the docs/ prefix) to
 // their own docs/ key, when no file lives at that old key anymore - otherwise the record belongs
 // to the media or docs file of that name, and the docs file starts with a fresh one. Safe to run
-// again.
-func MigrateReservedFolderMetadata() {
+// again. Returns the number of moved records.
+func MigrateReservedFolderMetadata() int {
 	moved := 0
 	for _, top := range reservedDocsFolders {
 		_ = filepath.Walk(filepath.Join(pathutils.DocsRoot(), top), func(p string, info os.FileInfo, err error) error {
@@ -52,4 +52,5 @@ func MigrateReservedFolderMetadata() {
 		RefreshCaches()
 		logging.LogInfo(logging.KeyApp, "migrated the metadata of %d docs files in docs/docs, docs/media and docs/files", moved)
 	}
+	return moved
 }

@@ -350,6 +350,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/broken-links/repair", handleAPIRepairBrokenLinks)
 			r.Get("/relative-links", handleAPIScanRelativeLinks)
 			r.Post("/relative-links/migrate", handleAPIMigrateRelativeLinks)
+			r.Post("/reserved-folders/migrate", handleAPIMigrateReservedFolders)
 			// under metadata, not /api/kanban, so a board slug "issues" isn't shadowed
 			r.Get("/kanban-issues", handleAPIGetKanbanIssues)
 			r.Post("/kanban-issues/cleanup", handleAPICleanupKanbanIssues)
