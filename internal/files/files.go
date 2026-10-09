@@ -230,7 +230,7 @@ func isInHiddenFolder(file File, hide *configmanager.HideMatcher) bool {
 // TreeNode represents a node in the file tree (either a directory or a file)
 type TreeNode struct {
 	Name     string
-	Path     string // relative path, only set for file nodes
+	Path     string // metadata path (docs/...), only set for file nodes
 	IsDir    bool
 	Metadata *Metadata // only set for file nodes, carried over from the source File
 	Children []*TreeNode
@@ -242,7 +242,7 @@ func BuildFileTree(allFiles []File) *TreeNode {
 	for _, file := range allFiles {
 		rel := pathutils.ToRelative(file.Path)
 		parts := strings.Split(rel, "/")
-		insertTreeNode(root, parts, rel, file.Metadata)
+		insertTreeNode(root, parts, file.Path, file.Metadata)
 	}
 	sortTreeNode(root)
 	return root

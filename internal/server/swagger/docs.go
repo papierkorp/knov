@@ -3108,7 +3108,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path",
+                        "description": "File path (docs/ prefixed)",
                         "name": "filepath",
                         "in": "formData",
                         "required": true
@@ -3353,7 +3353,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Comma-separated list of filepaths in display order",
+                        "description": "Comma-separated list of docs/ prefixed filepaths in display order",
                         "name": "order",
                         "in": "formData",
                         "required": true

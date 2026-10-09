@@ -2886,7 +2886,7 @@ paths:
         name: status
         required: true
         type: string
-      - description: Comma-separated list of filepaths in display order
+      - description: Comma-separated list of docs/ prefixed filepaths in display order
         in: formData
         name: order
         required: true
@@ -2921,7 +2921,7 @@ paths:
       description: Updates the kanban status tag on a file, replacing any existing
         kanban tag
       parameters:
-      - description: File path
+      - description: File path (docs/ prefixed)
         in: formData
         name: filepath
         required: true

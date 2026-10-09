@@ -895,7 +895,7 @@ func removeFileAndMetadata(fullPath string) error {
 	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, metaPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
 	}
-	if err := git.InvalidateFileHistoryCache(relPath); err != nil {
+	if err := git.InvalidateFileHistoryCache(metaPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", relPath, err)
 	}
 	files.RefreshCaches()

@@ -250,6 +250,9 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 	// no read cache: many sections from one file re-read it per entry. books are small
 	// and this path is cold; revisit if that changes.
 	readFile := func(p string) ([]byte, error) {
+		if strings.HasPrefix(p, "media/") {
+			return nil, fmt.Errorf("a media file, not a doc")
+		}
 		return contentStorage.ReadFile(pathutils.ToDocsPath(p))
 	}
 
@@ -273,7 +276,8 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 			continue
 		}
 
-		path := parser.ResolveWikiTarget(e.Value)
+		// docs/... or media/... like a wikilink to it links, so a doc in docs/media/ is "docs/media/x"
+		path := parser.LinkTarget(bookPath, parser.ParseLink(e.Value, parser.LinkWiki))
 		// the visible heading text ("notes.md#My Section") works as anchor too; a bare-text
 		// anchor matching several headings resolves to the first.
 		section := parser.AnchorID(parser.ParseLink(e.Value, parser.LinkWiki).AnchorText())

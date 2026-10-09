@@ -82,10 +82,11 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	// resolve filename conflicts
-	finalMediaPath := pathutils.ToSlash(utils.ResolveFilenameConflicts(pathutils.ToMediaPath(mediaPath), mediaPath))
+	// "media/" + the media-relative path, so a first folder called media (a doc in docs/media/) is kept
+	finalMediaPath := pathutils.ToSlash(utils.ResolveFilenameConflicts(pathutils.ToMediaPath("media/"+mediaPath), mediaPath))
 
 	// get full file system path using contentStorage
-	fullMediaPath := pathutils.ToMediaPath(finalMediaPath)
+	fullMediaPath := pathutils.ToMediaPath("media/" + finalMediaPath)
 
 	// write file to disk using contentStorage
 	if err := contentStorage.WriteFile(fullMediaPath, fileBytes, 0644); err != nil {

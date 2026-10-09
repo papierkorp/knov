@@ -61,12 +61,13 @@ func linkDisplayMode() string {
 func renderLinkDisplayText(filePath string, displayMode string, metadata *files.Metadata) string {
 	// get the components we might need
 	filename := filepath.Base(filePath)
+	shown := strings.TrimPrefix(filePath, "docs/") // a docs file is shown by its docs-relative path
 
 	switch displayMode {
 	case "filename":
 		return filename
 	case "filepath":
-		return filePath
+		return shown
 	}
 
 	var title string
@@ -83,10 +84,10 @@ func renderLinkDisplayText(filePath string, displayMode string, metadata *files.
 		return filename
 	case "title-filepath":
 		if title != "" {
-			return fmt.Sprintf(`%s <small>(%s)</small>`, title, filePath)
+			return fmt.Sprintf(`%s <small>(%s)</small>`, title, shown)
 		}
 		// fallback to filename with filepath if no title available
-		return fmt.Sprintf(`%s <small>(%s)</small>`, filename, filePath)
+		return fmt.Sprintf(`%s <small>(%s)</small>`, filename, shown)
 	case "title-filename":
 		if title != "" {
 			return fmt.Sprintf(`%s <small>(%s)</small>`, title, filename)
@@ -104,7 +105,7 @@ func renderLinkDisplayText(filePath string, displayMode string, metadata *files.
 			return fmt.Sprintf(`%s <small>(%s)</small>`, filePath, title)
 		}
 		// fallback to just filepath if no title available
-		return filePath
+		return shown
 	default:
 		// fallback to filename for unknown modes
 		return filename
@@ -129,7 +130,7 @@ func RenderLinksList(links []string, _ bool) string {
 		}
 		rel := pathutils.ToRelative(link)
 		url := pathutils.ToFileURL(pathutils.DocsPath(rel))
-		displayText := GetLinkDisplayText(rel)
+		displayText := GetLinkDisplayText(pathutils.ToWithPrefix(link))
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
 	}
 	return html.String()

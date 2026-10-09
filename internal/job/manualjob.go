@@ -448,7 +448,7 @@ func deleteResolvedFiles(ctx context.Context, logPrefix string, fullPaths []stri
 	deleted := files.BulkDeleteFiles(ctx, logging.KeyApp, fullPaths, report)
 
 	for _, fullPath := range deleted {
-		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
+		if err := git.InvalidateFileHistoryCache(pathutils.ToWithPrefix(fullPath)); err != nil {
 			logging.LogWarning(logging.KeyApp, "%s: failed to invalidate file history cache for %s: %v", logPrefix, fullPath, err)
 		}
 	}

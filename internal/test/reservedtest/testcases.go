@@ -1,15 +1,19 @@
 package reservedtest
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
+	"knov/internal/book"
 	"knov/internal/configStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
@@ -17,6 +21,7 @@ import (
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server"
+	"knov/internal/server/render"
 	"knov/internal/test"
 )
 
@@ -402,4 +407,82 @@ func caseLinkRename() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-link-rename", "renaming a doc in a reserved folder rewrites every form of its links to the new file", gaps)
+}
+
+// caseTree: the file tree names each sample doc by its docs/ path, so its link, rename and delete
+// buttons address the doc, not its collision partner.
+func caseTree() test.CaseResult {
+	var gaps []string
+	all, err := files.GetAllPhysicalFiles()
+	if err != nil {
+		return errCase("reserved-tree", err)
+	}
+	var sampleDocs []files.File
+	for _, f := range all {
+		if strings.Contains(f.Path, "/"+sub+"/synced.md") || f.Path == "docs/"+sub+"/synced.md" {
+			sampleDocs = append(sampleDocs, f)
+		}
+	}
+	rendered := render.RenderTreeOverview(files.BuildFileTree(sampleDocs), true)
+	for _, top := range reserved {
+		rel := doc(top, "synced.md")
+		for _, want := range []string{`data-path="` + rel + `"`, `href="` + pathutils.ToFileURL("docs/"+rel) + `"`, `hx-delete="` + pathutils.ToRouteURL("/api/files/delete/", rel) + `?inline=true"`} {
+			if !strings.Contains(rendered, want) {
+				gaps = append(gaps, fmt.Sprintf("tree of %q lacks %s", rel, want))
+			}
+		}
+	}
+	return gapsCase("reserved-tree", "the file tree addresses each sample doc by its own path", gaps)
+}
+
+// caseBook: a book entry [[docs/media/x]] or [[docs/docs/x]] includes that doc, a media/ entry is no doc.
+func caseBook() test.CaseResult {
+	var gaps []string
+	const bookRel = sub + "/reserved.book"
+	var entries []string
+	for _, top := range reserved {
+		entries = append(entries, "[[docs/"+doc(top, "synced.md")+"]]")
+	}
+	if err := write(fullPath("docs/"+bookRel), strings.Join(entries, "\n")+"\n"); err != nil {
+		return errCase("reserved-book", err)
+	}
+	composed, err := book.Compose("docs/" + bookRel)
+	if err != nil {
+		return errCase("reserved-book", err)
+	}
+	for _, top := range reserved {
+		if !strings.Contains(composed, marker(top)) || strings.Contains(composed, partnerMarker(top)) {
+			gaps = append(gaps, fmt.Sprintf("book entry docs/%s: includes the doc %v, its partner %v", doc(top, "synced.md"), strings.Contains(composed, marker(top)), strings.Contains(composed, partnerMarker(top))))
+		}
+	}
+	return gapsCase("reserved-book", "book entries name docs in reserved folders with their docs/ prefix", gaps)
+}
+
+// caseUpload: uploading from a doc in docs/media/ mirrors the doc's folder in the media folder
+// (media/media/...), not in its root.
+func caseUpload() test.CaseResult {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	part, _ := w.CreateFormFile("file", "pic.png")
+	_, _ = part.Write([]byte("\x89PNG\r\n\x1a\n"))
+	_ = w.WriteField("context_path", pathutils.ToFileEditURL("docs/"+doc("media", "synced.md")))
+	_ = w.Close()
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/media/upload", &buf)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Accept", "application/json")
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		return errCase("reserved-upload", err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	want := filepath.Join(pathutils.MediaRoot(), "media", sub, "pic.png")
+	defer os.RemoveAll(filepath.Join(pathutils.MediaRoot(), "media", sub))
+	var gaps []string
+	if _, err := os.Stat(want); err != nil || resp.StatusCode != http.StatusOK {
+		gaps = append(gaps, fmt.Sprintf("upload from %s: status %d (%s), %s exists %v", doc("media", "synced.md"), resp.StatusCode, strings.TrimSpace(string(body)), want, err == nil))
+	}
+	return gapsCase("reserved-upload", "an upload from a doc in docs/media/ lands in media/media/", gaps)
 }
