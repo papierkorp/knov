@@ -83,6 +83,11 @@ type MigrateRelativeLinksResult struct {
 	Skipped  int
 }
 
+// MigrateReservedFoldersResult holds the outcome of a reserved folders migration run.
+type MigrateReservedFoldersResult struct {
+	Metadata int // metadata records moved to their docs/ key
+}
+
 // BulkDeleteResult holds the outcome of a bulk/folder file delete run.
 type BulkDeleteResult struct {
 	Deleted int

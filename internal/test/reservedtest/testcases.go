@@ -330,7 +330,9 @@ func caseMigration() test.CaseResult {
 			return errCase("reserved-migration", err)
 		}
 	}
-	files.MigrateReservedFolderMetadata()
+	if status, body, err := request(http.MethodPost, "/api/metadata/reserved-folders/migrate", nil); err != nil || status != http.StatusOK {
+		return errCase("reserved-migration", fmt.Errorf("migrate endpoint: %d %v %s", status, err, body))
+	}
 	for _, top := range []string{"media", "docs"} {
 		rel := doc(top, "migrate.md")
 		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel

@@ -2,14 +2,34 @@
   "language": "de",
   "messages": [
     {
+      "id": "Migrate Reserved Folders",
+      "message": "Migrate Reserved Folders",
+      "translation": "Reservierte Ordner migrieren"
+    },
+    {
+      "id": "Reserved Folders Migration",
+      "message": "Reserved Folders Migration",
+      "translation": "Migration reservierter Ordner"
+    },
+    {
       "id": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
       "message": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
       "translation": "eine Docs-Datei in einem Ordner namens docs, media oder files (media/... allein ist der Media-Ordner)"
     },
     {
+      "id": "metadata of {Integer} files migrated",
+      "message": "metadata of {Integer} files migrated",
+      "translation": "Metadaten von {Integer} Dateien migriert"
+    },
+    {
       "id": "newpath must stay in {Arg_1}",
       "message": "newpath must stay in {Arg_1}",
       "translation": "newpath muss in {Arg_1} bleiben"
+    },
+    {
+      "id": "the metadata of docs files in the folders docs, media and files and the filters / trackers named like them were stored without their docs/ prefix. run this once after upgrading to move them to their own key, it can be run again safely",
+      "message": "the metadata of docs files in the folders docs, media and files and the filters / trackers named like them were stored without their docs/ prefix. run this once after upgrading to move them to their own key, it can be run again safely",
+      "translation": "die Metadaten von Dokumenten in den Ordnern docs, media und files sowie die danach benannten Filter / Tracker wurden ohne ihr docs/-Präfix gespeichert. einmal nach dem Upgrade ausführen, um sie unter ihren eigenen Schlüssel zu verschieben, kann gefahrlos erneut ausgeführt werden"
     },
     {
       "id": "{Arg_1} must start with docs/ or media/",

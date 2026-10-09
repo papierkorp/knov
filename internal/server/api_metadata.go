@@ -430,6 +430,28 @@ func handleAPIMigrateRelativeLinks(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]int{"migrated": result.Migrated, "skipped": result.Skipped}, render.RenderRelativeLinksHTML(remaining))
 }
 
+// @Summary Migrate the metadata of docs files in reserved folders
+// @Description Moves the metadata of docs files in docs/docs, docs/media and docs/files from the key they were stored under before docs paths carried their docs/ prefix to their own docs/ key, and renames filters and trackers whose id starts with docs/, media/ or files/. Safe to run again.
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {object} map[string]int
+// @Failure 409 {string} string "already running"
+// @Router /api/metadata/reserved-folders/migrate [post]
+func handleAPIMigrateReservedFolders(w http.ResponseWriter, r *http.Request) {
+	result, err := job.RunMigrateReservedFolders()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		writeAPIError(w, r, status, err.Error())
+		return
+	}
+	message := translation.SprintfForRequest(configmanager.GetLanguage(), "metadata of %d files migrated", result.Metadata)
+	notify.SetHeader(w, notify.LevelSuccess, message)
+	writeResponse(w, r, map[string]int{"migrated": result.Metadata}, message)
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- GET INDIVIDUAL ----------------------------------
 // ----------------------------------------------------------------------------------------

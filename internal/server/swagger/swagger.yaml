@@ -4524,6 +4524,29 @@ paths:
       summary: Keep the old targets of selected bare links
       tags:
       - metadata
+  /api/metadata/reserved-folders/migrate:
+    post:
+      description: Moves the metadata of docs files in docs/docs, docs/media and docs/files
+        from the key they were stored under before docs paths carried their docs/
+        prefix to their own docs/ key, and renames filters and trackers whose id starts
+        with docs/, media/ or files/. Safe to run again.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "409":
+          description: already running
+          schema:
+            type: string
+      summary: Migrate the metadata of docs files in reserved folders
+      tags:
+      - metadata
   /api/metadata/tags:
     get:
       description: Get all tags with counts, or tags for a specific file if filepath

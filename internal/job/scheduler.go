@@ -400,6 +400,17 @@ func RunMigrateRelativeLinks(changes []files.RelativeLinkChange) (MigrateRelativ
 	return j.result, nil
 }
 
+// RunMigrateReservedFolders moves the legacy metadata records and filter / tracker ids of docs files
+// in docs/docs, docs/media and docs/files to their docs/ keys. Shares repairLinksMu with the other
+// admin migrations.
+func RunMigrateReservedFolders() (MigrateReservedFoldersResult, error) {
+	j := &migrateReservedFoldersJob{}
+	if err := execute(&repairLinksMu, j); err != nil {
+		return MigrateReservedFoldersResult{}, err
+	}
+	return j.result, nil
+}
+
 // RunGitPull runs a git pull --rebase with dedup protection.
 func RunGitPull() error {
 	return execute(&gitPullMu, &gitPullJob{})
