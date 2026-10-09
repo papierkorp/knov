@@ -56,9 +56,7 @@ func parsePath(inputPath string) *PathInfo {
 
 	// a docs-relative path is never read here - DocsPath prefixes it, so a folder named docs, media
 	// or files keeps its name
-	// strip leading slash and "files/" prefix used in stored metadata links
 	normalizedPath = strings.TrimPrefix(normalizedPath, "/")
-	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
 
 	// determine type based on prefix
 	// strip absolute/data-path prefix first, then detect docs/media

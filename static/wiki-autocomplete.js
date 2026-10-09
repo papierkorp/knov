@@ -178,6 +178,8 @@
       // Ask the server for bare "#id" values in that case, so the inserted
       // link stays a same-page anchor instead of the full file path.
       var typedFilepath = inner.substring(0, hashIdx);
+      // a wikilink names a docs file with its docs/ prefix, the headers api takes the docs-relative path
+      if (link === "wiki" && typedFilepath.indexOf("docs/") === 0) typedFilepath = typedFilepath.substring(5);
       var filepath = typedFilepath || currentFile;
       if (!filepath) {
         hide();

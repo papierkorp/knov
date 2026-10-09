@@ -775,7 +775,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed")
-	if files.FolderFromPath(currentRel) != files.FolderFromPath(newPath) {
+	if files.FolderFromPath(currentPath) != files.FolderFromPath(newPath) {
 		message = translation.SprintfForRequest(configmanager.GetLanguage(), "file moved")
 	}
 	// only navigate away when the current page shows the moved file, otherwise toast in place
