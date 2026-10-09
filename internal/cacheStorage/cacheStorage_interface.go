@@ -2,6 +2,7 @@
 package cacheStorage
 
 import (
+	"knov/internal/backup"
 	"fmt"
 
 	"knov/internal/logging"
@@ -76,3 +77,6 @@ func Exists(key string) bool {
 func Flush() error {
 	return storage.Flush()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

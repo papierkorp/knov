@@ -47,6 +47,7 @@ func (backupAdapter) GetBackendType() string      { return storage.GetBackendTyp
 
 // Init initializes chat storage with the specified provider
 func Init(storagePath string) error {
+	backup.CloseStorage(storage)
 	var err error
 
 	storage, err = newSQLiteStorage(storagePath)
@@ -92,3 +93,6 @@ func MoveFilePath(oldPath, newPath string) error {
 func DeleteByFilePath(filePath string) error {
 	return storage.DeleteByFilePath(filePath)
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

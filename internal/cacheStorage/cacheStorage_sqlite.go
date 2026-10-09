@@ -191,3 +191,6 @@ func (ss *sqliteStorage) Flush() error {
 	logging.LogInfo(logging.KeyApp, "cache flushed")
 	return nil
 }
+
+// Close closes the database, see backup.CloseStorage.
+func (s *sqliteStorage) Close() error { return s.db.Close() }

@@ -315,6 +315,8 @@ func Init(provider, storagePath string) error {
 	storageMu.Lock()
 	defer storageMu.Unlock()
 
+	backup.CloseStorage(storage)
+
 	currentStoragePath = storagePath
 
 	switch provider {
@@ -402,3 +404,6 @@ func GetBackendType() string {
 	defer storageMu.RUnlock()
 	return storage.GetBackendType()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

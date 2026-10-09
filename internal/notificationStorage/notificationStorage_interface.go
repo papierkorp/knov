@@ -47,6 +47,7 @@ func (backupAdapter) GetBackendType() string      { return storage.GetBackendTyp
 
 // Init initializes notification storage with the specified provider.
 func Init(storagePath string) error {
+	backup.CloseStorage(storage)
 	var err error
 
 	storage, err = newSQLiteStorage(storagePath)
@@ -95,3 +96,6 @@ func Clear() error {
 func GetBackendType() string {
 	return storage.GetBackendType()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

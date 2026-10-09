@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"knov/internal/logging"
@@ -13,8 +14,11 @@ import (
 
 // newMarker returns a unique probe string so a case's own log lines can be told apart from
 // real, concurrently-written app log activity sharing the same file.
+var markerSeq atomic.Int64
+
 func newMarker() string {
-	return fmt.Sprintf("logstest-probe-%d", time.Now().UnixNano())
+	// the sequence keeps two markers apart where the clock is coarse (windows: one tick for several probes)
+	return fmt.Sprintf("logstest-probe-%d-%d", time.Now().UnixNano(), markerSeq.Add(1))
 }
 
 // probeNote prefixes every deliberate error/warning-level log line this suite writes, so

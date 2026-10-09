@@ -522,3 +522,6 @@ func (ss *sqliteStorage) Restore(srcDir string) error {
 	}
 	return backup.RestoreSQLite(data, ss.dbPath)
 }
+
+// Close closes the database, see backup.CloseStorage.
+func (ss *sqliteStorage) Close() error { return ss.db.Close() }

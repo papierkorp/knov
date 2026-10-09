@@ -266,6 +266,8 @@ func runHeadlessTests(name string, removeTestDir bool) {
 func exitHeadlessTests(removeTestDir bool, code int) {
 	if removeTestDir {
 		files.WaitForCacheRefreshes()
+		closeStorages()
+		logging.CloseFiles()
 		if err := test.RemoveIsolatedStorage(); err != nil {
 			fmt.Fprintf(os.Stderr, "failed to remove knov_temp_test: %v\n", err)
 		}
@@ -296,4 +298,17 @@ func loadFonts() {
 		}
 		pdfexport.RegisterFont(f.Name, read(f.Dir, f.Regular), read(f.Dir, f.Bold), read(f.Dir, f.Italic), read(f.Dir, f.BoldItalic))
 	}
+}
+
+// closeStorages closes the database of every sqlite-backed storage, so the scratch directory of a
+// test run can be removed on a host that can not delete open files (windows).
+func closeStorages() {
+	cacheStorage.Close()
+	chatStorage.Close()
+	jobStorage.Close()
+	kanbanStorage.Close()
+	metadataStorage.Close()
+	notificationStorage.Close()
+	searchStorage.Close()
+	trackerStorage.Close()
 }

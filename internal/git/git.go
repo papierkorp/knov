@@ -412,7 +412,7 @@ func CommitDeletedFiles(deletedFiles []string) error {
 
 	// add deletions to staging
 	for _, file := range deletedFiles {
-		relPath, err := filepath.Rel(dataDir, file)
+		relPath, err := dataRel(dataDir, file)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get relative path for %s: %v", file, err)
 			continue
@@ -446,7 +446,7 @@ func CommitDeletedFiles(deletedFiles []string) error {
 // Non-blocking push happens in the background after the commit.
 func CommitFile(fullPath string) {
 	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, fullPath)
+	relPath, err := dataRel(dataDir, fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "git: failed to get relative path for %s: %v", fullPath, err)
 		return
@@ -500,7 +500,7 @@ func CommitFile(fullPath string) {
 // Called after in-app file deletion so the deletion is recorded without waiting for the cronjob.
 func CommitDeletedFile(fullPath string) {
 	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, fullPath)
+	relPath, err := dataRel(dataDir, fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "git: failed to get relative path for %s: %v", fullPath, err)
 		return
@@ -2561,4 +2561,10 @@ func searchDeletedFilesByContentLiveWalk(query string, limit int) ([]GitHistoryF
 	}
 	logging.LogDebug(logging.KeyApp, "git content search '%s' found %d deleted files", query, len(results))
 	return results, nil
+}
+
+// dataRel is the path of full below the data dir as git names it: always with "/", also on windows.
+func dataRel(dataDir, full string) (string, error) {
+	rel, err := filepath.Rel(dataDir, full)
+	return pathutils.ToSlash(rel), err
 }

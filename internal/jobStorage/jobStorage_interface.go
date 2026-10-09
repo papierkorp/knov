@@ -3,6 +3,7 @@
 package jobStorage
 
 import (
+	"knov/internal/backup"
 	"fmt"
 	"time"
 
@@ -92,3 +93,6 @@ func Purge(maxCount int, maxAgeDays int) error {
 func GetBackendType() string {
 	return storage.GetBackendType()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

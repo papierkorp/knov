@@ -234,3 +234,6 @@ func (s *sqliteStorage) Purge(maxCount int, maxAgeDays int) error {
 func (s *sqliteStorage) GetBackendType() string {
 	return "sqlite"
 }
+
+// Close closes the database, see backup.CloseStorage.
+func (s *sqliteStorage) Close() error { return s.db.Close() }

@@ -3,6 +3,7 @@ package backup
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -66,4 +67,15 @@ func RestoreSQLite(data []byte, destPath string) error {
 		}
 	}
 	return nil
+}
+
+// CloseStorage closes the sqlite handle of the storage a re-Init replaces (a storage without a Close
+// has none): the previous *sql.DB would stay open for the process, and a host that can not replace
+// an open file (windows) could never restore its database file again.
+func CloseStorage(storage any) {
+	if c, ok := storage.(io.Closer); ok {
+		if err := c.Close(); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to close the replaced storage: %v", err)
+		}
+	}
 }

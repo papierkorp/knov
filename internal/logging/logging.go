@@ -196,6 +196,7 @@ func writeToFile(line string) {
 var (
 	keyWritersMu sync.Mutex
 	keyWriters   = make(map[Key]*rotatingWriter)
+	keyWritersClosed bool // set by CloseFiles: no file is opened again
 )
 
 // getKeyWriter returns (creating and caching if needed) the rotating writer
@@ -203,6 +204,10 @@ var (
 func getKeyWriter(key Key) *rotatingWriter {
 	keyWritersMu.Lock()
 	defer keyWritersMu.Unlock()
+
+	if keyWritersClosed {
+		return nil
+	}
 
 	if rw, ok := keyWriters[key]; ok {
 		return rw
@@ -447,4 +452,23 @@ func GetAllLogFiles() []string {
 		names[i] = f.name
 	}
 	return names
+}
+
+// CloseFiles closes app.log and every per-key log file and stops writing to files, so the logs
+// dir can be removed (windows can not delete an open file). Later log lines only reach the console.
+func CloseFiles() {
+	fileWriterMux.Lock()
+	if fileWriter != nil {
+		fileWriter.file.Close()
+		fileWriter = nil
+	}
+	fileWriterMux.Unlock()
+
+	keyWritersMu.Lock()
+	keyWritersClosed = true
+	for key, rw := range keyWriters {
+		rw.file.Close()
+		delete(keyWriters, key)
+	}
+	keyWritersMu.Unlock()
 }

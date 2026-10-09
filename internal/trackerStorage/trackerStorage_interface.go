@@ -45,6 +45,7 @@ func (backupAdapter) GetBackendType() string      { return storage.GetBackendTyp
 // Init initializes tracker storage with the given provider (currently always sqlite).
 // If enabled is false the noop backend is used regardless of provider.
 func Init(enabled bool, provider, storagePath string) error {
+	backup.CloseStorage(storage)
 	if !enabled {
 		storage = &noopStorage{}
 		logging.LogInfo(logging.KeyApp, "tracker storage disabled")
@@ -90,3 +91,6 @@ func DeleteTracker(trackerID string) error {
 func GetBackendType() string {
 	return storage.GetBackendType()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

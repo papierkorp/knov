@@ -46,6 +46,7 @@ func (backupAdapter) GetBackendType() string      { return storage.GetBackendTyp
 
 // Init initializes search storage with the specified provider
 func Init(provider, storagePath string) error {
+	backup.CloseStorage(storage)
 	var err error
 
 	switch provider {
@@ -108,3 +109,6 @@ func SearchDeletedContent(query string, limit int) ([]SearchResult, error) {
 func GetBackendType() string {
 	return storage.GetBackendType()
 }
+
+// Close closes the database of the storage, see backup.CloseStorage - for a test run that removes its scratch dir.
+func Close() { backup.CloseStorage(storage) }

@@ -268,3 +268,6 @@ func (s *sqliteKanbanStorage) Restore(srcDir string) error {
 	}
 	return backup.RestoreSQLite(data, s.dbPath)
 }
+
+// Close closes the database, see backup.CloseStorage.
+func (s *sqliteKanbanStorage) Close() error { return s.db.Close() }

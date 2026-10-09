@@ -105,6 +105,10 @@ reads:
 		}
 		data, err := os.ReadFile(path)
 		if err != nil {
+			// windows refuses to open a file for a moment while it is replaced - nothing torn was read
+			if utils.IsSharingViolation(err) {
+				continue
+			}
 			if !os.IsNotExist(err) {
 				readErr = err
 				break reads

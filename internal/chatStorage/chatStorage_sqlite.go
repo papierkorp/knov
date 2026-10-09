@@ -261,3 +261,6 @@ func (s *sqliteStorage) DeleteByFilePath(filePath string) error {
 	logging.LogDebug(logging.KeyApp, "deleted chat messages for %s", filePath)
 	return nil
 }
+
+// Close closes the database, see backup.CloseStorage.
+func (s *sqliteStorage) Close() error { return s.db.Close() }
