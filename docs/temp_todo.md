@@ -76,8 +76,7 @@ done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgr
 - [x] 8 every suite run: 182 passed, 1 skipped (s3)
 - decided, nothing to do: keep the filename policy (pathutils.CheckTarget / ErrInvalidName), keep the title fallback removal
 
-follow-ups (found by the tests, not fixed yet - decide):
-
+follow-ups: all done (codec, walker, images, hand-rolled readers, table pipe, flaky dashboard test, table editor tests - see the commits and docs/upgrade.md)
 
 # every other time
 
