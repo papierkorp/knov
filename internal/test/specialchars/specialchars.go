@@ -45,3 +45,9 @@ func ValidOn(goos, name string) bool {
 	}
 	return true
 }
+
+// SplitsOn reports whether name has a "\" that goos reads as a path separator ("windows"), so
+// the name is two path segments there and not a file name - a test of host paths skip it.
+func SplitsOn(goos, name string) bool {
+	return goos == "windows" && strings.Contains(name, `\`)
+}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -69,6 +70,9 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 
 	const doc = "docs/sub/n.md"
 	for _, p := range specialchars.Names {
+		if !specialchars.ValidOn(runtime.GOOS, p) {
+			continue
+		}
 		img, pdf := strings.Replace(p, ".md", ".png", 1), strings.Replace(p, ".md", ".pdf", 1)
 		// at the media root for the media/ forms and in the doc's folder for the bare ones
 		for _, m := range []string{img, pdf, "sub/" + img, "sub/" + pdf} {

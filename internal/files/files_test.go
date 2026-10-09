@@ -3,6 +3,7 @@ package files
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -108,6 +109,9 @@ func TestSanitizeKanbanTagsKeepsExisting(t *testing.T) {
 func TestRenamedLinkReadsBack(t *testing.T) {
 	h := &parser.MarkdownHandler{}
 	for _, name := range specialchars.Names {
+		if specialchars.SplitsOn(runtime.GOOS, name) {
+			continue
+		}
 		p := "docs/" + name
 		for _, link := range []string{"[x](old.md)", "[[docs/old.md]]", "[[docs/old]]", "[x](/files/old.md)", `<a href="/files/old.md">x</a>`} {
 			content, ok := parser.RewriteLinks(link, renameLinkFunc("docs/src.md", "docs/old.md", p))

@@ -2,6 +2,7 @@ package dokuwikiconverter
 
 import (
 	"io"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -33,6 +34,9 @@ func TestConvertExportEntry(t *testing.T) {
 func TestSpecialCharLinks(t *testing.T) {
 	h := &parser.MarkdownHandler{}
 	for _, name := range specialchars.Names {
+		if specialchars.SplitsOn(runtime.GOOS, name) {
+			continue
+		}
 		page := strings.TrimSuffix(name, ".md")
 		if strings.TrimSpace(page) != page {
 			continue

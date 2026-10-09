@@ -18,7 +18,12 @@ func TestMigrateReservedFolderMetadataAfterPurge(t *testing.T) {
 	t.Cleanup(func() { configmanager.SetDataAndStoragePaths(prev.DataPath, prev.StoragePath) })
 
 	data := t.TempDir()
-	storage := t.TempDir()
+	storage, err := os.MkdirTemp("", "knov-reserved-migration")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// the sqlite files stay open until the process ends, a windows host can not remove them before
+	t.Cleanup(func() { os.RemoveAll(storage) })
 	configmanager.SetDataAndStoragePaths(data, storage)
 	if err := metadataStorage.Init("json", storage); err != nil {
 		t.Fatal(err)

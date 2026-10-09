@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -255,6 +256,9 @@ func TestCheckNewDocsPathNames(t *testing.T) {
 	// every corpus name is pinned here, so the links suite can skip what the policy rejects
 	invalid := []string{"a#b.md", "a?b.md", "a|b.md", "[1].md", `a\b.md`, " lead.md", "trail.md ", "a]b.md", "x#/a.md", "x /a.md"}
 	for _, p := range append(slices.Clone(specialchars.Names), "a]b.md", "x#/a.md", "x /a.md", "a&b.md", "a b/c d.md") {
+		if specialchars.SplitsOn(runtime.GOOS, p) {
+			continue
+		}
 		want := error(nil)
 		if slices.Contains(invalid, p) {
 			want = ErrInvalidName

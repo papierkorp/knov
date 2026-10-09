@@ -4,6 +4,7 @@ import (
 	"html"
 	"net/url"
 	"regexp"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -275,6 +276,9 @@ func TestRewriteLinksBackslashes(t *testing.T) {
 func TestSpecialCharLinksRoundTrip(t *testing.T) {
 	h := NewMarkdownHandler()
 	for _, p := range specialchars.Names {
+		if specialchars.SplitsOn(runtime.GOOS, p) {
+			continue
+		}
 		md, wiki := encodeLinkPath(p, LinkMarkdown), encodeLinkPath(p, LinkWiki)
 		img := strings.Replace(p, ".md", ".png", 1)
 		writers := []struct{ name, link, want string }{
