@@ -40,7 +40,7 @@ type RawHeading struct {
 // the CommonMark ATX rule - see ATXHeading for the corners it does not cover.
 func ScanHeadings(lines []string) []RawHeading {
 	mask := FenceMask(lines)
-	bodyStart := frontMatterBodyLine(lines)
+	bodyStart := FrontMatterBodyLine(lines)
 
 	var headings []RawHeading
 	for i, line := range lines {
@@ -102,10 +102,10 @@ func SplitFrontMatter(content []byte) (frontmatter, body []byte) {
 	return rest[:idx], rest[idx+len(closing):]
 }
 
-// frontMatterBodyLine returns the first body line index when content (as lines
+// FrontMatterBodyLine returns the first body line index when content (as lines
 // split on "\n") opens with a front matter block, or 0 when it does not. The
 // block is "---" on line 0, the YAML lines, a closing "---" line, then the body.
-func frontMatterBodyLine(lines []string) int {
+func FrontMatterBodyLine(lines []string) int {
 	fm, _ := SplitFrontMatter([]byte(strings.Join(lines, "\n")))
 	if fm == nil {
 		return 0

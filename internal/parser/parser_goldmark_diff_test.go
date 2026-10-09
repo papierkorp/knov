@@ -119,6 +119,23 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		"[r][id]\n\n[id]:\n    a.md",
 		"[x](a`b`.md) [y](`c.md`) `d` [z](e.md)",
 		"`a` [x](b`.md) ` c.md`",
+		// raw html blocks (the app shows them as code, goldmark omits them), markdown after them is read
+		"<div>\n[x](a.md)\n</div>\n\n[y](b.md)",
+		"<table>\n<tr><td>[x](a.md)</td></tr>\n</table>\n\n[y](b.md)",
+		"<p>[x](a.md)</p>\n\n[y](b.md)",
+		"<pre>\n[x](a.md)\n</pre>\n\n[y](b.md)",
+		"text\n<div>[x](a.md)</div>\n\n[y](b.md)",
+		"<a href=\"h.md\">z</a> [x](a.md)",
+		// a thematic break or setext underline ends a paragraph, an indented line after it is code
+		"---\n    [x](a.md)\n\n[y](b.md)",
+		"***\n    [x](a.md)\n\n[y](b.md)",
+		"text\n===\n    [x](a.md)\n\n[y](b.md)",
+		"text\n---\n    [x](a.md)\n\n[y](b.md)",
+		// a block comment runs to the end of the line holding its end, across blank lines; an inline one stays in its paragraph
+		"<!--  -->[x](a.md)\n\n[y](b.md)",
+		"<!--\n\n[x](a.md)\n-->\n[y](b.md)",
+		"# <!-- \n\n[x](a.md) -->\n\n[y](b.md)",
+		"a <!-- \n\n[x](a.md) -->",
 		"- a\n    - b [x](a.md)\n        - c [y](b.md)",
 		"1. step\n\n    ![img](pic.png)\n\n2. next\n\n   [z](c.md)",
 		"* a\n\n\t[x](a.md)\n\n\t\t[y](b.md)",
@@ -127,7 +144,13 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		"term\n: def\n\n    [x](a.md)",
 		"- a\n- b\n\n    [x](a.md)\n\n[y](b.md)",
 	)
-	knownDivergences := map[string]string{}
+	// the app shows these as it scans them (markdown.scanFences is shared by the renderer's code block
+	// extraction), goldmark alone reads them differently
+	knownDivergences := map[string]string{
+		"    ```\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
+		"    ~~~\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
+	}
+	inputs = append(inputs, "    ```\n[x](a.md)", "    ~~~\n[x](a.md)")
 	for _, p := range specialchars.Names {
 		if strings.Contains(p, `\`) {
 			continue // a "\" is a windows separator for knov, goldmark keeps it

@@ -520,3 +520,21 @@ func TestRewriteLinksPipeNoTableIsLinear(t *testing.T) {
 		t.Errorf("rewriting 20k links took %s, want well under 3s", d)
 	}
 }
+
+// YAML front matter is stripped before a doc renders (MarkdownHandler.Parse), so a link in it is
+// no used link and rename / move leave it alone
+func TestFrontMatterLinksAreNoLinks(t *testing.T) {
+	content := "---\ntitle: [x](a.md)\nparent: [[b]]\nsrc: <img src=\"c.png\">\n---\n[y](a.md) [[b]]\n"
+	if got := NewMarkdownHandler().ExtractLinks([]byte(content), "docs/n.md"); !slices.Equal(got, []string{"docs/a.md", "docs/b.md"}) {
+		t.Errorf("ExtractLinks = %q, want the two body links", got)
+	}
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) { return "new.md", true })
+	want := "---\ntitle: [x](a.md)\nparent: [[b]]\nsrc: <img src=\"c.png\">\n---\n[y](new.md) [[new.md]]\n"
+	if !changed || got != want {
+		t.Errorf("RewriteLinks = %q, want %q", got, want)
+	}
+	// an unclosed "---" is no front matter
+	if got := NewMarkdownHandler().ExtractLinks([]byte("---\n[y](a.md)\n"), "docs/n.md"); len(got) != 1 {
+		t.Errorf("ExtractLinks without closing --- = %q", got)
+	}
+}

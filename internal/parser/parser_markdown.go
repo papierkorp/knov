@@ -112,9 +112,7 @@ func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
 		}
 
 		// detect start of a bare HTML block (line starts with < and a tag name)
-		if strings.HasPrefix(trimmed, "<") && !strings.HasPrefix(trimmed, "<!--") &&
-			!strings.HasPrefix(trimmed, "<a ") && !strings.HasPrefix(trimmed, "</a") &&
-			htmlBlockRe.MatchString(trimmed) {
+		if isRawHTMLBlockStart(trimmed) {
 
 			// collect all consecutive lines of the HTML block
 			var block []string
@@ -141,6 +139,14 @@ func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
 		i++
 	}
 	return strings.Join(result, "\n")
+}
+
+// isRawHTMLBlockStart reports whether the trimmed line starts a raw html block the renderer shows as
+// code (wrapRawHTMLBlocks) and the link scanner reads no markdown in (rawHTMLBlockRanges).
+func isRawHTMLBlockStart(trimmed string) bool {
+	return strings.HasPrefix(trimmed, "<") && !strings.HasPrefix(trimmed, "<!--") &&
+		!strings.HasPrefix(trimmed, "<a ") && !strings.HasPrefix(trimmed, "</a") &&
+		htmlBlockRe.MatchString(trimmed)
 }
 
 var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|header|footer|nav|main|aside|meta|script|style|link|table|form|iframe|p|ul|ol|li|h[1-6]|pre|blockquote)[\s>]`)
