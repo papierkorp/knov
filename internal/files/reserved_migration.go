@@ -1,0 +1,55 @@
+package files
+
+import (
+	"os"
+	"path/filepath"
+
+	"knov/internal/logging"
+	"knov/internal/pathutils"
+)
+
+// reservedDocsFolders are the top-level docs folders whose files were keyed as another file before
+// docs paths carried their docs/ prefix: docs/media/x.md as the media file media/x.md, docs/docs/x.md
+// and docs/files/x.md as docs/x.md.
+var reservedDocsFolders = []string{"docs", "media", "files"}
+
+// MigrateReservedFolderMetadata moves the metadata of the docs files in docs/docs/, docs/media/ and
+// docs/files/ from the key they were stored under before (the path without the docs/ prefix) to
+// their own docs/ key, when no file lives at that old key anymore - otherwise the record belongs
+// to the media or docs file of that name, and the docs file starts with a fresh one. Safe to run
+// again.
+func MigrateReservedFolderMetadata() {
+	moved := 0
+	for _, top := range reservedDocsFolders {
+		_ = filepath.Walk(filepath.Join(pathutils.DocsRoot(), top), func(p string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() {
+				return nil
+			}
+			newKey := pathutils.ToWithPrefix(p)
+			rel, err := filepath.Rel(pathutils.DocsRoot(), p)
+			if err != nil {
+				return nil
+			}
+			oldKey := pathutils.ToWithPrefix(pathutils.ToSlash(rel))
+			if oldKey == newKey || fileExists(pathutils.ToFullPath(oldKey)) {
+				return nil
+			}
+			if old, _ := MetaDataGet(oldKey); old == nil {
+				return nil
+			}
+			if existing, _ := MetaDataGet(newKey); existing != nil {
+				return nil
+			}
+			if err := moveFileMetadata(logging.KeyApp, oldKey, newKey); err != nil {
+				logging.LogWarning(logging.KeyApp, "failed to migrate metadata %s -> %s: %v", oldKey, newKey, err)
+				return nil
+			}
+			moved++
+			return nil
+		})
+	}
+	if moved > 0 {
+		RefreshCaches()
+		logging.LogInfo(logging.KeyApp, "migrated the metadata of %d docs files in docs/docs, docs/media and docs/files", moved)
+	}
+}

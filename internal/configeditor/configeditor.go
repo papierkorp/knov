@@ -7,6 +7,7 @@ package configeditor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -60,6 +61,42 @@ func (k Kind) CleanID(id string) (string, error) {
 		return "", fmt.Errorf("invalid %s id %q: %w", k.label(), id, pathutils.ErrReservedPath)
 	}
 	return rel, nil
+}
+
+// MigrateReservedIDs renames the stored configs whose id starts with docs/, media/ or files/ to
+// the id without that folder. Before docs paths were unambiguous such an id wrote its paired
+// file to the docs root without the folder, so the rename keeps the config on the file it was
+// paired with - an id whose paired file exists in that folder (docs/docs/x.index) is a real
+// one and stays, as does an id whose new name is taken. Safe to run again.
+func (k Kind) MigrateReservedIDs() error {
+	ids, err := k.List()
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		folder, rest, ok := strings.Cut(id, "/")
+		if !ok || !slices.Contains([]string{"docs", "media", "files"}, folder) || rest == "" {
+			continue
+		}
+		if fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(id)))) || !fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(rest)))) {
+			continue
+		}
+		if existing, err := configStorage.Get(k.prefix + rest); err != nil || existing != nil {
+			continue
+		}
+		data, err := configStorage.Get(k.prefix + id)
+		if err != nil || data == nil {
+			continue
+		}
+		if err := configStorage.Set(k.prefix+rest, data); err != nil {
+			return err
+		}
+		if err := configStorage.Delete(k.prefix + id); err != nil {
+			return err
+		}
+		logging.LogInfo(logging.KeyApp, "migrated %s id %s -> %s", k.label(), id, rest)
+	}
+	return nil
 }
 
 // key returns the configStorage key for id, see CleanID.
@@ -163,4 +200,9 @@ func (k Kind) Delete(id string) error {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file metadata %s: %v", k.label(), pairedPath, err)
 	}
 	return configStorage.Delete(key)
+}
+
+func fileExists(fullPath string) bool {
+	_, err := os.Stat(fullPath)
+	return err == nil
 }

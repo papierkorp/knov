@@ -57,6 +57,7 @@ import (
 	_ "knov/internal/test/searchtest"
 	_ "knov/internal/test/settingstest"
 	"knov/internal/thememanager"
+	"knov/internal/tracker"
 	"knov/internal/translation"
 )
 
@@ -209,6 +210,15 @@ func main() {
 	if firstStart {
 		if err := job.RunTestdataSetup(); err != nil {
 			logging.LogError(logging.KeyApp, "failed to seed starter docs: %v", err)
+		}
+	}
+
+	// docs files in docs/docs, docs/media and docs/files and the filters / trackers named like them
+	// were stored under the path without their docs/ prefix
+	files.MigrateReservedFolderMetadata()
+	for _, migrate := range []func() error{filter.MigrateReservedIDs, tracker.MigrateReservedIDs} {
+		if err := migrate(); err != nil {
+			logging.LogError(logging.KeyApp, "failed to migrate reserved folder ids: %v", err)
 		}
 	}
 

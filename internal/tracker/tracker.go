@@ -96,6 +96,10 @@ type CounterInput struct {
 // store is the shared persistence + paired-file descriptor for the tracker editor.
 var store = configeditor.MustNew("tracker/", files.EditorTypeTracker, "tracker")
 
+// MigrateReservedIDs renames the saved trackers whose id starts with docs/, media/ or files/, see
+// configeditor.Kind.MigrateReservedIDs.
+func MigrateReservedIDs() error { return store.MigrateReservedIDs() }
+
 // mu serializes the load-modify-save cycle of a tracker's title/counter-list
 // metadata (SetMeta, DeleteConfig) so concurrent editor saves never lose one to
 // last-write-wins on the whole config blob. Day-delta ticks don't need it -

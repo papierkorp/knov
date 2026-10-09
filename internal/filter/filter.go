@@ -334,6 +334,10 @@ func ValidateConfig(config *Config) error {
 // store is the shared persistence + paired-file descriptor for the filter editor.
 var store = configeditor.MustNew("filter/", files.EditorTypeFilter, "index")
 
+// MigrateReservedIDs renames the saved filters whose id starts with docs/, media/ or files/, see
+// configeditor.Kind.MigrateReservedIDs.
+func MigrateReservedIDs() error { return store.MigrateReservedIDs() }
+
 // FilterIndexPath returns the docs-relative path of the index file paired with a filter.
 // Respects the useExtensionIndex setting: returns e.g. "my/filter.index" or "my/filter.md".
 func FilterIndexPath(filterID string) string {

@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"knov/internal/configStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/parser"
@@ -289,4 +290,63 @@ func caseStoredPaths() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-stored-paths", "parents and filters on a sample doc keep its docs/ path", gaps)
+}
+
+// caseMigration: the metadata record a docs file in a reserved folder had under its old key (the
+// path without docs/) moves to its own key unless a file lives at the old key, and a saved filter
+// named like a reserved folder (media/x) is renamed to the id its paired file x.index belongs to.
+func caseMigration() test.CaseResult {
+	var gaps []string
+	// docs/docs/x.md and docs/files/x.md shared one old key (docs/x.md), the first one found keeps the record
+	for _, top := range []string{"media", "docs"} {
+		rel := doc(top, "migrate.md")
+		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		if err := write(fullPath(key), "# migrate\n"); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		if err := files.MetaDataMutate(legacy, func(m *files.Metadata, _ bool) (bool, error) {
+			m.Tags = []string{"legacy-" + top}
+			return true, nil
+		}); err != nil {
+			return errCase("reserved-migration", err)
+		}
+	}
+	files.MigrateReservedFolderMetadata()
+	for _, top := range []string{"media", "docs"} {
+		rel := doc(top, "migrate.md")
+		legacy, key := pathutils.ToWithPrefix(rel), "docs/"+rel
+		if m, _ := files.MetaDataGet(key); m == nil || !slices.Contains(m.Tags, "legacy-"+top) {
+			gaps = append(gaps, fmt.Sprintf("%q: record not moved from %q: %+v", key, legacy, m))
+		}
+		if m, _ := files.MetaDataGet(legacy); m != nil && !exists(legacy) {
+			gaps = append(gaps, fmt.Sprintf("%q: old record left", legacy))
+		}
+		_ = files.MetaDataDelete(key)
+	}
+
+	for _, top := range reserved {
+		id := "knov-test-migrate-" + top
+		paired := filter.FilterIndexPath(id)
+		if err := write(fullPath("docs/"+paired), "# filter\n"); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		defer os.Remove(fullPath("docs/" + paired))
+		if err := configStorage.Set("filter/"+top+"/"+id, []byte("{}")); err != nil {
+			return errCase("reserved-migration", err)
+		}
+		defer configStorage.Delete("filter/" + id)
+	}
+	if err := filter.MigrateReservedIDs(); err != nil {
+		return errCase("reserved-migration", err)
+	}
+	for _, top := range reserved {
+		id := "knov-test-migrate-" + top
+		if got, _ := configStorage.Get("filter/" + id); got == nil {
+			gaps = append(gaps, fmt.Sprintf("filter id %q: not renamed to %q", top+"/"+id, id))
+		}
+		if got, _ := configStorage.Get("filter/" + top + "/" + id); got != nil {
+			gaps = append(gaps, fmt.Sprintf("filter id %q: old id left", top+"/"+id))
+		}
+	}
+	return gapsCase("reserved-migration", "legacy metadata records and filter ids named like a reserved folder are migrated", gaps)
 }
