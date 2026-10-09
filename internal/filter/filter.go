@@ -356,9 +356,9 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	var sb strings.Builder
 	for _, file := range result.Files {
 		rel := pathutils.ToRelative(file.Path)
-		linkPath := "/" + rel
-		if parser.WrittenAsMedia(rel) {
-			linkPath = parser.FilesLinkPath(file.Path) // "/media/..." is the media folder
+		linkPath := parser.FilesLinkPath(file.Path) // a docs file in a folder called docs, media or files too
+		if pathutils.IsMedia(file.Path) {
+			linkPath = "/" + file.Path
 		}
 		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: linkPath})
 	}

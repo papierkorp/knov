@@ -68,8 +68,6 @@ var consumers = []consumer{
 // knownBugs are the disagreements that are not fixed yet, keyed "consumer loc". The test fails
 // when one of them agrees again (remove it) and when any other one disagrees.
 var knownBugs = map[string]string{
-	"filter-index docs/docs/x.md":            "GenerateFilterIndex writes /docs/x.md, which reads as docs/x.md",
-	"filter-index docs/files/x.md":           "GenerateFilterIndex writes /files/x.md, which reads as docs/x.md",
 	"kanban-ancestor-select docs/media/x.md": "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
 	"kanban-ancestor-select docs/docs/x.md":  "the option value is ToRelative(ancestor), compared as ToWithPrefix(value)",
 }
