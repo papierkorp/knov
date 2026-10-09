@@ -100,7 +100,7 @@ func caseView() test.CaseResult {
 			if err != nil {
 				return errCase("reserved-view", err)
 			}
-			if status != http.StatusOK || !strings.Contains(body, "docs/"+rel) && !strings.Contains(body, "filepath=docs/"+rel) {
+			if status != http.StatusOK || !strings.Contains(body, "filepath="+url.QueryEscape("docs/"+rel)) {
 				gaps = append(gaps, fmt.Sprintf("%s: status %d, does not name %q", target, status, "docs/"+rel))
 			}
 		}

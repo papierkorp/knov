@@ -5,18 +5,18 @@
 		{{ if .Data.SectionID }}
 			<h2>
 				{{ T "Edit Section" }}: {{ .Data.SectionID }} {{ T "in" }}
-				<a href="/files/{{ .Data.FilePath }}">{{ .Data.FilePath }}</a>
+				<a href="{{ urlPath .Data.FilePath }}">{{ .Data.FilePath }}</a>
 			</h2>
 		{{ else }}
 			<h2>
 				{{ T "Edit" }}:
-				<a href="/files/{{ .Data.FilePath }}">{{ .Data.FilePath }}</a>
+				<a href="{{ urlPath .Data.FilePath }}">{{ .Data.FilePath }}</a>
 			</h2>
 		{{ end }}
 
 
 		<div class="editor-wrap"
-			hx-get="/api/editor?filepath={{ docsPath .Data.FilePath }}{{ if .Data.SectionID }}&section={{ .Data.SectionID }}{{ end }}{{ if .Data.Editor }}&editor={{ .Data.Editor }}{{ end }}"
+			hx-get="/api/editor?filepath={{ urlQuery (docsPath .Data.FilePath) }}{{ if .Data.SectionID }}&section={{ urlQuery .Data.SectionID }}{{ end }}{{ if .Data.Editor }}&editor={{ urlQuery .Data.Editor }}{{ end }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

@@ -4,7 +4,7 @@
     <div class="container">
         <h1>{{T "table editor"}}: {{ .Data.FilePath }}</h1>
         <div
-            hx-get="/api/editor/tableeditor?filepath={{ docsPath .Data.FilePath }}&tableIndex={{ .Data.TableIndex }}"
+            hx-get="/api/editor/tableeditor?filepath={{ urlQuery (docsPath .Data.FilePath) }}&tableIndex={{ .Data.TableIndex }}"
             hx-trigger="load"
             hx-target="this"
             hx-swap="outerHTML"
