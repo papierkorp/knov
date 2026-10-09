@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"math/rand"
 	"net/url"
 	"slices"
 	"strings"
@@ -143,6 +145,16 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		"> - quote list\n>\n>       [x](a.md)\n> [y](b.md)",
 		"term\n: def\n\n    [x](a.md)",
 		"- a\n- b\n\n    [x](a.md)\n\n[y](b.md)",
+		// tab-indented and outdented list items: a nested item is a list item, not indented code
+		"- a\n\n\t- b\n\n\t\t- c [x](c.md)",
+		"- a\n\t- b [x](a.md)\n\t\t- c [y](b.md)",
+		"- a\n  - b\n    - c\n\n  - d [x](a.md)\n\n- e [y](b.md)",
+		"- a\n\n  - b\n\n    - c\n\n- d [x](a.md)",
+		"- a\n    - b\n\n        - c [x](a.md)\n\n    - d [y](b.md)",
+		"1.\ta\n\n\t- b [x](a.md)\n\n\t\t[y](b.md)",
+		"-\ta\n\n\t\t[x](a.md)\n\n[y](b.md)",
+		"- a\n\n\t\t\tcode\n\n\t- b [x](a.md)",
+		"> - a\n>\n>   - b\n>\n>     - c [x](a.md)",
 	)
 	// the app shows these as it scans them (markdown.scanFences is shared by the renderer's code block
 	// extraction), goldmark alone reads them differently
@@ -166,6 +178,42 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 			t.Errorf("%q (%s) reads like goldmark now, remove it from knownDivergences", in, reason)
 		case !known && !slices.Equal(got, want):
 			t.Errorf("%q: link walker reads %q, goldmark %q", in, got, want)
+		}
+	}
+}
+
+// nested lists built from spaces, tabs, blank lines and ">" read the same for the scanner and goldmark.
+// seeded and bounded so it runs in a plain go test - a failing input is printed, add it to the cases above.
+func TestScannerMatchesGoldmarkNestedLists(t *testing.T) {
+	rng := rand.New(rand.NewSource(1))
+	markers := []string{"- ", "* ", "+ ", "1. ", "2) "}
+	indents := []string{"", " ", "  ", "   ", "    ", "      ", "\t", "\t\t"}
+	for n := 0; n < 3000; n++ {
+		var b strings.Builder
+		quoted := rng.Intn(6) == 0
+		for i, lines := 0, 2+rng.Intn(6); i < lines; i++ {
+			if rng.Intn(3) == 0 {
+				if quoted {
+					b.WriteString(">")
+				}
+				b.WriteString("\n")
+			}
+			if quoted {
+				b.WriteString("> ")
+			}
+			indent := indents[rng.Intn(len(indents))]
+			if quoted {
+				indent = strings.ReplaceAll(indent, "\t", "    ") // goldmark counts a tab inside a quote differently
+			}
+			b.WriteString(indent)
+			if rng.Intn(4) != 0 {
+				b.WriteString(markers[rng.Intn(len(markers))])
+			}
+			fmt.Fprintf(&b, "t [x](l%d.md)\n", i)
+		}
+		in := b.String()
+		if got, want := scannerLinks(in), goldmarkLinks(in); !slices.Equal(got, want) {
+			t.Fatalf("%q: link walker reads %q, goldmark %q", in, got, want)
 		}
 	}
 }

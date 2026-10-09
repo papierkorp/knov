@@ -538,7 +538,7 @@ func protectDestBackticks(s string) string {
 var (
 	thematicBreakRe   = regexp.MustCompile(`^ {0,3}(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$`)
 	setextUnderlineRe = regexp.MustCompile(`^ {0,3}(?:=+|-+)[ \t]*$`)
-	listMarkerRe      = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`)
+	listMarkerRe      = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`) // on a line with its tabs expanded
 	quotePrefix       = regexp.MustCompile(`^ {0,3}>[ ]?`)
 )
 
@@ -548,12 +548,13 @@ var (
 func indentedCodeMask(lines []string, fenced []bool) []bool {
 	mask := make([]bool, len(lines))
 	prevBlank, prevPara, inCode := true, false, false
-	listContent := -1
+	var stack []int // content columns of the open list items, innermost last
 	for i, line := range lines {
 		if fenced[i] {
 			prevBlank, prevPara, inCode = false, false, false
 			continue
 		}
+		line = expandTabs(line)
 		for quotePrefix.MatchString(line) {
 			line = line[len(quotePrefix.FindString(line)):]
 		}
@@ -561,34 +562,39 @@ func indentedCodeMask(lines []string, fenced []bool) []bool {
 			prevBlank = true
 			continue
 		}
-		indent := 0
-		for _, c := range line {
-			if c == ' ' {
-				indent++
-			} else if c == '\t' {
-				indent += 4 - indent%4
-			} else {
-				break
-			}
+		indent := len(line) - len(strings.TrimLeft(line, " "))
+		top := -1
+		if len(stack) > 0 {
+			top = stack[len(stack)-1]
 		}
-		if m := listMarkerRe.FindStringSubmatch(line); m != nil && indent-max(listContent, 0) < 4 {
-			listContent = len(m[1]) + len(m[2]) + len(m[3])
-			if len(m[3]) > 4 || m[3] == "" {
-				listContent = len(m[1]) + len(m[2]) + 1
-			}
-			prevBlank, prevPara, inCode = false, strings.TrimSpace(line[len(m[0]):]) != "", false
-			continue
-		}
-		if listContent >= 0 && indent < listContent {
-			if prevBlank {
-				listContent = -1
-			} else {
-				prevPara, inCode = true, false
+		// a paragraph of the current item isn't interrupted by an ordered list not starting with 1
+		if m := listMarkerRe.FindStringSubmatch(line); m != nil && !(prevPara && !prevBlank && indent >= lastOr(stack, 0) && isOrderedFromNotOne(m[2])) {
+			closed := stack
+			stack = popListItems(stack, len(m[1]))
+			// a marker right under the item it closed (no blank line between) still continues that list,
+			// however far it is indented - after a blank line it is indented code
+			sibling := len(stack) < len(closed) && !prevBlank
+			if sibling || indent-lastOr(stack, 0) < 4 {
+				content := len(m[1]) + len(m[2]) + len(m[3])
+				if m[3] == "" {
+					content = len(m[1]) + len(m[2]) + 1
+				}
+				if sibling && indent-lastOr(stack, 0) >= 4 {
+					content = closed[len(stack)] // goldmark keeps the content column of the item it follows
+				}
+				stack = append(stack, content)
+				prevBlank, prevPara, inCode = false, strings.TrimSpace(line[len(m[0]):]) != "", false
 				continue
 			}
 		}
-		base := max(listContent, 0)
-		if indent-base >= 4 && (prevBlank || inCode || !prevPara) {
+		if top >= 0 && indent < top {
+			if prevPara && !prevBlank { // lazy continuation of the paragraph
+				inCode = false
+				continue
+			}
+			stack = popListItems(stack, indent)
+		}
+		if indent-lastOr(stack, 0) >= 4 && (prevBlank || inCode || !prevPara) {
 			mask[i], inCode, prevBlank, prevPara = true, true, false, false
 			continue
 		}
@@ -596,6 +602,48 @@ func indentedCodeMask(lines []string, fenced []bool) []bool {
 		prevPara = !isATXHeading(line) && !thematicBreakRe.MatchString(line) && !setextUnderlineRe.MatchString(line)
 	}
 	return mask
+}
+
+// isOrderedFromNotOne reports whether the list marker is a number other than 1 ("2)", "10.").
+func isOrderedFromNotOne(marker string) bool {
+	n := marker[:len(marker)-1]
+	return marker[0] >= '0' && marker[0] <= '9' && n != "1" && strings.TrimLeft(n, "0") != "1"
+}
+
+// expandTabs replaces the tabs of line with spaces up to the next multiple of 4, so the indent and
+// the whitespace after a list marker are columns.
+func expandTabs(line string) string {
+	if !strings.Contains(line, "\t") {
+		return line
+	}
+	var b strings.Builder
+	col := 0
+	for _, c := range line {
+		if c == '\t' {
+			n := 4 - col%4
+			b.WriteString(strings.Repeat(" ", n))
+			col += n
+		} else {
+			b.WriteRune(c)
+			col++
+		}
+	}
+	return b.String()
+}
+
+// popListItems closes the open list items whose content starts right of col - a line at col isn't inside them.
+func popListItems(stack []int, col int) []int {
+	for len(stack) > 0 && stack[len(stack)-1] > col {
+		stack = stack[:len(stack)-1]
+	}
+	return stack
+}
+
+func lastOr(stack []int, def int) int {
+	if len(stack) == 0 {
+		return def
+	}
+	return stack[len(stack)-1]
 }
 
 // isATXHeading reports whether line is a "# heading" - its own block, a code span doesn't continue after it.
