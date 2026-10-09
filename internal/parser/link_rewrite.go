@@ -213,12 +213,19 @@ func DocsWikiPath(rel string) string {
 	return rel
 }
 
+// FilesLinkPath is the decoded "/files/" link path of the docs file metaPath ("docs/a.md" ->
+// "/files/a.md"), the docs-relative path taken literally - the one writer of the form
+// utils.NormalizeLinkPath reads.
+func FilesLinkPath(metaPath string) string {
+	return "/files/" + strings.TrimPrefix(metaPath, "docs/")
+}
+
 // FileLinkDest writes the destination of a new link to a docs file (docs-relative path, anchor
 // "#id" or ""), as the editor inserts it: the wikilink body or a markdown /files/ url - an empty
 // path is a same-page anchor.
 func FileLinkDest(path, anchor string, kind LinkKind) string {
 	if kind != LinkWiki && path != "" {
-		path = "/files/" + path
+		path = FilesLinkPath(pathutils.DocsPath(path))
 	} else {
 		path = DocsWikiPath(path)
 	}

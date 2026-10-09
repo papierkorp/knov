@@ -647,14 +647,14 @@ func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
 	case media && (l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/")):
 		return "/media/" + rel
 	case l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/files/"):
-		return "/files/" + strings.TrimPrefix(newPath, "docs/")
+		return parser.FilesLinkPath(newPath)
 	case media:
 		return newPath
 	case strings.HasPrefix(l.Path, "/"):
 		if rel := strings.TrimPrefix(newPath, "docs/"); !parser.WrittenAsMedia(rel) {
 			return "/" + rel
 		}
-		return "/files/" + strings.TrimPrefix(newPath, "docs/")
+		return parser.FilesLinkPath(newPath)
 	}
 	// bare like it was written - unless that would read as the media folder
 	relative := relativeDocLink(docPath, newPath)
@@ -673,8 +673,8 @@ func relativeDocLink(docPath, target string) string {
 		return pathutils.RelativeLink(docPath, pathutils.DocsPath(target))
 	}
 	relative := pathutils.RelativeLink(docPath, target)
-	if rel := pathutils.ToRelative(target); !pathutils.IsMedia(target) && parser.WrittenAsMedia(relative) {
-		return "/files/" + rel
+	if !pathutils.IsMedia(target) && parser.WrittenAsMedia(relative) {
+		return parser.FilesLinkPath(target)
 	}
 	return relative
 }
