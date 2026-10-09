@@ -3,7 +3,6 @@ package pdfexport
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"knov/internal/logging"
@@ -72,11 +71,6 @@ func (r *renderer) embedImage(dest string) bool {
 	r.pdf.Ln(3)
 	return true
 }
-
-// zoneImageLinkRe matches a header/footer zone template that is nothing but
-// a markdown image link (e.g. "![alt](media/logo.png)"), letting a zone
-// embed a small image instead of drawing text.
-var zoneImageLinkRe = regexp.MustCompile(`^!\[[^\]]*\]\(([^)]+)\)$`)
 
 // zoneImageHeightMM is the height a header/footer zone image is scaled to
 // (width follows from its aspect ratio), sized to fit inside the 10mm zone

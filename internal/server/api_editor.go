@@ -108,6 +108,22 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"filepath": fp, "editor": editorParam}, html)
 }
 
+// @Summary List the headings of unsaved markdown
+// @Description Returns the headings of the posted markdown the way the table of contents of the rendered page shows them (front matter and fenced code skipped, inline markdown and links as the text they render), for the live TOC of the editor
+// @Tags editor
+// @Accept application/x-www-form-urlencoded
+// @Param content formData string true "markdown content"
+// @Produce json
+// @Success 200 {array} parser.EditorHeading
+// @Router /api/editor/toc [post]
+func handleAPIEditorTOC(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+	writeResponse(w, r, parser.EditorHeadings(r.FormValue("content")), "")
+}
+
 // @Summary Save index editor
 // @Description Saves an index/MOC file: an ordered list of file/title/separator entries.
 // @Tags editor

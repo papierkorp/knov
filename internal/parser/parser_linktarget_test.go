@@ -216,3 +216,27 @@ func TestRenderedImageMatchesLinkTarget(t *testing.T) {
 		}
 	}
 }
+
+// a header / footer zone template that is nothing but one markdown image is that image
+func TestSoleImageLink(t *testing.T) {
+	for in, want := range map[string]string{
+		"![alt](media/logo.png)":  "media/logo.png",
+		"![](logo%20x.png)":       "logo x.png",
+		"![a](<a b.png> \"t\")":   "a b.png",
+		"![a](sub/logo.png#x)":    "sub/logo.png",
+		"![a](x.png)(y)":          "",
+		" ![a](x.png)":            "",
+		"[a](x.png)":              "",
+		"![a](x.png) ![b](y.png)": "",
+		"text ![a](x.png)":        "",
+		"![[x.png]]":              "",
+		"![a](https://x.y/z.png)": "",
+		"`![a](x.png)`":           "",
+		"{{date}} ![a](x.png)":    "",
+	} {
+		l, ok := SoleImageLink(in)
+		if (want != "") != ok || ok && l.Path != want {
+			t.Errorf("SoleImageLink(%q) = %q, %v, want %q", in, l.Path, ok, want)
+		}
+	}
+}

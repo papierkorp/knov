@@ -1,13 +1,20 @@
 package editorstest
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/contentHandler"
 	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
 	"knov/internal/parser"
+	"knov/internal/server"
 	"knov/internal/test"
 	"knov/internal/utils"
 )
@@ -169,6 +176,34 @@ func caseConvertToMarkdown() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "dokuwiki content not converted to expected markdown"
+	}
+	return cr
+}
+
+// caseEditorTOC posts unsaved markdown to the live TOC api of the codemirror editor and gets
+// the headings the rendered page would show.
+func caseEditorTOC() test.CaseResult {
+	name := "editor-toc"
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	form := url.Values{"content": {"---\ntitle: x\n---\n# One **bold** [x](a.md)\n```\n# code\n```\n## Two\n"}}
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/editor/toc", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		return errCase(name, err)
+	}
+	defer resp.Body.Close()
+	var got []parser.EditorHeading
+	if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
+		return errCase(name, err)
+	}
+	want := []parser.EditorHeading{{Level: 1, Text: "One bold x", Line: 3}, {Level: 2, Text: "Two", Line: 7}}
+	success := resp.StatusCode == http.StatusOK && slices.Equal(got, want)
+	cr := test.CaseResult{Name: name, Expected: "the headings of the posted markdown as the rendered page shows them", Actual: fmt.Sprintf("%d %+v", resp.StatusCode, got), Success: success}
+	if !success {
+		cr.Error = fmt.Sprintf("want %+v", want)
 	}
 	return cr
 }

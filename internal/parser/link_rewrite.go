@@ -300,6 +300,20 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 	return content, changed
 }
 
+// SoleImageLink returns the local markdown image link text consists of and nothing else (a
+// header / footer zone template that embeds an image), ok is false for any other text.
+func SoleImageLink(text string) (Link, bool) {
+	var found []linkMatch
+	walkLinks(text, func(m linkMatch) string {
+		found = append(found, m)
+		return m.whole()
+	})
+	if len(found) != 1 || !found[0].Link.Image || found[0].Link.External || found[0].whole() != text {
+		return Link{}, false
+	}
+	return found[0].Link, true
+}
+
 // linkMatch is one link walkLinks found: Link as read by ParseLink (Image set for a markdown
 // image), Open the "[text" / "![alt" of a markdown ](dest) ("" without one: the outer link of
 // nested brackets), RefDef for a reference definition. The matched text is Prefix + Dest +

@@ -52,3 +52,14 @@ func TestSpecialCharLinks(t *testing.T) {
 		}
 	}
 }
+
+// a <catlist> becomes a link to the browse page of its namespace, written through the link codec
+// (an html anchor in both formats - a markdown link would read as a docs file, not an app route)
+func TestReplaceCatlistTags(t *testing.T) {
+	for _, format := range []string{"markdown", "html"} {
+		got := New().replaceCatlistTags("<catlist p:it:a&b>", format)
+		if want := "<a href=\"/browse/folders/it/a%26b\">/browse/folders/it/a&amp;b</a>\n"; got != want {
+			t.Errorf("%s: replaceCatlistTags = %q, want %q", format, got, want)
+		}
+	}
+}

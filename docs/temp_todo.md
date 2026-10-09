@@ -78,7 +78,6 @@ done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgr
 
 follow-ups (found by the tests, not fixed yet - decide):
 
-- [ ] other hand-rolled link readers / writers (allowed in guardRules): pdfexport/images.go zoneImageLinkRe (header/footer zone image template), dokuwikiconverter/converter_process.go builds an unencoded `[url](url)` /browse/folders link, server/render/render_editor_codemirror.go strips link syntax to text with its own regexes
 - [ ] markdown links with a "|" in the path break a table cell (the codec doesn't escape "|" for markdown, GFM needs `\|` in cells) - the links suite table case skips them
 - [ ] flaky: dashboard suite widget-filter-data failed once in a full `--start-tests --remove` run, passed in the rerun and 3 runs alone
 - [ ] unrelated, already failing: internal/server/render TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction (table editor)

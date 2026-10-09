@@ -2,6 +2,7 @@ package dokuwikiconverter
 
 import (
 	"fmt"
+	"html"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -452,10 +453,8 @@ func (h *Converter) replaceCatlistTags(content string, outputFormat string) stri
 			}
 		}
 		url := "/browse/folders" + path
-		if outputFormat == "html" {
-			return fmt.Sprintf("<a href=\"%s\">%s</a>\n", url, url)
-		}
-		return fmt.Sprintf("[%s](%s)\n", url, url)
+		// an html anchor also in markdown: a markdown link would read as a docs file, not an app route
+		return fmt.Sprintf("<a href=\"%s\">%s</a>\n", parser.Link{Kind: parser.LinkHTML, Path: url}.Dest(), html.EscapeString(url))
 	})
 }
 
