@@ -31,7 +31,10 @@ import (
 // @Failure 500 {string} string "failed to process table"
 // @Router /api/components/table [get]
 func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
+	filepath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filepath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"))
 		return

@@ -155,7 +155,10 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/files/header [get]
 func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
+	filepath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filepath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -179,7 +182,10 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} render.FileViewLink
 // @Router /api/files/views [get]
 func handleAPIGetFileViews(w http.ResponseWriter, r *http.Request) {
-	fp := r.URL.Query().Get("filepath")
+	fp, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if fp == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -202,7 +208,10 @@ func handleAPIGetFileViews(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} map[string]string
 // @Router /api/files/overview [get]
 func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -297,7 +306,10 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "raw content"
 // @Router /api/files/raw [get]
 func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
+	filepath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filepath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -336,6 +348,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	// new files need a markdown extension, a dot in the name (e.g. "v1.2 notes") is not one
 	if _, err := os.Stat(pathutils.ToDocsPath(filePath)); os.IsNotExist(err) && !parser.IsMarkdownExtension(filePath) {
@@ -442,7 +455,10 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
@@ -504,7 +520,10 @@ func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
@@ -552,7 +571,10 @@ func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "export failed"
 // @Router /api/files/export/markdown [get]
 func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -646,7 +668,10 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/files/metadata/form [get]
 func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 
 	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
@@ -664,7 +689,10 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/files/form [get]
 func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	html := render.RenderFileForm(filePath)
 	writeResponse(w, r, map[string]string{"filepath": filePath}, html)
 }
@@ -676,7 +704,10 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/files/metadata-form [get]
 func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	defaultFiletype := r.URL.Query().Get("editor")
 
 	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
@@ -1021,7 +1052,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		toDelete = append(toDelete, pathutils.ToDocsPath(pathutils.ToRelative(file.Path)))
+		toDelete = append(toDelete, pathutils.ToDocsPath(file.Path))
 	}
 
 	id, err := job.StartBulkDeleteFiles(toDelete, groupType, value)
@@ -1057,7 +1088,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(filePath))
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusNotFound, err.Error())

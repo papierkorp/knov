@@ -85,7 +85,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 		html.WriteString(GenerateDatalistInput("filepath-input", "filepath", "", t("path/to/file"), "/api/files/folder-suggestions", true))
 		html.WriteString(`</div>`)
 	} else {
-		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, htmlpkg.EscapeString(filePath))
+		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, htmlpkg.EscapeString(pathutils.ToRelative(filePath)))
 	}
 
 	// entries container

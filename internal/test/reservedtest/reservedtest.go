@@ -31,6 +31,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseMetadata,
 		caseView,
 		caseDelete,
+		caseParams,
 	}
 
 	return test.RunCases("reserved-folders", cases), nil

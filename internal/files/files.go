@@ -120,16 +120,16 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	relativePath := pathutils.ToRelative(filePath)
-	editor := ResolveEditor(pathutils.ToWithPrefix(relativePath))
+	metaPath := pathutils.ToWithPrefix(filePath)
+	editor := ResolveEditor(metaPath)
 
 	// a book is shown as its composed document (referenced bodies inlined), not its raw
 	// entry list. the composed markdown has no source file, so it renders PathlessRender.
 	// the file-view banner is added by the caller - see render.RenderBookViewPrefix.
 	var content []byte
-	renderPath := relativePath
+	renderPath := metaPath
 	if editor == EditorTypeBook {
-		composed, err := book.Compose(relativePath)
+		composed, err := book.Compose(metaPath)
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +155,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	if err != nil {
 		return nil, err
 	}
-	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
+	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", metaPath)
 
 	var toc []parser.TOCItem
 	if handler.Name() == "markdown" {

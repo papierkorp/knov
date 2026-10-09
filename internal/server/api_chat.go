@@ -28,7 +28,10 @@ import (
 // @Produce json,html
 // @Router /api/chat/messages [get]
 func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("file")
+	filePath, ok := metaPathParam(w, r, "file")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		filePath = pathutils.ToWithPrefix(filePath)
 	}
@@ -72,7 +75,10 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.URL.Query().Get("file")
+	filePath, ok := metaPathParam(w, r, "file")
+	if !ok {
+		return
+	}
 	if filePath != "" {
 		filePath = pathutils.ToWithPrefix(filePath)
 	}

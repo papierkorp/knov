@@ -2,6 +2,16 @@
   "language": "en",
   "messages": [
     {
+      "id": "newpath must stay in {Arg_1}",
+      "message": "newpath must stay in {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "{Arg_1} must start with docs/ or media/",
+      "message": "{Arg_1} must start with docs/ or media/",
+      "translation": ""
+    },
+    {
       "id": "{Integer} files",
       "message": "{Integer} files",
       "translation": ""

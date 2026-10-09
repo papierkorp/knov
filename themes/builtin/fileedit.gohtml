@@ -16,7 +16,7 @@
 
 
 		<div class="editor-wrap"
-			hx-get="/api/editor?filepath={{ .Data.FilePath }}{{ if .Data.SectionID }}&section={{ .Data.SectionID }}{{ end }}{{ if .Data.Editor }}&editor={{ .Data.Editor }}{{ end }}"
+			hx-get="/api/editor?filepath={{ docsPath .Data.FilePath }}{{ if .Data.SectionID }}&section={{ .Data.SectionID }}{{ end }}{{ if .Data.Editor }}&editor={{ .Data.Editor }}{{ end }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

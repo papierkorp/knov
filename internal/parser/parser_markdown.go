@@ -424,7 +424,7 @@ func (r *knovNodeRenderer) renderTable(w util.BufWriter, source []byte, node ast
 	relPath := pathutils.ToRelative(r.filePath)
 	fmt.Fprintf(w,
 		`<div id="table-component-%d" hx-get="/api/components/table?filepath=%s&tableindex=%d" hx-trigger="load" hx-swap="outerHTML"></div>`,
-		r.tableIdx, url.QueryEscape(relPath), r.tableIdx,
+		r.tableIdx, url.QueryEscape(pathutils.DocsPath(relPath)), r.tableIdx,
 	)
 	r.tableIdx++
 	return ast.WalkSkipChildren, nil
@@ -703,7 +703,7 @@ func (r *knovNodeRenderer) headerButtons() string {
 	if configmanager.PDFShowHeaderButton.Get() {
 		pdfBtn = fmt.Sprintf(
 			`<a href="/api/files/export/pdf?filepath=%s&section=%s" class="header-pdf-btn" title="%s"><i class="fa fa-file-pdf"></i></a>`,
-			url.QueryEscape(r.relPath), url.QueryEscape(r.headingID),
+			url.QueryEscape(pathutils.DocsPath(r.relPath)), url.QueryEscape(r.headingID),
 			translation.SprintfForRequest(lang, "export section to pdf"),
 		)
 	}

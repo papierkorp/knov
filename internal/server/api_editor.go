@@ -34,7 +34,10 @@ import (
 // @Produce json,html
 // @Router /api/editor [get]
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
-	fp := r.URL.Query().Get("filepath")
+	fp, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	editorParam := r.URL.Query().Get("editor")
 	sectionID := r.URL.Query().Get("section")
 	prefillPath := r.URL.Query().Get("prefillpath")
@@ -180,6 +183,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "missing filepath"))
 		return
 	}
+	filezpath = pathutils.DocsPath(filezpath)
 
 	kind := entryEditorKindFor(bookMode, lang)
 
@@ -304,6 +308,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	content := r.FormValue("content")
 	todoMode := r.FormValue("mode") == "todo"
@@ -399,6 +404,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	headersJSON := r.FormValue("headers")
 	rowsJSON := r.FormValue("rows")
@@ -493,7 +499,10 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/editor/tableeditor [get]
 func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
@@ -534,6 +543,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	if sectionID == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"))
@@ -589,7 +599,10 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	if filePath == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return

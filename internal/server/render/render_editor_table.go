@@ -640,7 +640,7 @@ function downloadTable() {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "download csv"),
 		settingsMenu,
 		string(tableJSON),
-		jsEscapeString(filePath),
+		jsEscapeString(pathutils.ToRelative(filePath)),
 		jsEscapeString(returnURL),
 		jsEscapeString(downloadName),
 		headerContextMenuScript(configmanager.GetLanguage()),

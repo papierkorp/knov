@@ -4,9 +4,9 @@
     {{ template "rail-reader" . }}
 {{else}}
 <div id="view-fileview-rail">
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <article class="file-content" data-filepath="{{.Data.FilePath}}">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery (docsPath .Data.FilePath)}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery (docsPath .Data.FilePath)}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <article class="file-content" data-filepath="{{docsPath .Data.FilePath}}">
         {{.Data.FileContent.HTML}}
     </article>
 </div>
@@ -26,14 +26,14 @@
 
 {{ define "rail-reader" }}
 <div id="view-fileview-reader">
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery (docsPath .Data.FilePath)}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery (docsPath .Data.FilePath)}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery (docsPath .Data.FilePath)}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
     </div>
-    <article class="file-content" data-filepath="{{.Data.FilePath}}">
+    <article class="file-content" data-filepath="{{docsPath .Data.FilePath}}">
         {{.Data.FileContent.HTML}}
     </article>
 </div>

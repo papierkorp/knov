@@ -66,7 +66,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 
 	var filepathInputHTML string
 	if isEdit {
-		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filepath)
+		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, pathutils.ToRelative(filepath))
 	} else {
 		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "",
 			translation.SprintfForRequest(lang, placeholderExt), "/api/files/folder-suggestions", true)
@@ -406,5 +406,5 @@ func RenderListEditor(filepath string, todoMode bool) string {
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filepath))
+		jsEscapeString(pathutils.ToRelative(filepath)))
 }

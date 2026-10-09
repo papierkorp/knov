@@ -371,7 +371,7 @@ func codeMirrorInitScript(content, filePath string) string {
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
 		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filePath),
+		jsEscapeString(pathutils.ToRelative(filePath)),
 		jsEscapeString(content),
 		jsBool(configmanager.SpellCheck.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
@@ -439,7 +439,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		sectionID,
 		codeMirrorToolbarHTML(configmanager.GetLanguage()),
 		codeMirrorFileInputHTML(),
-		filePath,
+		pathutils.ToRelative(filePath),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
@@ -485,7 +485,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 			filepathInput += fmt.Sprintf(`<input type="hidden" name="editor" value="%s" />`, currentEditor)
 		}
 	} else {
-		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
+		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, pathutils.ToRelative(filePath))
 	}
 
 	script := fmt.Sprintf(`<script>

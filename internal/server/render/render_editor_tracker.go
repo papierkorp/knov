@@ -25,7 +25,7 @@ func RenderTrackerEditor(filePath string) (string, error) {
 
 	id := ""
 	if filePath != "" {
-		id = tracker.IDFromPath(filePath)
+		id = tracker.IDFromPath(pathutils.ToRelative(filePath))
 	}
 	var config *tracker.Config
 	if id != "" {

@@ -7,6 +7,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/filter"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -21,7 +22,8 @@ func RenderFilterEditor(filePath string) (string, error) {
 	var html strings.Builder
 
 	// derive filterID from filePath by stripping the extension
-	filterID := strings.TrimSuffix(filePath, path.Ext(filePath))
+	relPath := pathutils.ToRelative(filePath)
+	filterID := strings.TrimSuffix(relPath, path.Ext(relPath))
 
 	config, _ := filter.GetFilterConfig(filterID)
 

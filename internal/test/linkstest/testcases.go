@@ -452,7 +452,7 @@ func caseTable() test.CaseResult {
 	}
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()
-	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(doc), nil)
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(pathutils.DocsPath(doc)), nil)
 	req.Header.Set("Accept", "text/html")
 	resp, err := ts.Client().Do(req)
 	if err != nil {

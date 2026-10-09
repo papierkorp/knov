@@ -109,6 +109,16 @@ func DocsPath(rel string) string {
 	return "docs/" + strings.TrimPrefix(rel, "/")
 }
 
+// IsMetaPath reports whether p is the metadata path of an existing file or folder: "docs/..." or
+// "media/..." (what File.Path holds), without a "." or ".." segment - a path naming an existing
+// file is never docs-relative guessed, see DocsPath for what a user types.
+func IsMetaPath(p string) bool {
+	if !strings.HasPrefix(p, "docs/") && !strings.HasPrefix(p, "media/") {
+		return false
+	}
+	return !slices.ContainsFunc(strings.Split(p, "/"), func(seg string) bool { return seg == ".." || seg == "." })
+}
+
 // ToRelative strips any prefix and data path to return clean relative path
 func ToRelative(path string) string {
 	return parsePath(path).Relative

@@ -98,7 +98,7 @@ func RenderFileViewLinks(links []FileViewLink) string {
 // renderRawFileView shows the file's source as stored, loaded from the raw content api.
 func renderRawFileView(relPath string) (string, bool) {
 	return fmt.Sprintf(`<pre id="component-file-view-raw" hx-get="/api/files/raw?filepath=%s" hx-trigger="load" hx-swap="innerHTML"></pre>`,
-		htmlpkg.EscapeString(url.QueryEscape(relPath))), true
+		htmlpkg.EscapeString(url.QueryEscape(pathutils.DocsPath(relPath)))), true
 }
 
 // RenderRawContent renders a file's source as escaped text.

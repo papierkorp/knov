@@ -201,3 +201,48 @@ func caseDelete() test.CaseResult {
 	}
 	return gapsCase("reserved-delete", "deleting a doc in a reserved folder removes it, not its collision partner", gaps)
 }
+
+// caseParams: a query / form param naming an existing file is its metadata path - the sample doc
+// is read through it (raw content, editor, metadata api, links api), never its collision
+// partner, and the unprefixed docs-relative form is answered with 400.
+func caseParams() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		rel, meta := doc(top, "synced.md"), "docs/"+doc(top, "synced.md")
+		for _, target := range []string{"/api/files/raw?filepath=" + url.QueryEscape(meta), "/api/editor?filepath=" + url.QueryEscape(meta)} {
+			status, body, err := request(http.MethodGet, target, nil)
+			if err != nil {
+				return errCase("reserved-params", err)
+			}
+			if status != http.StatusOK || !strings.Contains(body, marker(top)) || strings.Contains(body, partnerMarker(top)) {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, shows the doc %v, its partner %v", target, status, strings.Contains(body, marker(top)), strings.Contains(body, partnerMarker(top))))
+			}
+		}
+		status, body, err := request(http.MethodGet, "/api/metadata?filepath="+url.QueryEscape(meta), nil)
+		if err != nil {
+			return errCase("reserved-params", err)
+		}
+		if status != http.StatusOK || !strings.Contains(body, meta) {
+			gaps = append(gaps, fmt.Sprintf("metadata of %q: status %d (%s)", meta, status, strings.TrimSpace(body)))
+		}
+		// for docs/ and media/ the docs-relative path is itself a metadata path
+		for _, target := range []string{"/api/files/raw?filepath=" + url.QueryEscape(rel), "/api/metadata?filepath=" + url.QueryEscape(rel)} {
+			if pathutils.IsMetaPath(rel) {
+				break
+			}
+			if status, _, err := request(http.MethodGet, target, nil); err != nil || status != http.StatusBadRequest {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, want 400 (%v)", target, status, err))
+			}
+		}
+		// saving through the editor form edits the doc itself
+		if status, body, err := request(http.MethodPost, "/api/files/save", url.Values{"filepath": {rel}, "content": {"# synced\n\n" + marker(top) + "\n\nedited\n"}}); err != nil || status != http.StatusOK {
+			gaps = append(gaps, fmt.Sprintf("save %q: status %d (%s) %v", rel, status, strings.TrimSpace(body), err))
+		} else if b, _ := os.ReadFile(fullPath(meta)); !strings.Contains(string(b), "edited") {
+			gaps = append(gaps, fmt.Sprintf("save %q: doc not changed", rel))
+		}
+		if b, _ := os.ReadFile(fullPath(partner(top, "synced.md"))); strings.Contains(string(b), "edited") {
+			gaps = append(gaps, fmt.Sprintf("save %q: partner changed", rel))
+		}
+	}
+	return gapsCase("reserved-params", "file params are metadata paths, read and saved as the sample doc, not its collision partner", gaps)
+}
