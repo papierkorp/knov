@@ -2,6 +2,7 @@ package parser
 
 import (
 	"cmp"
+	"fmt"
 	"html"
 	"net/url"
 	"os"
@@ -228,15 +229,30 @@ func unescapePath(p string) string {
 }
 
 // percent-encode only what decodeLinkPath would change or what would end the path early: "%",
-// "\", "&" (entity), anchor, line breaks, for markdown the query and what ends a bare or <...>
-// destination (with spaces encoded a quote can't start a title), for html also quotes, for a
-// wikilink its "|" / "[" / "]" and leading / trailing spaces (the rest of its spaces stays readable)
+// "\", "&" (entity), anchor, ascii control characters (a "\f" ends a markdown destination), "`"
+// (two of them are a code span for the link walker), line breaks, for markdown the query and what
+// ends a bare or <...> destination (with spaces encoded a quote can't start a title), for html
+// also quotes, for a wikilink its "|" / "[" / "]" and leading / trailing spaces (the rest of its
+// spaces stays readable)
 var (
-	mdLinkPathEscaper   = strings.NewReplacer("%", "%25", `\`, "%5C", "&", "%26", "#", "%23", "?", "%3F", "\r", "%0D", "\n", "%0A", " ", "%20", "\t", "%09", "(", "%28", ")", "%29", "<", "%3C", ">", "%3E")
-	htmlLinkPathEscaper = strings.NewReplacer("%", "%25", `\`, "%5C", "&", "%26", "#", "%23", "?", "%3F", "\r", "%0D", "\n", "%0A", " ", "%20", "\t", "%09", `"`, "%22", "'", "%27", "<", "%3C", ">", "%3E")
-	wikiLinkPathEscaper = strings.NewReplacer("%", "%25", `\`, "%5C", "#", "%23", "\r", "%0D", "\n", "%0A", "|", "%7C", "[", "%5B", "]", "%5D")
+	mdLinkPathEscaper   = newLinkPathEscaper("&", "#", "?", " ", "(", ")", "<", ">")
+	htmlLinkPathEscaper = newLinkPathEscaper("&", "#", "?", " ", `"`, "'", "<", ">")
+	wikiLinkPathEscaper = newLinkPathEscaper("#", "|", "[", "]")
 	linkTextEscaper     = strings.NewReplacer(`\`, `\\`, "[", `\[`, "]", `\]`)
 )
+
+// newLinkPathEscaper encodes "%", "\", "`", every ascii control character and the extra characters
+func newLinkPathEscaper(extra ...string) *strings.Replacer {
+	pairs := []string{"%", "%25", `\`, "%5C", "`", "%60"}
+	for r := rune(0); r < 0x20; r++ {
+		pairs = append(pairs, string(r), fmt.Sprintf("%%%02X", r))
+	}
+	pairs = append(pairs, "\x7f", "%7F")
+	for _, c := range extra {
+		pairs = append(pairs, c, fmt.Sprintf("%%%02X", c[0]))
+	}
+	return strings.NewReplacer(pairs...)
+}
 
 // encodeLinkPath writes a file path as a link path that decodeLinkPath reads back unchanged.
 func encodeLinkPath(p string, kind LinkKind) string {

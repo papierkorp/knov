@@ -78,8 +78,6 @@ done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgr
 
 follow-ups (found by the tests, not fixed yet - decide):
 
-- [ ] codec: ascii control characters besides tab / line breaks aren't percent-encoded in link paths - a "\f" ends a markdown destination, so the link is lost (FuzzLinkCodec's fuzzPath skips them)
-- [ ] codec + walker: "`" isn't encoded - two of them in a path are a code span for maskCode, the walker skips the link while goldmark reads them as part of the destination (fuzzPath skips them, a knownDivergences case)
 - [ ] walker vs goldmark (knownDivergences in TestScannerMatchesGoldmark): a destination, title or reference definition destination on the next line (goldmark: link, walker: none), an escaped "\[" before "](dest)", a link in an indented code block or an html comment (walker: link, goldmark: none)
 - [ ] images: markdown images still render through renderImage / resolveMediaPath, not LinkTarget - a bare `![x](pic.png)` that exists only in the docs folder renders /media/... (404) while link metadata reads docs/..., an image named with a trailing space ("trail.png ") renders nothing
 - [ ] images in interactive table cells render with plain goldmark (RenderInlineMarkdown), not renderImage - `![x](media/pic.png)` gets a src relative to the page
