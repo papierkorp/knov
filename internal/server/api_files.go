@@ -751,7 +751,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// use the new name as the new path (allows for directory moves)
-	newPath := filepath.Clean(newName)
+	newPath := pathutils.DocsPath(filepath.Clean(newName))
 
 	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
@@ -823,15 +823,16 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
 		return
 	}
-	newPath := filepath.Clean(targetParent + "/" + folderName)
+	newRel := filepath.Clean(targetParent + "/" + folderName)
+	newPath := pathutils.DocsPath(newRel)
 
-	if newPath == currentRel {
+	if newRel == currentRel {
 		writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 		return
 	}
 
 	// prevent moving a folder into itself or a descendant
-	if strings.HasPrefix(newPath+"/", currentRel+"/") {
+	if strings.HasPrefix(newRel+"/", currentRel+"/") {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
 		return
 	}
