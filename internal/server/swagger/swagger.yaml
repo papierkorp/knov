@@ -1812,7 +1812,15 @@ paths:
       produces:
       - application/json
       - text/html
-      responses: {}
+      responses:
+        "404":
+          description: file not found
+          schema:
+            type: string
+        "500":
+          description: failed to get file content
+          schema:
+            type: string
       summary: Get file content as html
       tags:
       - files

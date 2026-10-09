@@ -3752,6 +3752,16 @@
       "translation": "aus dem Medienordner"
     },
     {
+      "id": "job failed",
+      "message": "job failed",
+      "translation": "Job fehlgeschlagen"
+    },
+    {
+      "id": "already running",
+      "message": "already running",
+      "translation": "läuft bereits"
+    },
+    {
       "id": "invalid link kind",
       "message": "invalid link kind",
       "translation": "ungültige Linkart"

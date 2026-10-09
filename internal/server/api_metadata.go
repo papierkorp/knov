@@ -116,11 +116,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 		TagsRemove: p.TagsRemove,
 	})
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, job.ErrAlreadyRunning) {
-			status = http.StatusConflict
-		}
-		writeAPIError(w, r, status, err.Error())
+		writeJobError(w, r, err)
 		return
 	}
 	if result.Failed > 0 {
@@ -228,11 +224,7 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	id, err := job.StartFullRebuild()
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, job.ErrAlreadyRunning) {
-			status = http.StatusConflict
-		}
-		writeAPIError(w, r, status, err.Error())
+		writeJobError(w, r, err)
 		return
 	}
 
@@ -348,11 +340,7 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 
 	result, err := job.RunRepairBrokenLinks(entries)
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, job.ErrAlreadyRunning) {
-			status = http.StatusConflict
-		}
-		writeAPIError(w, r, status, err.Error())
+		writeJobError(w, r, err)
 		return
 	}
 	repaired, skipped := result.Repaired, result.Skipped
@@ -413,11 +401,7 @@ func handleAPIMigrateRelativeLinks(w http.ResponseWriter, r *http.Request) {
 
 	result, err := job.RunMigrateRelativeLinks(changes)
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, job.ErrAlreadyRunning) {
-			status = http.StatusConflict
-		}
-		writeAPIError(w, r, status, err.Error())
+		writeJobError(w, r, err)
 		return
 	}
 
@@ -440,11 +424,7 @@ func handleAPIMigrateRelativeLinks(w http.ResponseWriter, r *http.Request) {
 func handleAPIMigrateReservedFolders(w http.ResponseWriter, r *http.Request) {
 	result, err := job.RunMigrateReservedFolders()
 	if err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, job.ErrAlreadyRunning) {
-			status = http.StatusConflict
-		}
-		writeAPIError(w, r, status, err.Error())
+		writeJobError(w, r, err)
 		return
 	}
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "metadata of %d files migrated", result.Metadata)

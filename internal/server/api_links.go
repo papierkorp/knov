@@ -2,9 +2,7 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -256,14 +254,11 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 
 	format := r.URL.Query().Get("format")
 	if format == "options" {
-		var html strings.Builder
 		rels := make([]string, 0, len(ancestors))
 		for _, a := range ancestors {
-			rel := pathutils.ToRelative(a)
-			rels = append(rels, rel)
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, render.GetLinkDisplayText(pathutils.ToWithPrefix(a)))
+			rels = append(rels, pathutils.ToRelative(a))
 		}
-		writeResponse(w, r, rels, html.String())
+		writeResponse(w, r, rels, render.RenderAncestorOptions(ancestors))
 		return
 	}
 

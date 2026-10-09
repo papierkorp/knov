@@ -55,3 +55,12 @@ func TestMoveRedirectsOnlyViewedFile(t *testing.T) {
 		})
 	}
 }
+
+func TestGetFileContentMissingFileIs404(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/api/files/content/missing-file.md", nil)
+	rec := httptest.NewRecorder()
+	handleAPIGetFileContent(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for a missing file, got %d", rec.Code)
+	}
+}

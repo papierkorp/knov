@@ -64,6 +64,17 @@ func linkKindParam(r *http.Request) (kind parser.LinkKind, ok bool) {
 	return kind, false
 }
 
+// writeJobError answers a failed job run: 409 while the job already runs, else 500 - the error
+// itself is logged, not sent.
+func writeJobError(w http.ResponseWriter, r *http.Request, err error) {
+	if errors.Is(err, job.ErrAlreadyRunning) {
+		writeAPIError(w, r, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "already running"))
+		return
+	}
+	logging.LogError(logging.KeyApp, "job failed: %v", err)
+	writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "job failed"))
+}
+
 func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
 	if wantsHTML(r) {
 		w.Header().Set("Content-Type", "text/html")

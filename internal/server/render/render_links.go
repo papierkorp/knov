@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"html"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -115,6 +116,15 @@ func renderLinkDisplayText(filePath string, displayMode string, metadata *files.
 // RenderNoLinksMessage renders a "no links" message with appropriate class
 func RenderNoLinksMessage(message string) string {
 	return fmt.Sprintf(`<div class="connection-empty">%s</div>`, message)
+}
+
+// RenderAncestorOptions renders the ancestor files as the <option>s of a select (value: the docs-relative path).
+func RenderAncestorOptions(ancestors []string) string {
+	var out strings.Builder
+	for _, a := range ancestors {
+		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(pathutils.ToRelative(a)), GetLinkDisplayText(pathutils.ToWithPrefix(a)))
+	}
+	return out.String()
 }
 
 // RenderLinksList renders a list of file links (non-media) as HTML with configurable display text

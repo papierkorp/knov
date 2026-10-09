@@ -135,12 +135,18 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 // @Tags files
 // @Param filepath path string true "File path"
 // @Produce json,html
+// @Failure 404 {string} string "file not found"
+// @Failure 500 {string} string "failed to get file content"
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := pathutils.DocsPath(strings.TrimPrefix(r.URL.Path, "/api/files/content/"))
 	fullPath := pathutils.ToDocsPath(filePath)
 
 	content, err := files.GetFileContent(fullPath)
+	if errors.Is(err, os.ErrNotExist) {
+		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file not found"))
+		return
+	}
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
 		return
