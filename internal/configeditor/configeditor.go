@@ -102,7 +102,7 @@ func (k Kind) Set(id string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	if err := pathutils.CheckNewDocsPath(k.PairedPath(id)); err != nil {
+	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id))); err != nil {
 		return err
 	}
 	return configStorage.Set(k.prefix+id, data)
@@ -129,7 +129,7 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 	if err != nil {
 		return err
 	}
-	pairedPath := k.PairedPath(id)
+	pairedPath := pathutils.DocsPath(k.PairedPath(id))
 	fullPath := pathutils.ToDocsPath(pairedPath)
 
 	if err := contentStorage.WriteFile(fullPath, markdown, 0644); err != nil {
@@ -154,7 +154,7 @@ func (k Kind) Delete(id string) error {
 		return err
 	}
 	key := k.prefix + id
-	pairedPath := k.PairedPath(id)
+	pairedPath := pathutils.DocsPath(k.PairedPath(id))
 	fullPath := pathutils.ToDocsPath(pairedPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file %s: %v", k.label(), fullPath, err)

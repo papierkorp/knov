@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server"
@@ -251,4 +252,41 @@ func caseParams() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-params", "file params are metadata paths, read and saved as the sample doc, not its collision partner", gaps)
+}
+
+// caseStoredPaths: the parents of a sample doc and a filter on its folder and parent keep the
+// docs/ path - the doc in docs/media/ is not read as the media file, a parent without prefix is
+// answered with 400.
+func caseStoredPaths() test.CaseResult {
+	var gaps []string
+	for i, top := range reserved {
+		meta, parent := "docs/"+doc(top, "synced.md"), "docs/"+doc(reserved[(i+1)%len(reserved)], "synced.md")
+		status, body, err := request(http.MethodPost, "/api/metadata/parents", url.Values{"filepath": {meta}, "parents": {parent}})
+		if err != nil {
+			return errCase("reserved-stored-paths", err)
+		}
+		if m, _ := files.MetaDataGet(meta); status != http.StatusOK || m == nil || !slices.Equal(m.Parents, []string{parent}) {
+			gaps = append(gaps, fmt.Sprintf("parents of %q: status %d (%s), stored %+v", meta, status, strings.TrimSpace(body), m))
+		}
+		// for docs/ and media/ the docs-relative path is itself a metadata path
+		if bare := doc(reserved[(i+1)%len(reserved)], "synced.md"); !pathutils.IsMetaPath(bare) {
+			if status, _, err := request(http.MethodPost, "/api/metadata/parents", url.Values{"filepath": {meta}, "parents": {bare}}); err != nil || status != http.StatusBadRequest {
+				gaps = append(gaps, fmt.Sprintf("parents of %q without prefix: status %d, want 400 (%v)", meta, status, err))
+			}
+		}
+		for _, c := range []filter.Criteria{
+			{Metadata: "collection", Operator: "equals", Value: top, Action: "include"},
+			{Metadata: "child-of", Operator: "equals", Value: parent, Action: "include"},
+		} {
+			all, err := files.GetAllPhysicalFiles()
+			if err != nil {
+				return errCase("reserved-stored-paths", err)
+			}
+			matched := filter.FilterFileList(all, []filter.Criteria{c}, "and")
+			if !slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == meta }) || slices.ContainsFunc(matched, func(f files.File) bool { return f.Path == partner(top, "synced.md") }) {
+				gaps = append(gaps, fmt.Sprintf("filter %s=%q: matches %d files, the doc %q not found or its partner found", c.Metadata, c.Value, len(matched), meta))
+			}
+		}
+	}
+	return gapsCase("reserved-stored-paths", "parents and filters on a sample doc keep its docs/ path", gaps)
 }

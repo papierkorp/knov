@@ -120,7 +120,7 @@ func CleanupIssues() (CleanupResult, error) {
 		var oldStatus string
 		var applied bool
 		now := time.Now()
-		err := files.MetaDataMutate(pathutils.ToWithPrefix(issue.Path), func(meta *files.Metadata, existed bool) (bool, error) {
+		err := files.MetaDataMutate(pathutils.DocsPath(issue.Path), func(meta *files.Metadata, existed bool) (bool, error) {
 			if !existed {
 				return false, nil
 			}

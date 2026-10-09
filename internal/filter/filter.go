@@ -189,21 +189,21 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 		return false
 	case "child-of":
 		for _, p := range metadata.Parents {
-			if matchesOperator(pathutils.ToRelative(p), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
+			if matchesOperator(pathutils.ToWithPrefix(p), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
 				return true
 			}
 		}
 		return false
 	case "parent-of":
 		for _, k := range metadata.Kids {
-			if matchesOperator(pathutils.ToRelative(k), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
+			if matchesOperator(pathutils.ToWithPrefix(k), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
 				return true
 			}
 		}
 		return false
 	case "ancestor-of":
 		for _, a := range metadata.Ancestor {
-			if matchesOperator(pathutils.ToRelative(a), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
+			if matchesOperator(pathutils.ToWithPrefix(a), criterion.Operator, pathutils.ToWithPrefix(criterion.Value)) {
 				return true
 			}
 		}
@@ -352,7 +352,11 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	var sb strings.Builder
 	for _, file := range result.Files {
 		rel := pathutils.ToRelative(file.Path)
-		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: "/" + rel})
+		linkPath := "/" + rel
+		if parser.WrittenAsMedia(rel) {
+			linkPath = "/files/" + rel // "/media/..." is the media folder
+		}
+		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: linkPath})
 	}
 
 	pairedPath := store.PairedPath(filterID)
@@ -444,7 +448,7 @@ func init() {
 	book.FilterResolver = SavedFilterPaths
 }
 
-// SavedFilterPaths runs a saved filter and returns the docs-relative paths of its matches.
+// SavedFilterPaths runs a saved filter and returns the wikilink paths (docs-relative, see parser.DocsWikiPath) of its matches.
 // books are left out: a book inlined into another book would show its raw entry list.
 func SavedFilterPaths(filterID string) ([]string, error) {
 	config, err := GetFilterConfig(filterID)
@@ -461,7 +465,7 @@ func SavedFilterPaths(filterID string) ([]string, error) {
 	var paths []string
 	for _, file := range result.Files {
 		if !files.IsBook(file.Path) {
-			paths = append(paths, pathutils.ToRelative(file.Path))
+			paths = append(paths, parser.DocsWikiPath(pathutils.ToRelative(file.Path)))
 		}
 	}
 	return paths, nil

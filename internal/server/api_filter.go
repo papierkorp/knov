@@ -135,7 +135,7 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 
 	indexPath := filter.FilterIndexPath(filterID)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"))
-	w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.ToWithPrefix(indexPath)))
+	w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.DocsPath(indexPath)))
 	writeResponse(w, r, map[string]string{"filter": filterID}, "")
 }
 

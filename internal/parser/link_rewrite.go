@@ -180,14 +180,24 @@ func (l Link) String() string {
 	return prefix + "[" + linkTextEscaper.Replace(l.Text) + "](" + l.Dest() + ")"
 }
 
+// DocsWikiPath is the wikilink path of the docs file rel (docs-relative): a wikilink reads media/
+// and docs/ as the media folder and the docs prefix, so a file in a folder of that name needs its
+// docs/ prefix.
+func DocsWikiPath(rel string) string {
+	if strings.HasPrefix(rel, "media/") || strings.HasPrefix(rel, "docs/") {
+		return "docs/" + rel
+	}
+	return rel
+}
+
 // FileLinkDest writes the destination of a new link to a docs file (docs-relative path, anchor
 // "#id" or ""), as the editor inserts it: the wikilink body or a markdown /files/ url - an empty
 // path is a same-page anchor.
 func FileLinkDest(path, anchor string, kind LinkKind) string {
 	if kind != LinkWiki && path != "" {
 		path = "/files/" + path
-	} else if strings.HasPrefix(path, "media/") || strings.HasPrefix(path, "docs/") {
-		path = "docs/" + path // a wikilink reads media/ and docs/ as the folder of that name, a docs file in a folder of that name needs its prefix
+	} else {
+		path = DocsWikiPath(path)
 	}
 	return Link{Kind: kind, Path: path, Anchor: anchor}.Dest()
 }

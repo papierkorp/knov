@@ -847,6 +847,10 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 			if parent == "" {
 				continue
 			}
+			if !pathutils.IsMetaPath(parent) {
+				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "parents"))
+				return
+			}
 			fullParentPath := pathutils.ToFullPath(parent)
 			if _, err := os.Stat(fullParentPath); os.IsNotExist(err) {
 				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
