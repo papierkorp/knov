@@ -429,7 +429,7 @@ func caseBookEditor() test.CaseResult {
 }
 
 // caseTable links every target doc from the cells of a table (wiki and "/" markdown links, a "|"
-// in a markdown link destination would end the cell) and a "./" link - the interactive table
+// in a markdown link destination escaped) and a "./" link - the interactive table
 // component has to link each one like the rendered page.
 func caseTable() test.CaseResult {
 	dir := testDir + "/table"
@@ -437,10 +437,8 @@ func caseTable() test.CaseResult {
 	table := "| wiki | markdown |\n|---|---|\n| [y](./near.md) | |\n"
 	want := []string{pathutils.ToWithPrefix(near)}
 	for i := range names {
-		md := ""
-		if !strings.Contains(target(i), "|") {
-			md = parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: "/" + target(i)}.String()
-		}
+		// a "|" in a table cell is written escaped
+		md := strings.ReplaceAll(parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: "/" + target(i)}.String(), "|", `\|`)
 		table += "| " + parser.Link{Kind: parser.LinkWiki, Path: target(i)}.String() + " | " + md + " |\n"
 		want = append(want, pathutils.ToWithPrefix(target(i)))
 	}

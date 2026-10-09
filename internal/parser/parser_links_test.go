@@ -484,3 +484,24 @@ func TestRenderDotFolderLinks(t *testing.T) {
 
 // fileURL is the /files/ url of the docs-relative path rel
 func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel)) }
+
+// a "|" in a link path written into a table row is escaped (GFM ends the cell at an unescaped one),
+// in other lines it stays - and both read back as the same path
+func TestRewriteLinksEscapesPipeInTableRows(t *testing.T) {
+	content := "intro [w](old.md)\n\n| a | b |\n|---|:-:|\n| [x](old.md) | <a href=\"old.md\">h</a> |\n| [[old]] | [y](old.md) |\nlazy [z](old.md)\n\n[o](old.md)\n"
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) {
+		if l.Kind == LinkWiki {
+			return "", false
+		}
+		return "a|b.md", true
+	})
+	want := "intro [w](a|b.md)\n\n| a | b |\n|---|:-:|\n| [x](a\\|b.md) | <a href=\"a%7Cb.md\">h</a> |\n| [[old]] | [y](a\\|b.md) |\nlazy [z](a\\|b.md)\n\n[o](a|b.md)\n"
+	if !changed || got != want {
+		t.Errorf("RewriteLinks = %q, want %q", got, want)
+	}
+	for _, l := range NewMarkdownHandler().ExtractLinks([]byte(got), "docs/n.md") {
+		if l != "docs/old.md" && l != "docs/a|b.md" {
+			t.Errorf("ExtractLinks read %q", l)
+		}
+	}
+}

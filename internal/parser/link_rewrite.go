@@ -284,6 +284,7 @@ func encodeLinkPath(p string, kind LinkKind) string {
 // ExtractLinks walks links through this too, so both always see the same links.
 func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool) {
 	changed := false
+	var rows tableRows
 	content = walkLinks(content, func(m linkMatch) string {
 		l := m.Link
 		if l.External {
@@ -295,7 +296,21 @@ func RewriteLinks(content string, fn func(l Link) (string, bool)) (string, bool)
 		}
 		changed = true
 		l.Path = newPath
-		return m.Prefix + l.Dest() + m.Suffix
+		dest := l.Dest()
+		if l.Kind != LinkWiki && strings.Contains(dest, "|") {
+			if rows == nil {
+				rows = newTableRows(content)
+			}
+			if rows.contains(m.Start) {
+				// GFM ends a table cell at an unescaped "|"; in html the cell unescaping isn't applied to the attribute
+				escaped := `\|`
+				if l.Kind == LinkHTML {
+					escaped = "%7C"
+				}
+				dest = strings.ReplaceAll(dest, "|", escaped)
+			}
+		}
+		return m.Prefix + dest + m.Suffix
 	})
 	return content, changed
 }
@@ -322,6 +337,7 @@ type linkMatch struct {
 	Link                       Link
 	Open, Prefix, Dest, Suffix string
 	RefDef                     bool
+	Start                      int // offset of the match in the content
 }
 
 func (m linkMatch) whole() string { return m.Prefix + m.Dest + m.Suffix }
@@ -395,6 +411,7 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 			continue
 		}
 		b.WriteString(content[last:s.start])
+		s.m.Start = s.start
 		b.WriteString(fn(s.m))
 		last = s.end
 	}
@@ -630,4 +647,44 @@ func ResolveLinkPath(docPath string, l Link) string {
 		return pathutils.ResolveRelativeLink(docPath, "./"+l.Path)
 	}
 	return pathutils.ResolveRelativeLink(docPath, l.Path)
+}
+
+// tableRows is the byte ranges [start, end) of the rows of the GFM tables in a content.
+type tableRows [][2]int
+
+var tableDelimiterRe = regexp.MustCompile(`^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$`)
+
+// newTableRows finds the tables of content: a header row with a "|", a delimiter row (---|:-:) and
+// every following line up to a blank line.
+func newTableRows(content string) tableRows {
+	lines := strings.Split(content, "\n")
+	starts := make([]int, len(lines)+1)
+	for i, line := range lines {
+		starts[i+1] = starts[i] + len(line) + 1
+	}
+	var rows tableRows
+	for i := 1; i < len(lines); i++ {
+		if !strings.Contains(lines[i-1], "|") || !strings.Contains(lines[i], "|") && !strings.Contains(lines[i], "-") || !tableDelimiterRe.MatchString(lines[i]) || strings.TrimSpace(lines[i-1]) == "" {
+			continue
+		}
+		if !strings.Contains(lines[i], "|") && !strings.Contains(lines[i-1], "|") {
+			continue
+		}
+		j := i + 1
+		for j < len(lines) && strings.TrimSpace(lines[j]) != "" {
+			j++
+		}
+		rows = append(rows, [2]int{starts[i-1], starts[j]})
+		i = j
+	}
+	return rows
+}
+
+func (t tableRows) contains(offset int) bool {
+	for _, r := range t {
+		if offset >= r[0] && offset < r[1] {
+			return true
+		}
+	}
+	return false
 }
