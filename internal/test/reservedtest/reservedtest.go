@@ -29,6 +29,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseListing,
 		caseMetadata,
+		caseView,
+		caseDelete,
 	}
 
 	return test.RunCases("reserved-folders", cases), nil

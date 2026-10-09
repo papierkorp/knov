@@ -17,9 +17,9 @@ import (
 // ones to the docs root
 func TestRenderRelativeLinks(t *testing.T) {
 	in := "[y](../a.md) [[./b]] ![i](./c.png) [z](sub/d.md) [w](/d.md) [[d]] ![j](g.png)\n\n[r]: ./e.md\n[s]: ./f.png\n[t]: h.md"
-	want := "[y](" + pathutils.ToFileURL("x/a.md") + ") [b](" + pathutils.ToFileURL("x/sub/b.md") + ") ![i](x/sub/c.png) [z](" +
-		pathutils.ToFileURL("x/sub/sub/d.md") + ") [w](" + pathutils.ToFileURL("d.md") + ") [d](" + pathutils.ToFileURL("d.md") +
-		") ![j](x/sub/g.png)\n\n[r]: " + pathutils.ToFileURL("x/sub/e.md") + "\n[s]: x/sub/f.png\n[t]: " + pathutils.ToFileURL("x/sub/h.md")
+	want := "[y](" + fileURL("x/a.md") + ") [b](" + fileURL("x/sub/b.md") + ") ![i](x/sub/c.png) [z](" +
+		fileURL("x/sub/sub/d.md") + ") [w](" + fileURL("d.md") + ") [d](" + fileURL("d.md") +
+		") ![j](x/sub/g.png)\n\n[r]: " + fileURL("x/sub/e.md") + "\n[s]: x/sub/f.png\n[t]: " + fileURL("x/sub/h.md")
 	if got := RenderLinks(in, "docs/x/sub/n.md"); got != want {
 		t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
 	}
@@ -30,9 +30,9 @@ func TestRenderLinks(t *testing.T) {
 		name, in, want string
 	}{
 		// empty link text falls back to the filename (no anchor).
-		{"fallback label plain path", "[](note.md)", "[note](" + pathutils.ToFileURL("note.md") + ")"},
+		{"fallback label plain path", "[](note.md)", "[note](" + fileURL("note.md") + ")"},
 		// empty link text falls back to "filename - Header Text".
-		{"fallback label path plus anchor", "[](note.md#todo-vorlage)", "[note - Todo Vorlage](" + pathutils.ToFileURL("note.md") + "#todo-vorlage)"},
+		{"fallback label path plus anchor", "[](note.md#todo-vorlage)", "[note - Todo Vorlage](" + fileURL("note.md") + "#todo-vorlage)"},
 		// media links are decoded once and re-encoded as a /media/ url
 		{"files media url", "[x](/files/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
 		{"media path", "[x](<media/a b.png>)", "[x](" + pathutils.ToMediaURL("a b.png") + "?mode=detail)"},
@@ -45,24 +45,24 @@ func TestRenderLinks(t *testing.T) {
 		{"external bad escape", "[x](https://example.com/100%)", "[x](https://example.com/100%)"},
 		{"unc external", `[x](\\server\share)`, `[x](\\server\share)`},
 		// query and title are split off like RewriteLinks does, one level of (...) is part of the path
-		{"query", "[x](a.md?view=raw#sec)", "[x](" + pathutils.ToFileURL("a.md") + "?view=raw#sec)"},
-		{"title", `[x](a.md "t")`, "[x](" + pathutils.ToFileURL("a.md") + ` "t")`},
-		{"parens", "[x](a(1).md)", "[x](" + pathutils.ToFileURL("a(1).md") + ")"},
-		{"angled title", `[x](<a b.md#sec> "t")`, "[x](" + pathutils.ToFileURL("a b.md") + `#sec "t")`},
+		{"query", "[x](a.md?view=raw#sec)", "[x](" + fileURL("a.md") + "?view=raw#sec)"},
+		{"title", `[x](a.md "t")`, "[x](" + fileURL("a.md") + ` "t")`},
+		{"parens", "[x](a(1).md)", "[x](" + fileURL("a(1).md") + ")"},
+		{"angled title", `[x](<a b.md#sec> "t")`, "[x](" + fileURL("a b.md") + `#sec "t")`},
 		{"angled external", "[x](<https://example.com/a b>)", "[x](<https://example.com/a b>)"},
 		{"media no ext", "[x](media/a)", "[x](" + pathutils.ToMediaURL("a") + "?mode=detail)"},
 		// a same-page link: empty link text falls back to just the humanized header text, no
 		// filename prefix.
 		{"fallback label pure anchor", "[](#todo-vorlage)", "[Todo Vorlage](#todo-vorlage)"},
 		// a visible heading text as anchor becomes the heading id, so the link stays whole
-		{"anchor text slugged", "[x](<a.md#Phase 1: Plan>)", "[x](" + pathutils.ToFileURL("a.md") + "#phase-1-plan)"},
-		{"wiki anchor text slugged", "[x](/files/a.md#Phase 1)", "[x](" + pathutils.ToFileURL("a.md") + "#phase-1)"},
+		{"anchor text slugged", "[x](<a.md#Phase 1: Plan>)", "[x](" + fileURL("a.md") + "#phase-1-plan)"},
+		{"wiki anchor text slugged", "[x](/files/a.md#Phase 1)", "[x](" + fileURL("a.md") + "#phase-1)"},
 		// a percent-encoded path segment (a space in the folder name) is decoded before the
 		// fallback label is built from it.
-		{"percent-encoded path decoded before label", "[](mein%20ordner/notiz.md#eintrag-eins)", "[notiz - Eintrag Eins](" + pathutils.ToFileURL("mein ordner/notiz.md") + "#eintrag-eins)"},
+		{"percent-encoded path decoded before label", "[](mein%20ordner/notiz.md#eintrag-eins)", "[notiz - Eintrag Eins](" + fileURL("mein ordner/notiz.md") + "#eintrag-eins)"},
 		// a percent-encoded anchor segment is decoded before the fallback label is built, while
 		// the href's anchor fragment itself is left exactly as written.
-		{"percent-encoded anchor decoded before label", "[](notiz.md#einf%C3%BChrung-teil-1)", "[notiz - Einführung Teil 1](" + pathutils.ToFileURL("notiz.md") + "#einf%C3%BChrung-teil-1)"},
+		{"percent-encoded anchor decoded before label", "[](notiz.md#einf%C3%BChrung-teil-1)", "[notiz - Einführung Teil 1](" + fileURL("notiz.md") + "#einf%C3%BChrung-teil-1)"},
 		// external (non-relative) links are left exactly as written - no fallback label, no
 		// /files/ routing.
 		{"external link untouched", "[Example](https://example.com/some/path)", "[Example](https://example.com/some/path)"},
@@ -71,42 +71,42 @@ func TestRenderLinks(t *testing.T) {
 		// a Windows-style backslash path is normalized to forward slashes - the only
 		// transformation the image branch ever applies.
 		{"image embed backslash path normalized", `![Diagram](sub\diagram.png)`, "![Diagram](sub/diagram.png)"},
-		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + pathutils.ToFileURL("sub/note.md") + ")"},
+		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + fileURL("sub/note.md") + ")"},
 		// a markdown escape (\_) is no separator, the anchor becomes its heading id
-		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + pathutils.ToFileURL("a_b.md") + "#c-d)"},
+		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + fileURL("a_b.md") + "#c-d)"},
 		{"image embed markdown escape resolved", `![D](a\_b.png)`, `![D](a_b.png)`},
 		// in a windows path every "\" is a separator, also before punctuation (_resources)
-		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + pathutils.ToFileURL("sub/_resources/a.md") + ")"},
+		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + fileURL("sub/_resources/a.md") + ")"},
 		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](a_b.png#c\d "t\x")`},
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
-		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + pathutils.ToFileURL("b/.c.md") + ")"},
+		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + fileURL("b/.c.md") + ")"},
 		// a /files/ url gets the default extension like link metadata reads it
-		{"files url no ext", "[x](/files/docs/a)", "[x](" + pathutils.ToFileURL("a.md") + ")"},
+		{"files url no ext", "[x](/files/docs/a)", "[x](" + fileURL("a.md") + ")"},
 		{"media url", "[x](/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
 		// a same-page heading text becomes the heading id too
 		{"pure anchor text slugged", "[x](<#Phase 1>)", "[x](#phase-1)"},
 		// code is never a link, an unclosed "<" is no destination
-		{"inline code", "`[x](a.md)` [y](a.md)", "`[x](a.md)` [y](" + pathutils.ToFileURL("a.md") + ")"},
+		{"inline code", "`[x](a.md)` [y](a.md)", "`[x](a.md)` [y](" + fileURL("a.md") + ")"},
 		{"fenced code", "```\n[x](a.md)\n```", "```\n[x](a.md)\n```"},
 		{"unclosed angle", "[x](<a.md) ![y](<b.png)", "[x](<a.md) ![y](<b.png)"},
 		// a link text spanning lines keeps its text
-		{"multi-line text", "[a\nb](a.md)", "[a\nb](" + pathutils.ToFileURL("a.md") + ")"},
+		{"multi-line text", "[a\nb](a.md)", "[a\nb](" + fileURL("a.md") + ")"},
 		// an image alt spanning lines or holding code stays an image
 		{"multi-line image alt", "![a\nb](a%20b.png)", "![a\nb](a%20b.png)"},
 		{"image alt with code", "![`x` y](a.png)", "![`x` y](a.png)"},
-		{"bracket in code text", "[`]` x](a.md)", "[`]` x](" + pathutils.ToFileURL("a.md") + ")"},
+		{"bracket in code text", "[`]` x](a.md)", "[`]` x](" + fileURL("a.md") + ")"},
 		{"unclosed angle after space", "[x]( <a.md)", "[x]( <a.md)"},
 		// a linked image or one after a stray "[" stays an image
-		{"linked image", "[![b](img.png)](a.md)", "[![b](img.png)](" + pathutils.ToFileURL("a.md") + ")"},
+		{"linked image", "[![b](img.png)](a.md)", "[![b](img.png)](" + fileURL("a.md") + ")"},
 		{"linked image external", "[![b](img.png)](https://x.y)", "[![b](img.png)](https://x.y)"},
 		{"image after stray bracket", "a [stray\n\n![i](img.png)", "a [stray\n\n![i](img.png)"},
 		// a reference definition to a docs file gets its /files/ url like an inline link, media,
 		// images, pure anchors and external ones stay as written
-		{"ref def doc", "[r][id]\n\n[id]: <a b#Phase 1> \"t\"", "[r][id]\n\n[id]: " + pathutils.ToFileURL("a b.md") + "#phase-1 \"t\""},
+		{"ref def doc", "[r][id]\n\n[id]: <a b#Phase 1> \"t\"", "[r][id]\n\n[id]: " + fileURL("a b.md") + "#phase-1 \"t\""},
 		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y"},
 		{"ref def in code", "```\n[id]: a.md\n```", "```\n[id]: a.md\n```"},
 		// html src/href get their app url like markdown links, app routes, anchors and external ones stay
-		{"html href", `<a href="a b.md">x</a> <img src='/files/media/p.png'>`, `<a href="` + pathutils.ToFileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
+		{"html href", `<a href="a b.md">x</a> <img src='/files/media/p.png'>`, `<a href="` + fileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
 		{"html app route anchor external", `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`, `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`},
 		{"html entity", `<a href="a&amp;b.md">`, `<a href="/files/a&amp;b.md">`},
 		// an external wikilink links its url
@@ -197,8 +197,8 @@ func TestWikiTargetExtraction(t *testing.T) {
 // the end of the destination
 func TestWikiLinkAnchorSpecialChars(t *testing.T) {
 	for in, want := range map[string]string{
-		`[[a#Say "hi"]]`: "[a - Say \"hi\"](" + pathutils.ToFileURL("a.md") + "#say-hi)",
-		`[[a#x) y|z]]`:   "[z](" + pathutils.ToFileURL("a.md") + "#x-y)",
+		`[[a#Say "hi"]]`: "[a - Say \"hi\"](" + fileURL("a.md") + "#say-hi)",
+		`[[a#x) y|z]]`:   "[z](" + fileURL("a.md") + "#x-y)",
 		`[[#a "b"]]`:     `[A "b"](#a-b)`,
 	} {
 		if got := RenderLinks(in, PathlessRender); got != want {
@@ -214,7 +214,7 @@ func TestWikiLinkPureAnchor(t *testing.T) {
 	for in, want := range map[string]string{
 		"[[#some-header]]":         "[Some Header](#some-header)",
 		"`[[a]]`\n```\n[[a]]\n```": "`[[a]]`\n```\n[[a]]\n```",
-		"[x](a[[b]].md)":           "[x](" + pathutils.ToFileURL("a[[b]].md") + ")",
+		"[x](a[[b]].md)":           "[x](" + fileURL("a[[b]].md") + ")",
 	} {
 		if got := RenderLinks(in, PathlessRender); got != want {
 			t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
@@ -279,7 +279,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			{"markdown", "[x](" + md + ")", p},
 			{"markdown <>", "[x](<" + md + ">)", p},
 			{"markdown anchor", "[x](" + md + "#sec)", p},
-			{"markdown file url", "[x](" + pathutils.ToFileURL(p) + ")", p},
+			{"markdown file url", "[x](" + fileURL(p) + ")", p},
 			{"wiki", "[[" + wiki + "]]", p},
 			{"wiki anchor", "[[" + wiki + "#sec]]", p},
 			{"image", "![x](" + encodeLinkPath("media/"+img, LinkMarkdown) + ")", "media/" + img},
@@ -303,7 +303,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			// the file view pipeline: Parse resolves the links, Render runs goldmark
 			parsed, _ := h.Parse([]byte(w.link), PathlessRender)
 			out, err := h.Render(parsed, "", false)
-			if got := renderedTarget(string(out)); err != nil || got != w.want {
+			if got := renderedTarget(string(out)); err != nil || got != pathutils.ToWithPrefix(w.want) {
 				t.Errorf("%s %q: Render(%q) links to %q: %s", w.name, p, w.link, got, out)
 			}
 		}
@@ -375,7 +375,7 @@ func TestLinkString(t *testing.T) {
 	if got, want := l.String(), `[a/\[1\].md](a/[1].md)`; got != want {
 		t.Errorf("String = %q, want %q", got, want)
 	}
-	if got := RenderLinks(l.String(), PathlessRender); got != `[a/\[1\].md](`+pathutils.ToFileURL("a/[1].md")+")" {
+	if got := RenderLinks(l.String(), PathlessRender); got != `[a/\[1\].md](`+fileURL("a/[1].md")+")" {
 		t.Errorf("RenderLinks(%q) = %q", l.String(), got)
 	}
 }
@@ -426,7 +426,7 @@ func TestRewriteLinksRefDefAfterCode(t *testing.T) {
 // and link metadata alike
 func TestWikiLinkFollowedByParens(t *testing.T) {
 	in := "see [[note]](draft) and [a [b]](c.md)"
-	want := "see [note](" + pathutils.ToFileURL("note.md") + ")(draft) and [a [b]](" + pathutils.ToFileURL("c.md") + ")"
+	want := "see [note](" + fileURL("note.md") + ")(draft) and [a [b]](" + fileURL("c.md") + ")"
 	if got := RenderLinks(in, PathlessRender); got != want {
 		t.Errorf("RenderLinks = %q, want %q", got, want)
 	}
@@ -480,3 +480,6 @@ func TestRenderDotFolderLinks(t *testing.T) {
 		t.Errorf("RenderLinks = %q, want the docs root url", got)
 	}
 }
+
+// fileURL is the /files/ url of the docs-relative path rel
+func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel)) }

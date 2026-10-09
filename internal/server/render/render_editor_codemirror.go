@@ -396,7 +396,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		}
 	}
 
-	cancelURL := pathutils.ToFileURL(filePath) + "#" + sectionID
+	cancelURL := pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)) + "#" + sectionID
 
 	script := fmt.Sprintf(`<script>
 (function() {
@@ -461,7 +461,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	action := "/api/files/save"
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = pathutils.ToFileURL(filePath)
+		cancelURL = pathutils.ToFileURL(pathutils.ToWithPrefix(filePath))
 	}
 
 	var currentEditor string

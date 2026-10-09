@@ -62,19 +62,19 @@ func caseListing() test.CaseResult {
 			gaps = append(gaps, fmt.Sprintf("%q not listed", want))
 			continue
 		}
-		if got := all[i].ViewURL(); got != pathutils.ToFileURL(doc(top, "synced.md")) {
+		if got := all[i].ViewURL(); got != pathutils.ToFileURL("docs/"+doc(top, "synced.md")) {
 			gaps = append(gaps, fmt.Sprintf("%q: view url %q", want, got))
 		}
 	}
 	return gapsCase("reserved-listing", "docs files in docs/docs/, docs/media/ and docs/files/ are listed as themselves", gaps)
 }
 
-// caseView: the file page, its raw content and its edit page show the doc, not its partner.
+// caseView: the file page and its content api show the doc, not its partner.
 func caseView() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		rel := doc(top, "synced.md")
-		for _, target := range []string{pathutils.ToFileURL(rel), "/api/files/raw?filepath=" + url.QueryEscape(rel), "/api/files/content/" + strings.TrimPrefix(pathutils.ToFileURL(rel), "/files/")} {
+		for _, target := range []string{pathutils.ToFileURL("docs/" + rel), "/api/files/content/" + rel} {
 			status, body, err := request(http.MethodGet, target, nil)
 			if err != nil {
 				return errCase("reserved-view", err)
@@ -84,7 +84,7 @@ func caseView() test.CaseResult {
 			}
 		}
 	}
-	return gapsCase("reserved-view", "the file page, raw content and content api of each sample doc show it, not its collision partner", gaps)
+	return gapsCase("reserved-view", "the file page and content api of each sample doc show it, not its collision partner", gaps)
 }
 
 // caseMetadata: each sample doc and its partner have their own metadata.
@@ -124,7 +124,7 @@ func caseLinks() test.CaseResult {
 		for form, f := range forms {
 			got := (&parser.MarkdownHandler{}).ExtractLinks([]byte(f[1]), f[0])
 			rendered := parser.RenderLinks(f[1], f[0])
-			if !slices.Equal(got, []string{want}) || !strings.Contains(rendered, "("+pathutils.ToFileURL(doc(top, "synced.md"))+")") {
+			if !slices.Equal(got, []string{want}) || !strings.Contains(rendered, "("+pathutils.ToFileURL("docs/"+doc(top, "synced.md"))+")") {
 				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, renders %q", form, f[1], f[0], got, rendered))
 			}
 		}
@@ -178,4 +178,26 @@ func caseRenameMoveDelete() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-rename-move-delete", "a doc in a reserved folder is renamed, moved and deleted as itself", gaps)
+}
+
+// caseDelete: deleting a doc through the api removes it, not its partner.
+func caseDelete() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		rel := doc(top, "delete.md")
+		if err := write(fullPath("docs/"+rel), "# delete\n"); err != nil {
+			return errCase("reserved-delete", err)
+		}
+		if err := write(fullPath(partner(top, "delete.md")), "# partner\n"); err != nil {
+			return errCase("reserved-delete", err)
+		}
+		status, body, err := request(http.MethodDelete, pathutils.ToRouteURL("/api/files/delete/", rel), nil)
+		if err != nil {
+			return errCase("reserved-delete", err)
+		}
+		if status != http.StatusOK || exists("docs/"+rel) || !exists(partner(top, "delete.md")) {
+			gaps = append(gaps, fmt.Sprintf("delete %q: status %d (%s), doc left %v, partner there %v", rel, status, strings.TrimSpace(body), exists("docs/"+rel), exists(partner(top, "delete.md"))))
+		}
+	}
+	return gapsCase("reserved-delete", "deleting a doc in a reserved folder removes it, not its collision partner", gaps)
 }

@@ -243,7 +243,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessageWithLink(render.StatusOK,
-		kind.savedMsg, pathutils.ToFileURL(filezpath), translation.SprintfForRequest(lang, "view file")))
+		kind.savedMsg, pathutils.ToFileURL(pathutils.ToWithPrefix(filezpath)), translation.SprintfForRequest(lang, "view file")))
 }
 
 // @Summary Add index/book entry
@@ -366,7 +366,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -480,7 +480,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
@@ -566,7 +566,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
-		pathutils.ToFileURL(filePath),
+		pathutils.ToFileURL(pathutils.ToWithPrefix(filePath)),
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 
@@ -624,7 +624,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
-		pathutils.ToFileURL(markdownFileName), markdownFileName)
+		pathutils.ToFileURL(pathutils.ToWithPrefix(markdownFileName)), markdownFileName)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": markdownFileName}, html)
 }
 

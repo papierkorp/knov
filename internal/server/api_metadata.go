@@ -254,6 +254,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
+	filePath = pathutils.DocsPath(filePath)
 
 	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
@@ -649,7 +650,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "successfully moved file via metadata: %s -> %s", filePath, newpath)
 	newRelPath := pathutils.ToRelative(newpath)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
-	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newRelPath))
+	w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.ToWithPrefix(newRelPath)))
 	w.WriteHeader(http.StatusOK)
 }
 

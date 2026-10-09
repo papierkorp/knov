@@ -207,7 +207,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	}
 
 	// build return URL including the header anchor so cancel/save land in the right spot
-	returnURL := pathutils.ToFileURL(filePath)
+	returnURL := pathutils.ToFileURL(pathutils.ToWithPrefix(filePath))
 	if anchor := contentHandler.FindMarkdownTableAnchor(filePath, tableIndex); anchor != "" {
 		returnURL += "#" + anchor
 	}

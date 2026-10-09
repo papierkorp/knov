@@ -82,7 +82,7 @@ func pathsToFiles(paths []string, prefix string) []File {
 
 // ViewURL returns the correct browser URL for viewing this file
 func (f File) ViewURL() string {
-	return pathutils.ToFileURL(pathutils.ToRelative(f.Path))
+	return pathutils.ToFileURL(f.Path)
 }
 
 // GetAllPhysicalFiles returns only files that exist on the filesystem

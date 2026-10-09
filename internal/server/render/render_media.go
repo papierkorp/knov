@@ -372,7 +372,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 		for _, link := range metadata.LinksToHere {
 			linkPath := pathutils.ToRelative(link)
 			displayText := GetLinkDisplayText(linkPath)
-			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(linkPath), linkPath, displayText)
+			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(pathutils.DocsPath(linkPath)), linkPath, displayText)
 		}
 		html.WriteString(`</ul>`)
 	}

@@ -401,27 +401,40 @@ func escapeRelPath(rel string) string {
 	return strings.Join(parts, "/")
 }
 
-// ToFileURL returns a browser-safe URL for viewing a file.
-func ToFileURL(rel string) string { return "/files/" + escapeRelPath(rel) }
+// docsURLRel is the part of a docs metadata path ("docs/a/b.md") after the docs/ prefix, which
+// is how the /files/ routes name a docs file - taken literally, so "docs/media/x.md" is
+// /files/media/x.md.
+func docsURLRel(docsPath string) string {
+	return strings.TrimPrefix(strings.TrimPrefix(filepath.ToSlash(docsPath), "/"), "docs/")
+}
 
-// ToFileEditURL returns a browser-safe URL for editing a file.
-func ToFileEditURL(rel string) string { return "/files/edit/" + escapeRelPath(rel) }
+// ToFileURL returns a browser-safe URL for viewing a docs file (docsPath is its docs/ path).
+func ToFileURL(docsPath string) string { return "/files/" + escapeRelPath(docsURLRel(docsPath)) }
+
+// ToFileEditURL returns a browser-safe URL for editing a docs file.
+func ToFileEditURL(docsPath string) string {
+	return "/files/edit/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToMediaURL returns a browser-safe URL for viewing a media file.
 func ToMediaURL(rel string) string { return "/media/" + escapeRelPath(rel) }
 
 // ToFileEditTableURL returns a browser-safe URL for editing a file's table.
-func ToFileEditTableURL(rel string) string { return "/files/edittable/" + escapeRelPath(rel) }
+func ToFileEditTableURL(docsPath string) string {
+	return "/files/edittable/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToFileHistoryURL returns a browser-safe URL for viewing a file's history.
-func ToFileHistoryURL(rel string) string { return "/files/history/" + escapeRelPath(rel) }
+func ToFileHistoryURL(docsPath string) string {
+	return "/files/history/" + escapeRelPath(docsURLRel(docsPath))
+}
 
 // ToRouteURL returns a browser-safe URL for a route that takes a path after its prefix
 // (route ends with "/"), e.g. ToRouteURL("/api/files/delete/", rel) - for api routes, the
 // /files/ and /media/ page urls have their own To*URL.
 func ToRouteURL(route, rel string) string { return route + escapeRelPath(rel) }
 
-// FileFromURL returns the docs-relative path of the file a page URL shows (the reverse of
+// FileFromURL returns the docs/ path of the file a page URL shows (the reverse of
 // ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page
 // or a path with a ".." segment.
 func FileFromURL(rawURL string) string {
@@ -433,10 +446,10 @@ func FileFromURL(rawURL string) string {
 	for _, prefix := range []string{ToFileEditURL(""), ToFileEditTableURL(""), ToFileHistoryURL(""), ToFileURL("")} {
 		if rel, ok := strings.CutPrefix(u.Path, prefix); ok {
 			// a ".." segment would point outside the docs folder
-			if slices.Contains(strings.Split(rel, "/"), "..") {
+			if rel == "" || slices.Contains(strings.Split(rel, "/"), "..") {
 				return ""
 			}
-			return rel
+			return DocsPath(rel)
 		}
 	}
 	return ""

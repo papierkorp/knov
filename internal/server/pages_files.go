@@ -19,7 +19,8 @@ import (
 )
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
+	rel := strings.TrimPrefix(r.URL.Path, "/files/")
+	filePath := pathutils.DocsPath(rel)
 	fullPath := pathutils.ToDocsPath(filePath)
 	ext := strings.ToLower(filepath.Ext(fullPath))
 
@@ -42,7 +43,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// show the requested view (?view=) of the file, e.g. a tracker's live stats or the raw source
-	fileContent.HTML = render.RenderFileView(pathutils.ToRelative(filePath), r.URL.Query().Get("view"), fileContent.HTML)
+	fileContent.HTML = render.RenderFileView(rel, r.URL.Query().Get("view"), fileContent.HTML)
 
 	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("Content-Type", "text/html")
@@ -51,7 +52,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileViewTemplateData(filepath.Base(filePath), filePath, fileContent)
+	data := thememanager.NewFileViewTemplateData(filepath.Base(rel), rel, fileContent)
 
 	err = tm.Render(w, "fileview", data)
 	if err != nil {
@@ -61,7 +62,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
-	filePath := pathutils.ToRelative(strings.TrimPrefix(r.URL.Path, "/files/edit/"))
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
 	sectionID := r.URL.Query().Get("section")
 	editorType := r.URL.Query().Get("editor")
 
@@ -160,13 +161,14 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 
 	if strings.HasPrefix(r.URL.Path, "/files/history/") {
-		filePath := strings.TrimPrefix(r.URL.Path, "/files/history/")
+		rel := strings.TrimPrefix(r.URL.Path, "/files/history/")
 
-		if filePath == "" {
+		if rel == "" {
 			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 			return
 		}
 
+		filePath := pathutils.DocsPath(rel)
 		fullPath := pathutils.ToFullPath(filePath)
 		selectedCommit := r.URL.Query().Get("commit")
 
@@ -197,7 +199,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 			selectedCommit = selectedCommit[:7]
 		}
 
-		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
+		data := thememanager.NewHistoryTemplateData(rel, currentCommit, selectedCommit, versions, false)
 		data.Data.CompareFrom = r.URL.Query().Get("from")
 		data.Data.CompareTo = r.URL.Query().Get("to")
 		_, statErr := os.Stat(pathutils.ToFullPath(filePath))

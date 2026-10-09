@@ -188,7 +188,7 @@ func RenderSearchHistoryResults(results []git.GitHistoryFile, query string) stri
 	b.WriteString(`<ul class="search-history-list">`)
 	for _, f := range results {
 		fmt.Fprintf(&b, `<li class="search-history-item"><a class="search-history-name" href="%s?commit=%s">%s</a><span class="search-history-meta">%s &mdash; %s</span></li>`,
-			pathutils.ToFileHistoryURL(f.Path),
+			pathutils.ToFileHistoryURL(pathutils.ToWithPrefix(f.Path)),
 			html.EscapeString(f.Commit),
 			html.EscapeString(f.Name),
 			html.EscapeString(configmanager.FormatDateTime(f.Date)),

@@ -76,7 +76,7 @@ func FileViewLinks(relPath, viewID string) []FileViewLink {
 	links := make([]FileViewLink, len(views))
 	for i, v := range views {
 		links[i] = FileViewLink{v.id, translation.SprintfForRequest(lang, v.label), v.icon,
-			pathutils.ToFileURL(relPath) + "?view=" + v.id, v.id == active.id}
+			pathutils.ToFileURL(pathutils.DocsPath(relPath)) + "?view=" + v.id, v.id == active.id}
 	}
 	return links
 }
