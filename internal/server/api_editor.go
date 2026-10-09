@@ -199,7 +199,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "missing filepath"))
 		return
 	}
-	filezpath = pathutils.DocsPath(filezpath)
+	filezpath = pathutils.DocsPath(filezpath).String()
 
 	kind := entryEditorKindFor(bookMode, lang)
 
@@ -324,7 +324,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	content := r.FormValue("content")
 	todoMode := r.FormValue("mode") == "todo"
@@ -420,7 +420,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	headersJSON := r.FormValue("headers")
 	rowsJSON := r.FormValue("rows")
@@ -559,7 +559,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	if sectionID == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"))

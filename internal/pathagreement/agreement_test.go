@@ -313,7 +313,7 @@ func dashboardMove(t *testing.T, loc string) string {
 	if p := got.Widgets[1].Config.FileContent.FilePath; p != rel(decoy) {
 		return fmt.Sprintf("the widget of %s became %s", decoy, p)
 	}
-	return back(loc, pathutils.DocsPath(got.Widgets[0].Config.FileContent.FilePath))
+	return back(loc, pathutils.DocsPath(got.Widgets[0].Config.FileContent.FilePath).String())
 }
 
 // kanbanAncestorSelect offers the file at loc as ancestor in the select and filters the cards with

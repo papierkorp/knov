@@ -20,7 +20,7 @@ import (
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	rel := strings.TrimPrefix(r.URL.Path, "/files/")
-	filePath := pathutils.DocsPath(rel)
+	filePath := pathutils.DocsPath(rel).String()
 	fullPath := pathutils.ToDocsPath(filePath)
 	ext := strings.ToLower(filepath.Ext(fullPath))
 
@@ -168,7 +168,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		filePath := pathutils.DocsPath(rel)
+		filePath := pathutils.DocsPath(rel).String()
 		fullPath := pathutils.ToFullPath(filePath)
 		selectedCommit := r.URL.Query().Get("commit")
 

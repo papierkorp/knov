@@ -92,7 +92,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath).String()
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
 			continue
@@ -110,7 +110,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath).String()
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -164,7 +164,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath).String()
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -196,7 +196,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath)
+		normalizedPath := pathutils.DocsPath(rawPath).String()
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
 			continue
@@ -670,7 +670,7 @@ func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
 func relativeDocLink(docPath, target string) string {
 	if pathutils.IsMedia(target) {
 		// keep the media/ segment, so it doesn't depend on the media fallback of LinkTarget
-		return pathutils.RelativeLink(docPath, pathutils.DocsPath(target))
+		return pathutils.RelativeLink(docPath, pathutils.DocsPath(target).String())
 	}
 	relative := pathutils.RelativeLink(docPath, target)
 	if !pathutils.IsMedia(target) && parser.WrittenAsMedia(relative) {

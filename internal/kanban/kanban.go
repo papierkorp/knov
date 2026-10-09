@@ -128,7 +128,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 		fileSizes = make(map[string]int64, len(matched))
 		for col := range cardsByStatus {
 			for _, c := range cardsByStatus[col] {
-				if fi, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(c.FilePath))); err == nil {
+				if fi, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(c.FilePath).String())); err == nil {
 					fileSizes[c.FilePath] = fi.Size()
 				}
 			}
@@ -227,7 +227,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 // target); pass "" to fall back to guessing the board from the file's own location (used when
 // the caller doesn't know which board triggered the move).
 func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath string, err error) {
-	normalizedPath := pathutils.DocsPath(filePath) // card paths are docs-relative
+	normalizedPath := pathutils.DocsPath(filePath).String() // card paths are docs-relative
 	newFilePath = filePath
 
 	// unlocked read, only to learn the file's current folder (to decide whether a physical
@@ -278,7 +278,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 		}
 	}
 
-	normalizedNewPath := pathutils.DocsPath(newFilePath)
+	normalizedNewPath := pathutils.DocsPath(newFilePath).String()
 	var found bool
 
 	// MetaDataMutate holds the path's write lock across this whole read-modify-write, so a
@@ -330,7 +330,7 @@ func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string,
 	base := strings.TrimSuffix(clean, ext)
 	candidate := dir + "/" + name
 	for n := 2; n <= maxMoveUniqueAttempts; n++ {
-		err = files.MoveFileNoRefresh(key, pathutils.DocsPath(oldPath), pathutils.DocsPath(candidate))
+		err = files.MoveFileNoRefresh(key, pathutils.DocsPath(oldPath).String(), pathutils.DocsPath(candidate).String())
 		if err == nil || !errors.Is(err, files.ErrMoveTargetExists) {
 			return candidate, err
 		}
@@ -450,7 +450,7 @@ func cardFromFile(file files.File, status string) Card {
 		Tags:       meta.Tags,
 		CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
 		LastEdited: meta.LastEdited.Format("2006-01-02"),
-		Excerpt:    Excerpt(pathutils.ToDocsPath(pathutils.DocsPath(relPath)), ExcerptRunes),
+		Excerpt:    Excerpt(pathutils.ToDocsPath(pathutils.DocsPath(relPath).String()), ExcerptRunes),
 	}
 	if !meta.KanbanAddedAt.IsZero() {
 		card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")
@@ -705,6 +705,6 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 
 // BoardFolderMissing reports whether a configured board's folder doesn't exist (e.g. renamed).
 func BoardFolderMissing(folderPath string) bool {
-	_, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(folderPath)))
+	_, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(folderPath).String()))
 	return os.IsNotExist(err)
 }

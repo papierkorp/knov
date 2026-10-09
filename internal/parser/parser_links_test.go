@@ -335,7 +335,7 @@ func renderedTarget(out string) string {
 	if rel, ok := strings.CutPrefix(u.Path, "/media/"); ok {
 		return "media/" + rel
 	}
-	return pathutils.FileFromURL(u.String())
+	return pathutils.FileFromURL(u.String()).String()
 }
 
 // a ":" is only encoded before the first "/", where it would read as a scheme
@@ -484,7 +484,7 @@ func TestRenderDotFolderLinks(t *testing.T) {
 }
 
 // fileURL is the /files/ url of the docs-relative path rel
-func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel)) }
+func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel).String()) }
 
 // a "|" in a link path written into a table row is escaped (GFM ends the cell at an unescaped one),
 // in other lines it stays - and both read back as the same path

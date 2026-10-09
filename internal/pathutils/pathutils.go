@@ -100,17 +100,62 @@ func parsePath(inputPath string) *PathInfo {
 	}
 }
 
+// MetaPath is the metadata path of a docs or media file or folder: always "docs/..." or
+// "media/...", what File.Path holds and the metadata, search and filter keys are. Build it with
+// DocsPath, MediaPath or ParseMeta - never convert a string to it, no function guesses its kind.
+type MetaPath string
+
+// DocsRel is a path relative to the docs folder ("projects/a.md", no "docs/" prefix, a folder
+// called docs, media or files keeps its name). Build it with NewDocsRel or MetaPath.DocsRel.
+type DocsRel string
+
 // MediaPath is the metadata path of the media file at the media-relative path rel.
-func MediaPath(rel string) string {
-	return "media/" + strings.TrimPrefix(rel, "/")
+func MediaPath(rel string) MetaPath {
+	return MetaPath("media/" + strings.TrimPrefix(rel, "/"))
 }
+
+// NewDocsRel is the docs-relative path rel taken literally (a leading "/" dropped) - for input
+// that is a docs-relative path by definition: a /files/<rel> url, a docs listing, a file picker.
+func NewDocsRel(rel string) DocsRel {
+	return DocsRel(strings.TrimPrefix(rel, "/"))
+}
+
+// ParseMeta reads s as a metadata path - it has to be one already ("docs/..." or "media/...", see
+// IsMetaPath), false otherwise. For input that carries a metadata path, like a query param.
+func ParseMeta(s string) (MetaPath, bool) {
+	if !IsMetaPath(s) {
+		return "", false
+	}
+	return MetaPath(s), true
+}
+
+func (m MetaPath) String() string { return string(m) }
+
+// IsMedia reports whether m is in the media folder.
+func (m MetaPath) IsMedia() bool { return strings.HasPrefix(string(m), "media/") }
+
+// DocsRel is m relative to the docs folder, false for a media path.
+func (m MetaPath) DocsRel() (DocsRel, bool) {
+	rel, ok := strings.CutPrefix(string(m), "docs/")
+	return DocsRel(rel), ok
+}
+
+// MediaRel is m relative to the media folder, false for a docs path.
+func (m MetaPath) MediaRel() (string, bool) {
+	return strings.CutPrefix(string(m), "media/")
+}
+
+func (r DocsRel) String() string { return string(r) }
+
+// MetaPath is the docs file r.
+func (r DocsRel) MetaPath() MetaPath { return DocsPath(string(r)) }
 
 // DocsPath is the docs file or folder at the docs-relative path rel (user input, a /files/<rel>
 // url, a docs listing), taken literally: "media/x.md" is data/docs/media/x.md, not a media file.
 // A docs-relative path goes through it before any other function here - they read a leading
 // docs/, media/ or files/ as prefix.
-func DocsPath(rel string) string {
-	return "docs/" + strings.TrimPrefix(rel, "/")
+func DocsPath(rel string) MetaPath {
+	return MetaPath("docs/" + strings.TrimPrefix(rel, "/"))
 }
 
 // IsMetaPath reports whether p is the metadata path of an existing file or folder: "docs/..." or
@@ -438,7 +483,7 @@ func ToRouteURL(route, rel string) string { return route + escapeRelPath(rel) }
 // FileFromURL returns the docs/ path of the file a page URL shows (the reverse of
 // ToFileURL / ToFileEditURL / ToFileEditTableURL / ToFileHistoryURL), or "" for any other page
 // or a path with a ".." segment.
-func FileFromURL(rawURL string) string {
+func FileFromURL(rawURL string) MetaPath {
 	u, err := url.Parse(rawURL)
 	if err != nil || strings.HasPrefix(u.Path, "/files/new/") {
 		return ""

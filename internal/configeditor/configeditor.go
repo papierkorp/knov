@@ -73,7 +73,7 @@ func (k Kind) MigrateReservedIDs() error {
 		if !ok || !slices.Contains([]string{"docs", "media", "files"}, folder) || rest == "" {
 			continue
 		}
-		if fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(id)))) || !fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(rest)))) {
+		if fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(id)).String())) || !fileExists(pathutils.ToDocsPath(pathutils.DocsPath(k.PairedPath(rest)).String())) {
 			continue
 		}
 		if existing, err := configStorage.Get(k.prefix + rest); err != nil || existing != nil {
@@ -134,7 +134,7 @@ func (k Kind) Set(id string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id))); err != nil {
+	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id)).String()); err != nil {
 		return err
 	}
 	return configStorage.Set(k.prefix+id, data)
@@ -161,7 +161,7 @@ func (k Kind) WritePaired(id string, markdown []byte) error {
 	if err != nil {
 		return err
 	}
-	pairedPath := pathutils.DocsPath(k.PairedPath(id))
+	pairedPath := pathutils.DocsPath(k.PairedPath(id)).String()
 	fullPath := pathutils.ToDocsPath(pairedPath)
 
 	if err := contentStorage.WriteFile(fullPath, markdown, 0644); err != nil {
@@ -186,7 +186,7 @@ func (k Kind) Delete(id string) error {
 		return err
 	}
 	key := k.prefix + id
-	pairedPath := pathutils.DocsPath(k.PairedPath(id))
+	pairedPath := pathutils.DocsPath(k.PairedPath(id)).String()
 	fullPath := pathutils.ToDocsPath(pairedPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete %s paired file %s: %v", k.label(), fullPath, err)

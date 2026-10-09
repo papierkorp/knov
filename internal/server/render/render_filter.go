@@ -76,7 +76,7 @@ func RenderFilterForm(opts FilterFormOpts) string {
 			translation.SprintfForRequest(configmanager.GetLanguage(), "preview results")))
 		cancelURL := "/"
 		if opts.IsEdit {
-			cancelURL = pathutils.ToFileURL(pathutils.DocsPath(filter.FilterIndexPath(opts.FilterID)))
+			cancelURL = pathutils.ToFileURL(pathutils.DocsPath(filter.FilterIndexPath(opts.FilterID)).String())
 		}
 		html.WriteString(fmt.Sprintf(`<button type="button" data-href="%s" onclick="window.location.href=this.dataset.href" class="btn-secondary">%s</button>`,
 			cancelURL,

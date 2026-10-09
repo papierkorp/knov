@@ -37,7 +37,7 @@ func wantsHTML(r *http.Request) bool {
 // viewedFile returns the docs-relative path of the file shown on the page an htmx request came
 // from (read from the HX-Current-URL header), or "".
 func viewedFile(r *http.Request) string {
-	return pathutils.FileFromURL(r.Header.Get("HX-Current-URL"))
+	return pathutils.FileFromURL(r.Header.Get("HX-Current-URL")).String()
 }
 
 // metaPathParam reads the param name naming an existing file: its metadata path ("docs/..." or

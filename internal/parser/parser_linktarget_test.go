@@ -42,7 +42,7 @@ func renderedLinkTarget(content, doc string) string {
 			return "media/" + rel
 		}
 		if rel := pathutils.FileFromURL(u.String()); rel != "" || u.Path == "/files/" {
-			return pathutils.ToWithPrefix(rel)
+			return pathutils.ToWithPrefix(rel.String())
 		}
 		return u.Path
 	}

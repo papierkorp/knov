@@ -54,11 +54,11 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		data-status="%s"
 		data-prefix="%s"
 		ondragstart="kanbanDragStart(event)">`,
-		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(pathutils.DocsPath(card.FilePath)), template.HTMLEscapeString(card.Status), prefix)
+		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(pathutils.DocsPath(card.FilePath).String()), template.HTMLEscapeString(card.Status), prefix)
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
-	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath))), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
+	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath).String())), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 	if len(visibleTags) > 0 {
 		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
@@ -239,7 +239,7 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 	fmt.Fprintf(&html, `<tr data-search="%s" data-tags="|%s|" data-title="%s" data-createdat="%s" data-lastedited="%s">`,
 		template.HTMLEscapeString(searchBlob), template.HTMLEscapeString(strings.Join(visibleTags, "|")), template.HTMLEscapeString(strings.ToLower(displayTitle)), template.HTMLEscapeString(card.CreatedAt), template.HTMLEscapeString(card.LastEdited))
 
-	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath))), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
+	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath).String())), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 
 	html.WriteString(`<td>`)
 	if len(visibleTags) > 0 {
@@ -308,7 +308,7 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 		if p == fileFilter { // the cards use docs-relative paths, the option values the metadata path
 			selected = ` selected`
 		}
-		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, template.HTMLEscapeString(pathutils.DocsPath(p)), template.HTMLEscapeString(p), selected, template.HTMLEscapeString(filepath.Base(p)))
+		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, template.HTMLEscapeString(pathutils.DocsPath(p).String()), template.HTMLEscapeString(p), selected, template.HTMLEscapeString(filepath.Base(p)))
 	}
 	html.WriteString(`</select>`)
 
@@ -427,7 +427,7 @@ func RenderKanbanIssues(issues []kanban.Issue) string {
 			fixable++
 		}
 		fmt.Fprintf(&html, `<tr><td><a href="%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
-			template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(issue.Path))), template.HTMLEscapeString(issue.Path), problems[issue.Kind],
+			template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(issue.Path).String())), template.HTMLEscapeString(issue.Path), problems[issue.Kind],
 			template.HTMLEscapeString(strings.Join(issue.Tags, ", ")), fix)
 	}
 	html.WriteString(`</tbody></table>`)

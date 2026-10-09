@@ -176,7 +176,7 @@ func renderedTargets(out string) []string {
 		if rel, ok := strings.CutPrefix(u.Path, "/media/"); ok {
 			targets = append(targets, "media/"+rel)
 		} else if rel := pathutils.FileFromURL(u.String()); rel != "" {
-			targets = append(targets, pathutils.ToWithPrefix(rel))
+			targets = append(targets, rel.String())
 		}
 	}
 	return targets

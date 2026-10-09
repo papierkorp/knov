@@ -242,7 +242,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
 	}
 	notify.SetHeader(w, notify.LevelSuccess, msg)
-	writeResponse(w, r, map[string]string{"filepath": pathutils.DocsPath(newFilePath), "status": newStatus}, "")
+	writeResponse(w, r, map[string]string{"filepath": pathutils.DocsPath(newFilePath).String(), "status": newStatus}, "")
 }
 
 // @Summary Save card order for a kanban column

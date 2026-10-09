@@ -79,7 +79,7 @@ window.fetch = function(url, opts) {
 	}
 	defer cancel()
 
-	sourceSel := fmt.Sprintf(`[data-filepath=%q]`, pathutils.DocsPath(testPath(alphaFile)))
+	sourceSel := fmt.Sprintf(`[data-filepath=%q]`, pathutils.DocsPath(testPath(alphaFile)).String())
 	targetColSel := "#kanban-col-inprogress"
 
 	var movedIntoTarget bool

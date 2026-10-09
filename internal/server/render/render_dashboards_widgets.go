@@ -54,7 +54,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
 	}
 
-	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(config.FilePath))
+	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(config.FilePath).String())
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get file content: %v", err)

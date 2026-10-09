@@ -431,7 +431,7 @@ func (r *knovNodeRenderer) renderTable(w util.BufWriter, source []byte, node ast
 	relPath := pathutils.ToRelative(r.filePath)
 	fmt.Fprintf(w,
 		`<div id="table-component-%d" hx-get="/api/components/table?filepath=%s&tableindex=%d" hx-trigger="load" hx-swap="outerHTML"></div>`,
-		r.tableIdx, url.QueryEscape(pathutils.DocsPath(relPath)), r.tableIdx,
+		r.tableIdx, url.QueryEscape(pathutils.DocsPath(relPath).String()), r.tableIdx,
 	)
 	r.tableIdx++
 	return ast.WalkSkipChildren, nil
@@ -719,7 +719,7 @@ func (r *knovNodeRenderer) headerButtons() string {
 	if configmanager.PDFShowHeaderButton.Get() {
 		pdfBtn = fmt.Sprintf(
 			`<a href="/api/files/export/pdf?filepath=%s&section=%s" class="header-pdf-btn" title="%s"><i class="fa fa-file-pdf"></i></a>`,
-			url.QueryEscape(pathutils.DocsPath(r.relPath)), url.QueryEscape(r.headingID),
+			url.QueryEscape(pathutils.DocsPath(r.relPath).String()), url.QueryEscape(r.headingID),
 			translation.SprintfForRequest(lang, "export section to pdf"),
 		)
 	}
@@ -728,7 +728,7 @@ func (r *knovNodeRenderer) headerButtons() string {
 	}
 	editBtn := fmt.Sprintf(
 		`<a href="%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
-		pathutils.ToFileEditURL(pathutils.DocsPath(r.relPath)), url.QueryEscape(r.headingID),
+		pathutils.ToFileEditURL(pathutils.DocsPath(r.relPath).String()), url.QueryEscape(r.headingID),
 		translation.SprintfForRequest(lang, "edit section"),
 	)
 	return pdfBtn + editBtn
@@ -798,7 +798,7 @@ func (s *sectionWriter) closeSection() {
 	if s.editID != "" && s.relPath != PathlessRender && s.editableSections {
 		editBtn = fmt.Sprintf(
 			`<a href="%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
-			pathutils.ToFileEditURL(pathutils.DocsPath(s.relPath)), url.QueryEscape(s.editID),
+			pathutils.ToFileEditURL(pathutils.DocsPath(s.relPath).String()), url.QueryEscape(s.editID),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 		)

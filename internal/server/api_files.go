@@ -139,7 +139,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to get file content"
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
-	filePath := pathutils.DocsPath(strings.TrimPrefix(r.URL.Path, "/api/files/content/"))
+	filePath := pathutils.DocsPath(strings.TrimPrefix(r.URL.Path, "/api/files/content/")).String()
 	fullPath := pathutils.ToDocsPath(filePath)
 
 	content, err := files.GetFileContent(fullPath)
@@ -354,7 +354,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	// new files need a markdown extension, a dot in the name (e.g. "v1.2 notes") is not one
 	if _, err := os.Stat(pathutils.ToDocsPath(filePath)); os.IsNotExist(err) && !parser.IsMarkdownExtension(filePath) {
@@ -747,7 +747,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	currentPath := pathutils.DocsPath(currentRel)
+	currentPath := pathutils.DocsPath(currentRel).String()
 
 	// get new name from form (can be full path or just filename)
 	newName := r.FormValue("name")
@@ -757,7 +757,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// use the new name as the new path (allows for directory moves)
-	newPath := pathutils.DocsPath(filepath.Clean(newName))
+	newPath := pathutils.DocsPath(filepath.Clean(newName)).String()
 
 	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
@@ -814,7 +814,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
-	currentPath := pathutils.DocsPath(currentRel)
+	currentPath := pathutils.DocsPath(currentRel).String()
 
 	targetParent := r.FormValue("target")
 	if targetParent == "" {
@@ -830,7 +830,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newRel := filepath.Clean(targetParent + "/" + folderName)
-	newPath := pathutils.DocsPath(newRel)
+	newPath := pathutils.DocsPath(newRel).String()
 
 	if newRel == currentRel {
 		writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
@@ -924,7 +924,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	logging.LogInfo(logging.KeyApp, "deleting file: %s", filePath)
 
@@ -971,7 +971,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
-	folderPath = pathutils.DocsPath(folderPath)
+	folderPath = pathutils.DocsPath(folderPath).String()
 
 	fullPath := pathutils.ToDocsPath(folderPath)
 	info, err := os.Stat(fullPath)
@@ -1101,7 +1101,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(filePath))
+	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(filePath).String())
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusNotFound, err.Error())

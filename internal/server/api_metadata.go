@@ -249,7 +249,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath)
+	filePath = pathutils.DocsPath(filePath).String()
 
 	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)

@@ -35,7 +35,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		return errCase(name, err)
 	}
 	defer cleanup()
-	defer os.RemoveAll(pathutils.ToDocsPath(pathutils.DocsPath(syncDir)))
+	defer os.RemoveAll(pathutils.ToDocsPath(pathutils.DocsPath(syncDir).String()))
 
 	git.Push()
 	if !waitForBranch(bareDir, branch, 15*time.Second) {
@@ -65,7 +65,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		link := parser.Link{Kind: parser.LinkMarkdown, Path: "/" + rel}
 		linker += "- [x](" + link.Dest() + ")\n"
 		names = append(names, rel)
-		targets = append(targets, pathutils.DocsPath(rel))
+		targets = append(targets, pathutils.DocsPath(rel).String())
 	}
 	linkerRel := syncDir + "/linker.md"
 	if err := writeSynced(cloneDir, linkerRel, linker); err != nil {
@@ -91,7 +91,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 
 	var gaps []string
 	for _, rel := range names {
-		if _, err := os.Stat(pathutils.ToFullPath(pathutils.DocsPath(rel))); err != nil {
+		if _, err := os.Stat(pathutils.ToFullPath(pathutils.DocsPath(rel).String())); err != nil {
 			gaps = append(gaps, "not pulled: "+rel)
 		}
 	}
@@ -99,7 +99,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		return errCase(name, fmt.Errorf("rebuild metadata: %w", err))
 	}
 	files.RefreshCaches()
-	m, err := files.MetaDataGet(pathutils.DocsPath(linkerRel))
+	m, err := files.MetaDataGet(pathutils.DocsPath(linkerRel).String())
 	if err != nil || m == nil {
 		return errCase(name, fmt.Errorf("no metadata for the pulled linking doc (%v)", err))
 	}

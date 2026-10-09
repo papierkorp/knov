@@ -467,7 +467,7 @@ func caseMoveCardAPI() test.CaseResult {
 	}
 	defer func() {
 		_ = os.Remove(pathutils.ToDocsPath(card))
-		_ = files.MetaDataDelete(pathutils.DocsPath(card))
+		_ = files.MetaDataDelete(pathutils.DocsPath(card).String())
 	}()
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()
@@ -484,13 +484,13 @@ func caseMoveCardAPI() test.CaseResult {
 		return resp.StatusCode, string(b)
 	}
 	bareStatus, _ := post(card)
-	status, body := post(pathutils.DocsPath(card))
+	status, body := post(pathutils.DocsPath(card).String())
 	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
 		return errCase(name, err)
 	}
 	success := bareStatus == http.StatusBadRequest && status == http.StatusOK &&
-		strings.Contains(body, pathutils.DocsPath(card)) && containsPath(columnPaths(cols, "inprogress"), card)
+		strings.Contains(body, pathutils.DocsPath(card).String()) && containsPath(columnPaths(cols, "inprogress"), card)
 	cr := test.CaseResult{
 		Name:     name,
 		Expected: "docs-relative filepath -> 400, metadata path -> 200 naming the card by it and the card in inprogress",

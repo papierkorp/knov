@@ -239,7 +239,7 @@ func FilesLinkPath(metaPath string) string {
 // path is a same-page anchor.
 func FileLinkDest(path, anchor string, kind LinkKind) string {
 	if kind != LinkWiki && path != "" {
-		path = FilesLinkPath(pathutils.DocsPath(path))
+		path = FilesLinkPath(pathutils.DocsPath(path).String())
 	} else {
 		path = DocsWikiPath(path)
 	}
@@ -781,7 +781,7 @@ func linkTarget(p string, l Link, joined bool) string {
 // docsOrMediaTarget is the docs file p (a docs-root path) when it exists, else the media file of
 // that name when that exists, else the (missing) docs file.
 func docsOrMediaTarget(p string) string {
-	docs := pathutils.DocsPath(p)
+	docs := pathutils.DocsPath(p).String()
 	if _, err := os.Stat(pathutils.ToFullPath(docs)); err == nil {
 		return docs
 	}

@@ -52,6 +52,11 @@ var guardRules = []guardRule{
 		},
 	},
 	{
+		name: "converting a string to pathutils.MetaPath / DocsRel (use DocsPath, MediaPath, ParseMeta, NewDocsRel)",
+		re:   regexp.MustCompile(`pathutils\.(?:MetaPath|DocsRel)\(`),
+		exts: []string{".go"},
+	},
+	{
 		name: "hand-rolled %20 encoding",
 		re:   regexp.MustCompile(`(?i)replace(?:all)?\([^)]*%20`),
 		exts: []string{".go", ".js", ".gohtml"},

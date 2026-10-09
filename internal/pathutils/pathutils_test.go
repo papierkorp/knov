@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 // a docs-relative path starting with a prefix name is a docs path through DocsPath
 func TestDocsPath(t *testing.T) {
 	for _, rel := range []string{"media/x.md", "docs/x.md", "files/x.md", "media", "a/b.md", "media/sub/"} {
-		p := DocsPath(rel)
+		p := DocsPath(rel).String()
 		if got, want := ToDocsPath(p), filepath.Join(DocsRoot(), rel); got != want {
 			t.Errorf("ToDocsPath(DocsPath(%q)) = %q, want %q", rel, got, want)
 		}
@@ -241,7 +241,7 @@ func TestPathContains(t *testing.T) {
 func TestCheckNewDocsPath(t *testing.T) {
 	dataName := filepath.Base(configmanager.GetAppConfig().DataPath)
 	for _, rel := range []string{"x.md", "a/files/x.md", "mediafiles/x.md", "docs/x.md", "media/x.md", "files/a/x.md", "media", dataName + "/x.md"} {
-		p := DocsPath(rel)
+		p := DocsPath(rel).String()
 		if err := CheckNewDocsPath(p); err != nil {
 			t.Errorf("%s should be allowed: %v", p, err)
 		}
@@ -335,8 +335,37 @@ func TestFileFromURL(t *testing.T) {
 		{"", ""},
 	}
 	for _, c := range cases {
-		if got := FileFromURL(c.url); got != c.want {
+		if got := FileFromURL(c.url); got.String() != c.want {
 			t.Errorf("FileFromURL(%q) = %q, want %q", c.url, got, c.want)
+		}
+	}
+}
+
+// MetaPath and DocsRel are built by constructors, a folder named like a prefix keeps its name
+func TestMetaPathConstructors(t *testing.T) {
+	for _, rel := range []string{"x.md", "media/x.md", "docs/x.md", "files/x.md"} {
+		m := DocsPath(rel)
+		got, ok := m.DocsRel()
+		if !ok || got != NewDocsRel(rel) || m.IsMedia() || got.MetaPath() != m {
+			t.Errorf("DocsPath(%q) = %q, DocsRel() = %q %v", rel, m, got, ok)
+		}
+		if _, ok := m.MediaRel(); ok {
+			t.Errorf("DocsPath(%q).MediaRel() = ok", rel)
+		}
+		if parsed, ok := ParseMeta(m.String()); !ok || parsed != m {
+			t.Errorf("ParseMeta(%q) = %q %v", m, parsed, ok)
+		}
+	}
+	m := MediaPath("/docs/x.png")
+	if rel, ok := m.MediaRel(); !ok || rel != "docs/x.png" || !m.IsMedia() {
+		t.Errorf("MediaPath = %q, MediaRel() = %q %v", m, rel, ok)
+	}
+	if _, ok := m.DocsRel(); ok {
+		t.Errorf("MediaPath.DocsRel() = ok")
+	}
+	for _, s := range []string{"", "x.md", "files/x.md", "docs/../x.md", "media/./x.png"} {
+		if m, ok := ParseMeta(s); ok {
+			t.Errorf("ParseMeta(%q) = %q, want not a metadata path", s, m)
 		}
 	}
 }

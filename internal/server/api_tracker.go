@@ -60,7 +60,7 @@ func handleAPITrackerSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(lang, "tracker saved successfully"))
-	w.Header().Set("HX-Redirect", pathutils.ToFileEditURL(pathutils.DocsPath(tracker.TrackerIndexPath(trackerID))))
+	w.Header().Set("HX-Redirect", pathutils.ToFileEditURL(pathutils.DocsPath(tracker.TrackerIndexPath(trackerID)).String()))
 	writeResponse(w, r, map[string]string{"tracker": trackerID}, "")
 }
 

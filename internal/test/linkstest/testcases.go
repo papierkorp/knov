@@ -46,7 +46,7 @@ func caseUpload() test.CaseResult {
 		if err != nil {
 			return errCase("links-upload", err)
 		}
-		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc))))
+		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc).String())).String())
 		if err != nil {
 			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
 			continue
@@ -155,8 +155,8 @@ func caseRename() test.CaseResult {
 			"bare":        parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: strings.TrimPrefix(old, dir+"/")}.String(),
 			"wiki":        parser.Link{Kind: parser.LinkWiki, Path: old}.String(),
 			"wiki no ext": parser.Link{Kind: parser.LinkWiki, Path: strings.TrimSuffix(old, ".md")}.String(),
-			"file url":    "[x](" + pathutils.ToFileURL(pathutils.DocsPath(old)) + ")",
-			"html":        `<a href="` + pathutils.ToFileURL(pathutils.DocsPath(old)) + `">x</a>`,
+			"file url":    "[x](" + pathutils.ToFileURL(pathutils.DocsPath(old).String()) + ")",
+			"html":        `<a href="` + pathutils.ToFileURL(pathutils.DocsPath(old).String()) + `">x</a>`,
 		})
 		if err != nil {
 			return errCase("links-rename", err)
@@ -339,7 +339,7 @@ func caseRelocate() test.CaseResult {
 		forms, err := saveForms(dir, map[string]string{
 			"markdown":          parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "x", Path: "/" + img}.String(),
 			"wiki":              parser.Link{Kind: parser.LinkWiki, Path: img}.String(),
-			"html":              `<img src="` + pathutils.ToFileURL(pathutils.DocsPath(img)) + `">`,
+			"html":              `<img src="` + pathutils.ToFileURL(pathutils.DocsPath(img).String()) + `">`,
 			"markdown relative": parser.Link{Kind: parser.LinkMarkdown, Image: true, Text: "y", Path: imgName(n)}.String(),
 		})
 		if err != nil {
@@ -450,7 +450,7 @@ func caseTable() test.CaseResult {
 	}
 	ts := httptest.NewServer(server.NewRouter())
 	defer ts.Close()
-	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(pathutils.DocsPath(doc)), nil)
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/components/table?tableindex=0&size=1000&filepath="+url.QueryEscape(pathutils.DocsPath(doc).String()), nil)
 	req.Header.Set("Accept", "text/html")
 	resp, err := ts.Client().Do(req)
 	if err != nil {
