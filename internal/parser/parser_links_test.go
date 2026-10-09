@@ -538,3 +538,13 @@ func TestFrontMatterLinksAreNoLinks(t *testing.T) {
 		t.Errorf("ExtractLinks without closing --- = %q", got)
 	}
 }
+
+// CRLF line endings: links are read and rewritten like with LF, the line endings stay
+func TestRewriteLinksCRLF(t *testing.T) {
+	in := "# t\r\n\r\n[x](a.md)\r\n\r\n```\r\n[y](a.md)\r\n```\r\n\r\n[id]:\r\n  a.md\r\n\r\n    [z](a.md)\r\n"
+	got, ok := RewriteLinks(in, func(l Link) (string, bool) { return "b.md", true })
+	want := "# t\r\n\r\n[x](b.md)\r\n\r\n```\r\n[y](a.md)\r\n```\r\n\r\n[id]:\r\n  b.md\r\n\r\n    [z](a.md)\r\n"
+	if !ok || got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}

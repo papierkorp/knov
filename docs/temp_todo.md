@@ -31,7 +31,7 @@
 found by the review of 93f0bbd1..HEAD, details in the review notes of the session:
 
 - [ ] walker vs goldmark: a 4-space indented fence marker (`    ` + three backticks) masks the following lines in `markdown.FenceMask` (goldmark: indented code) - documented in knownDivergences, shared with the code block extraction, fix there or accept
-- [ ] untested: CRLF line endings, windows path separators and git-sync written files through the in-app suites (only the reserved-folders suite writes files directly), the s3 target round trip (needs KNOV_TEST_S3_ENDPOINT)
+- [ ] untested: git-sync written files through the in-app suites (only the reserved-folders suite writes files directly), the s3 target round trip (needs KNOV_TEST_S3_ENDPOINT, cannot run without an endpoint)
 
 # every other time
 

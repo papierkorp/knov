@@ -44,7 +44,7 @@ var (
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	// a reference definition whose destination is on the next line: "[id]:" alone, then the destination part
-	rewriteRefDefOpenRe = regexp.MustCompile(`^ {0,3}\[[^\]^][^\]]*\]:[ \t]*$`)
+	rewriteRefDefOpenRe = regexp.MustCompile(`^ {0,3}\[[^\]^][^\]]*\]:[ \t\r]*$`)
 	rewriteRefDefDestRe = regexp.MustCompile(`^([ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	// a line starting a new block (heading, list item, quote, table row) - a code span doesn't continue onto it
 	blockStartRe      = regexp.MustCompile(`^ {0,3}(?:#{1,6}(?:[ \t]|$)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|\|)`)
