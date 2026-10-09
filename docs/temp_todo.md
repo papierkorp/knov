@@ -78,7 +78,6 @@ done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgr
 
 follow-ups (found by the tests, not fixed yet - decide):
 
-- [ ] unrelated, already failing: internal/server/render TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction (table editor)
 
 # every other time
 

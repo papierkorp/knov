@@ -90,7 +90,7 @@ func TestHeaderContextMenuScript_LabelsMapToTheirOwnAction(t *testing.T) {
 		{"align left", "setColumnAlign(column, 'left')"},
 		{"align center", "setColumnAlign(column, 'center')"},
 		{"align right", "setColumnAlign(column, 'right')"},
-		{"remove column", "column.delete()"},
+		{"remove column", "deleteColumns(column)"},
 	}
 	for _, p := range pairs {
 		want := `label: "` + p.label + `", action: function(e, column) { ` + p.action
@@ -108,7 +108,7 @@ func TestRowContextMenuScript_LabelsMapToTheirOwnAction(t *testing.T) {
 	pairs := []struct{ label, action string }{
 		{"insert row above", "table.addRow(emptyRowData(), true, row)"},
 		{"insert row below", "table.addRow(emptyRowData(), false, row)"},
-		{"remove row", "row.delete()"},
+		{"remove row", "deleteRows(row)"},
 	}
 	for _, p := range pairs {
 		want := `label: "` + p.label + `", action: function(e, row) { ` + p.action
