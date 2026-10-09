@@ -4,7 +4,6 @@ import (
 	"html"
 	"net/url"
 	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -276,9 +275,6 @@ func TestRewriteLinksBackslashes(t *testing.T) {
 func TestSpecialCharLinksRoundTrip(t *testing.T) {
 	h := NewMarkdownHandler()
 	for _, p := range specialchars.Names {
-		if specialchars.SplitsOn(runtime.GOOS, p) {
-			continue
-		}
 		md, wiki := encodeLinkPath(p, LinkMarkdown), encodeLinkPath(p, LinkWiki)
 		img := strings.Replace(p, ".md", ".png", 1)
 		writers := []struct{ name, link, want string }{
@@ -298,7 +294,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			writers = append(writers, struct{ name, link, want string }{"wiki no ext", "[[" + encodeLinkPath(bare, LinkWiki) + "]]", p})
 		}
 		for _, w := range writers {
-			if got := h.ExtractLinks([]byte(w.link), PathlessRender); len(got) != 1 || got[0] != pathutils.ToWithPrefix(w.want) {
+			if got := h.ExtractLinks([]byte(w.link), PathlessRender); len(got) != 1 || got[0] != metaPathOf(w.want) {
 				t.Errorf("%s %q: ExtractLinks(%q) = %q", w.name, p, w.link, got)
 			}
 			if strings.HasPrefix(w.link, "[[") {
@@ -309,7 +305,7 @@ func TestSpecialCharLinksRoundTrip(t *testing.T) {
 			// the file view pipeline: Parse resolves the links, Render runs goldmark
 			parsed, _ := h.Parse([]byte(w.link), PathlessRender)
 			out, err := h.Render(parsed, "", false)
-			if got := renderedTarget(string(out)); err != nil || got != pathutils.ToWithPrefix(w.want) {
+			if got := renderedTarget(string(out)); err != nil || got != metaPathOf(w.want) {
 				t.Errorf("%s %q: Render(%q) links to %q: %s", w.name, p, w.link, got, out)
 			}
 		}
@@ -572,4 +568,13 @@ func TestTypedLinkPath(t *testing.T) {
 			t.Errorf("%q: got (%q, %q, %v), want (%q, %q, %v)", c.typed, rel, anch, has, c.rel, c.anch, c.has)
 		}
 	}
+}
+
+// metaPathOf is the metadata path a special-char test case expects: a "media/..." one as it is, a
+// docs name under docs/ - taken literally, so a "\" stays a file name char on every host.
+func metaPathOf(want string) string {
+	if strings.HasPrefix(want, "media/") {
+		return want
+	}
+	return pathutils.DocsPath(want).String()
 }

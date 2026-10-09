@@ -773,7 +773,7 @@ func linkTarget(p string, l Link, joined bool) string {
 	case joined && !(strings.HasPrefix(p, "media/") && WrittenAsMedia(l.Path)):
 		return docsOrMediaTarget(p)
 	case strings.HasPrefix(p, "media/") || strings.HasPrefix(p, "docs/"):
-		return pathutils.ToWithPrefix(p)
+		return p
 	}
 	return docsOrMediaTarget(p)
 }

@@ -285,7 +285,7 @@ func ResolveRelativeLink(docPath, link string) string {
 	if !IsRelativeLink(link) {
 		return link
 	}
-	resolved := strings.TrimPrefix(path.Join("/", path.Dir(ToRelative(docPath)), link), "/")
+	resolved := strings.TrimPrefix(path.Join("/", path.Dir(metaRel(docPath)), link), "/")
 	if resolved == "" {
 		return "/"
 	}
@@ -330,7 +330,7 @@ func LinkClimbsAboveRoot(docPath, link string) bool {
 // media/ target gets the link to its path without the prefix, read as media like any relative link.
 func RelativeLink(docPath, target string) string {
 	if target == "/" || target == "docs/" {
-		if n := strings.Count(ToRelative(docPath), "/"); n > 0 {
+		if n := strings.Count(metaRel(docPath), "/"); n > 0 {
 			return strings.Repeat("../", n)
 		}
 		return "./"
@@ -338,11 +338,11 @@ func RelativeLink(docPath, target string) string {
 	if strings.HasSuffix(target, "/") {
 		return RelativeLink(docPath, strings.TrimSuffix(target, "/")) + "/"
 	}
-	from := strings.Split(path.Dir(ToRelative(docPath)), "/")
+	from := strings.Split(path.Dir(metaRel(docPath)), "/")
 	if from[0] == "." {
 		from = nil
 	}
-	to := strings.Split(ToRelative(target), "/")
+	to := strings.Split(metaRel(target), "/")
 	i := 0
 	for i < len(from) && i < len(to)-1 && from[i] == to[i] {
 		i++
@@ -436,10 +436,10 @@ func PathContains(root, candidate string) bool {
 	return candidate == root || strings.HasPrefix(candidate, root+string(filepath.Separator))
 }
 
-// escapeRelPath path-escapes each segment of a relative path and joins them with "/",
+// escapeRelPath path-escapes each segment of a relative path (metadata path text, a "\" is a file name char) and joins them with "/",
 // so spaces, Unicode, and special characters survive as a URL path.
 func escapeRelPath(rel string) string {
-	rel = strings.TrimPrefix(filepath.ToSlash(rel), "/")
+	rel = strings.TrimPrefix(rel, "/")
 	parts := strings.Split(rel, "/")
 	for i, p := range parts {
 		parts[i] = url.PathEscape(p)
@@ -451,7 +451,7 @@ func escapeRelPath(rel string) string {
 // is how the /files/ routes name a docs file - taken literally, so "docs/media/x.md" is
 // /files/media/x.md.
 func docsURLRel(docsPath string) string {
-	return strings.TrimPrefix(strings.TrimPrefix(filepath.ToSlash(docsPath), "/"), "docs/")
+	return strings.TrimPrefix(strings.TrimPrefix(docsPath, "/"), "docs/")
 }
 
 // ToFileURL returns a browser-safe URL for viewing a docs file (docsPath is its docs/ path).
@@ -499,4 +499,16 @@ func FileFromURL(rawURL string) MetaPath {
 		}
 	}
 	return ""
+}
+
+// metaRel is the metadata path p without its docs/ or media/ prefix, taken literally - a "\" stays,
+// as it is a valid file name char on linux and the path is no filesystem path of the host.
+func metaRel(p string) string {
+	p = strings.TrimPrefix(p, "/")
+	for _, prefix := range []string{"docs/", "media/"} {
+		if rel, ok := strings.CutPrefix(p, prefix); ok {
+			return rel
+		}
+	}
+	return p
 }

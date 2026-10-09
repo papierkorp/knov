@@ -641,7 +641,6 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 // "/" + the docs-root path for a "/" link and the path from docPath's folder for a bare one.
 // Returns the decoded link path, RewriteLinks encodes it (so it's no url built by hand).
 func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
-	newPath = pathutils.ToWithPrefix(newPath)
 	rel, media := strings.CutPrefix(newPath, "media/")
 	switch {
 	case media && (l.Kind == parser.LinkHTML || strings.HasPrefix(l.Path, "/")):
@@ -727,7 +726,6 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 // extensionless form ([[note]] for note.md), since that's how they're normally typed - unless
 // the new name would then read as another file ([[v1.2]] isn't v1.2.md)
 func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (string, bool) {
-	oldPath = pathutils.ToWithPrefix(oldPath)
 	return func(l parser.Link) (string, bool) {
 		if parser.LinkTarget(filePath, l) != oldPath {
 			return "", false
