@@ -196,11 +196,28 @@ func (js *jsonStorage) Cleanup() error {
 	js.mutex.Lock()
 	defer js.mutex.Unlock()
 
-	if err := os.RemoveAll(js.basePath); err != nil {
-		logging.LogError(logging.KeyApp, "json metadata cleanup: failed to remove %s: %v", js.basePath, err)
+	// only the json files and the folders they leave empty: the sqlite backend keeps its
+	// metadata.db in this same folder, and a migration to it calls this after writing it
+	var dirs []string
+	err := filepath.Walk(js.basePath, func(path string, info os.FileInfo, err error) error {
+		switch {
+		case err != nil:
+			return err
+		case info.IsDir():
+			dirs = append(dirs, path)
+		case strings.HasSuffix(path, ".json"):
+			return os.Remove(path)
+		}
+		return nil
+	})
+	if err != nil {
+		logging.LogError(logging.KeyApp, "json metadata cleanup: failed to remove files in %s: %v", js.basePath, err)
 		return err
 	}
+	for i := len(dirs) - 1; i >= 0; i-- {
+		os.Remove(dirs[i]) // fails for a folder that still holds something, which stays
+	}
 
-	logging.LogInfo(logging.KeyApp, "json metadata cleanup: removed %s", js.basePath)
+	logging.LogInfo(logging.KeyApp, "json metadata cleanup: removed the json files in %s", js.basePath)
 	return nil
 }
