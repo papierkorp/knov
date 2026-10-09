@@ -229,7 +229,7 @@ func rename(t *testing.T, loc string) string {
 	if rel, ok := strings.CutPrefix(loc, "media/"); ok {
 		err = files.MoveMediaFileNoRefresh(rel, strings.TrimPrefix(to, "media/"))
 	} else {
-		err = files.MoveFileNoRefresh(logging.KeyApp, loc, to)
+		err = files.MoveFileNoRefresh(logging.KeyApp, meta(t, loc), meta(t, to))
 	}
 	if err != nil {
 		t.Fatalf("move %s: %v", loc, err)
@@ -294,7 +294,7 @@ func dashboardMove(t *testing.T, loc string) string {
 		t.Fatal(err)
 	}
 	files.OnFileMoved = dashboard.PatchFilePathForMove
-	if err := files.MoveFileNoRefresh(logging.KeyApp, loc, movedTo(loc)); err != nil {
+	if err := files.MoveFileNoRefresh(logging.KeyApp, meta(t, loc), meta(t, movedTo(loc))); err != nil {
 		t.Fatalf("move %s: %v", loc, err)
 	}
 	got, err := dashboard.Get("agree")
@@ -325,4 +325,14 @@ func kanbanAncestorSelect(t *testing.T, loc string) string {
 func TestMain(m *testing.M) {
 	parser.Init()
 	os.Exit(m.Run())
+}
+
+// meta reads s as the metadata path it has to be.
+func meta(t *testing.T, s string) pathutils.MetaPath {
+	t.Helper()
+	m, ok := pathutils.ParseMeta(s)
+	if !ok {
+		t.Fatalf("%q is no metadata path", s)
+	}
+	return m
 }

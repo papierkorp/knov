@@ -162,7 +162,7 @@ func caseRename() test.CaseResult {
 			return errCase("links-rename", err)
 		}
 		for _, mv := range moves {
-			if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+			if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(mv[0]), pathutils.DocsPath(mv[1])); err != nil {
 				gaps = append(gaps, fmt.Sprintf("rename %q -> %q: %v", mv[0], mv[1], err))
 				break
 			}
@@ -202,13 +202,13 @@ func caseRelative() test.CaseResult {
 
 	b, moved, rMoved := dir+"/b.md", dir+"/other/deep/n.md", dir+"/k/r.md"
 	for _, mv := range [][2]string{{a, b}, {n, moved}, {r, rMoved}, {rt, rtMoved}} {
-		if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+		if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(mv[0]), pathutils.DocsPath(mv[1])); err != nil {
 			return errCase("links-relative", err)
 		}
 	}
 	// a rename within the same folder keeps the doc's relative links as written
 	m2 := dir + "/sub/m2.md"
-	if err := files.MoveFileNoRefresh(logging.KeyApp, m, m2); err != nil {
+	if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(m), pathutils.DocsPath(m2)); err != nil {
 		return errCase("links-relative", err)
 	}
 	gaps = append(gaps, linkGaps(m2, []string{pathutils.ToWithPrefix(b)})...)
@@ -311,7 +311,7 @@ func caseBare() test.CaseResult {
 
 	c, moved := dir+"/sub/c.md", dir+"/other/n.md"
 	for _, mv := range [][2]string{{b, c}, {n, moved}} {
-		if err := files.MoveFileNoRefresh(logging.KeyApp, mv[0], mv[1]); err != nil {
+		if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(mv[0]), pathutils.DocsPath(mv[1])); err != nil {
 			return errCase("links-bare", err)
 		}
 	}

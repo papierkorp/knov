@@ -330,7 +330,7 @@ func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string,
 	base := strings.TrimSuffix(clean, ext)
 	candidate := dir + "/" + name
 	for n := 2; n <= maxMoveUniqueAttempts; n++ {
-		err = files.MoveFileNoRefresh(key, pathutils.DocsPath(oldPath).String(), pathutils.DocsPath(candidate).String())
+		err = files.MoveFileNoRefresh(key, pathutils.DocsPath(oldPath), pathutils.DocsPath(candidate))
 		if err == nil || !errors.Is(err, files.ErrMoveTargetExists) {
 			return candidate, err
 		}

@@ -748,7 +748,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	currentPath := pathutils.DocsPath(currentRel).String()
+	currentPath := pathutils.DocsPath(currentRel)
 
 	// get new name from form (can be full path or just filename)
 	newName := r.FormValue("name")
@@ -758,7 +758,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// use the new name as the new path (allows for directory moves)
-	newPath := pathutils.DocsPath(path.Clean(newName)).String()
+	newPath := pathutils.DocsPath(path.Clean(newName))
 
 	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
@@ -768,31 +768,31 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 		targetExists:  translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"),
 		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"),
 	}
-	if handleMoveError(err, "rename file", currentPath, newPath, msgs, func(status int, message string) {
+	if handleMoveError(err, "rename file", currentPath.String(), newPath.String(), msgs, func(status int, message string) {
 		writeAPIError(w, r, status, message)
 	}) {
 		return
 	}
 	files.RefreshCaches()
 
-	if err := git.InvalidateFileHistoryCache(currentPath); err != nil {
+	if err := git.InvalidateFileHistoryCache(currentPath.String()); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", currentPath, err)
 	}
 
 	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed")
-	if files.FolderFromPath(currentPath) != files.FolderFromPath(newPath) {
+	if files.FolderFromPath(currentPath.String()) != files.FolderFromPath(newPath.String()) {
 		message = translation.SprintfForRequest(configmanager.GetLanguage(), "file moved")
 	}
 	// only navigate away when the current page shows the moved file, otherwise toast in place
-	if viewedFile(r) == currentPath {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.ToWithPrefix(newPath)))
+	if viewedFile(r) == currentPath.String() {
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath.String()))
 		notify.SetFlash(notify.LevelSuccess, message)
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, message)
 	}
-	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
+	writeResponse(w, r, map[string]string{"filepath": newPath.String()}, "")
 }
 
 // @Summary Move a folder into another folder

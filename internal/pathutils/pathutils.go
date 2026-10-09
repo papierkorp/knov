@@ -512,3 +512,21 @@ func metaRel(p string) string {
 	}
 	return p
 }
+
+// FromFullPath is the metadata path of a file or folder at the full filesystem path of the host
+// (a walk result, a git path): the one place a host path becomes a MetaPath, separators converted.
+// A path outside the docs and media folder is read as a docs path, like ToWithPrefix.
+func FromFullPath(full string) MetaPath {
+	return MetaPath(ToWithPrefix(full))
+}
+
+// FullPath is the full filesystem path of m, exactly: no prefix is guessed.
+func (m MetaPath) FullPath() string {
+	root, rel := getDocsPath(), string(m)
+	if r, ok := m.MediaRel(); ok {
+		root, rel = getMediaPath(), r
+	} else if r, ok := m.DocsRel(); ok {
+		rel = string(r)
+	}
+	return containPath(root, filepath.Join(root, rel))
+}

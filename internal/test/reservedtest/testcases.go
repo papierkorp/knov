@@ -395,7 +395,7 @@ func caseLinkRename() test.CaseResult {
 		if err := files.UpdateLinksForSingleFile(linker); err != nil {
 			return errCase("reserved-link-rename", err)
 		}
-		if err := files.MoveFileNoRefresh(logging.KeyApp, src, dst); err != nil {
+		if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(strings.TrimPrefix(src, "docs/")), pathutils.DocsPath(strings.TrimPrefix(dst, "docs/"))); err != nil {
 			gaps = append(gaps, fmt.Sprintf("rename %q: %v", src, err))
 			continue
 		}

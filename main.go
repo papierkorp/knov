@@ -191,9 +191,9 @@ func main() {
 	// register filter index regeneration to run after every metadata rebuild
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
 	// keep kanban board order and dashboard widgets from going stale on a file rename/move
-	files.OnFileMoved = func(oldPath, newPath string) {
-		kanban.PatchPathForMove(oldPath, newPath)
-		dashboard.PatchFilePathForMove(oldPath, newPath)
+	files.OnFileMoved = func(oldRel, newRel pathutils.DocsRel) {
+		kanban.PatchPathForMove(oldRel, newRel)
+		dashboard.PatchFilePathForMove(oldRel, newRel)
 	}
 
 	// knov --start-tests runs headless against the isolated storage set up above, then exits -

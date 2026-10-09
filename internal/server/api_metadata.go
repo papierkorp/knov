@@ -647,6 +647,11 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newpath = path.Clean(newpath)
+	newMeta, ok := pathutils.ParseMeta(newpath)
+	if !ok {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "newpath"))
+		return
+	}
 	if strings.HasPrefix(filePath, "media/") != strings.HasPrefix(newpath, "media/") {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath, "/", 2)[0]+"/"))
 		return
@@ -666,7 +671,8 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		context = "move media via metadata"
 		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
 	} else {
-		err = files.MoveFileNoRefresh(logging.KeyApp, filePath, newpath)
+		oldMeta, _ := pathutils.ParseMeta(filePath) // checked by metaPathParam
+		err = files.MoveFileNoRefresh(logging.KeyApp, oldMeta, newMeta)
 	}
 	msgs := moveErrorMessages{
 		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"),

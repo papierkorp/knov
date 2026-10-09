@@ -32,11 +32,16 @@ var ErrLinkUpdateFailed = errors.New("failed to update links after move")
 // stale - files can't import them directly without an import cycle (kanban already imports
 // files). Fired once the physical move has actually succeeded, regardless of whether the
 // subsequent link-content update below also succeeds.
-var OnFileMoved func(oldPath, newPath string)
+var OnFileMoved func(oldRel, newRel pathutils.DocsRel)
 
-func notifyFileMoved(oldPath, newPath string) {
-	if OnFileMoved != nil {
-		OnFileMoved(oldPath, newPath)
+// ErrNotDocsFile is returned by MoveFileNoRefresh for a path that is no docs file (a media path).
+var ErrNotDocsFile = errors.New("not a docs file")
+
+func notifyFileMoved(oldPath, newPath pathutils.MetaPath) {
+	oldRel, oldOK := oldPath.DocsRel()
+	newRel, newOK := newPath.DocsRel()
+	if OnFileMoved != nil && oldOK && newOK {
+		OnFileMoved(oldRel, newRel)
 	}
 }
 
@@ -77,18 +82,21 @@ func moveDocsToMedia(oldFullPath, newFullPath string) error {
 	return movePhysical(oldFullPath, newFullPath, true)
 }
 
-// MoveFileNoRefresh moves a single doc file from the metadata path oldRelPath to newRelPath on disk and updates
+// MoveFileNoRefresh moves a single doc file from oldPath to newPath on disk and updates
 // the links of every file that referenced it. For refreshing the aggregate caches afterwards,
 // call RefreshCaches once - not on every call, same reasoning as MoveFolder.
-func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
-	if err := pathutils.CheckTarget(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath)); err != nil {
+func MoveFileNoRefresh(key logging.Key, oldPath, newPath pathutils.MetaPath) error {
+	if oldPath.IsMedia() || newPath.IsMedia() {
+		return ErrNotDocsFile
+	}
+	if err := pathutils.CheckTarget(oldPath.FullPath(), newPath.FullPath()); err != nil {
 		return err
 	}
-	if err := movePhysical(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath), false); err != nil {
+	if err := movePhysical(oldPath.FullPath(), newPath.FullPath(), false); err != nil {
 		return err
 	}
-	notifyFileMoved(pathutils.ToRelative(oldRelPath), pathutils.ToRelative(newRelPath))
-	if err := UpdateLinksForMovedFileNoRefresh(key, oldRelPath, newRelPath); err != nil {
+	notifyFileMoved(oldPath, newPath)
+	if err := UpdateLinksForMovedFileNoRefresh(key, oldPath.String(), newPath.String()); err != nil {
 		return fmt.Errorf("%w: %v", ErrLinkUpdateFailed, err)
 	}
 	return nil
@@ -254,13 +262,13 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 		return 0, 0, err
 	}
 	// collect all files before the move so we can update their links
-	var filesToUpdate []struct{ oldMeta, newMeta string }
+	var filesToUpdate []struct{ oldMeta, newMeta pathutils.MetaPath }
 	_ = filepath.Walk(currentFullPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return nil
 		}
 		suffix := strings.TrimPrefix(p, currentFullPath)
-		filesToUpdate = append(filesToUpdate, struct{ oldMeta, newMeta string }{pathutils.ToWithPrefix(p), pathutils.ToWithPrefix(newFullPath + suffix)})
+		filesToUpdate = append(filesToUpdate, struct{ oldMeta, newMeta pathutils.MetaPath }{pathutils.FromFullPath(p), pathutils.FromFullPath(newFullPath + suffix)})
 		return nil
 	})
 
@@ -270,11 +278,11 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 
 	movedAlong := make(map[string]string, len(filesToUpdate))
 	for _, f := range filesToUpdate {
-		movedAlong[f.oldMeta] = f.newMeta
+		movedAlong[f.oldMeta.String()] = f.newMeta.String()
 	}
 	for _, f := range filesToUpdate {
-		notifyFileMoved(pathutils.ToRelative(f.oldMeta), pathutils.ToRelative(f.newMeta))
-		if err := updateLinksForMovedFile(key, f.oldMeta, f.newMeta, movedAlong); err != nil {
+		notifyFileMoved(f.oldMeta, f.newMeta)
+		if err := updateLinksForMovedFile(key, f.oldMeta.String(), f.newMeta.String(), movedAlong); err != nil {
 			logging.LogWarning(key, "move-folder: failed to update links for %s -> %s: %v", f.oldMeta, f.newMeta, err)
 			failed++
 			continue
@@ -283,7 +291,7 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 	}
 	// a link between two moved files ("./q.md") only reaches the target's linked from once both moved
 	for _, f := range filesToUpdate {
-		if err := UpdateLinksForSingleFile(f.newMeta); err != nil {
+		if err := UpdateLinksForSingleFile(f.newMeta.String()); err != nil {
 			logging.LogWarning(key, "move-folder: failed to resync links of %s: %v", f.newMeta, err)
 		}
 	}

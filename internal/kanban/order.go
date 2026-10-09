@@ -3,6 +3,7 @@ package kanban
 import (
 	"encoding/json"
 	"fmt"
+	"knov/internal/pathutils"
 	"slices"
 
 	"knov/internal/configStorage"
@@ -70,7 +71,8 @@ func MutateOrder(folderPath string, fn func(o Order)) error {
 // it with newPath - so a rename/move doesn't cost a card its remembered drag-drop position.
 // Registered onto files.OnFileMoved at startup (see main.go). A no-op for a path that isn't a
 // kanban card, or isn't ordered on any board yet.
-func PatchPathForMove(oldPath, newPath string) {
+func PatchPathForMove(oldRel, newRel pathutils.DocsRel) {
+	oldPath, newPath := oldRel.String(), newRel.String()
 	for _, board := range configmanager.GetKanbanBoards() {
 		o, err := GetOrder(board.FolderPath)
 		if err != nil {
