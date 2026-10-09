@@ -18,6 +18,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/kanban"
+	"knov/internal/pathutils"
 	"knov/internal/server"
 	"knov/internal/server/render"
 	"knov/internal/test"
@@ -78,7 +79,7 @@ window.fetch = function(url, opts) {
 	}
 	defer cancel()
 
-	sourceSel := fmt.Sprintf(`[data-filepath=%q]`, testPath(alphaFile))
+	sourceSel := fmt.Sprintf(`[data-filepath=%q]`, pathutils.DocsPath(testPath(alphaFile)))
 	targetColSel := "#kanban-col-inprogress"
 
 	var movedIntoTarget bool

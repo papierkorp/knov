@@ -37,6 +37,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseKanbanHelpers,
 		caseDragCardBetweenColumns,
 		caseRenameStatusFolderSync,
+		caseMoveCardAPI,
 	}
 
 	return test.RunCases("kanban", cases), nil

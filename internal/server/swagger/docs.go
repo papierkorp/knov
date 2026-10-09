@@ -1387,6 +1387,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/editor/toc": {
+            "post": {
+                "description": "Returns the headings of the posted markdown the way the table of contents of the rendered page shows them (front matter and fenced code skipped, inline markdown and links as the text they render), for the live TOC of the editor",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "List the headings of unsaved markdown",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "markdown content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/parser.EditorHeading"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/exports/files": {
             "get": {
                 "description": "Streams all files of the data folder as a zip archive",
@@ -7703,6 +7738,20 @@ const docTemplate = `{
                 },
                 "pending": {
                     "type": "boolean"
+                }
+            }
+        },
+        "parser.EditorHeading": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "type": "integer"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
                 }
             }
         },

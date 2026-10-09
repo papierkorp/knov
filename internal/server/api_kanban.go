@@ -15,6 +15,7 @@ import (
 	"knov/internal/job"
 	"knov/internal/kanban"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -193,7 +194,7 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 // @Tags kanban
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param filepath formData string true "File path"
+// @Param filepath formData string true "File path (docs/ prefixed)"
 // @Param status formData string true "New kanban status"
 // @Param board formData string false "Board slug (scopes the event log entry; omit to guess from the file's folder)"
 // @Success 200 {string} string "card updated"
@@ -207,7 +208,10 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.FormValue("filepath")
+	filePath, ok := metaPathParam(w, r, "filepath")
+	if !ok {
+		return
+	}
 	newStatus := r.FormValue("status")
 
 	if filePath == "" || newStatus == "" {
@@ -224,7 +228,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		boardFolder = board.FolderPath
 	}
 
-	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, filePath, newStatus)
+	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, pathutils.ToRelative(filePath), newStatus)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
@@ -238,7 +242,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
 	}
 	notify.SetHeader(w, notify.LevelSuccess, msg)
-	writeResponse(w, r, map[string]string{"filepath": newFilePath, "status": newStatus}, "")
+	writeResponse(w, r, map[string]string{"filepath": pathutils.DocsPath(newFilePath), "status": newStatus}, "")
 }
 
 // @Summary Save card order for a kanban column
@@ -247,7 +251,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param board path string true "Board slug"
 // @Param status formData string true "Column status"
-// @Param order formData string true "Comma-separated list of filepaths in display order"
+// @Param order formData string true "Comma-separated list of docs/ prefixed filepaths in display order"
 // @Success 200 {string} string "order saved"
 // @Router /api/kanban/{board}/order [post]
 func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
@@ -269,7 +273,11 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 	var paths []string
 	for _, p := range strings.Split(r.FormValue("order"), ",") {
 		if p = strings.TrimSpace(p); p != "" {
-			paths = append(paths, p)
+			if !pathutils.IsMetaPath(p) {
+				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "order"))
+				return
+			}
+			paths = append(paths, pathutils.ToRelative(p)) // the order is stored with the docs-relative card paths
 		}
 	}
 
@@ -326,7 +334,11 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := r.URL.Query().Get("file")
+	filePath, ok := metaPathParam(w, r, "file")
+	if !ok {
+		return
+	}
+	filePath = relOfMeta(filePath)
 	fromRaw := r.URL.Query().Get("from")
 	toRaw := r.URL.Query().Get("to")
 
@@ -379,4 +391,12 @@ func parseEventBoundary(s string, endOfDay bool) (time.Time, error) {
 		d = d.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 	}
 	return d, nil
+}
+
+// relOfMeta is the docs-relative card path of a metadata path, "" stays "".
+func relOfMeta(p string) string {
+	if p == "" {
+		return ""
+	}
+	return pathutils.ToRelative(p)
 }
