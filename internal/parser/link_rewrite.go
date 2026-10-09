@@ -125,17 +125,35 @@ func ParseLink(dest string, kind LinkKind) Link {
 		}
 		dest = body
 	}
-	end := strings.IndexAny(dest, "?#")
+	end := indexQueryOrAnchor(dest, "?#")
 	if end == -1 {
 		end = len(dest)
 	}
 	p := strings.TrimRight(dest[:end], " \t\r")
 	rest := dest[len(p):]
-	if i := strings.Index(rest, "#"); i != -1 {
+	if i := indexQueryOrAnchor(rest, "#"); i != -1 {
 		rest, l.Anchor = rest[:i], rest[i:]
 	}
 	l.Query = rest
 	return l.withPath(p)
+}
+
+// indexQueryOrAnchor is the index of the first character of chars in dest, an html entity
+// standing for one ("&#35;") included - the browser reads it as that character.
+func indexQueryOrAnchor(dest, chars string) int {
+	for i := 0; i < len(dest); i++ {
+		if dest[i] == '&' {
+			if e := entityRe.FindString(dest[i:]); e != "" && strings.HasPrefix(dest[i:], e) {
+				if strings.Contains(chars, html.UnescapeString(e)) && html.UnescapeString(e) != e {
+					return i
+				}
+				i += len(e) - 1
+			}
+		} else if strings.IndexByte(chars, dest[i]) != -1 {
+			return i
+		}
+	}
+	return -1
 }
 
 // withPath sets the path as written: decoded, or kept for an external link.
@@ -358,7 +376,21 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 	}
 	var spans []span
 	masked, mdMasked := maskCode(content)
-	for _, i := range mdLinkRe.FindAllStringSubmatchIndex(mdMasked, -1) {
+	for pos := 0; pos < len(mdMasked); {
+		i := mdLinkRe.FindStringSubmatchIndex(mdMasked[pos:])
+		if i == nil {
+			break
+		}
+		for k := range i {
+			if i[k] != -1 {
+				i[k] += pos
+			}
+		}
+		pos = i[1]
+		if i[2] == -1 && i[4] == -1 && !hasOpenBracket(mdMasked, i[0]) {
+			pos = i[0] + 1 // an orphan "](" is text, a link may start inside its destination
+			continue
+		}
 		if i[2] != -1 {
 			body := content[i[2]:i[3]]
 			spans = append(spans, span{i[0], i[1], 1, linkMatch{Link: ParseLink(body, LinkWiki), Prefix: "[[", Dest: body, Suffix: "]]"}})
@@ -419,6 +451,29 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 	}
 	b.WriteString(content[last:])
 	return b.String()
+}
+
+// hasOpenBracket reports whether the paragraph before i holds a "[" not closed yet.
+func hasOpenBracket(s string, i int) bool {
+	depth := 0
+	for j := i - 1; j >= 0; j-- {
+		if s[j] == '\n' && (j == 0 || s[j-1] == '\n') {
+			return false
+		}
+		if escapedAt(s, j) {
+			continue
+		}
+		switch s[j] {
+		case ']':
+			depth++
+		case '[':
+			if depth == 0 {
+				return true
+			}
+			depth--
+		}
+	}
+	return false
 }
 
 // escapedAt reports whether the byte at i is escaped by an odd number of backslashes before it.
@@ -538,7 +593,7 @@ func protectDestBackticks(s string) string {
 var (
 	thematicBreakRe   = regexp.MustCompile(`^ {0,3}(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$`)
 	setextUnderlineRe = regexp.MustCompile(`^ {0,3}(?:=+|-+)[ \t]*$`)
-	listMarkerRe      = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`) // on a line with its tabs expanded
+	listMarkerRe      = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( +|$)`) // on a line with its tabs expanded
 	quotePrefix       = regexp.MustCompile(`^ {0,3}>[ ]?`)
 )
 
@@ -576,7 +631,7 @@ func indentedCodeMask(lines []string, fenced []bool) []bool {
 			sibling := len(stack) < len(closed) && !prevBlank
 			if sibling || indent-lastOr(stack, 0) < 4 {
 				content := len(m[1]) + len(m[2]) + len(m[3])
-				if m[3] == "" {
+				if len(m[3]) > 4 || m[3] == "" { // 5+ spaces: the item content is indented code
 					content = len(m[1]) + len(m[2]) + 1
 				}
 				if sibling && indent-lastOr(stack, 0) >= 4 {
@@ -584,6 +639,9 @@ func indentedCodeMask(lines []string, fenced []bool) []bool {
 				}
 				stack = append(stack, content)
 				prevBlank, prevPara, inCode = false, strings.TrimSpace(line[len(m[0]):]) != "", false
+				if len(m[3]) > 4 && prevPara {
+					mask[i], inCode, prevPara = true, true, false
+				}
 				continue
 			}
 		}

@@ -155,12 +155,24 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		"-\ta\n\n\t\t[x](a.md)\n\n[y](b.md)",
 		"- a\n\n\t\t\tcode\n\n\t- b [x](a.md)",
 		"> - a\n>\n>   - b\n>\n>     - c [x](a.md)",
+		// a tab after ">", a list marker followed by 5+ spaces (the item starts with indented code)
+		">\t[x](a.md)", "> \t[x](a.md)", ">\t\t[x](a.md)",
+		"1.     [l](a.md)", "-     [l](a.md)", "- a\n\n  1.     [l](a.md)", "-    [l](a.md)", "-   [l](a.md)",
+		// a numeric entity in a path, an orphan "](" before a link
+		"[x](&#120;.md)", "[x](&#x78;.md)", "[x](a&#35;b.md) [y](c&#63;d.md)", "[x](a&amp;b.md#s)",
+		"]([k](a.md))", "x]([k](a.md))", "[a]([k](a.md))", "[a [b] c](d.md)", "a\n\n]([k](a.md))",
 	)
 	// the app shows these as it scans them (markdown.scanFences is shared by the renderer's code block
 	// extraction), goldmark alone reads them differently
 	knownDivergences := map[string]string{
 		"    ```\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
 		"    ~~~\n[x](a.md)": "an indented fence marker is a fence for the app's scanner, indented code for goldmark",
+	}
+	// an html comment opened after a list marker or ">" is a block comment that ends with its container, the scanner only
+	// knows the ones starting a line
+	for _, in := range []string{"- <!-- [x](a.md)\n\n[y](b.md)", "> <!-- [x](a.md)\n\n[y](b.md)", "- <!-- x -->[y](b.md)"} {
+		knownDivergences[in] = "a block html comment inside a list item or quote isn't masked"
+		inputs = append(inputs, in)
 	}
 	inputs = append(inputs, "    ```\n[x](a.md)", "    ~~~\n[x](a.md)")
 	for _, p := range specialchars.Names {
