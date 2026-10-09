@@ -9,7 +9,7 @@ import (
 
 func TestValidateKanbanBoards(t *testing.T) {
 	for _, bad := range []string{"a", "projects/work:", "projects/work: ", ":Name", "/:Name",
-		"../x:X", "a/../../x:X", "..:X", ".:X", "a/../b:X", "a//b:X", "docs/x:X", "media/x:X", "files/x:X", `C:\x:X`, "c:/x:X"} {
+		"../x:X", "a/../../x:X", "..:X", ".:X", "a/../b:X", "a//b:X", `C:\x:X`, "c:/x:X"} {
 		if err := ValidateKanbanBoards([]string{bad}); err == nil {
 			t.Errorf("%q accepted", bad)
 		}
@@ -23,6 +23,10 @@ func TestValidateKanbanBoards(t *testing.T) {
 	// a leading / is trimmed, so /personal/todo/ is the docs folder personal/todo, not an absolute path
 	if err := ValidateKanbanBoards([]string{"projects/work:Work Board", "/personal/todo/:Todo"}); err != nil {
 		t.Errorf("valid boards rejected: %v", err)
+	}
+	// a folder named like a docs path prefix is a normal docs folder
+	if err := ValidateKanbanBoards([]string{"docs/x:X", "media/x:Y", "files/x:Z"}); err != nil {
+		t.Errorf("boards in docs/, media/ and files/ folders rejected: %v", err)
 	}
 }
 

@@ -5592,11 +5592,6 @@
       "translation": "Todo-Modus"
     },
     {
-      "id": "top-level folders named {Arg_1} are reserved, choose another folder",
-      "message": "top-level folders named {Arg_1} are reserved, choose another folder",
-      "translation": "Ordner der obersten Ebene mit den Namen {Arg_1} sind reserviert, bitte einen anderen Ordner wählen"
-    },
-    {
       "id": "total",
       "message": "total",
       "translation": "gesamt"

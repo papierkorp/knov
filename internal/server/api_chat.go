@@ -184,6 +184,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target is required"))
 		return
 	}
+	target = pathutils.DocsPath(target)
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
@@ -282,6 +283,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"))
 		return
 	}
+	target = pathutils.DocsPath(target)
 
 	ids := strings.Split(rawIDs, ",")
 

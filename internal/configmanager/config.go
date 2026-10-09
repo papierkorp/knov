@@ -340,13 +340,6 @@ func parseKeyValues(entries []string) map[string]string {
 	return result
 }
 
-// ReservedDocsFolders returns the top-level docs folder names pathutils reads as a path prefix
-// instead of a real folder - files below them can't be resolved back to themselves, so they must
-// not be created there.
-func ReservedDocsFolders() []string {
-	return []string{"docs", "media", "files"}
-}
-
 // NormalizeKanbanFolder turns a configured board / folder sync folder into the trimmed,
 // forward-slash docs-relative form boards are looked up by.
 func NormalizeKanbanFolder(folder string) string {
@@ -898,16 +891,13 @@ func ValidateKanbanFolderSync(folders []string) error {
 }
 
 // validateKanbanFolder only accepts a clean path below the docs folder - no .., absolute or
-// drive path, and no leading ReservedDocsFolders name that pathutils would strip or reroute.
+// drive path.
 // Uses forward-slash rules only, so a value is accepted or rejected the same on every OS.
 func validateKanbanFolder(folderPath string) error {
 	folderPath = NormalizeKanbanFolder(folderPath)
 	first, _, _ := strings.Cut(folderPath, "/")
 	if strings.Contains(folderPath, ":") || path.Clean(folderPath) != folderPath || first == "." || first == ".." {
 		return fmt.Errorf("invalid folder %q, must be a folder path relative to docs (e.g. projects/work)", folderPath)
-	}
-	if slices.Contains(ReservedDocsFolders(), first) {
-		return fmt.Errorf("invalid folder %q, top-level folders named %s are reserved", folderPath, strings.Join(ReservedDocsFolders(), ", "))
 	}
 	return nil
 }

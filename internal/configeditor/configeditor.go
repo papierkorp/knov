@@ -44,8 +44,7 @@ func MustNew(prefix string, editor files.EditorType, extKey string) Kind {
 
 // CleanID returns the normalized id (so "a/../b" and "a/" don't alias other keys),
 // rejecting ids (e.g. "../../x" from a hand-edited .book or a crafted request)
-// that would resolve outside the prefix. Ids starting with a reserved docs folder are rejected
-// with pathutils.ErrReservedPath, since their paired file wouldn't resolve back to the id.
+// that would resolve outside the prefix.
 func (k Kind) CleanID(id string) (string, error) {
 	root := filepath.Clean(k.label())
 	p := filepath.Join(root, id)
@@ -56,11 +55,7 @@ func (k Kind) CleanID(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid %s id: %q", k.label(), id)
 	}
-	rel = filepath.ToSlash(rel)
-	if first, _, _ := strings.Cut(rel, "/"); slices.Contains(configmanager.ReservedDocsFolders(), first) {
-		return "", fmt.Errorf("invalid %s id %q: %w", k.label(), id, pathutils.ErrReservedPath)
-	}
-	return rel, nil
+	return filepath.ToSlash(rel), nil
 }
 
 // MigrateReservedIDs renames the stored configs whose id starts with docs/, media/ or files/ to

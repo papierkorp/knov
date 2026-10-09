@@ -124,8 +124,7 @@ func writeAPIError(w http.ResponseWriter, r *http.Request, status int, message s
 	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
 
-// writeNewPathError answers 400 if err is pathutils.ErrReservedPath or pathutils.ErrInvalidName
-// and reports whether it did.
+// writeNewPathError answers 400 if err is pathutils.ErrInvalidName and reports whether it did.
 func writeNewPathError(w http.ResponseWriter, r *http.Request, err error) bool {
 	message, ok := newPathMessage(err)
 	if ok {
@@ -134,12 +133,10 @@ func writeNewPathError(w http.ResponseWriter, r *http.Request, err error) bool {
 	return ok
 }
 
-// newPathMessage is the translated response text for pathutils.ErrReservedPath and
-// pathutils.ErrInvalidName, ok is false for any other error.
+// newPathMessage is the translated response text for pathutils.ErrInvalidName, ok is false for
+// any other error.
 func newPathMessage(err error) (message string, ok bool) {
 	switch {
-	case errors.Is(err, pathutils.ErrReservedPath):
-		return translation.SprintfForRequest(configmanager.GetLanguage(), "top-level folders named %s are reserved, choose another folder", strings.Join(configmanager.ReservedDocsFolders(), ", ")), true
 	case errors.Is(err, pathutils.ErrInvalidName):
 		return translation.SprintfForRequest(configmanager.GetLanguage(), "file and folder names can't contain %s or start or end with a space", `# ? | [ ] \`), true
 	}
@@ -168,7 +165,7 @@ func handleMoveError(err error, context, oldPath, newPath string, msgs moveError
 	case errors.Is(err, files.ErrMoveSourceMissing):
 		respond(http.StatusNotFound, msgs.sourceMissing)
 		return true
-	case errors.Is(err, pathutils.ErrReservedPath), errors.Is(err, pathutils.ErrInvalidName):
+	case errors.Is(err, pathutils.ErrInvalidName):
 		message, _ := newPathMessage(err)
 		respond(http.StatusBadRequest, message)
 		return true

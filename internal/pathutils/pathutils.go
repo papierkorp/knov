@@ -54,7 +54,8 @@ func parsePath(inputPath string) *PathInfo {
 	var relativePath string
 	var withPrefix string
 
-	// the prefixes stripped below must match configmanager.ReservedDocsFolders
+	// a docs-relative path is never read here - DocsPath prefixes it, so a folder named docs, media
+	// or files keeps its name
 	// strip leading slash and "files/" prefix used in stored metadata links
 	normalizedPath = strings.TrimPrefix(normalizedPath, "/")
 	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
@@ -332,18 +333,12 @@ func FolderContains(dirPath, folderPath string) bool {
 	return dirPath == folderPath || strings.HasPrefix(dirPath, folderPath+"/")
 }
 
-// ErrReservedPath is returned when a new docs file or folder would land in a reserved top-level
-// folder (see CheckTarget).
-var ErrReservedPath = errors.New("target is in a reserved top-level folder")
-
 // ErrInvalidName is returned when a new file or folder name breaks the filename policy (see
 // CheckTarget).
 var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailing space")
 
 // CheckTarget checks creating a file or folder at the host path newFull, or moving oldFull there
 // (oldFull "" for a new one):
-//   - ErrReservedPath for a docs path in a top-level folder parsePath reads as a prefix (see
-//     configmanager.ReservedDocsFolders) - such a file can't be resolved back to itself
 //   - ErrInvalidName for a name holding # ? | [ ] \ or starting/ending with a space - these break or
 //     need encoding in links, so the app never creates them
 //   - existing paths (git sync, manual copy) are left alone, the link codec still reads them
@@ -351,13 +346,6 @@ var ErrInvalidName = errors.New("name contains # ? | [ ] \\ or a leading/trailin
 //     rename has to fix the name
 //   - the docs and media roots are never checked
 func CheckTarget(oldFull, newFull string) error {
-	_, statErr := os.Stat(newFull)
-	if docsRoot := getDocsPath(); statErr != nil && PathContains(docsRoot, newFull) {
-		rel, _ := filepath.Rel(docsRoot, newFull)
-		if first, _, _ := strings.Cut(filepath.ToSlash(rel), "/"); slices.Contains(configmanager.ReservedDocsFolders(), first) {
-			return ErrReservedPath
-		}
-	}
 	if oldFull != "" && filepath.Base(oldFull) == filepath.Base(newFull) {
 		newFull = filepath.Dir(newFull)
 	}
@@ -371,7 +359,7 @@ func CheckTarget(oldFull, newFull string) error {
 	}
 }
 
-// CheckNewDocsPath is CheckTarget for creating the docs path p ("a/b.md" or "docs/a/b.md").
+// CheckNewDocsPath is CheckTarget for creating the docs path p ("docs/a/b.md").
 func CheckNewDocsPath(p string) error { return CheckTarget("", ToDocsPath(p)) }
 
 // CleanName replaces the chars of name that break the filename policy (see CheckTarget) with "_"
