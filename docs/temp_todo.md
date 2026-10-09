@@ -78,7 +78,6 @@ done (93f0bbd1..4038feac review follow-ups, details in the commits and docs/upgr
 
 follow-ups (found by the tests, not fixed yet - decide):
 
-- [ ] walker vs goldmark (knownDivergences in TestScannerMatchesGoldmark): a destination, title or reference definition destination on the next line (goldmark: link, walker: none), an escaped "\[" before "](dest)", a link in an indented code block or an html comment (walker: link, goldmark: none)
 - [ ] images: markdown images still render through renderImage / resolveMediaPath, not LinkTarget - a bare `![x](pic.png)` that exists only in the docs folder renders /media/... (404) while link metadata reads docs/..., an image named with a trailing space ("trail.png ") renders nothing
 - [ ] images in interactive table cells render with plain goldmark (RenderInlineMarkdown), not renderImage - `![x](media/pic.png)` gets a src relative to the page
 - [ ] other hand-rolled link readers / writers (allowed in guardRules): pdfexport/images.go zoneImageLinkRe (header/footer zone image template), dokuwikiconverter/converter_process.go builds an unencoded `[url](url)` /browse/folders link, server/render/render_editor_codemirror.go strips link syntax to text with its own regexes

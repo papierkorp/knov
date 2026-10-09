@@ -29,8 +29,9 @@ const (
 const wikiLinkPattern = `\[\[([^\[\]\n\x00]+)\]\]`
 
 // a markdown link destination: <...> plus title, or one level of (...) in it - a bare one never
-// starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link)
-const mdLinkDestPattern = `([ \t]*(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*))`
+// starts with "<" (CommonMark, [x](<a.md) or [x]( <a.md) is no link). One line break is allowed
+// before the destination and before a title.
+const mdLinkDestPattern = `([ \t]*(?:\n[ \t]*)?(?:<[^>\n]*>[^)\n]*|(?:[^()\s<]|\([^()\n]*\))(?:[^()\n]|\([^()\n]*\))*)(?:[ \t]*\n[ \t]*(?:"[^"\n]*"|'[^'\n]*'))?)`
 
 var (
 	// a [[wikilink]] (group 1) or [text](dest) / ![alt](dest) (the text may hold escaped
@@ -42,6 +43,9 @@ var (
 	rewriteHTMLAttrRe = regexp.MustCompile(`(<(?i:img|a|video|audio|source)(?:\s[^>]*?)?\s(?i:src|href)\s*=\s*["'])([^"'\n]+)`)
 	// [id]: dest, not [^footnote]: - dest is <...> or has no spaces, only a size / title may follow, so prose like "[note]: remember this" isn't a link
 	rewriteRefDefRe = regexp.MustCompile(`^( {0,3}\[[^\]^][^\]]*\]:[ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
+	// a reference definition whose destination is on the next line: "[id]:" alone, then the destination part
+	rewriteRefDefOpenRe = regexp.MustCompile(`^ {0,3}\[[^\]^][^\]]*\]:[ \t]*$`)
+	rewriteRefDefDestRe = regexp.MustCompile(`^([ \t]*)((?:<[^>\n]*>|[^<\s]\S*)(?:[ \t]+=\d*x\d*)?(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t\r]*)$`)
 	// a line starting a new block (heading, list item, quote, table row) - a code span doesn't continue onto it
 	blockStartRe      = regexp.MustCompile(`^ {0,3}(?:#{1,6}(?:[ \t]|$)|[-*+][ \t]|\d{1,9}[.)][ \t]|>|\|)`)
 	linkSuffixRe      = regexp.MustCompile(`\s+(?:=\d*x\d*|["'])`) // " =WxH" (wiki.js) or "title"
@@ -107,7 +111,7 @@ func ParseLink(dest string, kind LinkKind) Link {
 		return l.withPath(strings.Trim(dest, " ")) // only spaces, like encodeLinkPath protects them
 	}
 
-	dest = strings.TrimLeft(dest, " \t")
+	dest = strings.TrimLeft(dest, " \t\r\n")
 	// title (and size) and trailing whitespace: after the ">" of a <...> destination, else from
 	// the first " title" / " =WxH" - what is left is "path?query#anchor"
 	// the angle branch only with a closing ">" - an unclosed "<" is part of the path
@@ -329,7 +333,7 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 			spans = append(spans, span{i[0], i[1], 1, linkMatch{Link: ParseLink(body, LinkWiki), Prefix: "[[", Dest: body, Suffix: "]]"}})
 			continue
 		}
-		if strings.Contains(masked[i[6]:i[7]], "\x00") {
+		if strings.Contains(masked[i[6]:i[7]], "\x00") || i[4] != -1 && escapedAt(masked, i[4]+strings.IndexByte(masked[i[4]:i[5]], '[')) {
 			continue
 		}
 		m := linkMatch{Prefix: content[i[0]:i[6]], Dest: content[i[6]:i[7]], Suffix: ")"}
@@ -341,12 +345,21 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 		spans = append(spans, span{i[0], i[1], 1, m})
 	}
 	offset := 0
-	for _, line := range strings.Split(masked, "\n") {
+	maskedLines := strings.Split(masked, "\n")
+	for n, line := range maskedLines {
 		text := content[offset : offset+len(line)]
 		if i := rewriteRefDefRe.FindStringSubmatchIndex(text); i != nil && !strings.Contains(line, "\x00") {
 			m := linkMatch{Prefix: text[i[2]:i[3]], Dest: text[i[4]:i[5]], RefDef: true}
 			m.Link = ParseLink(m.Dest, LinkMarkdown)
 			spans = append(spans, span{offset, offset + len(text), 0, m})
+		} else if rewriteRefDefOpenRe.MatchString(text) && !strings.Contains(line, "\x00") && n+1 < len(maskedLines) && !strings.Contains(maskedLines[n+1], "\x00") {
+			// the destination on the next line
+			next := content[offset+len(line)+1 : offset+len(line)+1+len(maskedLines[n+1])]
+			if j := rewriteRefDefDestRe.FindStringSubmatchIndex(next); j != nil {
+				m := linkMatch{Prefix: text + "\n" + next[j[2]:j[3]], Dest: next[j[4]:j[5]], RefDef: true}
+				m.Link = ParseLink(m.Dest, LinkMarkdown)
+				spans = append(spans, span{offset, offset + len(text) + 1 + len(next), 0, m})
+			}
 		}
 		for _, i := range rewriteHTMLAttrRe.FindAllStringSubmatchIndex(line, -1) {
 			if !strings.Contains(line[i[0]:i[1]], "\x00") {
@@ -375,6 +388,15 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 	return b.String()
 }
 
+// escapedAt reports whether the byte at i is escaped by an odd number of backslashes before it.
+func escapedAt(s string, i int) bool {
+	n := 0
+	for i--; i >= 0 && s[i] == '\\'; i-- {
+		n++
+	}
+	return n%2 == 1
+}
+
 // maskCode replaces every byte of fenced code blocks and inline `code` spans with "\x00" (line
 // breaks kept), so a regex over the result never sees code and its indexes match content. a code
 // span may span the lines of a paragraph, but not a blank line, a fence, a heading or a new list
@@ -382,6 +404,9 @@ func walkLinks(content string, fn func(m linkMatch) string) string {
 func maskCode(content string) string {
 	lines := strings.Split(content, "\n")
 	fenced := markdown.FenceMask(lines)
+	for i, indented := range indentedCodeMask(lines, fenced) {
+		fenced[i] = fenced[i] || indented
+	}
 	for i := 0; i < len(lines); {
 		j := i
 		for j < len(lines) && !fenced[j] && strings.TrimSpace(lines[j]) != "" && (j == i || !blockStartRe.MatchString(lines[j]) && !isATXHeading(lines[j-1])) {
@@ -394,8 +419,12 @@ func maskCode(content string) string {
 			i++
 			continue
 		}
-		parts := markdown.SplitCodeSpans(strings.Join(lines[i:j], "\n"))
-		for k := 1; k < len(parts); k += 2 {
+		parts := markdown.SplitCodeSpans(protectDestBackticks(strings.Join(lines[i:j], "\n")))
+		for k := 0; k < len(parts); k++ {
+			if k%2 == 0 {
+				parts[k] = strings.ReplaceAll(parts[k], "\x01", "`")
+				continue
+			}
 			b := []byte(parts[k])
 			for x := range b {
 				if b[x] != '\n' {
@@ -407,7 +436,92 @@ func maskCode(content string) string {
 		copy(lines[i:j], strings.Split(strings.Join(parts, ""), "\n"))
 		i = j
 	}
-	return strings.Join(lines, "\n")
+	return htmlCommentRe.ReplaceAllStringFunc(strings.Join(lines, "\n"), maskNonNewlines)
+}
+
+// an html comment (inline, or a block starting a line and running to the end of the content if it
+// is never closed), where markdown links aren't read
+var htmlCommentRe = regexp.MustCompile(`(?s)<!--.*?-->|(?m)^ {0,3}<!--.*\z`)
+
+func maskNonNewlines(s string) string {
+	b := []byte(s)
+	for i := range b {
+		if b[i] != '\n' {
+			b[i] = 0
+		}
+	}
+	return string(b)
+}
+
+var destBacktickRe = regexp.MustCompile(`\]\(` + mdLinkDestPattern + `\)`)
+
+// protectDestBackticks hides the backticks in a link destination from the code span scan: goldmark
+// reads a destination before any code span ("[x](a`b`.md)" is a link to a`b`.md).
+func protectDestBackticks(s string) string {
+	return destBacktickRe.ReplaceAllStringFunc(s, func(m string) string {
+		return strings.ReplaceAll(m, "`", "\x01")
+	})
+}
+
+var (
+	listMarkerRe = regexp.MustCompile(`^( *)([-*+]|\d{1,9}[.)])( {1,4}|$)`)
+	quotePrefix  = regexp.MustCompile(`^ {0,3}>[ ]?`)
+)
+
+// indentedCodeMask marks the lines of indented code blocks (4 spaces or a tab more than the content
+// of their list item, after a blank line or another code line - never continuing a paragraph),
+// where markdown links aren't read. Fenced lines are skipped.
+func indentedCodeMask(lines []string, fenced []bool) []bool {
+	mask := make([]bool, len(lines))
+	prevBlank, prevPara, inCode := true, false, false
+	listContent := -1
+	for i, line := range lines {
+		if fenced[i] {
+			prevBlank, prevPara, inCode = false, false, false
+			continue
+		}
+		for quotePrefix.MatchString(line) {
+			line = line[len(quotePrefix.FindString(line)):]
+		}
+		if strings.TrimSpace(line) == "" {
+			prevBlank = true
+			continue
+		}
+		indent := 0
+		for _, c := range line {
+			if c == ' ' {
+				indent++
+			} else if c == '\t' {
+				indent += 4 - indent%4
+			} else {
+				break
+			}
+		}
+		if m := listMarkerRe.FindStringSubmatch(line); m != nil && indent-max(listContent, 0) < 4 {
+			listContent = len(m[1]) + len(m[2]) + len(m[3])
+			if len(m[3]) > 4 || m[3] == "" {
+				listContent = len(m[1]) + len(m[2]) + 1
+			}
+			prevBlank, prevPara, inCode = false, strings.TrimSpace(line[len(m[0]):]) != "", false
+			continue
+		}
+		if listContent >= 0 && indent < listContent {
+			if prevBlank {
+				listContent = -1
+			} else {
+				prevPara, inCode = true, false
+				continue
+			}
+		}
+		base := max(listContent, 0)
+		if indent-base >= 4 && (prevBlank || inCode || !prevPara) {
+			mask[i], inCode, prevBlank, prevPara = true, true, false, false
+			continue
+		}
+		inCode, prevBlank = false, false
+		prevPara = !isATXHeading(line)
+	}
+	return mask
 }
 
 // isATXHeading reports whether line is a "# heading" - its own block, a code span doesn't continue after it.

@@ -95,15 +95,39 @@ func TestScannerMatchesGoldmark(t *testing.T) {
 		"[x](a`b`.md) [y](`c.md`)",
 		"[x](a.md \"t\") [z](https://x.y/a \"t\")",
 	}
-	knownDivergences := map[string]string{
-		"[x](\na.md)":              "a destination on the next line",
-		"[x](a.md\n\"title\")":     "a title on the next line",
-		"[r][id]\n\n[id]:\n  a.md": "a reference definition destination on the next line",
-		`\[x](a.md)`:               "an escaped [ before ](dest)",
-		"    [x](a.md)":            "an indented code block",
-		"<!-- [x](a.md) -->":       "an html comment",
-		"[x](a`b`.md) [y](`c.md`)": "backticks in a destination, a code span for maskCode",
-	}
+	// more block and inline contexts: code blocks inside and outside lists, a lazy paragraph
+	// continuation, html comments, escapes and next-line destinations
+	inputs = append(inputs,
+		"text\n\n    [x](a.md)\n\n[y](b.md)",
+		"    [x](a.md)\n    [y](b.md)\n[z](c.md)",
+		"para\n    [x](a.md)",
+		"- item\n\n      [x](a.md)\n\n  [y](b.md)",
+		"- item\n\n      code\n\n        [x](a.md)",
+		"1. item\n   [x](a.md)\n\n       [y](b.md)",
+		"\t[x](a.md)\n\n[y](b.md)",
+		"> quote\n>\n>     [x](a.md)",
+		"a <!-- [x](a.md) --> [y](b.md)",
+		"<!--\n[x](a.md)\n-->\n[y](b.md)",
+		"<!-- [x](a.md)",
+		"\\[x](a.md) [y](b.md)",
+		"\\\\[x](a.md)",
+		"[x](\n  a.md\n  \"t\")",
+		"[x](a.md\n 'title')",
+		"[x](<a b.md>\n\"t\")",
+		"[x](\n\na.md)",
+		"[r][id]\n\n[id]:\n  <a b.md>\n  \"t\"",
+		"[r][id]\n\n[id]:\n    a.md",
+		"[x](a`b`.md) [y](`c.md`) `d` [z](e.md)",
+		"`a` [x](b`.md) ` c.md`",
+		"- a\n    - b [x](a.md)\n        - c [y](b.md)",
+		"1. step\n\n    ![img](pic.png)\n\n2. next\n\n   [z](c.md)",
+		"* a\n\n\t[x](a.md)\n\n\t\t[y](b.md)",
+		"# head\n    [x](a.md)",
+		"> - quote list\n>\n>       [x](a.md)\n> [y](b.md)",
+		"term\n: def\n\n    [x](a.md)",
+		"- a\n- b\n\n    [x](a.md)\n\n[y](b.md)",
+	)
+	knownDivergences := map[string]string{}
 	for _, p := range specialchars.Names {
 		if strings.Contains(p, `\`) {
 			continue // a "\" is a windows separator for knov, goldmark keeps it
