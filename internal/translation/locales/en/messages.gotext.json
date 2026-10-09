@@ -2,6 +2,11 @@
   "language": "en",
   "messages": [
     {
+      "id": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "message": "a docs file in a folder named docs, media or files (media/... alone is the media folder)",
+      "translation": ""
+    },
+    {
       "id": "newpath must stay in {Arg_1}",
       "message": "newpath must stay in {Arg_1}",
       "translation": ""

@@ -214,7 +214,7 @@ func caseRelative() test.CaseResult {
 	gaps = append(gaps, linkGaps(m2, []string{pathutils.ToWithPrefix(b)})...)
 	gaps = append(gaps, linkGaps(moved, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(m2)})...)
 	gaps = append(gaps, linkGaps(rMoved, []string{pathutils.ToWithPrefix(hT)})...)
-	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/docs/">y</a>`} {
+	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/">y</a>`} {
 		if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(doc)); err != nil || strings.TrimSpace(string(raw)) != want {
 			gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", doc, raw, want, err))
 		}
@@ -316,7 +316,7 @@ func caseBare() test.CaseResult {
 		}
 	}
 	gaps = append(gaps, metadataGaps(moved, []string{pathutils.ToWithPrefix(c), pathutils.ToWithPrefix(a)})...)
-	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/docs/" + a}.Dest() + "\">x</a>"
+	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/" + a}.Dest() + "\">x</a>"
 	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(moved)); err != nil || strings.TrimSpace(string(raw)) != want {
 		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", moved, raw, want, err))
 	}

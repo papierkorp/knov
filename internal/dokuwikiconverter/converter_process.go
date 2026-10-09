@@ -291,7 +291,7 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 				l.Path, l.Anchor = "", anchor
 				if url != "" { // not just an anchor
 					ext := strings.ToLower(filepath.Ext(url))
-					// links pointing at binary/media files go to /media/, not /files/docs/ - a dokuwiki
+					// links pointing at binary/media files go to /media/, not /files/ - a dokuwiki
 					// id is a page otherwise, also with a dot in its name ("v1.2 notes")
 					isMediaFile := ext != ".md" && ext != ".txt" && types.MediaCategory(ext) != types.MediaCategoryOther
 					if isMediaFile {
@@ -302,7 +302,7 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 							url += ".md"
 						}
 						convertedURL = pathutils.ToFileURL("docs/"+url) + anchor
-						l.Path = "/files/docs/" + url
+						l.Path = "/files/" + url
 					}
 				} else {
 					// just an anchor link
@@ -489,11 +489,11 @@ func (h *Converter) convertIncludeSections(content string, outputFormat string) 
 			url += ".md"
 		}
 
-		// use /files/docs/ prefix consistently
+		// use the /files/ url consistently
 		if outputFormat == "html" {
 			return fmt.Sprintf(`<a href="%s">%s</a>`, pathutils.ToFileURL("docs/"+url)+anchor, pathSection)
 		}
-		return parser.Link{Kind: parser.LinkMarkdown, Text: pathSection, Path: "/files/docs/" + url, Anchor: anchor}.String()
+		return parser.Link{Kind: parser.LinkMarkdown, Text: pathSection, Path: "/files/" + url, Anchor: anchor}.String()
 	})
 
 	return content

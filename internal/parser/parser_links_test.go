@@ -34,10 +34,10 @@ func TestRenderLinks(t *testing.T) {
 		// empty link text falls back to "filename - Header Text".
 		{"fallback label path plus anchor", "[](note.md#todo-vorlage)", "[note - Todo Vorlage](" + fileURL("note.md") + "#todo-vorlage)"},
 		// media links are decoded once and re-encoded as a /media/ url
-		{"files media url", "[x](/files/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
+		{"files media url is the docs file docs/media/", "[x](/files/media/a%20b.png)", "[x](" + fileURL("media/a b.png") + ")"},
 		{"media path", "[x](<media/a b.png>)", "[x](" + pathutils.ToMediaURL("a b.png") + "?mode=detail)"},
 		// query, anchor and title are kept for media links too
-		{"files media url query", "[x](/files/media/a.png?raw=1#p)", "[x](" + pathutils.ToMediaURL("a.png") + "?raw=1#p)"},
+		{"files media url query", "[x](/files/media/a.png?raw=1#p)", "[x](" + fileURL("media/a.png") + "?raw=1#p)"},
 		{"media path query", `[x](media/a.png?raw=1#p "t")`, "[x](" + pathutils.ToMediaURL("a.png") + `?raw=1&mode=detail#p "t")`},
 		// any scheme is external, like for link metadata - a one-letter one is a windows drive
 		{"mailto external", "[x](mailto:a@b.c)", "[x](mailto:a@b.c)"},
@@ -81,7 +81,8 @@ func TestRenderLinks(t *testing.T) {
 		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
 		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + fileURL("b/.c.md") + ")"},
 		// a /files/ url gets the default extension like link metadata reads it
-		{"files url no ext", "[x](/files/docs/a)", "[x](" + fileURL("a.md") + ")"},
+		{"files url no ext", "[x](/files/a)", "[x](" + fileURL("a.md") + ")"},
+		{"files url docs folder", "[x](/files/docs/a)", "[x](" + fileURL("docs/a.md") + ")"},
 		{"media url", "[x](/media/a%20b.png)", "[x](" + pathutils.ToMediaURL("a b.png") + ")"},
 		// a same-page heading text becomes the heading id too
 		{"pure anchor text slugged", "[x](<#Phase 1>)", "[x](#phase-1)"},
@@ -106,7 +107,7 @@ func TestRenderLinks(t *testing.T) {
 		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y"},
 		{"ref def in code", "```\n[id]: a.md\n```", "```\n[id]: a.md\n```"},
 		// html src/href get their app url like markdown links, app routes, anchors and external ones stay
-		{"html href", `<a href="a b.md">x</a> <img src='/files/media/p.png'>`, `<a href="` + fileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
+		{"html href", `<a href="a b.md">x</a> <img src='/media/p.png'>`, `<a href="` + fileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
 		{"html app route anchor external", `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`, `<a href="/dashboard"> <a href="#top"> <img src="https://x.y/p.png">`},
 		{"html entity", `<a href="a&amp;b.md">`, `<a href="/files/a&amp;b.md">`},
 		// an external wikilink links its url

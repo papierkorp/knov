@@ -110,26 +110,32 @@ func caseMetadata() test.CaseResult {
 	return gapsCase("reserved-metadata", "a sample doc and its collision partner don't share metadata", gaps)
 }
 
-// caseLinks: a docs/-prefixed wikilink and /files/docs/ url from the docs root and a bare link from
-// the doc's own folder read and render as the sample doc.
+// caseLinks: a docs file in docs/docs/, docs/media/ or docs/files/ is linked as itself - by a
+// /files/ url (taken literally), a docs/-prefixed wikilink and a bare link from its own folder -
+// and a link written media/... still reads as the media file.
 func caseLinks() test.CaseResult {
 	var gaps []string
 	for _, top := range reserved {
 		want := "docs/" + doc(top, "synced.md")
-		forms := map[string][2]string{
-			"wiki":     {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: want}.String()},
-			"file url": {"docs/" + sub + "/linker.md", "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + want}.Dest() + ")"},
-			"bare":     {"docs/" + doc(top, "linker.md"), "[x](synced.md)"},
+		forms := map[string][3]string{
+			"wiki":       {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: want}.String(), want},
+			"file url":   {"docs/" + sub + "/linker.md", "[x](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + doc(top, "synced.md")}.Dest() + ")", want},
+			"html":       {"docs/" + sub + "/linker.md", `<a href="` + pathutils.ToFileURL(want) + `">x</a>`, want},
+			"bare":       {"docs/" + doc(top, "linker.md"), "[x](synced.md)", want},
+			"dot":        {"docs/" + doc(top, "linker.md"), "[x](./synced.md)", want},
+			"wiki media": {"docs/" + sub + "/linker.md", parser.Link{Kind: parser.LinkWiki, Path: "media/" + sub + "/synced.md"}.String(), "media/" + sub + "/synced.md"},
 		}
 		for form, f := range forms {
 			got := (&parser.MarkdownHandler{}).ExtractLinks([]byte(f[1]), f[0])
-			rendered := parser.RenderLinks(f[1], f[0])
-			if !slices.Equal(got, []string{want}) || !strings.Contains(rendered, "("+pathutils.ToFileURL("docs/"+doc(top, "synced.md"))+")") {
-				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, renders %q", form, f[1], f[0], got, rendered))
+			if !slices.Equal(got, []string{f[2]}) {
+				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, want %q", form, f[1], f[0], got, f[2]))
+			}
+			if rendered := parser.RenderLinks(f[1], f[0]); f[2] == want && !strings.Contains(rendered, pathutils.ToFileURL(want)) {
+				gaps = append(gaps, fmt.Sprintf("%s %q in %s: renders %q", form, f[1], f[0], rendered))
 			}
 		}
 	}
-	return gapsCase("reserved-links", "links to a sample doc read and render as it", gaps)
+	return gapsCase("reserved-links", "links to a sample doc read and render as it, media/ links stay media", gaps)
 }
 
 // caseCreate: saving a new doc into each reserved folder through the api creates it there.

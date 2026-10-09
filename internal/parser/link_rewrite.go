@@ -186,6 +186,8 @@ func (l Link) String() string {
 func FileLinkDest(path, anchor string, kind LinkKind) string {
 	if kind != LinkWiki && path != "" {
 		path = "/files/" + path
+	} else if strings.HasPrefix(path, "media/") || strings.HasPrefix(path, "docs/") {
+		path = "docs/" + path // a wikilink reads media/ and docs/ as the folder of that name, a docs file in a folder of that name needs its prefix
 	}
 	return Link{Kind: kind, Path: path, Anchor: anchor}.Dest()
 }
@@ -399,31 +401,64 @@ func IsAppRouteLink(p string, kind LinkKind) bool {
 // anchor or an html link to an app route. The one place a link path is resolved: rendering,
 // link metadata, rename, move and media relocation all read the target from here.
 // The path is read like ResolveLinkPath: a bare markdown / html one and a "./" or "../" one from
-// docPath's folder, a wikilink and a leading "/" (a /files/ url too) from the docs root, a
-// "media/" or "/media/" one from the media folder; a path without "media/" naming an existing
-// media file is that media file (links copied from the media page have no "media/" prefix).
+// docPath's folder (a docs file even when that folder is named docs, media or files), a wikilink
+// and a leading "/" from the docs root, a "/files/" url as the docs-relative path taken literally
+// ("/files/media/x.md" is the docs file docs/media/x.md), a path written "media/", "./media/" or
+// "/media/" from the media folder and one written "docs/" as that docs path ("[[docs/media/x]]");
+// a path without a prefix naming an existing media file is that media file (links copied from the
+// media page have no "media/" prefix).
 func LinkTarget(docPath string, l Link) string {
-	return linkTarget(ResolveLinkPath(docPath, l), l)
+	return linkTarget(ResolveLinkPath(docPath, l), l, IsBareLink(l) || pathutils.IsRelativeLink(l.Path))
 }
 
 // DocsRootLinkTarget is the LinkTarget l had while a bare markdown or html path was read from the
 // docs root - for the relative links migration (files.ScanRelativeLinks).
 func DocsRootLinkTarget(docPath string, l Link) string {
-	return linkTarget(pathutils.ResolveRelativeLink(docPath, l.Path), l)
+	return linkTarget(pathutils.ResolveRelativeLink(docPath, l.Path), l, pathutils.IsRelativeLink(l.Path))
 }
 
-// linkTarget is the LinkTarget of l with its path p read from the docs root.
-func linkTarget(p string, l Link) string {
+// linkTarget is the LinkTarget of l with its path p read from the docs root; joined is whether p
+// was resolved from the doc's folder, which makes it a docs-root path whatever its first folder
+// is called - unless l is written as a media link.
+func linkTarget(p string, l Link, joined bool) string {
 	if l.External || l.Path == "" || IsAppRouteLink(l.Path, l.Kind) {
 		return ""
 	}
+	if p == "/" {
+		return "docs/" // the docs root itself
+	}
 	p = utils.NormalizeLinkPath(p)
-	if !strings.HasPrefix(p, "media/") && !strings.HasPrefix(p, "docs/") {
-		if _, err := os.Stat(pathutils.ToMediaPath(p)); err == nil {
-			p = "media/" + p
+	switch {
+	case joined && !(strings.HasPrefix(p, "media/") && WrittenAsMedia(l.Path)):
+		if _, err := os.Stat(pathutils.ToMediaPath("media/" + p)); err == nil {
+			return "media/" + p
+		}
+		return pathutils.DocsPath(p)
+	case strings.HasPrefix(p, "media/") || strings.HasPrefix(p, "docs/"):
+		return pathutils.ToWithPrefix(p)
+	}
+	if _, err := os.Stat(pathutils.ToMediaPath("media/" + p)); err == nil {
+		return "media/" + p
+	}
+	return pathutils.DocsPath(p)
+}
+
+// WrittenAsMedia reports whether the link path p reads media/... once its leading "/", "./" and
+// "../" are dropped - a media link, not a link from a doc folder that is called media (a docs
+// file in docs/media/ is linked with its /files/ url).
+func WrittenAsMedia(p string) bool {
+	for {
+		switch {
+		case strings.HasPrefix(p, "/"):
+			p = p[1:]
+		case strings.HasPrefix(p, "./"):
+			p = p[2:]
+		case strings.HasPrefix(p, "../"):
+			p = p[3:]
+		default:
+			return strings.HasPrefix(p, "media/")
 		}
 	}
-	return pathutils.ToWithPrefix(p)
 }
 
 // IsBareLink reports whether l is a markdown or html link whose path has no "./", "../", leading
