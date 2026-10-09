@@ -13,6 +13,7 @@ import (
 	"knov/internal/configStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server"
@@ -83,6 +84,19 @@ func caseView() test.CaseResult {
 			}
 			if status != http.StatusOK || !strings.Contains(body, marker(top)) || strings.Contains(body, partnerMarker(top)) {
 				gaps = append(gaps, fmt.Sprintf("%s: status %d, shows the doc %v, its partner %v", target, status, strings.Contains(body, marker(top)), strings.Contains(body, partnerMarker(top))))
+			}
+		}
+	}
+	// the edit page names the doc by its docs/ path
+	for _, top := range reserved {
+		rel := doc(top, "synced.md")
+		for _, target := range []string{pathutils.ToFileEditURL("docs/" + rel)} {
+			status, body, err := request(http.MethodGet, target, nil)
+			if err != nil {
+				return errCase("reserved-view", err)
+			}
+			if status != http.StatusOK || !strings.Contains(body, "docs/"+rel) && !strings.Contains(body, "filepath=docs/"+rel) {
+				gaps = append(gaps, fmt.Sprintf("%s: status %d, does not name %q", target, status, "docs/"+rel))
 			}
 		}
 	}
@@ -349,4 +363,43 @@ func caseMigration() test.CaseResult {
 		}
 	}
 	return gapsCase("reserved-migration", "legacy metadata records and filter ids named like a reserved folder are migrated", gaps)
+}
+
+// caseLinkRename: renaming a docs file in a reserved folder rewrites the links to it, in each form
+// they were written, to the new file - not to the media or docs file of the old name.
+func caseLinkRename() test.CaseResult {
+	var gaps []string
+	for _, top := range reserved {
+		src, dst, linker := "docs/"+doc(top, "rsrc.md"), "docs/"+doc(top, "rdst.md"), "docs/"+doc(top, "rlinker.md")
+		content := strings.Join([]string{
+			"[a](" + parser.Link{Kind: parser.LinkMarkdown, Path: "/files/" + doc(top, "rsrc.md")}.Dest() + ")",
+			parser.Link{Kind: parser.LinkWiki, Path: src}.String(),
+			"[c](rsrc.md)",
+			"[d](./rsrc.md)",
+		}, "\n") + "\n"
+		for p, c := range map[string]string{src: "# src\n", linker: content} {
+			if err := write(fullPath(p), c); err != nil {
+				return errCase("reserved-link-rename", err)
+			}
+			if err := files.MetaDataSync(p); err != nil {
+				return errCase("reserved-link-rename", err)
+			}
+		}
+		if err := files.UpdateLinksForSingleFile(linker); err != nil {
+			return errCase("reserved-link-rename", err)
+		}
+		if err := files.MoveFileNoRefresh(logging.KeyApp, src, dst); err != nil {
+			gaps = append(gaps, fmt.Sprintf("rename %q: %v", src, err))
+			continue
+		}
+		data, err := os.ReadFile(fullPath(linker))
+		if err != nil {
+			return errCase("reserved-link-rename", err)
+		}
+		got := (&parser.MarkdownHandler{}).ExtractLinks(data, linker)
+		if want := []string{dst, dst, dst, dst}; !slices.Equal(got, want) {
+			gaps = append(gaps, fmt.Sprintf("links of %q after renaming %q: %q, want %q\n%s", linker, src, got, want, data))
+		}
+	}
+	return gapsCase("reserved-link-rename", "renaming a doc in a reserved folder rewrites every form of its links to the new file", gaps)
 }

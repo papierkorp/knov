@@ -38,8 +38,8 @@ goal: docs paths are unambiguous, so no top-level docs folder name (docs, media,
 - [x] R6 other stored paths: metadata parents, kanban folders, filter criteria folder values, Auto-Create Tags folders, configeditor ids / PairedPath (filter, tracker)
 - [x] R7 migration: metadata of docs files under docs/docs/, docs/media/, docs/files/ (their old keys collide with real media / docs keys), filter / tracker configStorage ids starting with docs/, media/ or files/ (configeditor.CleanID)
 - [x] R8 remove the workaround: configmanager.ReservedDocsFolders, the reserved check in pathutils.CheckTarget, ErrReservedPath (+ server newPathMessage / handleMoveError), the reserved checks in configeditor.CleanID and validateKanbanFolder (+ the hint in the Auto-Create Tags setting Desc), turn the reserved cases of TestCheckNewDocsPath into "these paths resolve correctly" tests. keep the filename policy (CheckTarget / ErrInvalidName)
-- [ ] R9 suite (internal/test/reservedtest, listing + metadata registered, the other cases with their step): files in docs/docs/, docs/media/, docs/files/ created by the app and written directly (git sync) - list, view, edit, metadata, links, rename, move, delete
-- [ ] R10 upgrade note, run every suite (`--start-tests --remove`)
+- [x] R9 suite (internal/test/reservedtest, listing + metadata registered, the other cases with their step): files in docs/docs/, docs/media/, docs/files/ created by the app and written directly (git sync) - list, view, edit, metadata, links, rename, move, delete
+- [x] R10 upgrade note, run every suite (`--start-tests --remove`)
 
 context (from the review, decisions included):
 
