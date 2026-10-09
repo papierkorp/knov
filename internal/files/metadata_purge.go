@@ -37,6 +37,9 @@ func MetaDataPurgeStale() (int, error) {
 		}
 	}
 
+	// the manual reserved folders migration still moves these legacy keys
+	walkReservedFolders(func(oldKey, _ string) { valid[oldKey] = struct{}{} })
+
 	var purged int
 	for key := range all {
 		if _, ok := valid[key]; !ok {

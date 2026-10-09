@@ -28,10 +28,34 @@
 
 # link refactor follow-ups
 
-found by the review of 93f0bbd1..HEAD, details in the review notes of the session:
+found by the post-mortem review of 93f0bbd1..HEAD. each item has a failing input, add a test for it:
 
-- [ ] walker vs goldmark: a 4-space indented fence marker (`    ` + three backticks) masks the following lines in `markdown.FenceMask` (goldmark: indented code) - documented in knownDivergences, shared with the code block extraction, fix there or accept
-- [ ] untested: git-sync written files through the in-app suites (only the reserved-folders suite writes files directly), the s3 target round trip (needs KNOV_TEST_S3_ENDPOINT, cannot run without an endpoint)
+- [ ] scanner: links in tab-indented nested lists are missed - `- a\n\n\t- b\n\n\t\t- c [x](c.md)` (walker `[]`, goldmark `[c.md]`). `listMarkerRe` in `internal/parser/link_rewrite.go` only matches spaces (`^( *)`) and `indentedCodeMask` keeps one `listContent` instead of a stack, so a tab-indented or outdented item reads as indented code. expand tabs to columns, pop to the ancestor item on an outdent. add the cases to `parser_goldmark_diff_test.go`, plus a bounded structural fuzz (nested lists with spaces/tabs/blank lines/`>`) comparing walker and goldmark
+- [ ] scanner, smaller divergences found by fuzz: a tab after `>` (`>\t[x](a.md)`, walker misses it), a list marker with 5+ spaces (`1.     [x](a.md)` is code in goldmark), an unclosed `<!--` after a list marker or `>`, a numeric entity in a path (`[x](&#120;.md)`: the walker cuts at the `#`), an orphan `](` swallowing the next link (`]([k](a.md))`). fix or add to knownDivergences with the reason
+- [ ] scanner: a 4-space indented fence marker masks the following lines in `markdown.FenceMask` (goldmark: indented code), already in knownDivergences - fix there or accept (a tab-indented one diverges the same way)
+- [ ] bare, `./` and `/x` links must resolve to the docs file when it exists, media only as fallback (`linkTarget` in `link_rewrite.go` checks `media/` first, so `[x](p.pdf)` in `sub/n.md` opens `media/sub/p.pdf` although `docs/sub/p.pdf` exists). change the order, update the `LinkTarget` comment, `help.gohtml` and the upgrade note, add a test for both files existing
+- [x] `MetaDataPurgeStale` (full rebuild) deletes the legacy keys the manual reserved folders migration would move (`media/x.md` for `docs/media/x.md` when no media file exists). skip a key while a docs file in `docs/docs`, `docs/media` or `docs/files` maps to it, add a test (migrate after a full rebuild keeps the record)
+- [ ] wiki rename adds a `docs/` prefix (`[[sub/x]]` -> `[[docs/sub/y]]`, `renameLinkFunc` in `metadata_links.go`). keep it only when the path starts with `media/` or `docs/`, like `parser.DocsWikiPath`
+- [ ] broken links repair entries are `source|target|suggested` split on `|` (`manualjob.go:308`): a legacy file with `|` in its name is mis-split and a malformed entry is dropped without counting as skipped. send them as json like `relative-links/migrate` and count a malformed one as skipped (status stays 200 with the repaired/skipped counts)
+- [ ] `/files/` is read in three places (`utils.NormalizeLinkPath`, `renderImage` in `parser_markdown.go`, `rebuildLinkTarget`) and written as `"/files/" + TrimPrefix(p, "docs/")` six times (`rebuildLinkTarget` x4, `filter.go`, `FileLinkDest`): use `NormalizeLinkPath` for reading and one helper for writing
+- [ ] js still handles link paths by hand: `static/wiki-autocomplete.js` (`FILES_PREFIX` strip, `decodeURIComponent`, `docs/` strip), `themes/builtin/js/panel-file.js` (`"docs/" + filepath`), `themes/builtin/mediaview.gohtml` (`printf "media/%s"`). let the server return the values (like `data-link`) and extend `parser_guard_test.go` to `decodeURIComponent`
+- [ ] `handleAPIGetFileContent` answers 500 for a missing file (404), the new migrate/repair handlers send `err.Error()` untranslated, `handleAPIGetAncestorsInFolder` builds html in the handler (move to render)
+- [ ] `TestMoveRedirectsOnlyViewedFile` fails with `-count=2` (409 already exists, state kept between runs), the in-app tests share the fixed `/tmp/knov_temp_test` so two runs at once corrupt each other (`SQLITE_BUSY`): use a unique temp dir per run
+- [ ] untested: git-sync written files through the in-app suites, windows paths and html src/href in table cells, the s3 target round trip (needs KNOV_TEST_S3_ENDPOINT)
+
+# typed paths refactor
+
+the docs-relative path, the metadata path (`docs/...` / `media/...`) and the full path are all plain `string`, and `ToRelative` / `ToWithPrefix` / `ToDocsPath` guess the kind from a prefix (about 286 call sites). `ToWithPrefix(ToRelative(p))` is lossy for `docs/docs/` and `docs/media/` files, so every new call can pick the wrong file again. goal: make the wrong call not compile. do it in this order, one commit per step:
+
+- [ ] agreement test first: link forms x file locations (`docs/x.md`, `docs/docs/x.md`, `docs/media/x.md`, `docs/files/x.md`, `media/x.png`, the special-char names) x every consumer (metadata, render, rename, move, media relocation, filter index, book, kanban, dashboard, search). a new consumer has to be registered there. it fails for the three known bugs below until they are fixed
+- [ ] add `pathutils.MetaPath` (always `docs/...` or `media/...`) and `pathutils.DocsRel`, built only by constructors (`DocsPath(rel)`, `MediaPath(rel)`, `ParseMeta(s)` for input that must already be a metadata path, like `metaPathParam`). guessing stays only where user input enters (form values, typed links, settings)
+- [ ] convert package by package, boundaries first: `files.OnFileMoved`, metadata keys, filter criteria (`child-of`, `parent-of`, `ancestor-of`), dashboard, kanban order and events, search index keys, `File.Path`
+- [ ] known bugs the conversion has to fix (keep the regression test for each):
+  - `files.OnFileMoved` gets docs-relative paths (`physical.go:90,276`) and `dashboard.PatchFilePathForMove` runs `ToRelative` on them again (`dashboard.go:191-196`, not idempotent: `media/x.md` -> `x.md`): moving `docs/media/x.md` patches a widget of `docs/x.md` and writes `y.md` for `docs/media/y.md`
+  - `filter.GenerateFilterIndex` writes `/docs/x.md` for `docs/docs/x.md`, which reads as `docs/x.md`: write `/files/` + the path without `docs/` for every docs file (media files keep `/media/`)
+  - kanban ancestor select: `handleAPIGetAncestorsInFolder` uses `ToRelative(a)` as option value and `filter.go` compares `ToWithPrefix(value)`, so an epic in `docs/media/` or `docs/docs/` never matches: use the metadata path as value, compare exactly
+- [ ] make `parsePath` private and remove `ToRelative` / `ToWithPrefix` / `ToDocsPath` / `ToFullPath` on arbitrary strings. until then add them to `parser_guard_test.go` (also `ToWithPrefix(ToRelative(`) with an allow-list that only shrinks
+- [ ] rule in `CLAUDE.md`: a variable carries its kind in the name (`metaPath`, `docsRel`), no function takes a bare "path" for docs files
 
 # every other time
 
@@ -82,6 +106,8 @@ GLOBAL RULES
 - Do not accept changes that grow an existing function with boolean flags, mode parameters, optional args, or special-case branches just to serve one caller. Evaluate whether a separate function or thin wrapper is simpler.
 - If the code is already appropriately simple, say so. Do not invent complexity to fill sections.
 - CODE OUTPUT RULE: Do not rewrite the code or provide patches/"fixed" versions. Prose only. The single exception is the "Simplest Possible Solution" section, where minimal pseudocode or a tiny illustrative diff is allowed — clearly marked, and never as a drop-in replacement for the reviewed code.
+- For any claim that the refactor is “easy to follow” or “hard to diverge from,” require evidence: number of canonical entrypoints, old paths removed or deprecated, tests/lint/type/CI checks that enforce the invariant, and docs/ADR. Otherwise label it “insufficient evidence.”
+- If the new pattern still allows the old pattern to compile, pass tests, or be copied safely, assume it will diverge unless explicitly guarded.
 
 EVIDENCE GATHERING
 If you have repo access, run or read:
@@ -138,6 +164,14 @@ REVIEW TASKS
     Angle B — App with backwards-compatibility requirements: existing APIs, data formats, contracts, config, persisted state, integrations, and user behavior must keep working unless a migration or deprecation path is clearly justified.
     If the two angles lead to different conclusions, state that explicitly. If the verdict differs by angle, say so.
 
+13. Drift resistance & convergence
+    Is the result easy to follow? Cite the canonical path(s) with file/line/commit.
+    Is it easy to diverge again? List every remaining alternate path, compatibility shim, flag, optional arg, duplicate helper, old call site, or undocumented pattern that can reintroduce the old behavior.
+    If easy to diverge, name the concrete divergence trigger: copy-paste, missing test, multiple entrypoints, no lint/type enforcement, unclear boundary, stale docs, etc.
+    What is the smallest prevention? Prefer: delete old path, reduce to one public entrypoint, add one focused test, add one lint/type rule, add CI check, add short ADR/comment. Do not add abstraction unless current requirement demands it.
+    Is the refactor’s resulting convention strict enough to prevent recurrence? If not, state exactly what must be stricter.
+    Is this review prompt strict enough? If not, state exactly which rule to add, tighten, or relax.
+
 OUTPUT FORMAT
 
 - Refactor verdict: WIN / MIXED / UNNECESSARY / HARMFUL / INCONCLUSIVE
@@ -155,6 +189,11 @@ OUTPUT FORMAT
 - Rollback recommendation
 - Metrics: files changed, lines changed, tests changed, coverage delta, perf delta, complexity delta if available
 - Open questions
+- Drift resistance verdict: Easy to follow / Guarded / Easy to diverge / Insufficient evidence
+- Divergence risks: ranked list with file/line/commit
+- Prevention required before acceptance: concrete minimal guardrails, or “none”
+- Prompt strictness verdict: Adequate / Should be more restrictive / Should be less restrictive
+- Recommended prompt change: exact rule to add, remove, or tighten, or “none”
 
 SCORING
 - Necessity: 0–5 (0 = no problem existed, 5 = critical problem solved)
@@ -163,6 +202,9 @@ SCORING
 - Risk introduced: 0–5
 - Test confidence: 0–5
 - Simplicity: Already simple / Can be simplified / Significantly overengineered
+- Drift resistance: 0–5
+  `0` = old paths remain and nothing enforces the new pattern
+  `5` = single canonical path enforced by tests/lint/types/CI, old path removed or unreachable
 
 STRICT RULES (restated)
 - If the refactor is a win, say exactly what improved and how it will be measured.
@@ -170,6 +212,8 @@ STRICT RULES (restated)
 - If it is harmful, state the safest rollback path.
 - If the changes are completely safe, logically sound, and meet best practices, explicitly state: "VERDICT: APPROVED".
 - Never output fixed code outside the single allowed "Simplest possible solution" section.
+- If easy to diverge, do not approve. Require removal of old paths or a concrete enforcement mechanism first.
+- If the prompt is too loose, state the exact additional rule. If too strict for the evidence, state exactly which rule to relax.
 ```
 
 ## overview
@@ -287,147 +331,3 @@ Also give your opinion about the changes: is the current solution overengineered
 
 
 # temp
-
-Work through the "# link refactor cleanup" section of docs/temp_todo.md, step by step, in the order it gives. Read CLAUDE.md and docs/testing.md first and follow them strictly.
-
-Context:
-- The link refactor (commits 93f0bbd1..4038feac) unified how link paths are encoded and decoded. The codec lives in internal/parser/link_rewrite.go: parser.Link, ParseLink, Dest/String, RewriteLinks, ExtractLinks. Rendering goes through parser.RenderLinks in parser_markdown.go.
-- What is left is in the todo section: one link target resolver, one link walker, tests that guard against divergence, bare markdown links relative to the doc plus an admin migration action, `../` above the docs root, leftovers, and warning noise. Every decision is already made and written there. Don't reopen them; if something in the code contradicts a decision, stop and ask me.
-- The "# reserved folders refactoring" section is a separate refactor. Don't touch it in this run. Step 1 has to leave a single resolver so that refactor can change one place later.
-
-How to work:
-- One step per commit. Use honest conventional-commit types, because the changelog is generated from them: `feat:` for new behavior, `fix:` for bug fixes, `refactor:` only when behavior is unchanged, and `!` or a "BREAKING CHANGE" subject for breaking changes. The commit subject must describe what the diff actually does.
-- Every user-visible behavior change gets a note in docs/upgrade.md: what changed and what the user has to do.
-- Keep each change as small as possible and match the surrounding code. Business logic goes in the owning package; handlers and jobs stay thin wrappers. No html in handlers. Translate every string. Paths go through pathutils/crosspath, and link paths only through parser.Link.
-- Steps 1 and 2 are refactors: they must not change what links resolve to, except fixing the divergences the todo names (the bare `pic.png` media link, html src/href, table cells in step 6). Write the tests for those first, and show they fail before your fix.
-- Do the guard, fuzz and goldmark comparison tests from step 7 right after steps 1 and 2, before the behavior changes in steps 3 and 4.
-- When a step is done, tick it off or remove it in docs/temp_todo.md.
-
-Verify after each step:
-- `go build ./... && go vet ./... && go test ./...`. Two tests in internal/server/render already fail and are unrelated (TestHeaderContextMenuScript_LabelsMapToTheirOwnAction, TestRowContextMenuScript_LabelsMapToTheirOwnAction); don't fix them here, but nothing else may fail.
-- Build a binary to /tmp, then run `/tmp/<binary> --start-tests --remove links`. Flags go before the suite name. At the end, run every suite with `/tmp/<binary> --start-tests --remove`.
-
-Safety:
-- Never touch /media/markus/SamsungT5/knov/data or the instance on port 1325 (my real one). The headless tests use isolated storage; use only that, or the dev server on port 1324.
-- Don't push. Don't rewrite existing commits.
-- My background automation auto-commits docs/changelogs/, docs/releases/unreleased.md and docs/temp_todo.md, and may also commit pending working-tree changes along with them. Commits you didn't make are normal. Keep the working tree committed between steps so the automation doesn't sweep half-finished work into its commits.
-
-Stop and report to me after steps 1, 2 and the step 7 tests, before starting step 3 (the bare-link behavior change and migration action). The report should cover what changed, the test results, and any new divergence you found. Also ask me whether to do the "reserved folders refactoring" section next, as its own run, or to continue with step 3 first.
-
-------
-
-
-You are a skeptical principal/staff engineer with 15+ years of production experience, acting as a post-mortem reviewer of a large refactor. You are also a pragmatic minimalist who strongly prefers YAGNI, KISS, and boring, proven technology. The simplest solution that satisfies the current requirement wins unless a concrete, present-day requirement justifies more.
-
-Your job is to decide whether this refactor was a net win, unnecessary churn, or a regression. Be strict. Assume the refactor must prove its value. Do not praise effort. Do not accept subjective claims like "cleaner", "modern", "more scalable", or "better architecture" without concrete evidence.
-
-CONTEXT
-- Project: [PROJECT NAME / SHORT DESCRIPTION]
-- Stated goal of refactor: unify link handling, no more extras
-- Guidelines / standards to enforce: infer from repo conventions and state assumptions clearly
-- Constraints: [performance budgets, backwards compatibility, deadlines, security, API stability, team size, etc.]
-- Commit range: last 25 commits, i.e. HEAD~24..HEAD. If hashes differ, use: [HASHES]
-- Repo access: [terminal access / attached diff / pasted outputs]
-- Test/lint/typecheck/coverage commands: [COMMANDS]
-- Run and report: [test runner] --start-tests --remove, and report any potential bugs it surfaces.
-- Ignore i18n translation churn; it is unrelated.
-
-GLOBAL RULES
-- Cite file/line/commit for every claim.
-- Distinguish facts from inferences. Label each.
-- If evidence is missing, say "insufficient evidence" instead of assuming or hallucinating files, tests, or behavior.
-- Do not let commit messages define truth; inspect the diff.
-- Do not reward large diffs. Large diff is a cost, not a win.
-- Prefer the smallest viable change. Every new abstraction, layer, wrapper, factory, interface, flag, dependency, config knob, or generic type must be justified by a current, concrete requirement. If it is not, recommend removal, inlining, or replacing with framework/ORM/stdlib built-in.
-- Before accepting any new function/helper/utility, search the codebase for one that already does the same or nearly the same thing. Reusing existing code beats writing new code.
-- Do not accept changes that grow an existing function with boolean flags, mode parameters, optional args, or special-case branches just to serve one caller. Evaluate whether a separate function or thin wrapper is simpler.
-- If the code is already appropriately simple, say so. Do not invent complexity to fill sections.
-- CODE OUTPUT RULE: Do not rewrite the code or provide patches/"fixed" versions. Prose only. The single exception is the "Simplest Possible Solution" section, where minimal pseudocode or a tiny illustrative diff is allowed — clearly marked, and never as a drop-in replacement for the reviewed code.
-
-EVIDENCE GATHERING
-If you have repo access, run or read:
-- git log --oneline --decorate HEAD~24..HEAD
-- git diff --stat HEAD~24..HEAD
-- git diff --name-status HEAD~24..HEAD
-- git show <each commit>
-- git diff HEAD~24..HEAD
-- Test/lint/typecheck/coverage: [COMMANDS]
-- [test runner] --start-tests --remove
-
-If you do not have repo access, ask for these outputs before judging. Do not guess.
-
-REVIEW TASKS
-
-1. Intent & scope
-   Reconstruct intent and scope from commits and diff. Map each commit to the stated refactor goal. Flag unrelated changes, scope creep, formatting noise, lockfile/generated changes, and mass renames.
-
-2. Behavior changes
-   Separate behavior-preserving refactors from behavior changes. List every behavior change, even minor. Identify public API, schema, config, dependency, concurrency, error handling, logging, security, and performance changes.
-
-3. Necessity
-   What concrete problem existed before? Is there evidence (bug reports, perf data, complexity metrics, test pain)? Could a smaller change have solved it? Did the refactor remove the problem or just move it?
-
-4. Guideline compliance
-   Check every guideline. Cite violations with file/line/commit. If guidelines are missing, infer repo conventions and state assumptions explicitly. If the existing architecture is already too complex, say that instead of forcing consistency with it.
-
-5. Code quality
-   Readability, complexity, coupling, cohesion, duplication, abstraction count, naming, error handling, testability, performance, security, backwards compatibility. Are there off-by-one errors, incorrect reassignments, logical flaws? Will it fail on empty arrays, nulls, or extreme inputs? Any injection, exposed secrets, or unsafe deserialization? Any O(n²) loops or unnecessary queries? Are there unconsidered changes to global state, env vars, or external APIs?
-
-6. Reuse & function boundaries
-   For each new function/helper/utility: does it duplicate an existing one in the codebase, framework, or stdlib? Name the existing function with file path that should be used instead. Is there a near-duplicate that a small natural extension would cover? Were existing functions modified with flags/mode params/special-case branches to support the new use case, and would a separate function or thin wrapper be clearer?
-   For each finding state a verdict: "Reuse existing X", "Extend existing X", "Split into new function", or "Fine as is".
-
-7. Overengineering / simplicity
-   Identify unnecessary abstractions, layers, wrappers, factories, interfaces, config, dependencies, generic types, indirection, or premature generalization. For every recommendation ask: can this be removed, inlined, replaced by a framework/ORM/stdlib built-in, hardcoded for now, or deferred until actually needed? Is the added complexity justified by current scale, reliability, security, or team constraints? If not, simplify. Rank simplifications by impact vs effort.
-   State a Simplicity Verdict: "Already simple" / "Can be simplified" / "Significantly overengineered".
-
-8. Production readiness
-   Error handling: what happens if the API/DB goes down? Performance: N+1 queries, unnecessary re-renders, O(n) issues? Observability: logging/metrics for the new code? Testing: does the structure allow easy unit/integration testing? If no tests are shown, list what tests are missing.
-   State a Production Readiness Verdict: "Production Ready" / "Needs Minor Refactoring" / "Prototype Only" / "Overengineered — Simplify First".
-
-9. Tests
-   Were tests updated, added, or deleted? Do they cover new behavior? Did any assertions weaken? Coverage up or down? Missing edge cases? Report what --start-tests --remove surfaced.
-
-10. Cost / benefit
-    Churn, review burden, risk, time, future maintenance. Was the net benefit worth it?
-
-11. Regressions & risks
-    Bugs, edge cases, data migration, rollback difficulty, hidden dependencies, perf regressions, security issues.
-
-12. Two-angle review
-    Angle A — Unreleased app, no backwards compatibility needed: breaking changes, simpler designs, removed compatibility shims, legacy path cleanup are acceptable if they improve the final product.
-    Angle B — App with backwards-compatibility requirements: existing APIs, data formats, contracts, config, persisted state, integrations, and user behavior must keep working unless a migration or deprecation path is clearly justified.
-    If the two angles lead to different conclusions, state that explicitly. If the verdict differs by angle, say so.
-
-OUTPUT FORMAT
-
-- Refactor verdict: WIN / MIXED / UNNECESSARY / HARMFUL / INCONCLUSIVE
-- Review verdict: APPROVED / APPROVED WITH COMMENTS / NEEDS CHANGES / BLOCKED (state per angle A and angle B if they differ)
-- Confidence: low / medium / high, and what evidence is missing
-- One-paragraph summary
-- Evidence table: commit | intent | guideline compliance | behavior change? | risk | verdict
-- Guideline compliance table: guideline | status | evidence
-- Reuse & function boundaries table: finding | verdict | existing function + path
-- Top wins: only with evidence
-- Top problems: ranked, with file/line/commit
-- Unnecessary churn / scope creep
-- Simplest possible solution: minimal pseudocode or tiny illustrative diff, clearly marked (this is the only place code is allowed)
-- Required follow-ups before acceptance
-- Rollback recommendation
-- Metrics: files changed, lines changed, tests changed, coverage delta, perf delta, complexity delta if available
-- Open questions
-
-SCORING
-- Necessity: 0–5 (0 = no problem existed, 5 = critical problem solved)
-- Guideline compliance: 0–5
-- Net benefit: -5 to +5
-- Risk introduced: 0–5
-- Test confidence: 0–5
-- Simplicity: Already simple / Can be simplified / Significantly overengineered
-
-STRICT RULES (restated)
-- If the refactor is a win, say exactly what improved and how it will be measured.
-- If it is unnecessary, say what should be reverted or simplified.
-- If it is harmful, state the safest rollback path.
-- If the changes are completely safe, logically sound, and meet best practices, explicitly state: "VERDICT: APPROVED".
-- Never output fixed code outside the single allowed "Simplest possible solution" section.

@@ -20,6 +20,32 @@ var reservedDocsFolders = []string{"docs", "media", "files"}
 // again. Returns the number of moved records.
 func MigrateReservedFolderMetadata() int {
 	moved := 0
+	walkReservedFolders(func(oldKey, newKey string) {
+		if fileExists(pathutils.ToFullPath(oldKey)) {
+			return
+		}
+		if old, _ := MetaDataGet(oldKey); old == nil {
+			return
+		}
+		if existing, _ := MetaDataGet(newKey); existing != nil {
+			return
+		}
+		if err := moveFileMetadata(logging.KeyApp, oldKey, newKey); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to migrate metadata %s -> %s: %v", oldKey, newKey, err)
+			return
+		}
+		moved++
+	})
+	if moved > 0 {
+		RefreshCaches()
+		logging.LogInfo(logging.KeyApp, "migrated the metadata of %d docs files in docs/docs, docs/media and docs/files", moved)
+	}
+	return moved
+}
+
+// walkReservedFolders calls fn with the legacy key (the path without the docs/ prefix) and the own
+// docs/ key of every docs file in docs/docs/, docs/media/ and docs/files/.
+func walkReservedFolders(fn func(oldKey, newKey string)) {
 	for _, top := range reservedDocsFolders {
 		_ = filepath.Walk(filepath.Join(pathutils.DocsRoot(), top), func(p string, info os.FileInfo, err error) error {
 			if err != nil || info.IsDir() {
@@ -30,27 +56,10 @@ func MigrateReservedFolderMetadata() int {
 			if err != nil {
 				return nil
 			}
-			oldKey := pathutils.ToWithPrefix(pathutils.ToSlash(rel))
-			if oldKey == newKey || fileExists(pathutils.ToFullPath(oldKey)) {
-				return nil
+			if oldKey := pathutils.ToWithPrefix(pathutils.ToSlash(rel)); oldKey != newKey {
+				fn(oldKey, newKey)
 			}
-			if old, _ := MetaDataGet(oldKey); old == nil {
-				return nil
-			}
-			if existing, _ := MetaDataGet(newKey); existing != nil {
-				return nil
-			}
-			if err := moveFileMetadata(logging.KeyApp, oldKey, newKey); err != nil {
-				logging.LogWarning(logging.KeyApp, "failed to migrate metadata %s -> %s: %v", oldKey, newKey, err)
-				return nil
-			}
-			moved++
 			return nil
 		})
 	}
-	if moved > 0 {
-		RefreshCaches()
-		logging.LogInfo(logging.KeyApp, "migrated the metadata of %d docs files in docs/docs, docs/media and docs/files", moved)
-	}
-	return moved
 }
