@@ -2,6 +2,10 @@ package kanbantest
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"slices"
 	"strings"
@@ -12,6 +16,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/pathutils"
+	"knov/internal/server"
 	"knov/internal/server/render"
 	"knov/internal/test"
 )
@@ -448,6 +453,52 @@ func caseRenameStatusFolderSync() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "RenameStatus did not rename the status folder, tag, card order and setting or changed KanbanMovedAt"
+	}
+	return cr
+}
+
+// caseMoveCardAPI moves a card through the api: the filepath is the card's metadata path (the
+// docs-relative one is answered with 400), the answer names the card by it too.
+func caseMoveCardAPI() test.CaseResult {
+	name := "move-card-api"
+	card := testPath("kanban-api.md")
+	if err := writeCard(card, "Api Card", nil, time.Now()); err != nil {
+		return errCase(name, err)
+	}
+	defer func() {
+		_ = os.Remove(pathutils.ToDocsPath(card))
+		_ = files.MetaDataDelete(pathutils.DocsPath(card))
+	}()
+	ts := httptest.NewServer(server.NewRouter())
+	defer ts.Close()
+	post := func(filepath string) (int, string) {
+		req, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/kanban/card/move", strings.NewReader(url.Values{"filepath": {filepath}, "status": {"inprogress"}}.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Accept", "application/json")
+		resp, err := ts.Client().Do(req)
+		if err != nil {
+			return 0, err.Error()
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, string(b)
+	}
+	bareStatus, _ := post(card)
+	status, body := post(pathutils.DocsPath(card))
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
+	if err != nil {
+		return errCase(name, err)
+	}
+	success := bareStatus == http.StatusBadRequest && status == http.StatusOK &&
+		strings.Contains(body, pathutils.DocsPath(card)) && containsPath(columnPaths(cols, "inprogress"), card)
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "docs-relative filepath -> 400, metadata path -> 200 naming the card by it and the card in inprogress",
+		Actual:   fmt.Sprintf("bare=%d meta=%d %s", bareStatus, status, strings.TrimSpace(body)),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "kanban card move api did not take the metadata path"
 	}
 	return cr
 }

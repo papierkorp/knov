@@ -36,6 +36,9 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseStoredPaths,
 		caseMigration,
 		caseLinkRename,
+		caseTree,
+		caseBook,
+		caseUpload,
 		caseCreate,
 		caseRenameMoveDelete,
 	}

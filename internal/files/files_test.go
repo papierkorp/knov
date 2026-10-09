@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"knov/internal/cacheStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/parser"
@@ -18,6 +19,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	if err := configStorage.Init("json", dir); err != nil {
+		panic(err)
+	}
+	if err := cacheStorage.Init("json", dir); err != nil {
 		panic(err)
 	}
 	code := m.Run()
@@ -116,4 +120,32 @@ func TestRenamedLinkReadsBack(t *testing.T) {
 			}
 		}
 	}
+}
+
+// a file list built before a mutation invalidated the cache must not be persisted: it would be
+// read back as the current list (a filter then misses the file the mutation just changed)
+func TestStaleFileListIsNotCached(t *testing.T) {
+	InvalidateFileListCache()
+	gen := fileListGeneration()
+	stale := []File{{Name: "stale.md", Path: "docs/stale.md"}}
+	InvalidateFileListCache() // a mutation lands while the list is being built
+	if err := saveFileListToCache(stale, gen); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := getFileListFromCache(); err != nil || got != nil {
+		t.Errorf("stale file list was cached: %v, %v", got, err)
+	}
+	if memo := func() []File { fileListMemoMu.RLock(); defer fileListMemoMu.RUnlock(); return fileListMemo }(); memo != nil {
+		t.Errorf("stale file list was memoized: %v", memo)
+	}
+
+	// a list built after the last invalidation is cached
+	fresh := []File{{Name: "fresh.md", Path: "docs/fresh.md"}}
+	if err := saveFileListToCache(fresh, fileListGeneration()); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := getFileListFromCache(); err != nil || len(got) != 1 || got[0].Name != "fresh.md" {
+		t.Errorf("fresh file list not cached: %v, %v", got, err)
+	}
+	InvalidateFileListCache()
 }

@@ -104,10 +104,7 @@ func TestRenderedLinkMatchesMetadata(t *testing.T) {
 			"html src media url":   `<img src="` + pathutils.ToMediaURL(img) + `">`,
 			"html href bare media": `<a href="` + encodeLinkPath(pdf, LinkHTML) + `">x</a>`,
 		}
-		// an image is rendered by renderImage, which reads "trail.png " as no image
-		if strings.TrimSpace(img) == img {
-			forms["image bare"] = "![x](" + encodeLinkPath(img, LinkMarkdown) + ")"
-		}
+		forms["image bare"] = "![x](" + encodeLinkPath(img, LinkMarkdown) + ")"
 		if bare := strings.TrimSuffix(p, ".md"); utils.WithDefaultLinkExt(bare) == p {
 			forms["wiki no ext"] = "[[" + encodeLinkPath(bare, LinkWiki) + "]]"
 		}
@@ -168,6 +165,78 @@ func TestFileLinkDestReservedFolders(t *testing.T) {
 			if len(got) != 1 || got[0] != "docs/"+rel {
 				t.Errorf("%s reads %q, want docs/%s", link, got, rel)
 			}
+		}
+	}
+}
+
+// an image renders from the file link metadata reads: a bare image that exists only in the docs
+// folder points at that docs file, not at a media file of that name, and an image in an
+// interactive table cell renders like on the page
+func TestRenderedImageMatchesLinkTarget(t *testing.T) {
+	dir := t.TempDir()
+	prevData, prevStorage := configmanager.GetDataPath(), configmanager.GetStoragePath()
+	configmanager.SetDataAndStoragePaths(dir, dir)
+	t.Cleanup(func() { configmanager.SetDataAndStoragePaths(prevData, prevStorage) })
+	for _, f := range []string{"docs/sub/pic.png", "media/sub/other.png", "media/top.png"} {
+		full := filepath.Join(dir, filepath.FromSlash(f))
+		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, []byte("x"), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	const doc = "docs/sub/n.md"
+	h := NewMarkdownHandler()
+	render := func(content string) string {
+		parsed, _ := h.Parse([]byte(content), doc)
+		out, err := h.Render(parsed, PathlessRender, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(out)
+	}
+	for _, c := range []struct{ name, content, want, notWant string }{
+		{"bare docs-only image", "![x](pic.png)", `src="/files/sub/pic.png"`, "/api/media/preview"},
+		{"bare media image", "![x](other.png)", "/api/media/preview?path=sub%2Fother.png", `/files/`},
+		{"media image", "![x](media/top.png)", "/api/media/preview?path=top.png", ""},
+		{"media url image", "![x](/media/top.png)", "/api/media/preview?path=top.png", ""},
+	} {
+		if got := render(c.content); !strings.Contains(got, c.want) || c.notWant != "" && strings.Contains(got, c.notWant) {
+			t.Errorf("%s: %q renders %q, want it to contain %q and not %q", c.name, c.content, got, c.want, c.notWant)
+		}
+	}
+	for _, c := range []struct{ name, cell, want string }{
+		{"table cell media image", "![x](media/top.png)", `src="/media/top.png"`},
+		{"table cell bare media image", "![x](other.png)", `src="/media/sub/other.png"`},
+		{"table cell docs-only image", "![x](pic.png)", `src="/files/sub/pic.png"`},
+	} {
+		if got := RenderInlineMarkdown(RenderLinks(c.cell, doc)); !strings.Contains(got, c.want) {
+			t.Errorf("%s: %q renders %q, want it to contain %q", c.name, c.cell, got, c.want)
+		}
+	}
+}
+
+// a header / footer zone template that is nothing but one markdown image is that image
+func TestSoleImageLink(t *testing.T) {
+	for in, want := range map[string]string{
+		"![alt](media/logo.png)":  "media/logo.png",
+		"![](logo%20x.png)":       "logo x.png",
+		"![a](<a b.png> \"t\")":   "a b.png",
+		"![a](sub/logo.png#x)":    "sub/logo.png",
+		"![a](x.png)(y)":          "",
+		" ![a](x.png)":            "",
+		"[a](x.png)":              "",
+		"![a](x.png) ![b](y.png)": "",
+		"text ![a](x.png)":        "",
+		"![[x.png]]":              "",
+		"![a](https://x.y/z.png)": "",
+		"`![a](x.png)`":           "",
+		"{{date}} ![a](x.png)":    "",
+	} {
+		l, ok := SoleImageLink(in)
+		if (want != "") != ok || ok && l.Path != want {
+			t.Errorf("SoleImageLink(%q) = %q, %v, want %q", in, l.Path, ok, want)
 		}
 	}
 }

@@ -246,57 +246,40 @@ func jsCodeMirrorSaveShortcut() string {
 	});`
 }
 
-// jsCodeMirrorToc dispatches a cancelable "knov:editor-toc" event with the editor's headings whenever
+// jsCodeMirrorToc dispatches a cancelable "knov:editor-toc" event with the editor's headings (listed by the server) whenever
 // they change; themes listen for it to render their TOC, call preventDefault() once rendered (otherwise
 // it's re-sent on the next edit) and call detail.jump(idx) to move the editor to a heading. Hooks in via cmOptions.onChange, which createCodeMirror reads on every update, so it survives
 // reinitCodeMirror.
 func jsCodeMirrorToc() string {
 	return `
-	var tocTimer, tocSig;
-	// strips common inline markdown so entries read like the view page TOC: [[t|alias]], [text](url), ` + "`" + `, **, __, ~~
-	function stripTocInline(s) {
-		return s.replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1')
-			.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-			.replace(/` + "`" + `|\*\*|__|~~/g, '');
-	}
-	// mirrors markdown.ScanHeadings: skips front matter and fenced code, drops the closing # sequence
-	function scanCodeMirrorHeadings() {
-		var doc = view.state.doc, items = [], fence = null, ln = 1;
-		// same as markdown.SplitFrontMatter: exact "---\n" opener, closed by "\n---\n" (so not on line 2 or the last line)
-		if (doc.line(1).text === '---') {
-			for (var i = 3; i < doc.lines; i++) {
-				if (doc.line(i).text === '---') { ln = i + 1; break; }
-			}
-		}
-		for (; ln <= doc.lines; ln++) {
-			var text = doc.line(ln).text.trim();
-			var f = text.match(/^(` + "`" + `{3,}|~{3,})/);
-			if (fence) {
-				if (f && text === f[0] && f[0][0] === fence[0] && f[0].length >= fence.length) fence = null;
-				continue;
-			}
-			if (f) { fence = f[0]; continue; }
-			var m = text.match(/^(#{1,6})(?:[ \t]+(.*))?$/);
-			if (m) items.push({level: m[1].length, text: stripTocInline((m[2] || '').replace(/(^|[ \t]+)#+$/, '')), line: ln});
-		}
-		return items;
-	}
+	var tocTimer, tocSig, tocReq = 0;
+	var tocItems = [];
+	// the headings come from the server (POST /api/editor/toc), so they read like the TOC of the rendered page
 	function updateCodeMirrorToc() {
-		var items = scanCodeMirrorHeadings();
-		// line numbers stay out of the signature so inserting lines doesn't rebuild the toc (and reset its folds)
-		var sig = JSON.stringify(items.map(function(h) { return [h.level, h.text]; }));
-		if (sig === tocSig) return;
-		// only remember the signature once a theme rendered it, so a late listener still gets the toc
-		var handled = !document.dispatchEvent(new CustomEvent('knov:editor-toc', {cancelable: true, detail: {
-			items: items.map(function(h) { return {level: h.level, text: h.text}; }),
-			jump: function(idx) {
-				var cur = scanCodeMirrorHeadings()[idx];
-				if (!cur) return;
-				view.dispatch({selection: {anchor: view.state.doc.line(cur.line).from}, scrollIntoView: true});
-				view.focus();
-			}
-		}}));
-		if (handled) tocSig = sig;
+		var req = ++tocReq;
+		fetch('/api/editor/toc', {
+			method: 'POST',
+			headers: {'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'},
+			body: new URLSearchParams({content: view.state.doc.toString()})
+		}).then(function(res) { return res.ok ? res.json() : null; }).then(function(items) {
+			if (!items || req !== tocReq) return;
+			tocItems = items;
+			// line numbers stay out of the signature so inserting lines doesn't rebuild the toc (and reset its folds)
+			var sig = JSON.stringify(items.map(function(h) { return [h.level, h.text]; }));
+			if (sig === tocSig) return;
+			// only remember the signature once a theme rendered it, so a late listener still gets the toc
+			var handled = !document.dispatchEvent(new CustomEvent('knov:editor-toc', {cancelable: true, detail: {
+				items: items.map(function(h) { return {level: h.level, text: h.text}; }),
+				jump: function(idx) {
+					var cur = tocItems[idx];
+					if (!cur) return;
+					var line = Math.min(cur.line + 1, view.state.doc.lines);
+					view.dispatch({selection: {anchor: view.state.doc.line(line).from}, scrollIntoView: true});
+					view.focus();
+				}
+			}}));
+			if (handled) tocSig = sig;
+		}).catch(function() {});
 	}
 	// chain any earlier onChange so other features can share the single hook
 	var prevOnChange = cmOptions.onChange;

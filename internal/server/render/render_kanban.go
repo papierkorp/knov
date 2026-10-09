@@ -54,7 +54,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		data-status="%s"
 		data-prefix="%s"
 		ondragstart="kanbanDragStart(event)">`,
-		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(card.FilePath), template.HTMLEscapeString(card.Status), prefix)
+		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(pathutils.DocsPath(card.FilePath)), template.HTMLEscapeString(card.Status), prefix)
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
@@ -305,10 +305,10 @@ func RenderKanbanEvents(events []kanbanStorage.Event, filePaths []string, board,
 		fileLabel, board, fileLabel, all)
 	for _, p := range filePaths {
 		selected := ""
-		if p == fileFilter {
+		if p == fileFilter { // the cards use docs-relative paths, the option values the metadata path
 			selected = ` selected`
 		}
-		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, template.HTMLEscapeString(p), template.HTMLEscapeString(p), selected, template.HTMLEscapeString(filepath.Base(p)))
+		fmt.Fprintf(&html, `<option value="%s" title="%s"%s>%s</option>`, template.HTMLEscapeString(pathutils.DocsPath(p)), template.HTMLEscapeString(p), selected, template.HTMLEscapeString(filepath.Base(p)))
 	}
 	html.WriteString(`</select>`)
 

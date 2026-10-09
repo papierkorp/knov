@@ -17,9 +17,9 @@ import (
 // ones to the docs root
 func TestRenderRelativeLinks(t *testing.T) {
 	in := "[y](../a.md) [[./b]] ![i](./c.png) [z](sub/d.md) [w](/d.md) [[d]] ![j](g.png)\n\n[r]: ./e.md\n[s]: ./f.png\n[t]: h.md"
-	want := "[y](" + fileURL("x/a.md") + ") [b](" + fileURL("x/sub/b.md") + ") ![i](x/sub/c.png) [z](" +
+	want := "[y](" + fileURL("x/a.md") + ") [b](" + fileURL("x/sub/b.md") + ") ![i](" + pathutils.ToMediaURL("x/sub/c.png") + ") [z](" +
 		fileURL("x/sub/sub/d.md") + ") [w](" + fileURL("d.md") + ") [d](" + fileURL("d.md") +
-		") ![j](x/sub/g.png)\n\n[r]: " + fileURL("x/sub/e.md") + "\n[s]: x/sub/f.png\n[t]: " + fileURL("x/sub/h.md")
+		") ![j](" + pathutils.ToMediaURL("x/sub/g.png") + ")\n\n[r]: " + fileURL("x/sub/e.md") + "\n[s]: " + pathutils.ToMediaURL("x/sub/f.png") + "\n[t]: " + fileURL("x/sub/h.md")
 	if got := RenderLinks(in, "docs/x/sub/n.md"); got != want {
 		t.Errorf("RenderLinks(%q) = %q, want %q", in, got, want)
 	}
@@ -66,19 +66,19 @@ func TestRenderLinks(t *testing.T) {
 		// external (non-relative) links are left exactly as written - no fallback label, no
 		// /files/ routing.
 		{"external link untouched", "[Example](https://example.com/some/path)", "[Example](https://example.com/some/path)"},
-		// a plain image link passes through unchanged.
-		{"image embed untouched", "![Diagram](media/diagram.png)", "![Diagram](media/diagram.png)"},
-		// a Windows-style backslash path is normalized to forward slashes - the only
-		// transformation the image branch ever applies.
-		{"image embed backslash path normalized", `![Diagram](sub\diagram.png)`, "![Diagram](sub/diagram.png)"},
+		// an image is written as the app url of its target (renderImage previews it).
+		{"image embed untouched", "![Diagram](media/diagram.png)", "![Diagram](/media/diagram.png)"},
+		// a Windows-style backslash path is normalized to forward slashes - the first
+		// transformation the image path gets before it is written as a url.
+		{"image embed backslash path normalized", `![Diagram](sub\diagram.png)`, "![Diagram](/media/sub/diagram.png)"},
 		{"doc link backslash path normalized", `[](sub\note.md)`, "[note](" + fileURL("sub/note.md") + ")"},
 		// a markdown escape (\_) is no separator, the anchor becomes its heading id
 		{"doc link markdown escape resolved", `[x](a\_b.md#c\d)`, "[x](" + fileURL("a_b.md") + "#c-d)"},
-		{"image embed markdown escape resolved", `![D](a\_b.png)`, `![D](a_b.png)`},
+		{"image embed markdown escape resolved", `![D](a\_b.png)`, `![D](/media/a_b.png)`},
 		// in a windows path every "\" is a separator, also before punctuation (_resources)
 		{"doc link windows punctuation folder", `[x](sub\_resources\a.md)`, "[x](" + fileURL("sub/_resources/a.md") + ")"},
-		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](a_b.png#c\d "t\x")`},
-		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](sub/_resources/a.png)"},
+		{"image embed title and anchor kept", `![D](a\_b.png#c\d "t\x")`, `![D](/media/a_b.png#c\d "t\x")`},
+		{"image embed windows punctuation folder", `![D](sub\_resources\a.png)`, "![D](/media/sub/_resources/a.png)"},
 		{"doc link backslash dot segments", `[x](a\..\b\.c.md)`, "[x](" + fileURL("b/.c.md") + ")"},
 		// a /files/ url gets the default extension like link metadata reads it
 		{"files url no ext", "[x](/files/a)", "[x](" + fileURL("a.md") + ")"},
@@ -93,18 +93,18 @@ func TestRenderLinks(t *testing.T) {
 		// a link text spanning lines keeps its text
 		{"multi-line text", "[a\nb](a.md)", "[a\nb](" + fileURL("a.md") + ")"},
 		// an image alt spanning lines or holding code stays an image
-		{"multi-line image alt", "![a\nb](a%20b.png)", "![a\nb](a%20b.png)"},
-		{"image alt with code", "![`x` y](a.png)", "![`x` y](a.png)"},
+		{"multi-line image alt", "![a\nb](a%20b.png)", "![a\nb](/media/a%20b.png)"},
+		{"image alt with code", "![`x` y](a.png)", "![`x` y](/media/a.png)"},
 		{"bracket in code text", "[`]` x](a.md)", "[`]` x](" + fileURL("a.md") + ")"},
 		{"unclosed angle after space", "[x]( <a.md)", "[x]( <a.md)"},
 		// a linked image or one after a stray "[" stays an image
-		{"linked image", "[![b](img.png)](a.md)", "[![b](img.png)](" + fileURL("a.md") + ")"},
-		{"linked image external", "[![b](img.png)](https://x.y)", "[![b](img.png)](https://x.y)"},
-		{"image after stray bracket", "a [stray\n\n![i](img.png)", "a [stray\n\n![i](img.png)"},
+		{"linked image", "[![b](img.png)](a.md)", "[![b](/media/img.png)](" + fileURL("a.md") + ")"},
+		{"linked image external", "[![b](img.png)](https://x.y)", "[![b](/media/img.png)](https://x.y)"},
+		{"image after stray bracket", "a [stray\n\n![i](img.png)", "a [stray\n\n![i](/media/img.png)"},
 		// a reference definition to a docs file gets its /files/ url like an inline link, media,
 		// images, pure anchors and external ones stay as written
 		{"ref def doc", "[r][id]\n\n[id]: <a b#Phase 1> \"t\"", "[r][id]\n\n[id]: " + fileURL("a b.md") + "#phase-1 \"t\""},
-		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y"},
+		{"ref def media image anchor external", "[a]: media/x.png\n[b]: pic.png\n[c]: #x\n[d]: https://x.y", "[a]: /media/x.png\n[b]: /media/pic.png\n[c]: #x\n[d]: https://x.y"},
 		{"ref def in code", "```\n[id]: a.md\n```", "```\n[id]: a.md\n```"},
 		// html src/href get their app url like markdown links, app routes, anchors and external ones stay
 		{"html href", `<a href="a b.md">x</a> <img src='/media/p.png'>`, `<a href="` + fileURL("a b.md") + `">x</a> <img src='` + pathutils.ToMediaURL("p.png") + `'>`},
@@ -484,3 +484,24 @@ func TestRenderDotFolderLinks(t *testing.T) {
 
 // fileURL is the /files/ url of the docs-relative path rel
 func fileURL(rel string) string { return pathutils.ToFileURL(pathutils.DocsPath(rel)) }
+
+// a "|" in a link path written into a table row is escaped (GFM ends the cell at an unescaped one),
+// in other lines it stays - and both read back as the same path
+func TestRewriteLinksEscapesPipeInTableRows(t *testing.T) {
+	content := "intro [w](old.md)\n\n| a | b |\n|---|:-:|\n| [x](old.md) | <a href=\"old.md\">h</a> |\n| [[old]] | [y](old.md) |\nlazy [z](old.md)\n\n[o](old.md)\n"
+	got, changed := RewriteLinks(content, func(l Link) (string, bool) {
+		if l.Kind == LinkWiki {
+			return "", false
+		}
+		return "a|b.md", true
+	})
+	want := "intro [w](a|b.md)\n\n| a | b |\n|---|:-:|\n| [x](a\\|b.md) | <a href=\"a%7Cb.md\">h</a> |\n| [[old]] | [y](a\\|b.md) |\nlazy [z](a\\|b.md)\n\n[o](a|b.md)\n"
+	if !changed || got != want {
+		t.Errorf("RewriteLinks = %q, want %q", got, want)
+	}
+	for _, l := range NewMarkdownHandler().ExtractLinks([]byte(got), "docs/n.md") {
+		if l != "docs/old.md" && l != "docs/a|b.md" {
+			t.Errorf("ExtractLinks read %q", l)
+		}
+	}
+}

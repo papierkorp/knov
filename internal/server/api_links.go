@@ -261,7 +261,7 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 		for _, a := range ancestors {
 			rel := pathutils.ToRelative(a)
 			rels = append(rels, rel)
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, render.GetLinkDisplayText(rel))
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, render.GetLinkDisplayText(pathutils.ToWithPrefix(a)))
 		}
 		writeResponse(w, r, rels, html.String())
 		return

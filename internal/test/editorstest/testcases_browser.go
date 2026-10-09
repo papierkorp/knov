@@ -167,3 +167,60 @@ func caseCodeMirrorToolbarBold() test.CaseResult {
 	}
 	return cr
 }
+
+// caseCodeMirrorLiveToc renders the real CodeMirror editor for a file with headings in a headless
+// browser and checks the live TOC event it dispatches carries the headings the server lists
+// (POST /api/editor/toc) - the text the rendered page's TOC shows, not the raw markdown.
+func caseCodeMirrorLiveToc() test.CaseResult {
+	name := "codemirror-live-toc"
+	if !testkit.Available() {
+		return test.SkipCase(name, "no local chrome/chromium binary found")
+	}
+
+	relPath := testPath("codemirror_toc.md")
+	if err := writeFile(relPath, "# One **bold**\n\ntext\n\n## Two [x](a.md)\n"); err != nil {
+		return errCase(name, err)
+	}
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
+		return errCase(name, err)
+	}
+
+	app := server.NewRouter()
+	page := fmt.Sprintf(`<!DOCTYPE html><html><head>
+<script src="/static/codemirror6-bundle.min.js"></script>
+<script src="/static/wiki-autocomplete.js"></script>
+<script>document.addEventListener('knov:editor-toc', function(e) { window.__toc = e.detail.items; e.preventDefault(); });</script>
+</head><body>%s</body></html>`, render.RenderCodeMirrorEditorForm(relPath, ""))
+	harness := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			app.ServeHTTP(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		_, _ = w.Write([]byte(page))
+	}))
+	defer harness.Close()
+
+	ctx, cancel, err := testkit.NewBrowser(context.Background())
+	if err != nil {
+		return test.SkipCase(name, err.Error())
+	}
+	defer cancel()
+
+	var got string
+	err = chromedp.Run(ctx,
+		chromedp.Navigate(harness.URL),
+		chromedp.WaitVisible(".cm-content", chromedp.ByQuery),
+		chromedp.Poll(`window.__toc && window.__toc.length === 2`, nil),
+		chromedp.Evaluate(`JSON.stringify(window.__toc)`, &got),
+	)
+	if err != nil {
+		return errCase(name, err)
+	}
+	want := `[{"level":1,"text":"One bold"},{"level":2,"text":"Two x"}]`
+	cr := test.CaseResult{Name: name, Expected: want, Actual: got, Success: got == want}
+	if !cr.Success {
+		cr.Error = "the live toc event did not carry the headings listed by the server"
+	}
+	return cr
+}

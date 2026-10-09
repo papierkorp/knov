@@ -38,10 +38,8 @@ var guardRules = []guardRule{
 		exts: []string{".go", ".js", ".gohtml"},
 		skip: []string{"internal/parser/"},
 		allowed: map[string]int{
-			"internal/dokuwikiconverter/converter_process.go":    1, // dokuwiki [[...]] syntax, not markdown
-			"internal/pdfexport/images.go":                       1, // a header/footer zone template that is one image link
-			"internal/server/render/render_editor_codemirror.go": 2, // strips link syntax down to its text
-			"static/wiki-autocomplete.js":                        2, // an open [[ / ]( before the cursor starts autocomplete
+			"internal/dokuwikiconverter/converter_process.go": 1, // dokuwiki [[...]] syntax, not markdown
+			"static/wiki-autocomplete.js":                     2, // an open [[ / ]( before the cursor starts autocomplete
 		},
 	},
 	{
@@ -49,9 +47,8 @@ var guardRules = []guardRule{
 		re:   regexp.MustCompile(`"\]\(" \+|\[%s\]\(%s\)`),
 		exts: []string{".go"},
 		allowed: map[string]int{
-			"internal/parser/link_rewrite.go":                 1, // Link.String
-			"internal/parser/parser_markdown.go":              4, // RenderLinks writes app urls
-			"internal/dokuwikiconverter/converter_process.go": 1, // dokuwiki namespace -> /browse/folders link
+			"internal/parser/link_rewrite.go":    1, // Link.String
+			"internal/parser/parser_markdown.go": 4, // RenderLinks writes app urls
 		},
 	},
 	{

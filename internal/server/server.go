@@ -168,6 +168,7 @@ func NewRouter() *chi.Mux {
 
 		r.Route("/editor", func(r chi.Router) {
 			r.Get("/", handleAPIGetEditorHandler)
+			r.Post("/toc", handleAPIEditorTOC)
 			r.Post("/indexeditor", handleAPISaveIndexEditor)
 			r.Post("/bookeditor", handleAPISaveBookEditor)
 			r.Post("/entry/add-entry", handleAPIAddEntry) // shared by the index and book entry editors

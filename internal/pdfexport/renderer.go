@@ -247,10 +247,8 @@ func (r *renderer) drawHeader() {
 // instead — see drawZoneImage — falling back to drawing the raw text if the
 // image can't be embedded.
 func (r *renderer) drawZone(text string, st ZoneStyle, x, y, width float64, alignStr string) {
-	if m := zoneImageLinkRe.FindStringSubmatch(strings.TrimSpace(text)); m != nil {
-		if l := parser.ParseLink(m[1], parser.LinkMarkdown); !l.External && r.drawZoneImage(l.Path, x, y, width, alignStr) {
-			return
-		}
+	if l, ok := parser.SoleImageLink(strings.TrimSpace(text)); ok && r.drawZoneImage(l.Path, x, y, width, alignStr) {
+		return
 	}
 	family := r.applyZoneStyle(st)
 	r.pdf.SetXY(x, y)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"regexp"
+	"strings"
 )
 
 type TOCItem struct {
@@ -42,4 +43,23 @@ func HeadingsToTOC(headings []Heading) []TOCItem {
 func stripHTMLTags(s string) string {
 	stripped := regexp.MustCompile(`<[^>]*>`).ReplaceAllString(s, "")
 	return html.UnescapeString(stripped)
+}
+
+// EditorHeading is a heading of a document being edited: its level, the visible text a TOC shows
+// and its 0-based line.
+type EditorHeading struct {
+	Level int    `json:"level"`
+	Text  string `json:"text"`
+	Line  int    `json:"line"`
+}
+
+// EditorHeadings lists the headings of unsaved markdown content for the editor's live TOC, with
+// the same rules and display text as the TOC of the rendered page (TOCFromMarkdown).
+func EditorHeadings(content string) []EditorHeading {
+	headings := Headings(strings.Split(content, "\n"))
+	out := make([]EditorHeading, len(headings))
+	for i, h := range headings {
+		out[i] = EditorHeading{Level: h.Level, Text: HeadingDisplayText(h.Text), Line: h.Line}
+	}
+	return out
 }

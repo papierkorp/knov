@@ -5,6 +5,7 @@ import (
 	"fmt"
 	stdhtml "html"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -446,6 +447,12 @@ func (r *knovNodeRenderer) renderImage(w util.BufWriter, source []byte, node ast
 	}
 	alt := altBuf.String()
 
+	// a docs file (imageDest)
+	if strings.HasPrefix(dest, "/files/") {
+		fmt.Fprintf(w, `<img src="%s" alt="%s" />`, dest, alt)
+		return ast.WalkSkipChildren, nil
+	}
+
 	if configmanager.GetPreviewsEnabled() && !isExternal {
 		previewPath := resolveMediaPath(dest)
 		if previewPath == "" {
@@ -682,6 +689,9 @@ func (h *MarkdownHandler) restoreHTMLBlocks(html, tag string, blocks []htmlWrapp
 // (goldmark already resolved its escapes and entities, so it's only percent-decoded).
 func resolveMediaPath(dest string) string {
 	dest = unescapePath(dest)
+	if rel, ok := strings.CutPrefix(dest, "/media/"); ok {
+		return rel // written by imageDest
+	}
 	if pathutils.IsMedia(dest) {
 		return pathutils.ToRelative(dest)
 	}
@@ -827,9 +837,12 @@ func processMarkdownLink(m linkMatch, docPath string) string {
 	}
 	target := LinkTarget(docPath, l)
 	l.Path = ResolveLinkPath(docPath, l)
-	// an image is rendered from its destination by goldmark, written back read from the docs root
+	// an image is rendered from its destination by goldmark (renderImage), written as the app url of its target
 	if l.Image {
-		return m.Prefix + l.Dest() + m.Suffix
+		if target == "" {
+			return m.Prefix + l.Dest() + m.Suffix
+		}
+		return m.Prefix + imageDest(l, target) + m.Suffix
 	}
 	if m.Open == "" {
 		return "](" + appLinkDest(l, target) + ")"
@@ -891,23 +904,36 @@ func linkAnchor(l Link, target string) string {
 	return l.Anchor
 }
 
+// imageDest is the destination RenderLinks writes for the image l with the LinkTarget target, which
+// renderImage and goldmark in an interactive table cell render the same: a media file its
+// /media/ url, a docs file its /files/ url - and a file that exists nowhere its /media/ url too,
+// so the preview says it is missing.
+func imageDest(l Link, target string) string {
+	rel, media := strings.CutPrefix(target, "media/")
+	var u string
+	switch _, err := os.Stat(pathutils.ToFullPath(target)); {
+	case media:
+		u = pathutils.ToMediaURL(rel)
+	case err == nil:
+		u = pathutils.ToFileURL(target)
+	default:
+		u = pathutils.ToMediaURL(strings.TrimPrefix(target, "docs/"))
+	}
+	return u + l.Query + l.Anchor + l.Title
+}
+
 // refDefDest is the destination RenderLinks writes for the reference definition m, like
-// processMarkdownLink - goldmark would resolve it against the page. an image one stays as written,
-// only resolved to its docs-root path (ResolveLinkPath, rendered from the destination like an
-// inline image).
+// processMarkdownLink - goldmark would resolve it against the page. an image one is written like
+// an inline image (imageDest).
 func refDefDest(m linkMatch, docPath string) string {
 	l := m.Link
 	target := LinkTarget(docPath, l)
 	if target == "" {
 		return m.Dest
 	}
-	written := l.Path
 	l.Path = ResolveLinkPath(docPath, l)
 	if configmanager.IsImageExtension(strings.ToLower(path.Ext(target))) {
-		if l.Path == written {
-			return m.Dest
-		}
-		return l.Dest()
+		return imageDest(l, target)
 	}
 	return appLinkDest(l, target)
 }

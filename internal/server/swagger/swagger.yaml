@@ -533,6 +533,15 @@ definitions:
       pending:
         type: boolean
     type: object
+  parser.EditorHeading:
+    properties:
+      level:
+        type: integer
+      line:
+        type: integer
+      text:
+        type: string
+    type: object
   render.EnvVarInfo:
     properties:
       availableValues:
@@ -1569,6 +1578,32 @@ paths:
           schema:
             type: string
       summary: Save table data
+      tags:
+      - editor
+  /api/editor/toc:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Returns the headings of the posted markdown the way the table of
+        contents of the rendered page shows them (front matter and fenced code skipped,
+        inline markdown and links as the text they render), for the live TOC of the
+        editor
+      parameters:
+      - description: markdown content
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/parser.EditorHeading'
+            type: array
+      summary: List the headings of unsaved markdown
       tags:
       - editor
   /api/exports/files:
@@ -2851,7 +2886,7 @@ paths:
         name: status
         required: true
         type: string
-      - description: Comma-separated list of filepaths in display order
+      - description: Comma-separated list of docs/ prefixed filepaths in display order
         in: formData
         name: order
         required: true
@@ -2886,7 +2921,7 @@ paths:
       description: Updates the kanban status tag on a file, replacing any existing
         kanban tag
       parameters:
-      - description: File path
+      - description: File path (docs/ prefixed)
         in: formData
         name: filepath
         required: true

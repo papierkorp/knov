@@ -236,8 +236,8 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		fmt.Fprintf(&html, `<input type="text" name="entries[%d][section]" value="%s" class="form-input" placeholder="%s"/>`, index, htmlpkg.EscapeString(section), t("section"))
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
-		if p := parser.ResolveWikiTarget(entry.Value); p != "" {
-			if ok, _ := contentStorage.FileExists(pathutils.ToDocsPath(p)); !ok {
+		if p := parser.LinkTarget(filePath, parser.ParseLink(entry.Value, parser.LinkWiki)); p != "" {
+			if ok, _ := contentStorage.FileExists(pathutils.ToFullPath(p)); !ok {
 				fmt.Fprintf(&html, `<span class="entry-file-missing" title="%s">%s</span>`, htmlpkg.EscapeString(p), t("file not found"))
 			}
 		}
