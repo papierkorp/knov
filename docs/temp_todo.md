@@ -63,6 +63,11 @@ the docs-relative path, the metadata path (`docs/...` / `media/...`) and the ful
   - kanban ancestor select: `handleAPIGetAncestorsInFolder` uses `ToRelative(a)` as option value and `filter.go` compares `ToWithPrefix(value)`, so an epic in `docs/media/` or `docs/docs/` never matches: use the metadata path as value, compare exactly
 - [x] make `parsePath` private and remove `ToRelative` / `ToWithPrefix` / `ToDocsPath` / `ToFullPath` on arbitrary strings. until then add them to `parser_guard_test.go` (also `ToWithPrefix(ToRelative(`) with an allow-list that only shrinks - done: removed together with `ToMediaPath` / `IsMedia` / `IsDocs`, `parsePath` is only reached through `GuessMeta` and `FromFullPath`; the guard counts the 4 `GuessMeta` calls left (user-entered parents, legacy metadata keys)
 - [x] rule in `CLAUDE.md`: a variable carries its kind in the name (`metaPath`, `docsRel`), no function takes a bare "path" for docs files
+- [ ] follow-ups found after the conversion:
+  - `POST /api/metadata` (`handleAPISetMetadata`) decodes `path` and `parents` from json straight into `MetaPath` without validation - `{"path": "notes.md"}` stores a record under the key `notes.md`. check them with `ParseMeta` like the form handlers and answer 400
+  - the deleted-files search index (`searchStorage.IndexDeletedFile` / `indexKey`, the join in `git.searchDeletedFilesIndexByContent`) is keyed by the path without its `docs/` / `media/` prefix, so a deleted `docs/x.png` and `media/x.png` share one row - key it by the metadata path
+  - link paths still read by hand: `resolveImage` in `pdfexport/images.go` and `resolveMediaPath` in `parser_markdown.go` strip `/media/` / `media/` themselves - read them with `parser.LinkTarget`
+  - add the german translation for `"%s must start with docs/"` (kanban move card / save order with a media path)
 
 # every other time
 
