@@ -43,7 +43,7 @@ func renderedLinkTarget(content, doc string) string {
 			return "media/" + rel
 		}
 		if rel := pathutils.FileFromURL(u.String()); rel != "" || u.Path == "/files/" {
-			return pathutils.ToWithPrefix(rel.String())
+			return pathutils.GuessMeta(rel.String()).String()
 		}
 		return u.Path
 	}
@@ -56,7 +56,7 @@ func renderedLinkTarget(content, doc string) string {
 	if t := renderedTarget(string(out)); strings.HasPrefix(t, "media/") || t == "" {
 		return t
 	} else {
-		return pathutils.ToWithPrefix(t)
+		return pathutils.GuessMeta(t).String()
 	}
 }
 

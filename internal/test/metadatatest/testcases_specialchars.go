@@ -23,7 +23,7 @@ const specialCharFile = "tröte.md"
 // file whose name contains "ö": once with the correctly encoded query value (must resolve),
 // once with the double-encoded value the old JS produced (must 404). Locks the server
 // contract the panel-file.js fix depends on - a byte-exact filepath must round-trip through
-// the query param and ToWithPrefix into storage.
+// the query param and ParseMeta into storage.
 func caseGetMetadataSpecialCharFilepath() test.CaseResult {
 	name := "get-metadata-special-char-filepath"
 

@@ -35,7 +35,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		return errCase(name, err)
 	}
 	defer cleanup()
-	defer os.RemoveAll(pathutils.ToDocsPath(pathutils.DocsPath(syncDir).String()))
+	defer os.RemoveAll(pathutils.DocsPath(syncDir).FullPath())
 
 	git.Push()
 	if !waitForBranch(bareDir, branch, 15*time.Second) {
@@ -91,7 +91,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 
 	var gaps []string
 	for _, rel := range names {
-		if _, err := os.Stat(pathutils.ToFullPath(pathutils.DocsPath(rel).String())); err != nil {
+		if _, err := os.Stat(pathutils.DocsPath(rel).FullPath()); err != nil {
 			gaps = append(gaps, "not pulled: "+rel)
 		}
 	}

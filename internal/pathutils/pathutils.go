@@ -180,70 +180,6 @@ func IsMetaPath(p string) bool {
 	return !slices.ContainsFunc(strings.Split(p, "/"), func(seg string) bool { return seg == ".." || seg == "." })
 }
 
-// ToRelative strips any prefix and data path to return clean relative path
-func ToRelative(path string) string {
-	return parsePath(path).Relative
-}
-
-// ToFullPath returns the full filesystem path
-func ToFullPath(path string) string {
-	return parsePath(path).FullPath
-}
-
-// ToWithPrefix ensures the path has the correct docs/media prefix for metadata storage.
-// Always forward-slash, even from a Windows full path (e.g. "C:\data\docs\a.md" ->
-// "docs/a.md") - safe to compare against git tree paths, which are always forward-slash.
-func ToWithPrefix(path string) string {
-	return parsePath(path).WithPrefix
-}
-
-// ToDocsPath converts any path to a full docs filesystem path
-func ToDocsPath(path string) string {
-	info := parsePath(path)
-	docsRoot := getDocsPath()
-	return containPath(docsRoot, filepath.Join(docsRoot, info.Relative))
-}
-
-// ToMediaPath converts any path to a full media filesystem path
-func ToMediaPath(path string) string {
-	info := parsePath(path)
-	mediaRoot := getMediaPath()
-	return containPath(mediaRoot, filepath.Join(mediaRoot, info.Relative))
-}
-
-// IsMedia returns true if the path represents a media file
-func IsMedia(path string) bool {
-	return parsePath(path).Type == TypeMedia
-}
-
-// IsDocs returns true if the path represents a docs file
-func IsDocs(path string) bool {
-	return parsePath(path).Type == TypeDocs
-}
-
-// convertType converts a path from one type to another while preserving structure
-func convertType(path string, targetType PathType) string {
-	info := parsePath(path)
-
-	if targetType == TypeMedia {
-		return "media/" + info.Relative
-	}
-	return "docs/" + info.Relative
-}
-
-// normalizePath standardizes path separators and cleans the path
-func normalizePath(path string) string {
-	if path == "" {
-		return path
-	}
-
-	// convert to forward slashes and clean
-	normalized := filepath.ToSlash(filepath.Clean(path))
-
-	// remove leading slash if present (keep paths relative)
-	return strings.TrimPrefix(normalized, "/")
-}
-
 // stripDataPathPrefix removes data directory prefix if present
 func stripDataPathPrefix(path string) string {
 	dataPath := strings.TrimPrefix(filepath.ToSlash(filepath.Clean(configmanager.GetAppConfig().DataPath)), "/")
@@ -260,7 +196,7 @@ func stripDataPathPrefix(path string) string {
 // otherwise root. A relativePath with enough "../" segments (e.g. from an
 // unsanitized "?filepath=../../../etc/passwd" query param) can walk
 // filepath.Join's result outside root entirely; clamping back to root here —
-// the single place every ToDocsPath/ToMediaPath/ToFullPath call resolves
+// the single place every MetaPath.FullPath call resolves
 // through — means every caller is sandboxed without needing its own check.
 func containPath(root, candidate string) string {
 	root = filepath.Clean(root)
@@ -320,7 +256,7 @@ func LinkClimbsAboveRoot(docPath, link string) bool {
 		return false
 	}
 	depth := 0
-	if dir := path.Dir(ToRelative(docPath)); dir != "." {
+	if dir := path.Dir(metaRel(docPath)); dir != "." {
 		depth = strings.Count(dir, "/") + 1
 	}
 	for _, seg := range strings.Split(link, "/") {
@@ -529,9 +465,11 @@ func metaRel(p string) string {
 
 // FromFullPath is the metadata path of a file or folder at the full filesystem path of the host
 // (a walk result, a git path): the one place a host path becomes a MetaPath, separators converted.
-// A path outside the docs and media folder is read as a docs path, like ToWithPrefix.
+// A path outside the docs and media folder is read as a docs path, like GuessMeta. Always
+// forward-slash, even from a Windows full path ("C:\data\docs\a.md" -> "docs/a.md") - safe to
+// compare against git tree paths, which are always forward-slash.
 func FromFullPath(full string) MetaPath {
-	return MetaPath(ToWithPrefix(full))
+	return MetaPath(parsePath(full).WithPrefix)
 }
 
 // FullPath is the full filesystem path of m, exactly: no prefix is guessed.
@@ -551,5 +489,5 @@ func (m MetaPath) FullPath() string {
 // is known to be a docs-relative path goes through DocsPath, one that is known to be a metadata
 // path through ParseMeta.
 func GuessMeta(s string) MetaPath {
-	return MetaPath(ToWithPrefix(s))
+	return MetaPath(parsePath(s).WithPrefix)
 }

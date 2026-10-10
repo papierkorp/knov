@@ -42,8 +42,8 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	oldFull := pathutils.ToDocsPath(oldRel)
-	newFull := pathutils.ToDocsPath(newRel)
+	oldFull := pathutils.GuessMeta(oldRel).FullPath()
+	newFull := pathutils.GuessMeta(newRel).FullPath()
 	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
 		return errCase(name, err)
 	}

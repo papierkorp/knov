@@ -45,7 +45,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 		if err != nil || meta == nil || !slices.Contains(meta.Tags, tag) {
 			continue
 		}
-		if err := os.Remove(pathutils.ToDocsPath(p)); err != nil {
+		if err := os.Remove(pathutils.GuessMeta(p).FullPath()); err != nil {
 			continue
 		}
 		files.MetaDataDeleteNoRefresh(logging.KeyApp, normalized)
@@ -55,7 +55,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 
 	stillExists := false
 	for _, p := range paths {
-		if _, err := os.Stat(pathutils.ToDocsPath(p)); err == nil {
+		if _, err := os.Stat(pathutils.GuessMeta(p).FullPath()); err == nil {
 			stillExists = true
 		}
 	}
@@ -162,7 +162,7 @@ func caseBulkChatMoveDelete() test.CaseResult {
 	}
 	combined := strings.Join(parts, "\n\n")
 
-	fullPath := pathutils.ToDocsPath(targetPath)
+	fullPath := pathutils.GuessMeta(targetPath).FullPath()
 	existing, _ := contentStorage.ReadFile(fullPath)
 	newContent := append(existing, []byte("\n\n"+combined)...)
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {

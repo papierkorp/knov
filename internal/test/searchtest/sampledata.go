@@ -43,7 +43,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func commitAll(message string) error {
 // resetAndSeed wipes the sample folder, then recreates it with alpha (title search), beta
 // (full-content search) and delta (added then deleted, for deleted-file search).
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func resetAndSeed() error {
 		return err
 	}
 
-	if err := os.Remove(pathutils.ToDocsPath(testPath(deltaFile))); err != nil {
+	if err := os.Remove(pathutils.GuessMeta(testPath(deltaFile)).FullPath()); err != nil {
 		return err
 	}
 	if err := commitAll("searchtest: delete delta"); err != nil {

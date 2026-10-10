@@ -23,8 +23,8 @@ func caseGitLatestChangesPagination(_ *sampleState) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	wantPage1 := pathutils.ToWithPrefix(testPath(etaFile))
-	wantPage2 := pathutils.ToWithPrefix(testPath(gammaFile))
+	wantPage1 := pathutils.GuessMeta(testPath(etaFile)).String()
+	wantPage2 := pathutils.GuessMeta(testPath(gammaFile)).String()
 	success := len(page1) == 1 && len(page2) == 1 &&
 		page1[0].Path == wantPage1 &&
 		page2[0].Path == wantPage2
@@ -59,7 +59,7 @@ func pathsOf(fs []git.GitHistoryFile) []string {
 func caseGitLatestChangesCollectionFilter(_ *sampleState) test.CaseResult {
 	name := "git-latestchanges-collection-filter"
 
-	wantPath := pathutils.ToWithPrefix(testPath(gammaFile))
+	wantPath := pathutils.GuessMeta(testPath(gammaFile)).String()
 
 	filterByCollection := func(collection string) []string {
 		all, err := git.GetRecentlyChangedFiles(20, 0, time.Time{}, time.Time{})
@@ -114,7 +114,7 @@ func caseGitSearchByFilename(_ *sampleState) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	wantPath := pathutils.ToWithPrefix(testPath(gammaFile))
+	wantPath := pathutils.GuessMeta(testPath(gammaFile)).String()
 	found := false
 	for _, f := range results {
 		if f.Path == wantPath {
@@ -137,7 +137,7 @@ func caseGitSearchByFilename(_ *sampleState) test.CaseResult {
 func caseGitFileHistoryVersions(_ *sampleState) test.CaseResult {
 	name := "git-file-history-versions"
 
-	versions, err := git.GetFileHistory(pathutils.ToDocsPath(testPath(gammaFile)))
+	versions, err := git.GetFileHistory(pathutils.GuessMeta(testPath(gammaFile)).FullPath())
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -158,7 +158,7 @@ func caseGitFileHistoryVersions(_ *sampleState) test.CaseResult {
 func caseGitFileViewVersion(state *sampleState) test.CaseResult {
 	name := "git-file-view-version"
 
-	content, err := git.GetFileAtCommit(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1)
+	content, err := git.GetFileAtCommit(pathutils.GuessMeta(testPath(gammaFile)).FullPath(), state.gammaCommit1)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -179,7 +179,7 @@ func caseGitFileViewVersion(state *sampleState) test.CaseResult {
 func caseGitFileDiff(state *sampleState) test.CaseResult {
 	name := "git-file-diff"
 
-	diff, _, _, err := git.GetFileDiff(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1, state.gammaCommit2)
+	diff, _, _, err := git.GetFileDiff(pathutils.GuessMeta(testPath(gammaFile)).FullPath(), state.gammaCommit1, state.gammaCommit2)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -200,7 +200,7 @@ func caseGitFileDiff(state *sampleState) test.CaseResult {
 func caseGitFileRestore(state *sampleState) test.CaseResult {
 	name := "git-file-restore"
 
-	if err := git.RestoreFileToCommit(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1); err != nil {
+	if err := git.RestoreFileToCommit(pathutils.GuessMeta(testPath(gammaFile)).FullPath(), state.gammaCommit1); err != nil {
 		return errCase(name, err)
 	}
 
@@ -209,7 +209,7 @@ func caseGitFileRestore(state *sampleState) test.CaseResult {
 		return errCase(name, err)
 	}
 
-	versions, err := git.GetFileHistory(pathutils.ToDocsPath(testPath(gammaFile)))
+	versions, err := git.GetFileHistory(pathutils.GuessMeta(testPath(gammaFile)).FullPath())
 	if err != nil {
 		return errCase(name, err)
 	}

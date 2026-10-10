@@ -141,7 +141,7 @@ func caseSingleMoveAppend() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	fullPath := pathutils.ToDocsPath(targetPath)
+	fullPath := pathutils.GuessMeta(targetPath).FullPath()
 	existing, _ := contentStorage.ReadFile(fullPath)
 	newContent := append(existing, []byte("\n\n"+msg.Content)...)
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
@@ -181,7 +181,7 @@ func caseSingleMoveNewFile() test.CaseResult {
 	}
 
 	target, newContent, resolvedEditor := formatForEditorReplica(testPath("chat-single-new"), msg.Content, files.EditorTypeTodo)
-	fullPath := pathutils.ToDocsPath(target)
+	fullPath := pathutils.GuessMeta(target).FullPath()
 	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(target), Editor: resolvedEditor}); err != nil {
 		return errCase(name, err)
 	}
@@ -241,7 +241,7 @@ func caseBulkMoveNewFile() test.CaseResult {
 	combined := strings.Join(parts, "\n\n")
 
 	target, newContent, resolvedEditor := formatForEditorReplica(testPath("chat-bulk-new"), combined, files.EditorTypeList)
-	fullPath := pathutils.ToDocsPath(target)
+	fullPath := pathutils.GuessMeta(target).FullPath()
 	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.GuessMeta(target), Editor: resolvedEditor}); err != nil {
 		return errCase(name, err)
 	}

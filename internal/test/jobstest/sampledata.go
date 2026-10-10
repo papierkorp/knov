@@ -47,7 +47,7 @@ func mediaPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func writeFile(relPath, content string) error {
 }
 
 func writeMediaFile(relPath string, content []byte) error {
-	full := pathutils.ToMediaPath(relPath)
+	full := pathutils.MediaPath(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -72,14 +72,14 @@ func writeMediaFile(relPath string, content []byte) error {
 //   - used/orphan media: usedMediaFile is linked from linkerFile's content so it isn't
 //     orphaned; orphanMediaFile has no links pointing to it.
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}
 	if err := os.MkdirAll(full, 0755); err != nil {
 		return err
 	}
-	mediaFull := pathutils.ToMediaPath(testDir)
+	mediaFull := pathutils.MediaPath(testDir).FullPath()
 	if err := os.RemoveAll(mediaFull); err != nil {
 		return err
 	}

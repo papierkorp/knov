@@ -62,7 +62,7 @@ func caseUpload() test.CaseResult {
 	}
 
 	expectedPath := mediaTestPath("upload-test.png")
-	_, statErr := os.Stat(pathutils.ToMediaPath(result.Path))
+	_, statErr := os.Stat(pathutils.MediaPath(result.Path).FullPath())
 	fileExists := statErr == nil
 	meta, err := files.MetaDataGet(pathutils.MediaPath(result.Path))
 
@@ -137,8 +137,8 @@ func caseRename() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	oldFull := pathutils.ToMediaPath(oldRel)
-	newFull := pathutils.ToMediaPath(newRel)
+	oldFull := pathutils.MediaPath(oldRel).FullPath()
+	newFull := pathutils.MediaPath(newRel).FullPath()
 	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
 		return errCase(name, err)
 	}
@@ -149,7 +149,7 @@ func caseRename() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	referencerContent, err := os.ReadFile(pathutils.ToDocsPath(testPath(renameReferencerFile)))
+	referencerContent, err := os.ReadFile(pathutils.GuessMeta(testPath(renameReferencerFile)).FullPath())
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -179,7 +179,7 @@ func caseDelete() test.CaseResult {
 	name := "delete"
 
 	fullMediaPath := "media/" + mediaTestPath(deleteMediaFile)
-	fullPath := pathutils.ToMediaPath(mediaTestPath(deleteMediaFile))
+	fullPath := pathutils.MediaPath(mediaTestPath(deleteMediaFile)).FullPath()
 
 	exists, err := contentStorage.FileExists(fullPath)
 	if err != nil || !exists {
@@ -223,7 +223,7 @@ func caseDeleteBlockedWhenReferenced() test.CaseResult {
 
 	guardBlocks := metadata != nil && len(metadata.LinksToHere) > 0
 
-	fullPath := pathutils.ToMediaPath(mediaTestPath(blockedMediaFile))
+	fullPath := pathutils.MediaPath(mediaTestPath(blockedMediaFile)).FullPath()
 	exists, err := contentStorage.FileExists(fullPath)
 	if err != nil {
 		return errCase(name, err)

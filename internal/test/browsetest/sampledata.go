@@ -30,7 +30,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func writeFile(relPath, content string) error {
 // folder-contents), one with several headers (for TOC extraction) and one todo-editor file
 // (for the hidden-file-type filter case).
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}

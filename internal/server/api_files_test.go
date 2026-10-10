@@ -19,7 +19,7 @@ func TestMoveRedirectsOnlyViewedFile(t *testing.T) {
 	os.RemoveAll(pathutils.DocsRoot())
 	t.Cleanup(func() { os.RemoveAll(pathutils.DocsRoot()) })
 	for _, f := range []string{"a.md", "b.md", "d1/c.md", "d2/c.md"} {
-		p := pathutils.ToDocsPath(f)
+		p := pathutils.GuessMeta(f).FullPath()
 		if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
 			t.Fatal(err)
 		}

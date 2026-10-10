@@ -350,7 +350,7 @@ func caseTagsAndFilesForFolder() test.CaseResult {
 func caseExcerpt() test.CaseResult {
 	name := "excerpt"
 
-	got := kanban.Excerpt(pathutils.ToDocsPath(testPath(excerptFile)), 200)
+	got := kanban.Excerpt(pathutils.GuessMeta(testPath(excerptFile)).FullPath(), 200)
 	success := got == "This is the excerpt body text."
 
 	cr := test.CaseResult{
@@ -435,7 +435,7 @@ func caseRenameStatusFolderSync() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	_, statErr := os.Stat(pathutils.ToDocsPath(newPath))
+	_, statErr := os.Stat(pathutils.GuessMeta(newPath).FullPath())
 	meta, _ := files.MetaDataGet(pathutils.GuessMeta(newPath))
 	tagged := meta != nil && slices.Contains(meta.Tags, kanbanTag(newStatus)) && !slices.Contains(meta.Tags, kanbanTag(oldStatus))
 	keptMovedAt := meta != nil && meta.KanbanMovedAt.Equal(movedAt)
@@ -466,7 +466,7 @@ func caseMoveCardAPI() test.CaseResult {
 		return errCase(name, err)
 	}
 	defer func() {
-		_ = os.Remove(pathutils.ToDocsPath(card))
+		_ = os.Remove(pathutils.GuessMeta(card).FullPath())
 		_ = files.MetaDataDelete(pathutils.DocsPath(card))
 	}()
 	ts := httptest.NewServer(server.NewRouter())

@@ -17,7 +17,7 @@ const testDir = "test/editors-tests"
 
 // resetTestDir clears the sample folder on disk so every run starts from a clean state.
 func resetTestDir() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func writeFile(relPath, content string) error {
 }
 
 func readFile(relPath string) (string, error) {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	b, err := contentStorage.ReadFile(full)
 	return string(b), err
 }

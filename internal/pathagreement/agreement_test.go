@@ -149,13 +149,10 @@ func setup(t *testing.T) {
 	files.OnFileMoved = nil
 }
 
-// put writes content to the file at the metadata path meta.
-func put(t *testing.T, meta, content string) {
+// put writes content to the file at the metadata path loc.
+func put(t *testing.T, loc, content string) {
 	t.Helper()
-	full := pathutils.ToDocsPath(meta) // the meta path names its root, no guessing
-	if strings.HasPrefix(meta, "media/") {
-		full = pathutils.ToMediaPath(meta)
-	}
+	full := meta(t, loc).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +230,7 @@ func rename(t *testing.T, loc string) string {
 	if err != nil {
 		t.Fatalf("move %s: %v", loc, err)
 	}
-	b, err := os.ReadFile(pathutils.ToDocsPath("doc.md"))
+	b, err := os.ReadFile(pathutils.GuessMeta("doc.md").FullPath())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -261,7 +258,7 @@ func filterIndex(t *testing.T, loc string) string {
 	if err := filter.GenerateFilterIndex("agree", &filter.Config{Logic: "and"}); err != nil {
 		t.Fatal(err)
 	}
-	b, err := os.ReadFile(pathutils.ToDocsPath("agree" + configmanager.ExtensionForEditor("index")))
+	b, err := os.ReadFile(pathutils.GuessMeta("agree" + configmanager.ExtensionForEditor("index")).FullPath())
 	if err != nil {
 		t.Fatal(err)
 	}

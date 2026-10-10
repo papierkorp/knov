@@ -661,12 +661,13 @@ func rebuildLinkTarget(docPath string, l parser.Link, newPath string) string {
 // would read as the media folder (docs/media/x.md from the docs root: "./media/x.md") is linked
 // with its /files/ url.
 func relativeDocLink(docPath, target string) string {
-	if pathutils.IsMedia(target) {
+	media := strings.HasPrefix(target, "media/")
+	if media {
 		// keep the media/ segment, so it doesn't depend on the media fallback of LinkTarget
 		return pathutils.RelativeLink(docPath, pathutils.DocsPath(target).String())
 	}
 	relative := pathutils.RelativeLink(docPath, target)
-	if !pathutils.IsMedia(target) && parser.WrittenAsMedia(relative) {
+	if !media && parser.WrittenAsMedia(relative) {
 		return parser.FilesLinkPath(target)
 	}
 	return relative

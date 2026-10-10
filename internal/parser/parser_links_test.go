@@ -410,7 +410,7 @@ func TestRewriteLinksUnclosedAngle(t *testing.T) {
 func TestWikiLinkRenderMatchesExtract(t *testing.T) {
 	for _, in := range []string{"page?x", "a b", "a%41", "dir/page.md#sec", "media/a"} {
 		want := ResolveWikiTarget(in)
-		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[["+in+"]]"), PathlessRender); len(got) != 1 || got[0].String() != pathutils.ToWithPrefix(want) {
+		if got := (&MarkdownHandler{}).ExtractLinks([]byte("[["+in+"]]"), PathlessRender); len(got) != 1 || got[0].String() != pathutils.GuessMeta(want).String() {
 			t.Errorf("[[%s]]: ExtractLinks = %q, ResolveWikiTarget = %q", in, got, want)
 		}
 	}

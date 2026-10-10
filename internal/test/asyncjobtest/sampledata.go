@@ -23,11 +23,11 @@ func testPath(name string) string {
 }
 
 func withPrefix(name string) string {
-	return pathutils.ToWithPrefix(testPath(name))
+	return pathutils.GuessMeta(testPath(name)).String()
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func writeFile(relPath, content string) error {
 }
 
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}

@@ -29,21 +29,18 @@ func TestMain(m *testing.M) {
 // a docs-relative path starting with a prefix name is a docs path through DocsPath
 func TestDocsPath(t *testing.T) {
 	for _, rel := range []string{"media/x.md", "docs/x.md", "files/x.md", "media", "a/b.md", "media/sub/"} {
-		p := DocsPath(rel).String()
-		if got, want := ToDocsPath(p), filepath.Join(DocsRoot(), rel); got != want {
-			t.Errorf("ToDocsPath(DocsPath(%q)) = %q, want %q", rel, got, want)
+		p := DocsPath(rel)
+		if got, want := p.FullPath(), filepath.Join(DocsRoot(), rel); got != want {
+			t.Errorf("DocsPath(%q).FullPath() = %q, want %q", rel, got, want)
 		}
-		if got := ToFullPath(p); got != filepath.Join(DocsRoot(), rel) {
-			t.Errorf("ToFullPath(DocsPath(%q)) = %q", rel, got)
+		if got := p.String(); got != "docs/"+rel {
+			t.Errorf("DocsPath(%q) = %q", rel, got)
 		}
-		if got := ToWithPrefix(p); got != "docs/"+rel {
-			t.Errorf("ToWithPrefix(DocsPath(%q)) = %q", rel, got)
+		if got := p.Rel(); got != rel {
+			t.Errorf("DocsPath(%q).Rel() = %q", rel, got)
 		}
-		if got := ToRelative(p); got != strings.Trim(rel, "/") {
-			t.Errorf("ToRelative(DocsPath(%q)) = %q", rel, got)
-		}
-		if IsMedia(p) {
-			t.Errorf("IsMedia(DocsPath(%q)) = true", rel)
+		if p.IsMedia() {
+			t.Errorf("DocsPath(%q).IsMedia() = true", rel)
 		}
 	}
 }
@@ -75,55 +72,35 @@ func TestURLHelpers(t *testing.T) {
 	}
 }
 
-func TestToRelative(t *testing.T) {
+func TestGuessMeta(t *testing.T) {
 	cases := []struct {
 		name string
 		in   string
-		want string
+		want MetaPath
 	}{
-		{"plain docs path", "docs/notes.md", "notes.md"},
-		{"plain media path", "media/img.png", "img.png"},
-		{"no prefix defaults to docs", "notes.md", "notes.md"},
-		{"leading slash stripped", "/docs/notes.md", "notes.md"},
-		{"files folder kept", "files/notes.md", "files/notes.md"},
+		{"plain docs path", "docs/notes.md", "docs/notes.md"},
+		{"plain media path", "media/img.png", "media/img.png"},
+		{"no prefix defaults to docs", "notes.md", "docs/notes.md"},
+		{"leading slash stripped", "/docs/notes.md", "docs/notes.md"},
+		{"files folder kept", "files/notes.md", "docs/files/notes.md"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := ToRelative(tc.in); got != tc.want {
+			if got := GuessMeta(tc.in); got != tc.want {
 				t.Errorf("got %q, want %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestIsMediaIsDocs(t *testing.T) {
-	if !IsMedia("media/img.png") {
-		t.Error("expected media/img.png to be media")
-	}
-	if IsDocs("media/img.png") {
-		t.Error("expected media/img.png to not be docs")
-	}
-	if !IsDocs("docs/notes.md") {
-		t.Error("expected docs/notes.md to be docs")
-	}
-	if IsMedia("docs/notes.md") {
-		t.Error("expected docs/notes.md to not be media")
-	}
-}
-
-func TestToFullPathContainsTraversal(t *testing.T) {
+func TestFullPathContainsTraversal(t *testing.T) {
 	docsRoot := getDocsPath()
-	got := ToFullPath("../../../../etc/passwd")
-	if got != docsRoot {
-		t.Errorf("path traversal escaped docs root: got %q, want %q", got, docsRoot)
+	for _, p := range []MetaPath{GuessMeta("../../../../etc/passwd"), DocsPath("../../etc/passwd")} {
+		if got := p.FullPath(); got != docsRoot {
+			t.Errorf("path traversal escaped docs root: %q.FullPath() = %q, want %q", p, got, docsRoot)
+		}
 	}
-}
-
-func TestToDocsPathAndToMediaPath(t *testing.T) {
-	if got, want := ToDocsPath("notes.md"), filepath.Join(getDocsPath(), "notes.md"); got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-	if got, want := ToMediaPath("img.png"), filepath.Join(getMediaPath(), "img.png"); got != want {
+	if got, want := MediaPath("img.png").FullPath(), filepath.Join(getMediaPath(), "img.png"); got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }

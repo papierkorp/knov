@@ -91,7 +91,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToMediaPath(mediaPath)
+	fullPath := pathutils.MediaPath(mediaPath).FullPath()
 
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		logging.LogWarning(logging.KeyApp, "media file not found: %s", fullPath)

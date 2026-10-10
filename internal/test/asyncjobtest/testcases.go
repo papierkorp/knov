@@ -191,7 +191,7 @@ func caseRecoverInterruptedResumable() test.CaseResult {
 	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(fileName)), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
-	fullPath := pathutils.ToDocsPath(testPath(fileName))
+	fullPath := pathutils.GuessMeta(testPath(fileName)).FullPath()
 
 	args, err := json.Marshal(struct {
 		FullPaths []string `json:"fullPaths"`
@@ -282,7 +282,7 @@ func caseRecoverInterruptedNonResumable() test.CaseResult {
 func caseRemoveEmptyDirTreeSuccess() test.CaseResult {
 	name := "removeemptydirtree-empty"
 
-	root := pathutils.ToDocsPath(testPath("rmdir-empty"))
+	root := pathutils.GuessMeta(testPath("rmdir-empty")).FullPath()
 	if err := os.MkdirAll(filepath.Join(root, "nested"), 0755); err != nil {
 		return errCase(name, err)
 	}
@@ -313,7 +313,7 @@ func caseRemoveEmptyDirTreeSuccess() test.CaseResult {
 func caseRemoveEmptyDirTreeRefusesNonEmpty() test.CaseResult {
 	name := "removeemptydirtree-refuses-nonempty"
 
-	root := pathutils.ToDocsPath(testPath("rmdir-nonempty"))
+	root := pathutils.GuessMeta(testPath("rmdir-nonempty")).FullPath()
 	nested := filepath.Join(root, "nested")
 	if err := os.MkdirAll(nested, 0755); err != nil {
 		return errCase(name, err)

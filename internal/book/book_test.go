@@ -68,7 +68,7 @@ func TestExpandFilters(t *testing.T) {
 	defer func() { FilterResolver = orig }()
 
 	for p, content := range map[string]string{"a.md": "body a\n", "C#.md": "body c#\n", "img.png": "PNG", "b.txt": "body b\n"} {
-		if err := contentStorage.WriteFile(pathutils.ToDocsPath(p), []byte(content), 0644); err != nil {
+		if err := contentStorage.WriteFile(pathutils.GuessMeta(p).FullPath(), []byte(content), 0644); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -122,7 +122,7 @@ func TestFileRefRoundTrip(t *testing.T) {
 		if !specialchars.ValidOn(runtime.GOOS, p) || strings.TrimSpace(p) != p {
 			continue
 		}
-		full := pathutils.ToDocsPath(p)
+		full := pathutils.GuessMeta(p).FullPath()
 		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 			t.Fatal(err)
 		}
@@ -166,7 +166,7 @@ func TestFileRefSectionSpecialChars(t *testing.T) {
 // a chapter's bare, "./" and "../" links are resolved against the chapter, its wikilinks and "/"
 // links stay docs-root - the book renders pathless
 func TestComposeRelativeLinks(t *testing.T) {
-	full := pathutils.ToDocsPath("rel/sub/ch.md")
+	full := pathutils.GuessMeta("rel/sub/ch.md").FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		t.Fatal(err)
 	}

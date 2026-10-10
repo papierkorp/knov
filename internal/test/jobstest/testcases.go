@@ -15,7 +15,7 @@ import (
 
 func containsFilePath(list []files.File, path string) bool {
 	for _, f := range list {
-		if pathutils.ToRelative(f.Path.String()) == path {
+		if pathutils.GuessMeta(f.Path.String()).Rel() == path {
 			return true
 		}
 	}
@@ -163,11 +163,11 @@ func caseMediaCleanup() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	_, orphanStatErr := os.Stat(pathutils.ToMediaPath(mediaPath(orphanMediaFile)))
+	_, orphanStatErr := os.Stat(pathutils.MediaPath(mediaPath(orphanMediaFile)).FullPath())
 	orphanGone := os.IsNotExist(orphanStatErr)
 	orphanMeta, _ := files.MetaDataGet(pathutils.MediaPath(mediaPath(orphanMediaFile)))
 
-	_, usedStatErr := os.Stat(pathutils.ToMediaPath(mediaPath(usedMediaFile)))
+	_, usedStatErr := os.Stat(pathutils.MediaPath(mediaPath(usedMediaFile)).FullPath())
 	usedKept := usedStatErr == nil
 
 	success := empty.Deleted == 0 && result.Deleted == 1 && result.Failed == 0 && orphanGone && orphanMeta == nil && usedKept

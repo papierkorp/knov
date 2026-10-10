@@ -104,7 +104,7 @@ func caseHideScopeEndpoints() test.CaseResult {
 	var folderResp struct {
 		Folders []struct{ Name string }
 	}
-	if err := getJSON(client, ts.URL+"/api/files/folder?path="+pathutils.ToWithPrefix(testDir), &folderResp); err != nil {
+	if err := getJSON(client, ts.URL+"/api/files/folder?path="+pathutils.GuessMeta(testDir).String(), &folderResp); err != nil {
 		return errCase(name, err)
 	}
 	browseFolderShown := func(name string) bool {

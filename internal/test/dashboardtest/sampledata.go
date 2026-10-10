@@ -42,7 +42,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func saveMetadata(relPath string, tags []string) error {
 // names cases use - dashboards live in configStorage keyed by id, not under docs/test/, so
 // wiping the folder doesn't touch them.
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}

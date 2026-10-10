@@ -28,7 +28,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func writeFile(relPath, content string) error {
 // explicitly (not just the physical file) before reseeding so leftover user fields from a
 // previous run cannot silently survive the physical-file wipe below.
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}

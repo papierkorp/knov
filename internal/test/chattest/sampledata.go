@@ -32,7 +32,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func writeFile(relPath, content string) error {
 }
 
 func readFile(relPath string) (string, error) {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	b, err := contentStorage.ReadFile(full)
 	return string(b), err
 }
@@ -57,7 +57,7 @@ func saveMetadata(relPath string, editor files.EditorType) error {
 // fixed file-scoped paths cases use - chat messages aren't removed by wiping testDir since
 // they're keyed by path string in a separate store, not tied to the file's existence.
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}

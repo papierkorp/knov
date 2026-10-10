@@ -57,15 +57,14 @@ var guardRules = []guardRule{
 		exts: []string{".go"},
 	},
 	{
-		name: "path guessing (ToRelative / ToWithPrefix / ToDocsPath / ToFullPath / GuessMeta) - take a MetaPath / DocsRel and build it with DocsPath, MediaPath, ParseMeta or FromFullPath",
-		re:   regexp.MustCompile(`pathutils\.(?:ToRelative|ToWithPrefix|ToDocsPath|ToFullPath|GuessMeta)\(`),
+		name: "path guessing (GuessMeta) - take a MetaPath / DocsRel and build it with DocsPath, MediaPath, ParseMeta or FromFullPath",
+		re:   regexp.MustCompile(`pathutils\.GuessMeta\(`),
 		exts: []string{".go"},
 		allowed: map[string]int{
-			// the guesses that are left: each one is a place a typed path is not threaded through yet, the
-			// list only shrinks
-			"internal/files/metadata_links.go":     2,
-			"internal/files/metadata_purge.go":     1,
-			"internal/files/reserved_migration.go": 1,
+			// the guesses that are left, each where input of unknown kind enters - the list only shrinks
+			"internal/files/metadata_links.go":     2, // the parents a user or the json api sets
+			"internal/files/metadata_purge.go":     1, // a stored key in a legacy form
+			"internal/files/reserved_migration.go": 1, // the legacy key of the reserved folders migration
 		},
 	},
 	{

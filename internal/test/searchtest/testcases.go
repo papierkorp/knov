@@ -130,7 +130,7 @@ func caseSearchCommitReindexNoDuplicate() test.CaseResult {
 
 	const marker = "CommitHookIndexMarker"
 	rel := testPath("commit-hook-indexed.md")
-	full := pathutils.ToDocsPath(rel)
+	full := pathutils.GuessMeta(rel).FullPath()
 	content := fmt.Sprintf("# hook\n%s\n", marker)
 	if err := writeFile(rel, content); err != nil {
 		return errCase(name, err)

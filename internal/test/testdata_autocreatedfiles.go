@@ -112,7 +112,7 @@ func simulateFileChange() error {
 	}
 
 	for _, file := range changedFiles {
-		fullPath := pathutils.ToDocsPath(file)
+		fullPath := pathutils.GuessMeta(file).FullPath()
 		if content, err := os.ReadFile(fullPath); err == nil {
 			updated := string(content) + "\n\n## Additional content\n- test for git version history\n- A single list element looks too empty"
 			if err := os.WriteFile(fullPath, []byte(updated), 0644); err != nil {
@@ -138,7 +138,7 @@ func createAutoMetadata() error {
 
 	for i, file := range autoTestFiles {
 		absPath := filepath.Join(contentStorage.GetDocsPath(), file)
-		relPath := strings.TrimPrefix(pathutils.ToRelative(absPath), "docs/")
+		relPath := strings.TrimPrefix(pathutils.GuessMeta(absPath).Rel(), "docs/")
 		metadataPath := filepath.Join("docs", relPath)
 
 		if skipPaths[metadataPath] {

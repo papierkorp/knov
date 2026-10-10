@@ -37,7 +37,7 @@ func testPath(name string) string {
 }
 
 func withPrefix(name string) string {
-	return pathutils.ToWithPrefix(testPath(name))
+	return pathutils.GuessMeta(testPath(name)).String()
 }
 
 func mediaTestPath(name string) string {
@@ -45,7 +45,7 @@ func mediaTestPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func writeFile(relPath, content string) error {
 }
 
 func writeMediaFile(relPath string, content []byte) error {
-	full := pathutils.ToMediaPath(relPath)
+	full := pathutils.MediaPath(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -82,14 +82,14 @@ func linkDoc(relDocPath, mediaRelPath string) error {
 // doc for the rename case, a plain unreferenced media file for the delete case, and a
 // referenced one for the delete-blocked case.
 func resetAndSeed() error {
-	docsFull := pathutils.ToDocsPath(testDir)
+	docsFull := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(docsFull); err != nil {
 		return err
 	}
 	if err := os.MkdirAll(docsFull, 0755); err != nil {
 		return err
 	}
-	mediaFull := pathutils.ToMediaPath(mediaDir)
+	mediaFull := pathutils.MediaPath(mediaDir).FullPath()
 	if err := os.RemoveAll(mediaFull); err != nil {
 		return err
 	}

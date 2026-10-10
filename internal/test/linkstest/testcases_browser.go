@@ -74,8 +74,8 @@ func caseAutocomplete() test.CaseResult {
 		// only up to the corpus folder - a ")" in a nested name would end the "](" trigger
 		docDir, mediaDir := fmt.Sprintf("%s/%s/c%02d/", testDir, targetsFolder, i), fmt.Sprintf("%s/c%02d/", testDir, i)
 		for _, p := range []struct{ kind, text, value, want string }{
-			{"wiki", "[[" + docDir, target(i), pathutils.ToWithPrefix(target(i))},
-			{"markdown", "[x](" + docDir, target(i), pathutils.ToWithPrefix(target(i))},
+			{"wiki", "[[" + docDir, target(i), pathutils.GuessMeta(target(i)).String()},
+			{"markdown", "[x](" + docDir, target(i), pathutils.GuessMeta(target(i)).String()},
 			{"media", "![x](" + mediaDir, mediaTarget(i), "media/" + mediaTarget(i)},
 		} {
 			text, _ := json.Marshal(p.text)

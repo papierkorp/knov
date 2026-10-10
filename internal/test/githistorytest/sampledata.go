@@ -53,7 +53,7 @@ func testPath(name string) string {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func commitAll(message string) error {
 //  2. gamma edited to v2 and committed (gammaCommit2) -> gamma has 2 versions to diff/restore
 //  3. eta deleted and committed (most recent) -> latest-changes pagination ordering
 func resetAndSeed() (*sampleState, error) {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func resetAndSeed() (*sampleState, error) {
 	}
 	state.gammaCommit2 = commit2
 
-	if err := os.Remove(pathutils.ToDocsPath(testPath(etaFile))); err != nil {
+	if err := os.Remove(pathutils.GuessMeta(testPath(etaFile)).FullPath()); err != nil {
 		return nil, err
 	}
 	if err := commitAll("githistorytest: delete eta"); err != nil {
@@ -165,7 +165,7 @@ func resetAndSeed() (*sampleState, error) {
 }
 
 func readFile(relPath string) (string, error) {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	b, err := contentStorage.ReadFile(full)
 	return string(b), err
 }

@@ -55,7 +55,7 @@ func marker(i int) string {
 }
 
 func writeDoc(rel string, content []byte) error {
-	full := pathutils.ToDocsPath(rel)
+	full := pathutils.GuessMeta(rel).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func saveDoc(rel, content string) error {
 
 // resetAndSeed wipes the sample folders and writes one doc and one media file per corpus name.
 func resetAndSeed() error {
-	for _, dir := range []string{pathutils.ToDocsPath(testDir), pathutils.ToMediaPath(testDir)} {
+	for _, dir := range []string{pathutils.GuessMeta(testDir).FullPath(), pathutils.MediaPath(testDir).FullPath()} {
 		if err := os.RemoveAll(dir); err != nil {
 			return err
 		}
@@ -84,7 +84,7 @@ func resetAndSeed() error {
 		if err := saveDoc(target(i), "# target\n\n"+marker(i)+"\n\n## My Section\n"); err != nil {
 			return err
 		}
-		full := pathutils.ToMediaPath(mediaTarget(i))
+		full := pathutils.MediaPath(mediaTarget(i)).FullPath()
 		if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func metadataGaps(src string, want []string) []string {
 	used := pathutils.Strings(meta.UsedLinks)
 	var gaps []string
 	for _, w := range want {
-		if _, err := os.Stat(pathutils.ToFullPath(w)); err != nil {
+		if _, err := os.Stat(pathutils.GuessMeta(w).FullPath()); err != nil {
 			gaps = append(gaps, fmt.Sprintf("%q: file missing", w))
 		}
 		if !slices.Contains(used, w) {

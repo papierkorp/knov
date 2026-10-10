@@ -437,7 +437,7 @@ func caseBookTitleLevelRoundTrip() test.CaseResult {
 // caseBookPathContainment verifies a `.book` entry can't escape the docs root: an absolute
 // ("/etc/passwd") or "../"-traversal target must resolve inside docs (where it does not
 // exist) and show the "could not include" marker, never the outside file's content. Guards
-// against a future refactor swapping book.Compose's pathutils.ToDocsPath (which clamps) for
+// against a future refactor swapping book.Compose's MetaPath.FullPath (which clamps) for
 // an unclamped resolver.
 func caseBookPathContainment() test.CaseResult {
 	name := "book-path-containment"
@@ -472,8 +472,8 @@ func caseBookPathContainment() test.CaseResult {
 
 	docsRoot := pathutils.DocsRoot()
 	leaked := strings.Contains(composed, "TOP-SECRET-OUTSIDE-DOCS") || strings.Contains(composed, "root:")
-	clamped := strings.HasPrefix(pathutils.ToDocsPath("/etc/passwd"), docsRoot) &&
-		strings.HasPrefix(pathutils.ToDocsPath("../../book-outside-secret.txt"), docsRoot)
+	clamped := strings.HasPrefix(pathutils.GuessMeta("/etc/passwd").FullPath(), docsRoot) &&
+		strings.HasPrefix(pathutils.GuessMeta("../../book-outside-secret.txt").FullPath(), docsRoot)
 	success := !leaked && clamped &&
 		strings.Contains(composed, "valid body") &&
 		strings.Contains(composed, "could not include")

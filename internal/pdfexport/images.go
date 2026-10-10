@@ -42,7 +42,8 @@ func (r *renderer) resolveImage(dest string) (name, tp string, ok bool) {
 	if !ok {
 		return "", "", false
 	}
-	fullPath := pathutils.ToMediaPath(dest)
+	// a /media/ url or media/ path, read from the media folder
+	fullPath := pathutils.MediaPath(strings.TrimPrefix(strings.TrimPrefix(dest, "/"), "media/")).FullPath()
 
 	f, err := os.Open(fullPath)
 	if err != nil {

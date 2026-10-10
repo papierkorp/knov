@@ -77,7 +77,7 @@ func caseFolderContents() test.CaseResult {
 	configmanager.SetSetting(configmanager.HideTodo, "false")
 	defer configmanager.SetSetting(configmanager.HideTodo, fmt.Sprintf("%v", prevHideTodo))
 
-	fullPath := pathutils.ToDocsPath(testDir)
+	fullPath := pathutils.GuessMeta(testDir).FullPath()
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
 		return errCase(name, err)
@@ -130,7 +130,7 @@ func browseByField(urlField, value string) ([]files.File, error) {
 
 func containsFilePath(list []files.File, path string) bool {
 	for _, f := range list {
-		if pathutils.ToRelative(f.Path.String()) == path {
+		if pathutils.GuessMeta(f.Path.String()).Rel() == path {
 			return true
 		}
 	}
@@ -196,7 +196,7 @@ func caseAutocomplete() test.CaseResult {
 	q := strings.ToLower("browse-alpha")
 	found := false
 	for _, f := range allFiles {
-		if strings.Contains(strings.ToLower(pathutils.ToRelative(f.Path.String())), q) {
+		if strings.Contains(strings.ToLower(pathutils.GuessMeta(f.Path.String()).Rel()), q) {
 			found = true
 			break
 		}

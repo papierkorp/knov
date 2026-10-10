@@ -86,7 +86,7 @@ func caseRepairOldUpload() test.CaseResult {
 			if literal == folder+"/pic.png" {
 				continue
 			}
-			full := pathutils.ToMediaPath(literal)
+			full := pathutils.MediaPath(literal).FullPath()
 			if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 				return nil, err
 			}
@@ -99,7 +99,7 @@ func caseRepairOldUpload() test.CaseResult {
 			if err := saveDoc(folder+"/doc.md", "![pic.png](media/"+literal+")\n"); err != nil {
 				return nil, err
 			}
-			links[pathutils.ToWithPrefix(folder+"/doc.md")] = "media/" + literal
+			links[pathutils.GuessMeta(folder+"/doc.md").String()] = "media/" + literal
 		}
 		return links, nil
 	}()
@@ -167,7 +167,7 @@ func caseRename() test.CaseResult {
 				break
 			}
 			for form, src := range srcs {
-				for _, g := range formGaps(form, src, []string{pathutils.ToWithPrefix(mv[1])}) {
+				for _, g := range formGaps(form, src, []string{pathutils.GuessMeta(mv[1]).String()}) {
 					gaps = append(gaps, fmt.Sprintf("%s link after rename to %q: %s", form, mv[1], g))
 				}
 			}
@@ -198,7 +198,7 @@ func caseRelative() test.CaseResult {
 			return errCase("links-relative", err)
 		}
 	}
-	gaps := linkGaps(n, []string{pathutils.ToWithPrefix(a), pathutils.ToWithPrefix(m)})
+	gaps := linkGaps(n, []string{pathutils.GuessMeta(a).String(), pathutils.GuessMeta(m).String()})
 
 	b, moved, rMoved := dir+"/b.md", dir+"/other/deep/n.md", dir+"/k/r.md"
 	for _, mv := range [][2]string{{a, b}, {n, moved}, {r, rMoved}, {rt, rtMoved}} {
@@ -211,20 +211,20 @@ func caseRelative() test.CaseResult {
 	if err := files.MoveFileNoRefresh(logging.KeyApp, pathutils.DocsPath(m), pathutils.DocsPath(m2)); err != nil {
 		return errCase("links-relative", err)
 	}
-	gaps = append(gaps, linkGaps(m2, []string{pathutils.ToWithPrefix(b)})...)
-	gaps = append(gaps, linkGaps(moved, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(m2)})...)
-	gaps = append(gaps, linkGaps(rMoved, []string{pathutils.ToWithPrefix(hT)})...)
+	gaps = append(gaps, linkGaps(m2, []string{pathutils.GuessMeta(b).String()})...)
+	gaps = append(gaps, linkGaps(moved, []string{pathutils.GuessMeta(b).String(), pathutils.GuessMeta(m2).String()})...)
+	gaps = append(gaps, linkGaps(rMoved, []string{pathutils.GuessMeta(hT).String()})...)
 	for doc, want := range map[string]string{m2: "[x](../b.md)", moved: "[x](../../b.md) [[../../sub/m2]]", rMoved: "[x](../h/t.md)", rtMoved: `[x](../../../../) <a href="/files/">y</a>`} {
-		if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(doc)); err != nil || strings.TrimSpace(string(raw)) != want {
+		if raw, err := contentStorage.ReadFile(pathutils.GuessMeta(doc).FullPath()); err != nil || strings.TrimSpace(string(raw)) != want {
 			gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", doc, raw, want, err))
 		}
 	}
 
-	if _, failed, err := files.MoveFolder(logging.KeyApp, pathutils.ToDocsPath(dir+"/f"), pathutils.ToDocsPath(dir+"/g")); err != nil || failed > 0 {
+	if _, failed, err := files.MoveFolder(logging.KeyApp, pathutils.GuessMeta(dir+"/f").FullPath(), pathutils.GuessMeta(dir+"/g").FullPath()); err != nil || failed > 0 {
 		return errCase("links-relative", fmt.Errorf("move folder: %d failed, %v", failed, err))
 	}
-	gaps = append(gaps, linkGaps(dir+"/g/p.md", []string{pathutils.ToWithPrefix(dir + "/g/q.md")})...)
-	gaps = append(gaps, linkGaps(dir+"/g/o.md", []string{pathutils.ToWithPrefix(dir + "/g/q.md")})...)
+	gaps = append(gaps, linkGaps(dir+"/g/p.md", []string{pathutils.GuessMeta(dir + "/g/q.md").String()})...)
+	gaps = append(gaps, linkGaps(dir+"/g/o.md", []string{pathutils.GuessMeta(dir + "/g/q.md").String()})...)
 	files.RefreshCaches()
 	// rt's links to the docs root are folder links, not broken ones
 	if meta, err := files.MetaDataGet(pathutils.GuessMeta(rtMoved)); err != nil || meta == nil || !slices.Contains(meta.UsedLinks, "docs/") {
@@ -235,7 +235,7 @@ func caseRelative() test.CaseResult {
 		return errCase("links-relative", err)
 	}
 	for _, bl := range broken {
-		if bl.SourceFile == pathutils.ToWithPrefix(rtMoved) {
+		if bl.SourceFile == pathutils.GuessMeta(rtMoved).String() {
 			gaps = append(gaps, fmt.Sprintf("%s: link %q listed as broken", rtMoved, bl.Target))
 		}
 	}
@@ -249,13 +249,13 @@ func caseRelative() test.CaseResult {
 	if broken, err = files.FindBrokenLinks(); err != nil {
 		return errCase("links-relative", err)
 	}
-	want := files.BrokenLink{SourceFile: pathutils.ToWithPrefix(up), Target: "docs/", Suggested: "docs/", AboveRoot: true}
+	want := files.BrokenLink{SourceFile: pathutils.GuessMeta(up).String(), Target: "docs/", Suggested: "docs/", AboveRoot: true}
 	if !slices.Contains(broken, want) {
 		gaps = append(gaps, fmt.Sprintf("%s: %+v not listed as broken", up, want))
 	} else if ok, err := files.RepairBrokenLink(pathutils.GuessMeta(want.SourceFile), pathutils.GuessMeta(want.Target), pathutils.GuessMeta(want.Suggested)); !ok || err != nil {
 		gaps = append(gaps, fmt.Sprintf("%s: repair %v, %v", up, ok, err))
 	}
-	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(up)); err != nil || strings.TrimSpace(string(raw)) != "[x](../../../)" {
+	if raw, err := contentStorage.ReadFile(pathutils.GuessMeta(up).FullPath()); err != nil || strings.TrimSpace(string(raw)) != "[x](../../../)" {
 		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", up, raw, "[x](../../../)", err))
 	}
 	return gapsCase("links-relative", "./ and ../ links read relative to their doc and keep their target on rename, move and folder move", gaps)
@@ -274,7 +274,7 @@ func caseBare() test.CaseResult {
 			return errCase("links-bare", err)
 		}
 	}
-	gaps := linkGaps(n, []string{pathutils.ToWithPrefix(b)})
+	gaps := linkGaps(n, []string{pathutils.GuessMeta(b).String()})
 
 	changes, err := files.ScanRelativeLinks()
 	if err != nil {
@@ -283,11 +283,11 @@ func caseBare() test.CaseResult {
 	// [y](b.md) is listed too, its old docs-root target docs/b.md is missing
 	var found []string
 	for _, c := range changes {
-		if c.SourceFile == pathutils.ToWithPrefix(n) {
+		if c.SourceFile == pathutils.GuessMeta(n).String() {
 			found = append(found, fmt.Sprintf("%s %v", c.OldTarget, c.OldTargetExists))
 		}
 	}
-	if want := []string{"docs/b.md false", pathutils.ToWithPrefix(a) + " true"}; !slices.Equal(found, want) {
+	if want := []string{"docs/b.md false", pathutils.GuessMeta(a).String() + " true"}; !slices.Equal(found, want) {
 		gaps = append(gaps, fmt.Sprintf("scan found %q, want %q", found, want))
 	}
 	// the admin scan lists it, the old target pre-selected
@@ -300,14 +300,14 @@ func caseBare() test.CaseResult {
 	} else {
 		body, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
-		if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), html.EscapeString(pathutils.ToWithPrefix(a))+`&#34;]" checked`) {
+		if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), html.EscapeString(pathutils.GuessMeta(a).String())+`&#34;]" checked`) {
 			gaps = append(gaps, fmt.Sprintf("scan route: status %d, %s not pre-selected", resp.StatusCode, a))
 		}
 	}
-	if ok, err := files.MigrateRelativeLinks(pathutils.GuessMeta(n), pathutils.ToWithPrefix(a)); !ok || err != nil {
+	if ok, err := files.MigrateRelativeLinks(pathutils.GuessMeta(n), pathutils.GuessMeta(a).String()); !ok || err != nil {
 		gaps = append(gaps, fmt.Sprintf("migrate: %v, %v", ok, err))
 	}
-	gaps = append(gaps, metadataGaps(n, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(a)})...)
+	gaps = append(gaps, metadataGaps(n, []string{pathutils.GuessMeta(b).String(), pathutils.GuessMeta(a).String()})...)
 
 	c, moved := dir+"/sub/c.md", dir+"/other/n.md"
 	for _, mv := range [][2]string{{b, c}, {n, moved}} {
@@ -315,9 +315,9 @@ func caseBare() test.CaseResult {
 			return errCase("links-bare", err)
 		}
 	}
-	gaps = append(gaps, metadataGaps(moved, []string{pathutils.ToWithPrefix(c), pathutils.ToWithPrefix(a)})...)
+	gaps = append(gaps, metadataGaps(moved, []string{pathutils.GuessMeta(c).String(), pathutils.GuessMeta(a).String()})...)
 	want := "[y](../sub/c.md)\n[x](/" + parser.Link{Kind: parser.LinkMarkdown, Path: a}.Dest() + ") <a href=\"" + parser.Link{Kind: parser.LinkHTML, Path: "/files/" + a}.Dest() + "\">x</a>"
-	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(moved)); err != nil || strings.TrimSpace(string(raw)) != want {
+	if raw, err := contentStorage.ReadFile(pathutils.GuessMeta(moved).FullPath()); err != nil || strings.TrimSpace(string(raw)) != want {
 		gaps = append(gaps, fmt.Sprintf("%s = %q, want %q (%v)", moved, raw, want, err))
 	}
 	files.RefreshCaches()
@@ -413,7 +413,7 @@ func caseBookEditor() test.CaseResult {
 
 	want := make([]string, len(entries))
 	for n, i := range entries {
-		want[n] = pathutils.ToWithPrefix(target(i))
+		want[n] = pathutils.GuessMeta(target(i)).String()
 	}
 	gaps := metadataGaps(book, want)
 	fc, err := files.GetFileContent(pathutils.GuessMeta(book))
@@ -435,12 +435,12 @@ func caseTable() test.CaseResult {
 	dir := testDir + "/table"
 	doc, near := dir+"/t.md", dir+"/near.md"
 	table := "| wiki | markdown |\n|---|---|\n| [y](./near.md) | |\n"
-	want := []string{pathutils.ToWithPrefix(near)}
+	want := []string{pathutils.GuessMeta(near).String()}
 	for i := range names {
 		// a "|" in a table cell is written escaped
 		md := strings.ReplaceAll(parser.Link{Kind: parser.LinkMarkdown, Text: "x", Path: "/" + target(i)}.String(), "|", `\|`)
 		table += "| " + parser.Link{Kind: parser.LinkWiki, Path: target(i)}.String() + " | " + md + " |\n"
-		want = append(want, pathutils.ToWithPrefix(target(i)))
+		want = append(want, pathutils.GuessMeta(target(i)).String())
 	}
 	if err := saveDoc(near, "# near\n"); err != nil {
 		return errCase("links-table", err)
@@ -494,7 +494,7 @@ func saveForms(dir string, forms map[string]string) (map[string]string, error) {
 func allTargets() []string {
 	want := make([]string, len(names))
 	for i := range names {
-		want[i] = pathutils.ToWithPrefix(target(i))
+		want[i] = pathutils.GuessMeta(target(i)).String()
 	}
 	return want
 }

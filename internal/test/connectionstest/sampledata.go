@@ -46,7 +46,7 @@ func withPrefix(name string) pathutils.MetaPath {
 }
 
 func writeFile(relPath, content string) error {
-	full := pathutils.ToDocsPath(relPath)
+	full := pathutils.GuessMeta(relPath).FullPath()
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func saveMetadata(name string, m *files.Metadata) error {
 // chains (real SeedMetadata calls, so Kids/Ancestor are computed by the actual cascade rather
 // than faked), a linker/linked pair for used-links, and standalone files for related/conflict.
 func resetAndSeed() error {
-	full := pathutils.ToDocsPath(testDir)
+	full := pathutils.GuessMeta(testDir).FullPath()
 	if err := os.RemoveAll(full); err != nil {
 		return err
 	}
