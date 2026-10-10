@@ -32,7 +32,7 @@ func columnPaths(cols []kanban.Column, status string) []string {
 		if c.Status == status {
 			paths := make([]string, len(c.Cards))
 			for i, card := range c.Cards {
-				paths[i] = card.FilePath
+				paths[i] = card.FilePath.String()
 			}
 			return paths
 		}
@@ -209,7 +209,7 @@ func caseBoardSorting() test.CaseResult {
 func caseMoveCard() test.CaseResult {
 	name := "move-card"
 
-	oldStatus, _, err := kanban.MoveCard(testFolder, testPath(moveFile), "inprogress")
+	oldStatus, _, err := kanban.MoveCard(testFolder, pathutils.NewDocsRel(testPath(moveFile)), "inprogress")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -237,12 +237,12 @@ func caseMoveCard() test.CaseResult {
 func caseMoveCardEventLog() test.CaseResult {
 	name := "move-card-event-log"
 
-	oldStatus, _, err := kanban.MoveCard(testFolder, testPath(moveFile), "blocked")
+	oldStatus, _, err := kanban.MoveCard(testFolder, pathutils.NewDocsRel(testPath(moveFile)), "blocked")
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	events, err := kanban.GetEvents(testFolder, testPath(moveFile), nil, nil, 10)
+	events, err := kanban.GetEvents(testFolder, pathutils.NewDocsRel(testPath(moveFile)), nil, nil, 10)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -269,7 +269,7 @@ func caseColumnOrderPersists() test.CaseResult {
 	defer kanban.SaveOrder(testFolder, kanban.Order{})
 
 	if err := kanban.SaveOrder(testFolder, kanban.Order{
-		"inbox": {testPath(alphaFile), testPath(betaFile)},
+		"inbox": {pathutils.NewDocsRel(testPath(alphaFile)), pathutils.NewDocsRel(testPath(betaFile))},
 	}); err != nil {
 		return errCase(name, err)
 	}
@@ -297,7 +297,7 @@ func caseColumnOrderPersists() test.CaseResult {
 func caseApplyOrderPure() test.CaseResult {
 	name := "apply-order-pure"
 
-	got := kanban.ApplyOrder([]string{"b", "a"}, []string{"a", "b", "c"})
+	got := kanban.ApplyOrder([]pathutils.DocsRel{"b", "a"}, []pathutils.DocsRel{"a", "b", "c"})
 	success := len(got) == 3 && got[0] == "b" && got[1] == "a" && got[2] == "c"
 
 	cr := test.CaseResult{
@@ -427,7 +427,7 @@ func caseRenameStatusFolderSync() test.CaseResult {
 		return errCase(name, err)
 	}
 	files.InvalidateFileListCache()
-	if err := kanban.SaveOrder(testFolder, kanban.Order{oldStatus: {oldPath}}); err != nil {
+	if err := kanban.SaveOrder(testFolder, kanban.Order{oldStatus: {pathutils.NewDocsRel(oldPath)}}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -440,7 +440,7 @@ func caseRenameStatusFolderSync() test.CaseResult {
 	tagged := meta != nil && slices.Contains(meta.Tags, kanbanTag(newStatus)) && !slices.Contains(meta.Tags, kanbanTag(oldStatus))
 	keptMovedAt := meta != nil && meta.KanbanMovedAt.Equal(movedAt)
 	order, _ := kanban.GetOrder(testFolder)
-	ordered := slices.Equal(order[newStatus], []string{newPath}) && order[oldStatus] == nil
+	ordered := slices.Equal(order[newStatus], []pathutils.DocsRel{pathutils.NewDocsRel(newPath)}) && order[oldStatus] == nil
 	statuses := configmanager.GetKanbanStatuses()
 	configured := slices.Contains(statuses, newStatus) && !slices.Contains(statuses, oldStatus)
 

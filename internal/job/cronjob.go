@@ -101,7 +101,7 @@ func (j *fileJob) Run(_ context.Context) error {
 						// fighting it
 						if changedAt, _, err := git.GetCommitDetails(move.Commit); err != nil {
 							logging.LogWarning(logging.KeyFileSync, "failed to get commit time for %s, skipping kanban foldersync: %v", move.Commit, err)
-						} else if err := kanban.SyncFolderTag(newNormalized.String(), changedAt); err != nil {
+						} else if err := kanban.SyncFolderTag(newNormalized, changedAt); err != nil {
 							logging.LogWarning(logging.KeyFileSync, "kanban foldersync failed for %s: %v", newNormalized, err)
 						}
 					}
@@ -174,7 +174,7 @@ func (j *fileJob) Run(_ context.Context) error {
 				continue
 			}
 			if !syncTime.IsZero() {
-				if err := kanban.SyncFolderTag(normalizedPath.String(), syncTime); err != nil {
+				if err := kanban.SyncFolderTag(normalizedPath, syncTime); err != nil {
 					logging.LogWarning(logging.KeyFileSync, "kanban foldersync failed for %s: %v", normalizedPath, err)
 				}
 			}

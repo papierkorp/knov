@@ -55,6 +55,7 @@ the docs-relative path, the metadata path (`docs/...` / `media/...`) and the ful
   - [x] the metadata operations (SetTags, SetParents, SetEditor, SetConflictFile, UpdateLinksForSingleFile, ...) and server.metaPathParam take / give a MetaPath; guessing calls 321 -> 239
   - [x] the metadata path lists (Parents, Kids, Ancestor, UsedLinks, LinksToHere, Related, ConflictFile / ConflictOf) are MetaPath, so the filter criteria (`child-of`, `parent-of`, `ancestor-of`), the link lists, ExtractLinks and the kanban ancestor select read them exactly; guessing calls 239 -> 214
   - [x] dashboard: the fileContent widget path is a DocsRel
+  - [x] kanban: card paths, the stored card order, MoveCard, SyncFolderTag and the event filter are DocsRel / MetaPath (a media path is a 400 for move / order); guessing calls 214 -> 199
 - [x] known bugs the conversion has to fix (keep the regression test for each) - done: 9c969f33, acf5699a, 77162415, regression cases in internal/pathagreement
   - `files.OnFileMoved` gets docs-relative paths (`physical.go:90,276`) and `dashboard.PatchFilePathForMove` runs `ToRelative` on them again (`dashboard.go:191-196`, not idempotent: `media/x.md` -> `x.md`): moving `docs/media/x.md` patches a widget of `docs/x.md` and writes `y.md` for `docs/media/y.md`
   - `filter.GenerateFilterIndex` writes `/docs/x.md` for `docs/docs/x.md`, which reads as `docs/x.md`: write `/files/` + the path without `docs/` for every docs file (media files keep `/media/`)

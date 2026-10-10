@@ -3,17 +3,17 @@ package kanban
 import (
 	"encoding/json"
 	"fmt"
-	"knov/internal/pathutils"
 	"slices"
 
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/keylock"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
-// Order maps status → ordered list of file paths for one board folder.
-type Order map[string][]string
+// Order maps status → ordered list of card paths for one board folder.
+type Order map[string][]pathutils.DocsRel
 
 // orderLocks guards MutateOrder's read-modify-write span per board folder - see internal/keylock.
 var orderLocks = keylock.New()
@@ -71,8 +71,7 @@ func MutateOrder(folderPath string, fn func(o Order)) error {
 // it with newPath - so a rename/move doesn't cost a card its remembered drag-drop position.
 // Registered onto files.OnFileMoved at startup (see main.go). A no-op for a path that isn't a
 // kanban card, or isn't ordered on any board yet.
-func PatchPathForMove(oldRel, newRel pathutils.DocsRel) {
-	oldPath, newPath := oldRel.String(), newRel.String()
+func PatchPathForMove(oldPath, newPath pathutils.DocsRel) {
 	for _, board := range configmanager.GetKanbanBoards() {
 		o, err := GetOrder(board.FolderPath)
 		if err != nil {
@@ -109,18 +108,18 @@ func PatchPathForMove(oldRel, newRel pathutils.DocsRel) {
 
 // ApplyOrder reorders cards according to stored order.
 // Cards not present in stored are appended at the end in their original sequence.
-func ApplyOrder(stored []string, cards []string) []string {
+func ApplyOrder(stored []pathutils.DocsRel, cards []pathutils.DocsRel) []pathutils.DocsRel {
 	if len(stored) == 0 {
 		return cards
 	}
 
-	pos := make(map[string]int, len(stored))
+	pos := make(map[pathutils.DocsRel]int, len(stored))
 	for i, fp := range stored {
 		pos[fp] = i
 	}
 
-	known := make([]string, 0, len(cards))
-	unknown := make([]string, 0)
+	known := make([]pathutils.DocsRel, 0, len(cards))
+	unknown := make([]pathutils.DocsRel, 0)
 	for _, c := range cards {
 		if _, ok := pos[c]; ok {
 			known = append(known, c)

@@ -24,7 +24,7 @@ import (
 
 // Card holds the data for a single kanban card.
 type Card struct {
-	FilePath      string
+	FilePath      pathutils.DocsRel
 	Title         string
 	Collection    string
 	Status        string
@@ -123,12 +123,12 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	}
 
 	// precompute file sizes once if needed
-	var fileSizes map[string]int64
+	var fileSizes map[pathutils.DocsRel]int64
 	if sortBy == SortSize {
-		fileSizes = make(map[string]int64, len(matched))
+		fileSizes = make(map[pathutils.DocsRel]int64, len(matched))
 		for col := range cardsByStatus {
 			for _, c := range cardsByStatus[col] {
-				if fi, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(c.FilePath).String())); err == nil {
+				if fi, err := os.Stat(c.FilePath.MetaPath().FullPath()); err == nil {
 					fileSizes[c.FilePath] = fi.Size()
 				}
 			}
@@ -149,12 +149,12 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 				return cards[i].CreatedAt > cards[j].CreatedAt
 			})
 			if storedPaths, ok := storedOrder[col]; ok {
-				paths := make([]string, len(cards))
+				paths := make([]pathutils.DocsRel, len(cards))
 				for i, c := range cards {
 					paths[i] = c.FilePath
 				}
 				ordered := ApplyOrder(storedPaths, paths)
-				posMap := make(map[string]int, len(ordered))
+				posMap := make(map[pathutils.DocsRel]int, len(ordered))
 				for i, fp := range ordered {
 					posMap[fp] = i
 				}
@@ -226,8 +226,8 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 // actually moved to. boardFolder scopes the event log entry (and, under foldersync, the move
 // target); pass "" to fall back to guessing the board from the file's own location (used when
 // the caller doesn't know which board triggered the move).
-func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath string, err error) {
-	normalizedPath := pathutils.DocsPath(filePath).String() // card paths are docs-relative
+func MoveCard(boardFolder string, filePath pathutils.DocsRel, newStatus string) (oldStatus string, newFilePath pathutils.DocsRel, err error) {
+	normalizedPath := filePath.MetaPath()
 	newFilePath = filePath
 
 	// unlocked read, only to learn the file's current folder (to decide whether a physical
@@ -236,7 +236,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 	// physical move below fail with ErrMoveSourceMissing under a concurrent mover of the same
 	// path, which is an accepted, fail-safe race (returns an error, changes nothing) rather than
 	// one worth retrying - see prior review discussion for why a retry can't actually recover it
-	meta, err := files.MetaDataGet(pathutils.GuessMeta(normalizedPath))
+	meta, err := files.MetaDataGet(normalizedPath)
 	if err != nil || meta == nil {
 		return "", filePath, err
 	}
@@ -261,7 +261,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 	if cfgBoard, ok := configmanager.GetKanbanBoardByFolder(board); ok && cfgBoard.FolderSync {
 		targetDir := board + "/" + newStatus
 		if targetDir != dir {
-			targetPath, moveErr := moveFileUnique(logging.KeyApp, filePath, targetDir, filepath.Base(filePath))
+			targetPath, moveErr := moveFileUnique(logging.KeyApp, filePath, targetDir, filepath.Base(filePath.String()))
 			if moveErr != nil && !errors.Is(moveErr, files.ErrLinkUpdateFailed) {
 				// the rename itself never happened - filePath is still where it was, so bail out
 				// before the tag is touched instead of applying a status that claims a location
@@ -278,14 +278,14 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 		}
 	}
 
-	normalizedNewPath := pathutils.DocsPath(newFilePath).String()
+	normalizedNewPath := newFilePath.MetaPath()
 	var found bool
 
 	// MetaDataMutate holds the path's write lock across this whole read-modify-write, so a
 	// concurrent writer of the same file (e.g. file-sync's per-changed-file metadata
 	// refresh) can't read stale tags in between and silently revert this move on its own
 	// save.
-	err = files.MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(meta *files.Metadata, existed bool) (bool, error) {
+	err = files.MetaDataMutate(normalizedNewPath, func(meta *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -305,7 +305,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 
 	files.RefreshCaches()
 
-	if err := kanbanStorage.LogEvent(newFilePath, eventFolder, oldStatus, newStatus); err != nil {
+	if err := kanbanStorage.LogEvent(newFilePath.String(), eventFolder, oldStatus, newStatus); err != nil {
 		logging.LogWarning(logging.KeyApp, "kanban: failed to log event for %s: %v", newFilePath, err)
 	}
 	logging.LogInfo(logging.KeyApp, "kanban: moved card %s to status %s", newFilePath, newStatus)
@@ -324,19 +324,19 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath s
 // since only a move keeping its name may keep chars the filename policy rejects.
 const maxMoveUniqueAttempts = 100
 
-func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string, err error) {
+func moveFileUnique(key logging.Key, oldPath pathutils.DocsRel, dir, name string) (newPath pathutils.DocsRel, err error) {
 	clean := pathutils.CleanName(name)
 	ext := filepath.Ext(clean)
 	base := strings.TrimSuffix(clean, ext)
 	candidate := dir + "/" + name
 	for n := 2; n <= maxMoveUniqueAttempts; n++ {
-		err = files.MoveFileNoRefresh(key, pathutils.DocsPath(oldPath), pathutils.DocsPath(candidate))
+		err = files.MoveFileNoRefresh(key, oldPath.MetaPath(), pathutils.DocsPath(candidate))
 		if err == nil || !errors.Is(err, files.ErrMoveTargetExists) {
-			return candidate, err
+			return pathutils.NewDocsRel(candidate), err
 		}
 		candidate = fmt.Sprintf("%s/%s_%d%s", dir, base, n, ext)
 	}
-	return candidate, fmt.Errorf("too many filename collisions in %s", dir)
+	return pathutils.NewDocsRel(candidate), fmt.Errorf("too many filename collisions in %s", dir)
 }
 
 // applyStatusTag replaces all of meta's kanban status tags with newStatus, returning the previous
@@ -371,8 +371,7 @@ func applyStatusTag(meta *files.Metadata, newStatus string) (oldStatus string) {
 // wins on the next sync. That's intentional, not a race: foldersync's contract is that folder
 // and tag agree, so a hand-edited tag that disagrees with the current folder is describing an
 // inconsistent state, not a competing source of truth.
-func SyncFolderTag(path string, changedAt time.Time) error {
-	normalizedPath := pathutils.GuessMeta(path)
+func SyncFolderTag(normalizedPath pathutils.MetaPath, changedAt time.Time) error {
 
 	var oldStatus, status, board string
 	var applied bool
@@ -414,8 +413,8 @@ func SyncFolderTag(path string, changedAt time.Time) error {
 		return err
 	}
 
-	relPath := pathutils.ToRelative(path)
-	if err := kanbanStorage.LogEvent(relPath, board, oldStatus, status); err != nil {
+	relPath, _ := normalizedPath.DocsRel()
+	if err := kanbanStorage.LogEvent(relPath.String(), board, oldStatus, status); err != nil {
 		logging.LogWarning(logging.KeyFileSync, "kanban: failed to log foldersync event for %s: %v", relPath, err)
 	}
 	logging.LogInfo(logging.KeyFileSync, "kanban: foldersync set status %s for %s from physical change", status, relPath)
@@ -434,14 +433,14 @@ func statusFolder(board configmanager.KanbanBoard, dir string) string {
 
 // GetEvents returns kanban move events with optional filters, newest first.
 // Pass empty strings / nil times to skip those filters; limit=0 means no limit.
-func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
-	return kanbanStorage.GetEvents(folderPath, filePath, from, to, limit)
+func GetEvents(folderPath string, filePath pathutils.DocsRel, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
+	return kanbanStorage.GetEvents(folderPath, filePath.String(), from, to, limit)
 }
 
 // cardFromFile builds a Card from a cached file entry and its already-resolved kanban status.
 func cardFromFile(file files.File, status string) Card {
 	meta := file.Metadata
-	relPath := pathutils.ToRelative(file.Path.String())
+	relPath, _ := file.Path.DocsRel() // the file list holds docs files only
 	card := Card{
 		FilePath:   relPath,
 		Title:      meta.Title,
@@ -450,7 +449,7 @@ func cardFromFile(file files.File, status string) Card {
 		Tags:       meta.Tags,
 		CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
 		LastEdited: meta.LastEdited.Format("2006-01-02"),
-		Excerpt:    Excerpt(pathutils.ToDocsPath(pathutils.DocsPath(relPath).String()), ExcerptRunes),
+		Excerpt:    Excerpt(file.Path.FullPath(), ExcerptRunes),
 	}
 	if !meta.KanbanAddedAt.IsZero() {
 		card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")
@@ -584,7 +583,8 @@ func FilesForFolder(folderPath string) ([]string, error) {
 
 	paths := make([]string, 0, len(cards))
 	for _, file := range cards {
-		paths = append(paths, pathutils.ToRelative(file.Path.String()))
+		rel, _ := file.Path.DocsRel()
+		paths = append(paths, rel.String())
 	}
 	slices.Sort(paths)
 	return paths, nil
@@ -705,6 +705,6 @@ func ConfigWarnings(t func(string, ...any) string) []string {
 
 // BoardFolderMissing reports whether a configured board's folder doesn't exist (e.g. renamed).
 func BoardFolderMissing(folderPath string) bool {
-	_, err := os.Stat(pathutils.ToDocsPath(pathutils.DocsPath(folderPath).String()))
+	_, err := os.Stat(pathutils.DocsPath(folderPath).FullPath())
 	return os.IsNotExist(err)
 }

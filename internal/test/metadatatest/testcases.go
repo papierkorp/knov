@@ -261,7 +261,8 @@ func caseMutateVsSyncRace() test.CaseResult {
 	}()
 	go func() {
 		defer wg.Done()
-		if _, _, err := kanban.MoveCard(testDir, pathutils.ToRelative(path.String()), "inprogress"); err != nil {
+		rel, _ := path.DocsRel()
+		if _, _, err := kanban.MoveCard(testDir, rel, "inprogress"); err != nil {
 			errCh <- err
 		}
 	}()

@@ -228,7 +228,12 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		boardFolder = board.FolderPath
 	}
 
-	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, pathutils.ToRelative(filePath.String()), newStatus)
+	rel, ok := filePath.DocsRel()
+	if !ok {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/", "filepath"))
+		return
+	}
+	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, rel, newStatus)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
@@ -242,7 +247,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
 	}
 	notify.SetHeader(w, notify.LevelSuccess, msg)
-	writeResponse(w, r, map[string]string{"filepath": pathutils.DocsPath(newFilePath).String(), "status": newStatus}, "")
+	writeResponse(w, r, map[string]string{"filepath": newFilePath.MetaPath().String(), "status": newStatus}, "")
 }
 
 // @Summary Save card order for a kanban column
@@ -270,14 +275,16 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var paths []string
+	var paths []pathutils.DocsRel
 	for _, p := range strings.Split(r.FormValue("order"), ",") {
 		if p = strings.TrimSpace(p); p != "" {
-			if !pathutils.IsMetaPath(p) {
-				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "order"))
+			m, _ := pathutils.ParseMeta(p)
+			rel, ok := m.DocsRel()
+			if !ok {
+				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/", "order"))
 				return
 			}
-			paths = append(paths, pathutils.ToRelative(p)) // the order is stored with the docs-relative card paths
+			paths = append(paths, rel) // the order is stored with the docs-relative card paths
 		}
 	}
 
@@ -338,7 +345,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	fileRel := relOfMeta(filePath.String())
+	fileRel, _ := filePath.DocsRel()
 	fromRaw := r.URL.Query().Get("from")
 	toRaw := r.URL.Query().Get("to")
 
@@ -373,7 +380,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
 	}
 
-	writeResponse(w, r, events, render.RenderKanbanEvents(events, filePaths, board.Slug, fileRel, fromRaw, toRaw))
+	writeResponse(w, r, events, render.RenderKanbanEvents(events, filePaths, board.Slug, fileRel.String(), fromRaw, toRaw))
 }
 
 // parseEventBoundary parses a time-range boundary as RFC3339, falling back to a bare
@@ -391,12 +398,4 @@ func parseEventBoundary(s string, endOfDay bool) (time.Time, error) {
 		d = d.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 	}
 	return d, nil
-}
-
-// relOfMeta is the docs-relative card path of a metadata path, "" stays "".
-func relOfMeta(p string) string {
-	if p == "" {
-		return ""
-	}
-	return pathutils.ToRelative(p)
 }

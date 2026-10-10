@@ -52,7 +52,7 @@ func RenameStatus(oldStatus, newStatus string) (RenameResult, error) {
 		if !b.FolderSync {
 			continue
 		}
-		boardDir := pathutils.ToDocsPath(pathutils.DocsPath(b.FolderPath).String())
+		boardDir := pathutils.DocsPath(b.FolderPath).FullPath()
 		oldInfo, err := os.Stat(filepath.Join(boardDir, oldStatus))
 		if err != nil {
 			continue
@@ -70,7 +70,7 @@ func RenameStatus(oldStatus, newStatus string) (RenameResult, error) {
 	// move the folders before retagging - until the settings change newStatus isn't a status, so
 	// foldersync ignores the renamed folders still holding files tagged oldStatus
 	for _, board := range folders {
-		boardDir := pathutils.ToDocsPath(pathutils.DocsPath(board).String())
+		boardDir := pathutils.DocsPath(board).FullPath()
 		oldDir, newDir := filepath.Join(boardDir, oldStatus), filepath.Join(boardDir, newStatus)
 		_, linksFailed, err := files.MoveFolder(logging.KeyApp, oldDir, newDir)
 		if err != nil {

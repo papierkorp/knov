@@ -23,7 +23,7 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 
 	displayTitle := card.Title
 	if displayTitle == "" {
-		displayTitle = card.FilePath
+		displayTitle = card.FilePath.String()
 	}
 
 	if board.FolderSync {
@@ -54,11 +54,11 @@ func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string 
 		data-status="%s"
 		data-prefix="%s"
 		ondragstart="kanbanDragStart(event)">`,
-		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath)), template.HTMLEscapeString(pathutils.DocsPath(card.FilePath).String()), template.HTMLEscapeString(card.Status), prefix)
+		cardClass, template.HTMLEscapeString(sanitizeID(card.FilePath.String())), template.HTMLEscapeString(card.FilePath.MetaPath().String()), template.HTMLEscapeString(card.Status), prefix)
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
-	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath))), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
+	fmt.Fprintf(&html, `<a class="kanban-card-title" href="%s" title="%s">%s</a>`, template.HTMLEscapeString(pathutils.ToFileURL(card.FilePath.MetaPath())), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 	if len(visibleTags) > 0 {
 		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
@@ -219,7 +219,7 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 
 	displayTitle := card.Title
 	if displayTitle == "" {
-		displayTitle = card.FilePath
+		displayTitle = card.FilePath.String()
 	}
 	if board.FolderSync {
 		displayTitle = strings.TrimPrefix(displayTitle, board.FolderPath+"/"+card.Status+"/")
@@ -234,12 +234,12 @@ func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) s
 		}
 	}
 
-	searchBlob := strings.ToLower(displayTitle + " " + card.FilePath + " " + strings.Join(visibleTags, " "))
+	searchBlob := strings.ToLower(displayTitle + " " + card.FilePath.String() + " " + strings.Join(visibleTags, " "))
 
 	fmt.Fprintf(&html, `<tr data-search="%s" data-tags="|%s|" data-title="%s" data-createdat="%s" data-lastedited="%s">`,
 		template.HTMLEscapeString(searchBlob), template.HTMLEscapeString(strings.Join(visibleTags, "|")), template.HTMLEscapeString(strings.ToLower(displayTitle)), template.HTMLEscapeString(card.CreatedAt), template.HTMLEscapeString(card.LastEdited))
 
-	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, template.HTMLEscapeString(pathutils.ToFileURL(pathutils.DocsPath(card.FilePath))), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
+	fmt.Fprintf(&html, `<td><a class="kanban-archive-title" href="%s" title="%s">%s</a></td>`, template.HTMLEscapeString(pathutils.ToFileURL(card.FilePath.MetaPath())), template.HTMLEscapeString(displayTitle), template.HTMLEscapeString(displayTitle))
 
 	html.WriteString(`<td>`)
 	if len(visibleTags) > 0 {
