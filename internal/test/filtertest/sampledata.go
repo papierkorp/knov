@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/contentStorage"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/logging"
 	"knov/internal/test"
 )
@@ -119,7 +120,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Path:       "docs/test/filter-tests/filterTestE.md",
 			CreatedAt:  time.Date(2025, 10, 5, 14, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 5, 14, 0, 0, 0, time.UTC),
-			Parents:    []string{"docs/test/filter-tests/filterTestD.md"},
+			Parents:    []pathutils.MetaPath{"docs/test/filter-tests/filterTestD.md"},
 			Editor:     files.EditorTypeCodeMirror,
 			References: []files.Reference{{URL: "https://example.com", Description: "example reference for testing"}, {URL: "https://www.google.com", Description: "another reference"}},
 		},
@@ -128,7 +129,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Path:       "docs/test/filter-tests/filterTestF.md",
 			CreatedAt:  time.Date(2025, 10, 6, 15, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 6, 15, 0, 0, 0, time.UTC),
-			Parents:    []string{"docs/test/filter-tests/filterTestE.md"},
+			Parents:    []pathutils.MetaPath{"docs/test/filter-tests/filterTestE.md"},
 			Editor:     files.EditorTypeCodeMirror,
 		},
 	}

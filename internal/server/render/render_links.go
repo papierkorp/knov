@@ -119,35 +119,35 @@ func RenderNoLinksMessage(message string) string {
 }
 
 // RenderAncestorOptions renders the ancestor files as the <option>s of a select (value: the metadata path).
-func RenderAncestorOptions(ancestors []string) string {
+func RenderAncestorOptions(ancestors []pathutils.MetaPath) string {
 	var out strings.Builder
 	for _, a := range ancestors {
-		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(a), GetLinkDisplayText(a))
+		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(a.String()), GetLinkDisplayText(a.String()))
 	}
 	return out.String()
 }
 
 // RenderLinksList renders a list of file links (non-media) as HTML with configurable display text
-func RenderLinksList(links []string, _ bool) string {
+func RenderLinksList(links []pathutils.MetaPath, _ bool) string {
 	if len(links) == 0 {
 		return ""
 	}
 
 	var html strings.Builder
 	for _, link := range links {
-		if pathutils.IsMedia(link) {
+		rel, ok := link.DocsRel()
+		if !ok {
 			continue
 		}
-		rel := pathutils.ToRelative(link)
-		url := pathutils.ToFileURL(pathutils.DocsPath(rel))
-		displayText := GetLinkDisplayText(pathutils.ToWithPrefix(link))
+		url := pathutils.ToFileURL(link)
+		displayText := GetLinkDisplayText(link.String())
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
 	}
 	return html.String()
 }
 
 // RenderMediaLinks renders outbound media links as HTML
-func RenderMediaLinks(links []string) string {
+func RenderMediaLinks(links []pathutils.MetaPath) string {
 	if len(links) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no media files"))
 	}
@@ -155,11 +155,11 @@ func RenderMediaLinks(links []string) string {
 	var html strings.Builder
 	hasMedia := false
 	for _, link := range links {
-		if !pathutils.IsMedia(link) {
+		rel, ok := link.MediaRel()
+		if !ok {
 			continue
 		}
 		hasMedia = true
-		rel := pathutils.ToRelative(link)
 		url := pathutils.ToMediaURL(rel)
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, filepath.Base(rel)))
 	}
@@ -170,7 +170,7 @@ func RenderMediaLinks(links []string) string {
 }
 
 // RenderParentLinks renders parent links or no parents message
-func RenderParentLinks(parents []string) string {
+func RenderParentLinks(parents []pathutils.MetaPath) string {
 	if len(parents) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no parents"))
 	}
@@ -178,7 +178,7 @@ func RenderParentLinks(parents []string) string {
 }
 
 // RenderAncestorLinks renders ancestor links or no ancestors message
-func RenderAncestorLinks(ancestors []string) string {
+func RenderAncestorLinks(ancestors []pathutils.MetaPath) string {
 	if len(ancestors) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no ancestors"))
 	}
@@ -186,7 +186,7 @@ func RenderAncestorLinks(ancestors []string) string {
 }
 
 // RenderKidsLinks renders children links or no children message
-func RenderKidsLinks(kids []string) string {
+func RenderKidsLinks(kids []pathutils.MetaPath) string {
 	if len(kids) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children"))
 	}
@@ -194,7 +194,7 @@ func RenderKidsLinks(kids []string) string {
 }
 
 // RenderUsedLinks renders used/outbound links (non-media) or no outbound links message
-func RenderUsedLinks(usedLinks []string) string {
+func RenderUsedLinks(usedLinks []pathutils.MetaPath) string {
 	if len(usedLinks) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links"))
 	}
@@ -202,7 +202,7 @@ func RenderUsedLinks(usedLinks []string) string {
 }
 
 // RenderLinksToHere renders inbound links or no inbound links message
-func RenderLinksToHere(linksToHere []string) string {
+func RenderLinksToHere(linksToHere []pathutils.MetaPath) string {
 	if len(linksToHere) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no inbound links"))
 	}
@@ -210,7 +210,7 @@ func RenderLinksToHere(linksToHere []string) string {
 }
 
 // RenderRelatedFiles renders related files links or a fallback message
-func RenderRelatedFiles(paths []string) string {
+func RenderRelatedFiles(paths []pathutils.MetaPath) string {
 	if len(paths) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no related files found"))
 	}
@@ -218,7 +218,7 @@ func RenderRelatedFiles(paths []string) string {
 }
 
 // RenderSameFolderFiles renders links to other files in the same folder, or a fallback message
-func RenderSameFolderFiles(paths []string) string {
+func RenderSameFolderFiles(paths []pathutils.MetaPath) string {
 	if len(paths) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no other files in this folder"))
 	}
@@ -226,7 +226,7 @@ func RenderSameFolderFiles(paths []string) string {
 }
 
 // RenderSameTagFiles renders links to other files sharing a tag, or a fallback message
-func RenderSameTagFiles(paths []string) string {
+func RenderSameTagFiles(paths []pathutils.MetaPath) string {
 	if len(paths) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no files with matching tags"))
 	}
@@ -235,13 +235,12 @@ func RenderSameTagFiles(paths []string) string {
 
 // RenderConflictBanner renders a prominent warning banner above the file content,
 // or empty string if no conflict exists (outerHTML swap removes the placeholder).
-func RenderConflictBanner(originalFilePath string, conflictFile string) string {
+func RenderConflictBanner(originalFilePath, conflictFile pathutils.MetaPath) string {
 	if conflictFile == "" {
 		return ""
 	}
-	conflictRelPath := pathutils.ToRelative(conflictFile)
-	display := filepath.Base(conflictRelPath)
-	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath) + "&conflict=" + url.QueryEscape(conflictFile)
+	display := filepath.Base(conflictFile.String())
+	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath.String()) + "&conflict=" + url.QueryEscape(conflictFile.String())
 	showText := translation.SprintfForRequest(configmanager.GetLanguage(), "diff")
 	hideText := translation.SprintfForRequest(configmanager.GetLanguage(), "hide diff")
 
@@ -250,7 +249,7 @@ func RenderConflictBanner(originalFilePath string, conflictFile string) string {
 	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
 	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span> `,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "this file has an unresolved conflict:"))
-	fmt.Fprintf(&html, `<a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(pathutils.DocsPath(conflictRelPath)), display)
+	fmt.Fprintf(&html, `<a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(conflictFile), display)
 	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-diff-banner','%s')">%s</button>`,
 		showText, hideText, diffURL, showText)
 	html.WriteString(`<div id="conflict-diff-banner" class="conflict-diff-container"></div>`)
@@ -263,13 +262,12 @@ func RenderConflictBanner(originalFilePath string, conflictFile string) string {
 // RenderConflictOfBanner renders a banner on the .conflict.md file itself,
 // showing a diff against the original file it was copied from.
 // Returns empty string if this file is not a conflict copy.
-func RenderConflictOfBanner(conflictFilePath string, originalFilePath string) string {
+func RenderConflictOfBanner(conflictFilePath, originalFilePath pathutils.MetaPath) string {
 	if originalFilePath == "" {
 		return ""
 	}
-	origRelPath := pathutils.ToRelative(originalFilePath)
-	origDisplay := filepath.Base(origRelPath)
-	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath) + "&conflict=" + url.QueryEscape(conflictFilePath)
+	origDisplay := filepath.Base(originalFilePath.String())
+	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath.String()) + "&conflict=" + url.QueryEscape(conflictFilePath.String())
 	showText := translation.SprintfForRequest(configmanager.GetLanguage(), "diff")
 	hideText := translation.SprintfForRequest(configmanager.GetLanguage(), "hide diff")
 
@@ -278,7 +276,7 @@ func RenderConflictOfBanner(conflictFilePath string, originalFilePath string) st
 	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
 	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "this is a conflict copy of"))
-	fmt.Fprintf(&html, ` <a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(pathutils.DocsPath(origRelPath)), origDisplay)
+	fmt.Fprintf(&html, ` <a href="%s" class="conflict-banner-files">%s</a>`, pathutils.ToFileURL(originalFilePath), origDisplay)
 	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-of-diff','%s')">%s</button>`,
 		showText, hideText, diffURL, showText)
 	html.WriteString(`<div id="conflict-of-diff" class="conflict-diff-container"></div>`)

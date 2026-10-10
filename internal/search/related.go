@@ -8,12 +8,12 @@ import (
 )
 
 // GetRelatedFiles returns pre-computed related files stored in metadata during rebuild.
-func GetRelatedFiles(filePath string, limit int) ([]string, error) {
+func GetRelatedFiles(filePath pathutils.MetaPath, limit int) ([]pathutils.MetaPath, error) {
 	if limit <= 0 {
 		limit = 5
 	}
 
-	meta, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	meta, err := files.MetaDataGet(filePath)
 	if err != nil || meta == nil {
 		return nil, nil
 	}

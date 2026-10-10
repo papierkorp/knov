@@ -251,9 +251,9 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 			result["kids"] = render.RenderKidsLinks(metadata.Kids)
 		}
 
-		var grandchildren []string
+		var grandchildren []pathutils.MetaPath
 		for _, kid := range metadata.Kids {
-			kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
+			kidMeta, err := files.MetaDataGet(kid)
 			if err != nil || kidMeta == nil {
 				continue
 			}
@@ -280,7 +280,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	relatedPaths, err := search.GetRelatedFiles(filePath.String(), 5)
+	relatedPaths, err := search.GetRelatedFiles(filePath, 5)
 	if err != nil || len(relatedPaths) == 0 {
 		result["related"] = render.RenderRelatedFiles(nil)
 	} else {

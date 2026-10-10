@@ -41,8 +41,8 @@ func testPath(name string) string {
 	return pathutils.ToSlash(filepath.Join(testDir, name))
 }
 
-func withPrefix(name string) string {
-	return pathutils.ToWithPrefix(testPath(name))
+func withPrefix(name string) pathutils.MetaPath {
+	return pathutils.GuessMeta(testPath(name))
 }
 
 func writeFile(relPath, content string) error {
@@ -54,7 +54,7 @@ func writeFile(relPath, content string) error {
 }
 
 func saveMetadata(name string, m *files.Metadata) error {
-	m.Path = pathutils.GuessMeta(withPrefix(name))
+	m.Path = withPrefix(name)
 	return test.SeedMetadata(m)
 }
 
@@ -90,16 +90,16 @@ func resetAndSeed() error {
 	if err := saveMetadata(parentFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(childFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(parentFile)}}); err != nil {
+	if err := saveMetadata(childFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []pathutils.MetaPath{withPrefix(parentFile)}}); err != nil {
 		return err
 	}
-	if err := saveMetadata(grandchild, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(childFile)}}); err != nil {
+	if err := saveMetadata(grandchild, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []pathutils.MetaPath{withPrefix(childFile)}}); err != nil {
 		return err
 	}
 	if err := saveMetadata(parent2File, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(child2File, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(parent2File)}}); err != nil {
+	if err := saveMetadata(child2File, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []pathutils.MetaPath{withPrefix(parent2File)}}); err != nil {
 		return err
 	}
 
@@ -109,15 +109,15 @@ func resetAndSeed() error {
 	if err := saveMetadata(linkerFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(withPrefix(linkerFile))); err != nil {
+	if err := files.UpdateLinksForSingleFile(withPrefix(linkerFile)); err != nil {
 		return err
 	}
 
 	if err := saveMetadata(relatedFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	related := []string{withPrefix(childFile), withPrefix(grandchild), withPrefix(parent2File)}
-	if err := files.MetaDataMutate(pathutils.GuessMeta(withPrefix(relatedFile)), func(m *files.Metadata, existed bool) (bool, error) {
+	related := []pathutils.MetaPath{withPrefix(childFile), withPrefix(grandchild), withPrefix(parent2File)}
+	if err := files.MetaDataMutate(withPrefix(relatedFile), func(m *files.Metadata, existed bool) (bool, error) {
 		m.Related = related
 		return true, nil
 	}); err != nil {

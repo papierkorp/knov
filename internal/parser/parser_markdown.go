@@ -972,13 +972,13 @@ func humanizeSlug(slug string) string {
 // pure anchors and html root links to app routes (/dashboard, /search?q=...).
 // A wiki link is only external with "//" or a leading unc "\\" ([[ns:page]] is a path), a one-letter scheme is a
 // windows drive (C:\x.png), so both are still reported as (broken) links.
-func (h *MarkdownHandler) ExtractLinks(content []byte, docPath string) []string {
-	var links []string
+func (h *MarkdownHandler) ExtractLinks(content []byte, docPath string) []pathutils.MetaPath {
+	var links []pathutils.MetaPath
 	// RewriteLinks is only used as the link walker here: the callback collects every target and
 	// never replaces one, so the (unchanged) content it returns is discarded
 	RewriteLinks(string(content), func(l Link) (string, bool) {
 		if target := LinkTarget(docPath, l); target != "" {
-			links = append(links, target.String())
+			links = append(links, target)
 		}
 		return "", false
 	})

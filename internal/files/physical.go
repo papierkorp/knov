@@ -276,13 +276,13 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 		return 0, 0, err
 	}
 
-	movedAlong := make(map[string]string, len(filesToUpdate))
+	movedAlong := make(map[pathutils.MetaPath]pathutils.MetaPath, len(filesToUpdate))
 	for _, f := range filesToUpdate {
-		movedAlong[f.oldMeta.String()] = f.newMeta.String()
+		movedAlong[f.oldMeta] = f.newMeta
 	}
 	for _, f := range filesToUpdate {
 		notifyFileMoved(f.oldMeta, f.newMeta)
-		if err := updateLinksForMovedFile(key, f.oldMeta.String(), f.newMeta.String(), movedAlong); err != nil {
+		if err := updateLinksForMovedFile(key, f.oldMeta, f.newMeta, movedAlong); err != nil {
 			logging.LogWarning(key, "move-folder: failed to update links for %s -> %s: %v", f.oldMeta, f.newMeta, err)
 			failed++
 			continue

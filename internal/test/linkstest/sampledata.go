@@ -108,10 +108,7 @@ func metadataGaps(src string, want []string) []string {
 	if err != nil || meta == nil {
 		return []string{fmt.Sprintf("%s: no metadata (%v)", src, err)}
 	}
-	used := make([]string, len(meta.UsedLinks))
-	for i, l := range meta.UsedLinks {
-		used[i] = pathutils.ToWithPrefix(l)
-	}
+	used := pathutils.Strings(meta.UsedLinks)
 	var gaps []string
 	for _, w := range want {
 		if _, err := os.Stat(pathutils.ToFullPath(w)); err != nil {
@@ -121,7 +118,7 @@ func metadataGaps(src string, want []string) []string {
 			gaps = append(gaps, fmt.Sprintf("%q: not in used links", w))
 		}
 		if strings.HasPrefix(w, "docs/") {
-			if m, _ := files.MetaDataGet(pathutils.GuessMeta(w)); m == nil || !slices.Contains(m.LinksToHere, srcKey.String()) {
+			if m, _ := files.MetaDataGet(pathutils.GuessMeta(w)); m == nil || !slices.Contains(m.LinksToHere, srcKey) {
 				gaps = append(gaps, fmt.Sprintf("%q: src not in its linked from", w))
 			}
 		}

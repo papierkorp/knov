@@ -131,6 +131,15 @@ func ParseMeta(s string) (MetaPath, bool) {
 
 func (m MetaPath) String() string { return string(m) }
 
+// Strings is paths as plain strings - to join or show them.
+func Strings(paths []MetaPath) []string {
+	out := make([]string, len(paths))
+	for i, p := range paths {
+		out[i] = p.String()
+	}
+	return out
+}
+
 // IsMedia reports whether m is in the media folder.
 func (m MetaPath) IsMedia() bool { return strings.HasPrefix(string(m), "media/") }
 

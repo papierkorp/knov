@@ -104,7 +104,7 @@ func caseGitSyncWrittenFiles(_ *sampleState) test.CaseResult {
 		return errCase(name, fmt.Errorf("no metadata for the pulled linking doc (%v)", err))
 	}
 	for _, target := range targets {
-		if !slices.Contains(m.UsedLinks, target) {
+		if !slices.Contains(pathutils.Strings(m.UsedLinks), target) {
 			gaps = append(gaps, "link metadata misses "+target)
 		}
 	}

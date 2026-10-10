@@ -38,8 +38,8 @@ func testPath(name string) string {
 	return pathutils.ToSlash(filepath.Join(testDir, name))
 }
 
-func withPrefix(name string) string {
-	return pathutils.ToWithPrefix(testPath(name))
+func withPrefix(name string) pathutils.MetaPath {
+	return pathutils.GuessMeta(testPath(name))
 }
 
 func mediaPath(name string) string {
@@ -87,7 +87,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(parentFile), "# jobs-parent.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(parentFile)), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(parentFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
@@ -95,9 +95,9 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := test.SeedMetadataRaw(&files.Metadata{
-		Path:    pathutils.GuessMeta(withPrefix(childFile)),
+		Path:    withPrefix(childFile),
 		Editor:  files.EditorTypeCodeMirror,
-		Parents: []string{withPrefix(parentFile)},
+		Parents: []pathutils.MetaPath{withPrefix(parentFile)},
 	}); err != nil {
 		return err
 	}
@@ -105,20 +105,20 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(linkedFile), "# jobs-linked.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(linkedFile)), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(linkedFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	if err := writeFile(testPath(linkerFile), "# jobs-linker.md\n\nSee ["+linkedFile+"](/"+testPath(linkedFile)+")\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadataRaw(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(linkerFile)), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataRaw(&files.Metadata{Path: withPrefix(linkerFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
 	if err := writeFile(testPath(searchFile), "# jobs-search.md\n\n"+searchMarker+"\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix(searchFile)), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(searchFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
@@ -133,10 +133,10 @@ func resetAndSeed() error {
 	if err := writeFile(usedMediaLinker, "# jobs-media-linker.md\n\n![img](media/"+mediaPath(usedMediaFile)+")\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.GuessMeta(withPrefix("jobs-media-linker.md")), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix("jobs-media-linker.md"), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(withPrefix("jobs-media-linker.md"))); err != nil {
+	if err := files.UpdateLinksForSingleFile(withPrefix("jobs-media-linker.md")); err != nil {
 		return err
 	}
 

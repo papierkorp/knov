@@ -370,9 +370,9 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	} else {
 		html.WriteString(`<ul class="media-used-list">`)
 		for _, link := range metadata.LinksToHere {
-			linkPath := pathutils.ToRelative(link)
-			displayText := GetLinkDisplayText(pathutils.ToWithPrefix(link))
-			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(pathutils.DocsPath(linkPath)), linkPath, displayText)
+			linkPath, _ := link.DocsRel()
+			displayText := GetLinkDisplayText(link.String())
+			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(link), linkPath, displayText)
 		}
 		html.WriteString(`</ul>`)
 	}
@@ -380,7 +380,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 
 	// editable metadata fields
 	tagsStr := strings.Join(metadata.Tags, ", ")
-	parentsStr := strings.Join(metadata.Parents, ", ")
+	parentsStr := strings.Join(pathutils.Strings(metadata.Parents), ", ")
 
 	html.WriteString(`<div class="media-edit-fields">`)
 	html.WriteString(`<div class="form-field">`)

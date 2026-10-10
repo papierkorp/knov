@@ -125,9 +125,9 @@ func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, []string{}, render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no grandchildren")))
 		return
 	}
-	var grandchildren []string
+	var grandchildren []pathutils.MetaPath
 	for _, kid := range metadata.Kids {
-		kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
+		kidMeta, err := files.MetaDataGet(kid)
 		if err != nil || kidMeta == nil {
 			continue
 		}
@@ -187,7 +187,7 @@ func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
 	}
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
-		data := []string{}
+		data := []pathutils.MetaPath{}
 		html := render.RenderMediaLinks(data)
 		writeResponse(w, r, data, html)
 		return
@@ -279,7 +279,7 @@ func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	paths, err := search.GetRelatedFiles(filePath.String(), 5)
+	paths, err := search.GetRelatedFiles(filePath, 5)
 	if err != nil || len(paths) == 0 {
 		writeResponse(w, r, []string{}, render.RenderRelatedFiles(nil))
 		return
@@ -381,7 +381,7 @@ func handleAPIGetConflictBanner(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, nil, "")
 		return
 	}
-	html := render.RenderConflictBanner(filePath.String(), metadata.ConflictFile)
+	html := render.RenderConflictBanner(filePath, metadata.ConflictFile)
 	writeResponse(w, r, nil, html)
 }
 
@@ -406,6 +406,6 @@ func handleAPIGetConflictOfBanner(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, nil, "")
 		return
 	}
-	html := render.RenderConflictOfBanner(filePath.String(), metadata.ConflictOf)
+	html := render.RenderConflictOfBanner(filePath, metadata.ConflictOf)
 	writeResponse(w, r, nil, html)
 }

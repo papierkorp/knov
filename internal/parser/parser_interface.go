@@ -1,6 +1,9 @@
 package parser
 
-import "knov/internal/markdown"
+import (
+	"knov/internal/markdown"
+	"knov/internal/pathutils"
+)
 
 // PathlessRender is the filePath value for Render when the markdown has no source file on
 // disk (a composed book, the concatenated changelog). It makes Render emit static HTML
@@ -25,7 +28,7 @@ type Parser interface {
 
 	// ExtractLinks returns the target (LinkTarget) of every internal link in content, read
 	// against the doc docPath
-	ExtractLinks(content []byte, docPath string) []string
+	ExtractLinks(content []byte, docPath string) []pathutils.MetaPath
 
 	// Name returns the handler identifier
 	Name() string

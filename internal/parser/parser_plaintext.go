@@ -2,6 +2,8 @@ package parser
 
 import (
 	"strings"
+
+	"knov/internal/pathutils"
 )
 
 type PlaintextHandler struct{}
@@ -28,8 +30,8 @@ func (h *PlaintextHandler) Render(content []byte, filePath string, editableSecti
 	return []byte(html), nil
 }
 
-func (h *PlaintextHandler) ExtractLinks(content []byte, docPath string) []string {
-	return []string{}
+func (h *PlaintextHandler) ExtractLinks(content []byte, docPath string) []pathutils.MetaPath {
+	return nil
 }
 
 func (h *PlaintextHandler) Name() string {

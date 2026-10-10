@@ -148,7 +148,7 @@ func caseLinks() test.CaseResult {
 		}
 		for form, f := range forms {
 			got := (&parser.MarkdownHandler{}).ExtractLinks([]byte(f[1]), f[0])
-			if !slices.Equal(got, []string{f[2]}) {
+			if !slices.Equal(pathutils.Strings(got), []string{f[2]}) {
 				gaps = append(gaps, fmt.Sprintf("%s %q in %s: reads %q, want %q", form, f[1], f[0], got, f[2]))
 			}
 			if rendered := parser.RenderLinks(f[1], f[0]); f[2] == want && !strings.Contains(rendered, pathutils.ToFileURL(pathutils.GuessMeta(want))) {
@@ -285,7 +285,7 @@ func caseStoredPaths() test.CaseResult {
 		if err != nil {
 			return errCase("reserved-stored-paths", err)
 		}
-		if m, _ := files.MetaDataGet(pathutils.GuessMeta(meta)); status != http.StatusOK || m == nil || !slices.Equal(m.Parents, []string{parent}) {
+		if m, _ := files.MetaDataGet(pathutils.GuessMeta(meta)); status != http.StatusOK || m == nil || !slices.Equal(pathutils.Strings(m.Parents), []string{parent}) {
 			gaps = append(gaps, fmt.Sprintf("parents of %q: status %d (%s), stored %+v", meta, status, strings.TrimSpace(body), m))
 		}
 		// for docs/ and media/ the docs-relative path is itself a metadata path
@@ -404,7 +404,7 @@ func caseLinkRename() test.CaseResult {
 			return errCase("reserved-link-rename", err)
 		}
 		got := (&parser.MarkdownHandler{}).ExtractLinks(data, linker)
-		if want := []string{dst, dst, dst, dst}; !slices.Equal(got, want) {
+		if want := []string{dst, dst, dst, dst}; !slices.Equal(pathutils.Strings(got), want) {
 			gaps = append(gaps, fmt.Sprintf("links of %q after renaming %q: %q, want %q\n%s", linker, src, got, want, data))
 		}
 	}

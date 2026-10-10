@@ -375,7 +375,7 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 		if mc.AncestorsInCollection[metadata.Collection] == nil {
 			mc.AncestorsInCollection[metadata.Collection] = make(map[string]bool)
 		}
-		mc.AncestorsInCollection[metadata.Collection][root] = true
+		mc.AncestorsInCollection[metadata.Collection][root.String()] = true
 	}
 }
 
@@ -568,9 +568,9 @@ func UpdateOrphanedMediaCacheForFile(filePath pathutils.MetaPath) error {
 	}
 
 	// collect media files that might be affected (from UsedLinks)
-	var affectedMediaFiles []string
+	var affectedMediaFiles []pathutils.MetaPath
 	for _, link := range metadata.UsedLinks {
-		if strings.HasPrefix(link, "media/") {
+		if link.IsMedia() {
 			affectedMediaFiles = append(affectedMediaFiles, link)
 		}
 	}
@@ -602,7 +602,7 @@ func UpdateOrphanedMediaCacheForFile(filePath pathutils.MetaPath) error {
 
 	// check each affected media file and update orphaned status
 	for _, mediaPath := range affectedMediaFiles {
-		mediaMetadata, err := MetaDataGet(pathutils.GuessMeta(mediaPath))
+		mediaMetadata, err := MetaDataGet(mediaPath)
 		if err != nil || mediaMetadata == nil {
 			continue
 		}
@@ -610,9 +610,9 @@ func UpdateOrphanedMediaCacheForFile(filePath pathutils.MetaPath) error {
 		isOrphaned := len(mediaMetadata.LinksToHere) == 0
 
 		if isOrphaned {
-			orphanedSet[mediaPath] = true
+			orphanedSet[mediaPath.String()] = true
 		} else {
-			delete(orphanedSet, mediaPath)
+			delete(orphanedSet, mediaPath.String())
 		}
 	}
 
@@ -643,14 +643,14 @@ func CacheInvalidate() error {
 }
 
 // GetAncestorsInFolder returns unique ancestor paths from all files in a folder (and its subfolders).
-func GetAncestorsInFolder(folderPath string) ([]string, error) {
+func GetAncestorsInFolder(folderPath string) ([]pathutils.MetaPath, error) {
 	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
 
-	seen := make(map[string]struct{})
-	var ancestors []string
+	seen := make(map[pathutils.MetaPath]struct{})
+	var ancestors []pathutils.MetaPath
 	for _, f := range allFiles {
 		if f.Metadata == nil {
 			continue
@@ -673,7 +673,7 @@ func GetAncestorsInFolder(folderPath string) ([]string, error) {
 
 // GetFilesInSameFolder returns other files whose folder path exactly matches filePath's
 // (unlike GetAncestorsInFolder, this does not include subfolders).
-func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]string, error) {
+func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]pathutils.MetaPath, error) {
 	if limit <= 0 {
 		limit = 5
 	}
@@ -690,7 +690,7 @@ func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]string, err
 	}
 	allFiles = FilterByVisibility(allFiles, configmanager.HideScopeDetail)
 
-	var result []string
+	var result []pathutils.MetaPath
 	for _, f := range allFiles {
 		if f.Metadata == nil || f.Metadata.Path == meta.Path {
 			continue
@@ -698,7 +698,7 @@ func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]string, err
 		if strings.Join(f.Metadata.Folders, "/") != folder {
 			continue
 		}
-		result = append(result, f.Metadata.Path.String())
+		result = append(result, f.Metadata.Path)
 		if len(result) >= limit {
 			break
 		}
@@ -708,7 +708,7 @@ func GetFilesInSameFolder(filePath pathutils.MetaPath, limit int) ([]string, err
 
 // GetFilesWithSameTags returns other files sharing at least one tag with filePath, ranked by
 // number of shared tags.
-func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]string, error) {
+func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]pathutils.MetaPath, error) {
 	if limit <= 0 {
 		limit = 5
 	}
@@ -725,7 +725,7 @@ func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]string, err
 	allFiles = FilterByVisibility(allFiles, configmanager.HideScopeDetail)
 
 	type scored struct {
-		path  string
+		path  pathutils.MetaPath
 		score int
 	}
 	var candidates []scored
@@ -740,7 +740,7 @@ func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]string, err
 			}
 		}
 		if score > 0 {
-			candidates = append(candidates, scored{f.Metadata.Path.String(), score})
+			candidates = append(candidates, scored{f.Metadata.Path, score})
 		}
 	}
 	slices.SortStableFunc(candidates, func(a, b scored) int { return b.score - a.score })
@@ -748,7 +748,7 @@ func GetFilesWithSameTags(filePath pathutils.MetaPath, limit int) ([]string, err
 	if len(candidates) > limit {
 		candidates = candidates[:limit]
 	}
-	result := make([]string, len(candidates))
+	result := make([]pathutils.MetaPath, len(candidates))
 	for i, c := range candidates {
 		result[i] = c.path
 	}

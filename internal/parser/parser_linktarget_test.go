@@ -19,7 +19,7 @@ import (
 // metadataTarget is the file link metadata reads the only link of content in doc as.
 func metadataTarget(content, doc string) string {
 	if links := NewMarkdownHandler().ExtractLinks([]byte(content), doc); len(links) == 1 {
-		return links[0]
+		return links[0].String()
 	}
 	return ""
 }
@@ -148,7 +148,7 @@ func TestLinkTargetReservedFolders(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := NewMarkdownHandler().ExtractLinks([]byte(c.link), c.doc)
-			if len(got) != 1 || got[0] != c.want {
+			if len(got) != 1 || got[0].String() != c.want {
 				t.Errorf("%s in %s reads %q, want %q", c.link, c.doc, got, c.want)
 			}
 		})
@@ -166,7 +166,7 @@ func TestFileLinkDestReservedFolders(t *testing.T) {
 				link = "[x](" + FileLinkDest(rel, "", kind) + ")"
 			}
 			got := NewMarkdownHandler().ExtractLinks([]byte(link), "docs/n.md")
-			if len(got) != 1 || got[0] != "docs/"+rel {
+			if len(got) != 1 || got[0].String() != "docs/"+rel {
 				t.Errorf("%s reads %q, want docs/%s", link, got, rel)
 			}
 		}

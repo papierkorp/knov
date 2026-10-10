@@ -17,13 +17,13 @@ import (
 func caseParentsAncestors() test.CaseResult {
 	name := "parents-ancestors"
 
-	child, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(childFile)))
+	child, err := files.MetaDataGet(withPrefix(childFile))
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	success := slices.Equal(child.Parents, []string{withPrefix(parentFile)}) &&
-		slices.Equal(child.Ancestor, []string{withPrefix(parentFile)})
+	success := slices.Equal(child.Parents, []pathutils.MetaPath{withPrefix(parentFile)}) &&
+		slices.Equal(child.Ancestor, []pathutils.MetaPath{withPrefix(parentFile)})
 
 	cr := test.CaseResult{
 		Name:     name,
@@ -44,14 +44,14 @@ func caseParentsAncestors() test.CaseResult {
 func caseKidsGrandchildren() test.CaseResult {
 	name := "kids-grandchildren"
 
-	parent, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(parentFile)))
+	parent, err := files.MetaDataGet(withPrefix(parentFile))
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	var grandchildren []string
+	var grandchildren []pathutils.MetaPath
 	for _, kid := range parent.Kids {
-		kidMeta, err := files.MetaDataGet(pathutils.GuessMeta(kid))
+		kidMeta, err := files.MetaDataGet(kid)
 		if err != nil || kidMeta == nil {
 			continue
 		}
@@ -76,7 +76,7 @@ func caseKidsGrandchildren() test.CaseResult {
 func caseUsedLinks() test.CaseResult {
 	name := "used-links"
 
-	linker, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkerFile)))
+	linker, err := files.MetaDataGet(withPrefix(linkerFile))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -101,12 +101,12 @@ func caseUsedLinks() test.CaseResult {
 func caseLinksToHere() test.CaseResult {
 	name := "links-to-here"
 
-	got, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkedFile)))
+	got, err := files.MetaDataGet(withPrefix(linkedFile))
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	success := slices.Equal(got.LinksToHere, []string{withPrefix(linkerFile)})
+	success := slices.Equal(got.LinksToHere, []pathutils.MetaPath{withPrefix(linkerFile)})
 	cr := test.CaseResult{
 		Name:     name,
 		Expected: fmt.Sprintf("LinksToHere=[%s]", withPrefix(linkerFile)),
@@ -171,7 +171,7 @@ func caseAncestorsInFolder() test.CaseResult {
 func caseSameFolder() test.CaseResult {
 	name := "same-folder"
 
-	got, err := files.GetFilesInSameFolder(pathutils.GuessMeta(withPrefix(parentFile)), 20)
+	got, err := files.GetFilesInSameFolder(withPrefix(parentFile), 20)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -196,7 +196,7 @@ func caseSameFolder() test.CaseResult {
 func caseSameTags() test.CaseResult {
 	name := "same-tags"
 
-	got, err := files.GetFilesWithSameTags(pathutils.GuessMeta(withPrefix(tagAFile)), 20)
+	got, err := files.GetFilesWithSameTags(withPrefix(tagAFile), 20)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -221,19 +221,19 @@ func caseSameTags() test.CaseResult {
 func caseConflictBanner() test.CaseResult {
 	name := "conflict-banner"
 
-	if err := files.SetConflictFile(pathutils.GuessMeta(withPrefix(conflictOriginal)), pathutils.GuessMeta(withPrefix(conflictCopy))); err != nil {
+	if err := files.SetConflictFile(withPrefix(conflictOriginal), withPrefix(conflictCopy)); err != nil {
 		return errCase(name, err)
 	}
-	afterSet, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
+	afterSet, err := files.MetaDataGet(withPrefix(conflictOriginal))
 	if err != nil {
 		return errCase(name, err)
 	}
 	setOK := afterSet.ConflictFile == withPrefix(conflictCopy)
 
-	if err := files.ClearConflictFile(pathutils.GuessMeta(withPrefix(conflictOriginal))); err != nil {
+	if err := files.ClearConflictFile(withPrefix(conflictOriginal)); err != nil {
 		return errCase(name, err)
 	}
-	afterClear, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictOriginal)))
+	afterClear, err := files.MetaDataGet(withPrefix(conflictOriginal))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -257,10 +257,10 @@ func caseConflictBanner() test.CaseResult {
 func caseConflictOfBanner() test.CaseResult {
 	name := "conflict-of-banner"
 
-	if err := files.SetConflictOf(pathutils.GuessMeta(withPrefix(conflictCopy)), pathutils.GuessMeta(withPrefix(conflictOriginal))); err != nil {
+	if err := files.SetConflictOf(withPrefix(conflictCopy), withPrefix(conflictOriginal)); err != nil {
 		return errCase(name, err)
 	}
-	got, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(conflictCopy)))
+	got, err := files.MetaDataGet(withPrefix(conflictCopy))
 	if err != nil {
 		return errCase(name, err)
 	}

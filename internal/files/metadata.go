@@ -148,26 +148,26 @@ func IsBook(path pathutils.MetaPath) bool {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Path          pathutils.MetaPath `json:"path"`                    // auto
-	Title         string             `json:"title"`                   // auto
-	CreatedAt     time.Time          `json:"createdAt"`               // auto
-	LastEdited    time.Time          `json:"lastEdited"`              // auto
-	Collection    string             `json:"collection"`              // auto
-	Folders       []string           `json:"folders"`                 // auto
-	Tags          []string           `json:"tags"`                    // manual
-	Ancestor      []string           `json:"ancestor"`                // auto
-	Parents       []string           `json:"parents"`                 // manual
-	Kids          []string           `json:"kids"`                    // auto
-	UsedLinks     []string           `json:"usedLinks"`               // auto
-	LinksToHere   []string           `json:"linksToHere"`             // auto
-	Related       []string           `json:"related,omitempty"`       // auto
-	Editor        EditorType         `json:"editor"`                  // manual
-	Size          int64              `json:"size"`                    // auto
-	References    []Reference        `json:"references,omitempty"`    // manual
-	ConflictFile  string             `json:"conflictFile,omitempty"`  // auto
-	ConflictOf    string             `json:"conflictOf,omitempty"`    // auto
-	KanbanAddedAt time.Time          `json:"kanbanAddedAt,omitempty"` // auto
-	KanbanMovedAt time.Time          `json:"kanbanMovedAt,omitempty"` // auto
+	Path          pathutils.MetaPath   `json:"path"`                    // auto
+	Title         string               `json:"title"`                   // auto
+	CreatedAt     time.Time            `json:"createdAt"`               // auto
+	LastEdited    time.Time            `json:"lastEdited"`              // auto
+	Collection    string               `json:"collection"`              // auto
+	Folders       []string             `json:"folders"`                 // auto
+	Tags          []string             `json:"tags"`                    // manual
+	Ancestor      []pathutils.MetaPath `json:"ancestor"`                // auto
+	Parents       []pathutils.MetaPath `json:"parents"`                 // manual
+	Kids          []pathutils.MetaPath `json:"kids"`                    // auto
+	UsedLinks     []pathutils.MetaPath `json:"usedLinks"`               // auto
+	LinksToHere   []pathutils.MetaPath `json:"linksToHere"`             // auto
+	Related       []pathutils.MetaPath `json:"related,omitempty"`       // auto
+	Editor        EditorType           `json:"editor"`                  // manual
+	Size          int64                `json:"size"`                    // auto
+	References    []Reference          `json:"references,omitempty"`    // manual
+	ConflictFile  pathutils.MetaPath   `json:"conflictFile,omitempty"`  // auto
+	ConflictOf    pathutils.MetaPath   `json:"conflictOf,omitempty"`    // auto
+	KanbanAddedAt time.Time            `json:"kanbanAddedAt,omitempty"` // auto
+	KanbanMovedAt time.Time            `json:"kanbanMovedAt,omitempty"` // auto
 }
 
 // Reference represents an external resource linked to a file
@@ -249,19 +249,19 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 		metadata.Tags = []string{}
 	}
 	if metadata.Parents == nil {
-		metadata.Parents = []string{}
+		metadata.Parents = []pathutils.MetaPath{}
 	}
 	if metadata.Kids == nil {
-		metadata.Kids = []string{}
+		metadata.Kids = []pathutils.MetaPath{}
 	}
 	if metadata.UsedLinks == nil {
-		metadata.UsedLinks = []string{}
+		metadata.UsedLinks = []pathutils.MetaPath{}
 	}
 	if metadata.LinksToHere == nil {
-		metadata.LinksToHere = []string{}
+		metadata.LinksToHere = []pathutils.MetaPath{}
 	}
 	if metadata.Ancestor == nil {
-		metadata.Ancestor = []string{}
+		metadata.Ancestor = []pathutils.MetaPath{}
 	}
 	if metadata.Folders == nil {
 		metadata.Folders = []string{}
@@ -357,7 +357,7 @@ func SetConflictFile(originalFilePath, conflictFilePath pathutils.MetaPath) erro
 		if !existed {
 			return false, fmt.Errorf("metadata not found for %s", originalFilePath)
 		}
-		m.ConflictFile = conflictFilePath.String()
+		m.ConflictFile = conflictFilePath
 		return true, nil
 	})
 }
@@ -368,7 +368,7 @@ func SetConflictFile(originalFilePath, conflictFilePath pathutils.MetaPath) erro
 // is the only place that record gets created.
 func SetConflictOf(conflictFilePath, originalFilePath pathutils.MetaPath) error {
 	return MetaDataMutate(conflictFilePath, func(m *Metadata, existed bool) (bool, error) {
-		m.ConflictOf = originalFilePath.String()
+		m.ConflictOf = originalFilePath
 		return true, nil
 	})
 }

@@ -68,7 +68,7 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	// parents field
 	parentsStr := ""
 	if metadata != nil && len(metadata.Parents) > 0 {
-		parentsStr = strings.Join(metadata.Parents, ", ")
+		parentsStr = strings.Join(pathutils.Strings(metadata.Parents), ", ")
 	}
 	html.WriteString(`<div class="form-field">`)
 	html.WriteString(`<label for="meta-parents">` + translation.SprintfForRequest(configmanager.GetLanguage(), "parents") + `</label>`)
@@ -342,7 +342,7 @@ func RenderSidebarFieldDisplay(field, filePath string, metadata *files.Metadata)
 		}
 	case "parents":
 		if metadata != nil && len(metadata.Parents) > 0 {
-			value = RenderMetadataLinksHTML(metadata.Parents, "")
+			value = RenderMetadataLinksHTML(pathutils.Strings(metadata.Parents), "")
 		} else {
 			value = `<span class="meta-empty">-</span>`
 		}
@@ -382,7 +382,7 @@ func RenderSidebarFieldEdit(field, filePath string, metadata *files.Metadata) st
 	case "parents":
 		parentsStr := ""
 		if metadata != nil {
-			parentsStr = strings.Join(metadata.Parents, ", ")
+			parentsStr = strings.Join(pathutils.Strings(metadata.Parents), ", ")
 		}
 		input = GenerateTagChipsInputWithSave("sidebar-parents", "parents", parentsStr,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "add parent files"),

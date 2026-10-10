@@ -239,7 +239,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
 		logging.LogWarning(logging.KeyApp, "cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
 
-		refs := metadata.LinksToHere
+		refs := pathutils.Strings(metadata.LinksToHere)
 		if len(refs) > 5 {
 			refs = append(refs[:5:5], translation.SprintfForRequest(configmanager.GetLanguage(), "and %d more", len(metadata.LinksToHere)-5))
 		}

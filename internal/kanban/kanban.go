@@ -495,7 +495,7 @@ func Archived(folderPath string) ([]Card, error) {
 // subfolders) have no allowed status configured via the Ancestor Filter Statuses setting - e.g.
 // hides an "epic" once every child card under it has been archived. No allowed status configured
 // means no filtering (all ancestors kept).
-func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]string, error) {
+func FilterAncestorsByAllowedStatus(ancestors []pathutils.MetaPath, folderPath string) ([]pathutils.MetaPath, error) {
 	allowed := configmanager.GetKanbanAncestorAllowedStatus()
 	if len(allowed) == 0 {
 		return ancestors, nil
@@ -507,7 +507,7 @@ func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]st
 		return nil, err
 	}
 
-	active := make(map[string]struct{})
+	active := make(map[pathutils.MetaPath]struct{})
 	for _, file := range allFiles {
 		if file.Metadata == nil || len(file.Metadata.Ancestor) == 0 || !folderMatches(file.Metadata, folderPath) {
 			continue
@@ -519,7 +519,7 @@ func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]st
 		active[file.Metadata.Ancestor[0]] = struct{}{}
 	}
 
-	var result []string
+	var result []pathutils.MetaPath
 	for _, a := range ancestors {
 		if _, ok := active[a]; ok {
 			result = append(result, a)

@@ -845,28 +845,21 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var parents []string
-	if parentsStr != "" {
-		parents = strings.Split(parentsStr, ",")
-		for i := range parents {
-			parents[i] = strings.TrimSpace(parents[i])
+	var parents []pathutils.MetaPath
+	for _, s := range strings.Split(parentsStr, ",") {
+		if s = strings.TrimSpace(s); s == "" {
+			continue
 		}
-		for _, parent := range parents {
-			if parent == "" {
-				continue
-			}
-			if !pathutils.IsMetaPath(parent) {
-				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "parents"))
-				return
-			}
-			fullParentPath := pathutils.ToFullPath(parent)
-			if _, err := os.Stat(fullParentPath); os.IsNotExist(err) {
-				writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
-				return
-			}
+		parent, ok := pathutils.ParseMeta(s)
+		if !ok {
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "parents"))
+			return
 		}
-	} else {
-		parents = []string{}
+		if _, err := os.Stat(parent.FullPath()); os.IsNotExist(err) {
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
+			return
+		}
+		parents = append(parents, parent)
 	}
 
 	if err := files.SetParents(filePath, parents); err != nil {

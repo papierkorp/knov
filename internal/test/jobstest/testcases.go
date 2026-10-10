@@ -33,20 +33,20 @@ func caseMetadataFullRebuild() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	child, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(childFile)))
+	child, err := files.MetaDataGet(withPrefix(childFile))
 	if err != nil {
 		return errCase(name, err)
 	}
-	parent, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(parentFile)))
+	parent, err := files.MetaDataGet(withPrefix(parentFile))
 	if err != nil {
 		return errCase(name, err)
 	}
-	linker, err := files.MetaDataGet(pathutils.GuessMeta(withPrefix(linkerFile)))
+	linker, err := files.MetaDataGet(withPrefix(linkerFile))
 	if err != nil {
 		return errCase(name, err)
 	}
 
-	success := slices.Equal(child.Ancestor, []string{withPrefix(parentFile)}) &&
+	success := slices.Equal(child.Ancestor, []pathutils.MetaPath{withPrefix(parentFile)}) &&
 		slices.Contains(parent.Kids, withPrefix(childFile)) &&
 		slices.Contains(linker.UsedLinks, withPrefix(linkedFile))
 

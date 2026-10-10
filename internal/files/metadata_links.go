@@ -75,7 +75,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			if !existed {
 				return false, nil
 			}
-			m.LinksToHere = []string{}
+			m.LinksToHere = []pathutils.MetaPath{}
 			return true, nil
 		}); err != nil {
 			logging.LogWarning(key, "failed to clear media linkstohere for %s: %v", normalizedPath, err)
@@ -86,14 +86,14 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 	// COMPUTE the whole-graph view (ancestors/related need it) - every write below re-gets
 	// the current record under MetaDataMutate and patches only rebuild-owned fields, so a
 	// MoveCard/tag edit landing mid-rebuild is never reverted by this stale snapshot.
-	metaCache := make(map[string]*Metadata, len(paths))
+	metaCache := make(map[pathutils.MetaPath]*Metadata, len(paths))
 	for _, rawPath := range paths {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath).String()
-		metadata, err := MetaDataGet(pathutils.GuessMeta(normalizedPath))
+		normalizedPath := pathutils.DocsPath(rawPath)
+		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
 			continue
 		}
@@ -102,35 +102,35 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 
 	// first pass: rebuild UsedLinks + Ancestors using cache,
 	// build reverse maps in memory for pass 2
-	linksToHereMap := make(map[string][]string) // target → []sources
-	kidsMap := make(map[string][]string)        // parent → []children
+	linksToHereMap := make(map[pathutils.MetaPath][]pathutils.MetaPath) // target → []sources
+	kidsMap := make(map[pathutils.MetaPath][]pathutils.MetaPath)        // parent → []children
 
 	for _, rawPath := range paths {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath).String()
+		normalizedPath := pathutils.DocsPath(rawPath)
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
 			continue
 		}
 
-		metadata.Ancestor = []string{}
-		metadata.Kids = []string{}
-		metadata.UsedLinks = []string{}
-		metadata.LinksToHere = []string{}
+		metadata.Ancestor = []pathutils.MetaPath{}
+		metadata.Kids = []pathutils.MetaPath{}
+		metadata.UsedLinks = []pathutils.MetaPath{}
+		metadata.LinksToHere = []pathutils.MetaPath{}
 
 		updateAncestors(metadata, metaCache)
 
-		fullPath := pathutils.ToDocsPath(metadata.Path.String())
+		fullPath := metadata.Path.FullPath()
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
 			handler := parser.GetParserRegistry().GetHandler(fullPath)
 			if handler != nil {
 				for _, target := range handler.ExtractLinks(contentData, metadata.Path.String()) {
-					if target != metadata.Path.String() && !slices.Contains(metadata.UsedLinks, target) {
+					if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
 						metadata.UsedLinks = append(metadata.UsedLinks, target)
 					}
 				}
@@ -138,8 +138,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 
 		for _, link := range metadata.UsedLinks {
-			normalized := pathutils.GuessMeta(link)
-			linksToHereMap[normalized.String()] = append(linksToHereMap[normalized.String()], normalizedPath)
+			linksToHereMap[link] = append(linksToHereMap[link], normalizedPath)
 		}
 		for _, parent := range metadata.Parents {
 			kidsMap[parent] = append(kidsMap[parent], normalizedPath)
@@ -148,7 +147,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		updateTitle(metadata)
 
 		ancestor, usedLinks, title := metadata.Ancestor, metadata.UsedLinks, metadata.Title
-		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			m.Ancestor = ancestor
 			m.UsedLinks = usedLinks
 			m.Title = title
@@ -164,7 +163,7 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath).String()
+		normalizedPath := pathutils.DocsPath(rawPath)
 
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -173,15 +172,15 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 
 		metadata.Kids = kidsMap[normalizedPath]
 		if metadata.Kids == nil {
-			metadata.Kids = []string{}
+			metadata.Kids = []pathutils.MetaPath{}
 		}
 		metadata.LinksToHere = linksToHereMap[normalizedPath]
 		if metadata.LinksToHere == nil {
-			metadata.LinksToHere = []string{}
+			metadata.LinksToHere = []pathutils.MetaPath{}
 		}
 
 		kids, linksToHere := metadata.Kids, metadata.LinksToHere
-		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			m.Kids = kids
 			m.LinksToHere = linksToHere
 			return true, nil
@@ -196,14 +195,14 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 			return ctx.Err()
 		}
 		bump()
-		normalizedPath := pathutils.DocsPath(rawPath).String()
+		normalizedPath := pathutils.DocsPath(rawPath)
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
 			continue
 		}
 		related := computeRelated(metadata, metaCache, 5)
 		metadata.Related = related
-		if err := MetaDataMutate(pathutils.GuessMeta(normalizedPath), func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			m.Related = related
 			return true, nil
 		}); err != nil {
@@ -219,9 +218,9 @@ func MetaDataLinksRebuild(ctx context.Context, key logging.Key, report func(done
 		}
 		bump()
 		normalizedPath := file.Path
-		linksToHere := linksToHereMap[normalizedPath.String()]
+		linksToHere := linksToHereMap[normalizedPath]
 		if linksToHere == nil {
-			linksToHere = []string{}
+			linksToHere = []pathutils.MetaPath{}
 		}
 		found := false
 		err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
@@ -270,10 +269,10 @@ func MetaDataLinksRebuildForFile(filePath pathutils.MetaPath) error {
 		return fmt.Errorf("metadata not found for %s", normalizedPath)
 	}
 
-	metadata.Ancestor = []string{}
-	metadata.Kids = []string{}
-	metadata.UsedLinks = []string{}
-	metadata.LinksToHere = []string{}
+	metadata.Ancestor = []pathutils.MetaPath{}
+	metadata.Kids = []pathutils.MetaPath{}
+	metadata.UsedLinks = []pathutils.MetaPath{}
+	metadata.LinksToHere = []pathutils.MetaPath{}
 
 	updateAncestors(metadata, nil)
 	fanOut := updateUsedLinks(metadata)
@@ -305,9 +304,9 @@ func MetaDataLinksRebuildForFile(filePath pathutils.MetaPath) error {
 	return nil
 }
 
-func updateAncestors(metadata *Metadata, cache map[string]*Metadata) {
-	visited := make(map[string]bool)
-	var ancestors []string
+func updateAncestors(metadata *Metadata, cache map[pathutils.MetaPath]*Metadata) {
+	visited := make(map[pathutils.MetaPath]bool)
+	var ancestors []pathutils.MetaPath
 
 	for _, parent := range metadata.Parents {
 		if visited[parent] {
@@ -315,8 +314,8 @@ func updateAncestors(metadata *Metadata, cache map[string]*Metadata) {
 		}
 		visited[parent] = true
 
-		ancestor := findTopAncestor(parent, make(map[string]bool), cache)
-		if ancestor != "" && ancestor != metadata.Path.String() {
+		ancestor := findTopAncestor(parent, make(map[pathutils.MetaPath]bool), cache)
+		if ancestor != "" && ancestor != metadata.Path {
 			ancestors = append(ancestors, ancestor)
 		}
 	}
@@ -324,7 +323,7 @@ func updateAncestors(metadata *Metadata, cache map[string]*Metadata) {
 	metadata.Ancestor = ancestors
 }
 
-func findTopAncestor(filePath string, visited map[string]bool, cache map[string]*Metadata) string {
+func findTopAncestor(filePath pathutils.MetaPath, visited map[pathutils.MetaPath]bool, cache map[pathutils.MetaPath]*Metadata) pathutils.MetaPath {
 	if visited[filePath] {
 		logging.LogWarning(logging.KeyApp, "cycle detected in parent chain for %s", filePath)
 		return ""
@@ -333,14 +332,12 @@ func findTopAncestor(filePath string, visited map[string]bool, cache map[string]
 
 	var metadata *Metadata
 	if cache != nil {
-		cacheKey := pathutils.ToWithPrefix(filePath)
-		metadata = cache[cacheKey]
-
+		metadata = cache[filePath]
 	}
 
 	if metadata == nil {
 		var err error
-		metadata, err = MetaDataGet(pathutils.GuessMeta(filePath))
+		metadata, err = MetaDataGet(filePath)
 		if err != nil || metadata == nil {
 			logging.LogWarning(logging.KeyApp, "cannot find metadata for parent %s", filePath)
 			return filePath
@@ -388,20 +385,19 @@ func updateUsedLinks(metadata *Metadata) []func() {
 	logging.LogInfo(logging.KeyApp, "extracted %d links from %s", len(links), metadata.Path)
 
 	// store old links to detect removals
-	oldUsedLinks := make([]string, len(metadata.UsedLinks))
-	copy(oldUsedLinks, metadata.UsedLinks)
+	oldUsedLinks := slices.Clone(metadata.UsedLinks)
 
-	metadata.UsedLinks = []string{}
+	metadata.UsedLinks = []pathutils.MetaPath{}
 
 	for _, target := range links {
-		if target != metadata.Path.String() && !slices.Contains(metadata.UsedLinks, target) {
+		if target != metadata.Path && !slices.Contains(metadata.UsedLinks, target) {
 			metadata.UsedLinks = append(metadata.UsedLinks, target)
 		}
 	}
 
 	logging.LogDebug(logging.KeyApp, "cleaned used links for %s: %v", metadata.Path, metadata.UsedLinks)
 
-	return updateLinksToHereFanOut(metadata.Path.String(), oldUsedLinks, metadata.UsedLinks)
+	return updateLinksToHereFanOut(metadata.Path, oldUsedLinks, metadata.UsedLinks)
 }
 
 // updateLinksToHereFanOut builds the closures that add/remove sourcePath from the LinksToHere
@@ -409,7 +405,7 @@ func updateUsedLinks(metadata *Metadata) []func() {
 // target path via MetaDataMutate - safe only once sourcePath's own lock has been released,
 // otherwise a concurrent mirror-image update (the target file being saved at the same time)
 // could deadlock against it.
-func updateLinksToHereFanOut(sourcePath string, oldLinks, newLinks []string) []func() {
+func updateLinksToHereFanOut(sourcePath pathutils.MetaPath, oldLinks, newLinks []pathutils.MetaPath) []func() {
 	var fanOut []func()
 
 	for _, usedLink := range newLinks {
@@ -444,8 +440,8 @@ func updateLinksToHereFanOut(sourcePath string, oldLinks, newLinks []string) []f
 
 // addLinksToHere adds sourcePath to path's LinksToHere if not already present. changed is
 // false (with a nil error) when path has no metadata yet or already lists sourcePath.
-func addLinksToHere(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func addLinksToHere(path, sourcePath pathutils.MetaPath) (changed bool, err error) {
+	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed || slices.Contains(m.LinksToHere, sourcePath) {
 			return false, nil
 		}
@@ -457,8 +453,8 @@ func addLinksToHere(path, sourcePath string) (changed bool, err error) {
 }
 
 // removeLinksToHere removes sourcePath from path's LinksToHere if present.
-func removeLinksToHere(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func removeLinksToHere(path, sourcePath pathutils.MetaPath) (changed bool, err error) {
+	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -480,8 +476,8 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 		return
 	}
 
-	var kids []string
-	var linksToHere []string
+	var kids []pathutils.MetaPath
+	var linksToHere []pathutils.MetaPath
 
 	for _, file := range files {
 		if file.Path == metadata.Path {
@@ -493,12 +489,12 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 			continue
 		}
 
-		if slices.Contains(otherMetadata.Parents, metadata.Path.String()) {
-			kids = append(kids, file.Path.String())
+		if slices.Contains(otherMetadata.Parents, metadata.Path) {
+			kids = append(kids, file.Path)
 		}
 
-		if slices.Contains(otherMetadata.UsedLinks, metadata.Path.String()) {
-			linksToHere = append(linksToHere, file.Path.String())
+		if slices.Contains(otherMetadata.UsedLinks, metadata.Path) {
+			linksToHere = append(linksToHere, file.Path)
 		}
 	}
 
@@ -518,17 +514,15 @@ func UpdateLinksForMovedFile(key logging.Key, oldPath, newPath pathutils.MetaPat
 // UpdateLinksForMovedFileNoRefresh is UpdateLinksForMovedFile without the
 // aggregate cache refresh. See UpdateLinksForMovedFile.
 func UpdateLinksForMovedFileNoRefresh(key logging.Key, oldPath, newPath pathutils.MetaPath) error {
-	return updateLinksForMovedFile(key, oldPath.String(), newPath.String(), nil)
+	return updateLinksForMovedFile(key, oldPath, newPath, nil)
 }
 
 // updateLinksForMovedFile is UpdateLinksForMovedFileNoRefresh for a file moved along with others
 // (folder move): movedAlong maps the old metadata path of each other moved file to its new path,
 // so a file linking to this one is read where it is now.
-func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlong map[string]string) error {
+func updateLinksForMovedFile(key logging.Key, normalizedOldPath, normalizedNewPath pathutils.MetaPath, movedAlong map[pathutils.MetaPath]pathutils.MetaPath) error {
+	oldPath, newPath := normalizedOldPath.String(), normalizedNewPath.String()
 	logging.LogInfo(key, "updating links for moved file: %s -> %s", oldPath, newPath)
-
-	normalizedOldPath := pathutils.GuessMeta(oldPath)
-	normalizedNewPath := newPath
 
 	oldMetadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
@@ -541,7 +535,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 		return err
 	}
 
-	if err := chat.MoveFilePath(normalizedOldPath.String(), normalizedNewPath); err != nil {
+	if err := chat.MoveFilePath(oldPath, newPath); err != nil {
 		logging.LogWarning(key, "failed to move chat messages for %s -> %s: %v", normalizedOldPath, normalizedNewPath, err)
 	}
 
@@ -550,7 +544,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 	// step 1: rebuild outbound links for the moved file
 	var movedMetadata *Metadata
 	var movedFanOut []func()
-	if err := MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(m *Metadata, existed bool) (bool, error) {
+	if err := MetaDataMutate(normalizedNewPath, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -576,7 +570,7 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 			if along {
 				linkingFilePath = moved
 			}
-			ok, err := updateLinksInFile(key, linkingFilePath, oldPath, newPath)
+			ok, err := updateLinksInFile(key, linkingFilePath.String(), oldPath, newPath)
 			if err != nil {
 				logging.LogError(key, "failed to update links in file %s: %v", linkingFilePath, err)
 				continue
@@ -600,18 +594,18 @@ func updateLinksForMovedFile(key logging.Key, oldPath, newPath string, movedAlon
 
 		for _, linkedPath := range movedMetadata.UsedLinks {
 			// a folder has no metadata, a file moved along has none yet - MoveFolder resyncs it afterwards
-			if strings.HasSuffix(linkedPath, "/") || slices.Contains(slices.Collect(maps.Values(movedAlong)), linkedPath) {
+			if strings.HasSuffix(linkedPath.String(), "/") || slices.Contains(slices.Collect(maps.Values(movedAlong)), linkedPath) {
 				continue
 			}
 			linkedPath := linkedPath
-			err := MetaDataMutate(pathutils.GuessMeta(linkedPath), func(m *Metadata, existed bool) (bool, error) {
+			err := MetaDataMutate(linkedPath, func(m *Metadata, existed bool) (bool, error) {
 				if !existed {
 					logging.LogWarning(key, "could not get metadata for linked file %s", linkedPath)
 					return false, nil
 				}
 
 				changed := false
-				if idx := slices.Index(m.LinksToHere, normalizedOldPath.String()); idx != -1 {
+				if idx := slices.Index(m.LinksToHere, normalizedOldPath); idx != -1 {
 					m.LinksToHere = slices.Delete(m.LinksToHere, idx, idx+1)
 					logging.LogInfo(key, "removed %s from LinksToHere of %s", normalizedOldPath, linkedPath)
 					changed = true
@@ -891,21 +885,21 @@ func updateTitle(metadata *Metadata) {
 
 // SetParents normalizes and sets path's parent links, updates the ancestor chain, and fans
 // out the resulting Kids add/remove onto the old and new parents' own metadata.
-func SetParents(path pathutils.MetaPath, parents []string) error {
+func SetParents(path pathutils.MetaPath, parents []pathutils.MetaPath) error {
 	return withRefresh(func() error { return SetParentsNoRefresh(path, parents) })
 }
 
 // SetParentsNoRefresh is SetParents without the aggregate cache refresh - for callers that set
 // several fields or loop over many files in one request, so use SetParents and call
 // RefreshCaches() once afterwards instead of paying for a full cache rebuild per field/file.
-func SetParentsNoRefresh(path pathutils.MetaPath, parents []string) error {
+func SetParentsNoRefresh(path pathutils.MetaPath, parents []pathutils.MetaPath) error {
 	normalized := path
 
-	var oldParents, newParents []string
+	var oldParents, newParents []pathutils.MetaPath
 	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
 		oldParents = append(oldParents, m.Parents...)
 		for _, parent := range parents {
-			newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
+			newParents = append(newParents, pathutils.GuessMeta(utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent.String())))))
 		}
 		m.Parents = newParents
 		updateAncestors(m, nil)
@@ -916,7 +910,7 @@ func SetParentsNoRefresh(path pathutils.MetaPath, parents []string) error {
 	}
 
 	// runs after normalized's own lock is released - see parentChildFanOut
-	fanOut := parentChildFanOut(normalized.String(), oldParents, newParents)
+	fanOut := parentChildFanOut(normalized, oldParents, newParents)
 	for _, apply := range fanOut {
 		apply()
 	}
@@ -933,7 +927,7 @@ func SetParentsNoRefresh(path pathutils.MetaPath, parents []string) error {
 func SetMetadataNoRefresh(path pathutils.MetaPath, patch *Metadata) error {
 	normalized := path
 
-	var oldParents, newParents []string
+	var oldParents, newParents []pathutils.MetaPath
 	var fanOut []func()
 	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
@@ -955,7 +949,7 @@ func SetMetadataNoRefresh(path pathutils.MetaPath, patch *Metadata) error {
 		if len(patch.Parents) > 0 {
 			oldParents = append(oldParents, m.Parents...)
 			for _, parent := range patch.Parents {
-				newParents = append(newParents, utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent))))
+				newParents = append(newParents, pathutils.GuessMeta(utils.NormalizeLinkPath(strings.TrimSpace(crosspath.ToSlash(parent.String())))))
 			}
 			m.Parents = newParents
 		}
@@ -977,7 +971,7 @@ func SetMetadataNoRefresh(path pathutils.MetaPath, patch *Metadata) error {
 		apply()
 	}
 	if newParents != nil {
-		for _, apply := range parentChildFanOut(normalized.String(), oldParents, newParents) {
+		for _, apply := range parentChildFanOut(normalized, oldParents, newParents) {
 			apply()
 		}
 	}
@@ -988,7 +982,7 @@ func SetMetadataNoRefresh(path pathutils.MetaPath, patch *Metadata) error {
 // newly claims as parents / no longer claims as parents. Same post-unlock-only rule as
 // updateLinksToHereFanOut: each closure blocks on its target path via MetaDataMutate, so it
 // must only run after sourcePath's own lock is released.
-func parentChildFanOut(sourcePath string, oldParents, newParents []string) []func() {
+func parentChildFanOut(sourcePath pathutils.MetaPath, oldParents, newParents []pathutils.MetaPath) []func() {
 	logging.LogInfo(logging.KeyApp, "updating parent-child relationships for %s: old=%v, new=%v", sourcePath, oldParents, newParents)
 
 	var fanOut []func()
@@ -1027,8 +1021,8 @@ func parentChildFanOut(sourcePath string, oldParents, newParents []string) []fun
 }
 
 // addKid adds sourcePath to path's Kids if not already present.
-func addKid(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func addKid(path, sourcePath pathutils.MetaPath) (changed bool, err error) {
+	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed || slices.Contains(m.Kids, sourcePath) {
 			return false, nil
 		}
@@ -1040,8 +1034,8 @@ func addKid(path, sourcePath string) (changed bool, err error) {
 }
 
 // removeKid removes sourcePath from path's Kids if present.
-func removeKid(path, sourcePath string) (changed bool, err error) {
-	err = MetaDataMutate(pathutils.GuessMeta(path), func(m *Metadata, existed bool) (bool, error) {
+func removeKid(path, sourcePath pathutils.MetaPath) (changed bool, err error) {
+	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
@@ -1093,8 +1087,8 @@ func UpdateLinksForSingleFile(filePath pathutils.MetaPath) error {
 
 // computeRelated scores candidate files by shared link co-occurrence with target.
 // cache may be nil, in which case it falls back to MetaDataGet for each file.
-func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []string {
-	neighbors := make(map[string]struct{}, len(target.UsedLinks)+len(target.LinksToHere))
+func computeRelated(target *Metadata, cache map[pathutils.MetaPath]*Metadata, limit int) []pathutils.MetaPath {
+	neighbors := make(map[pathutils.MetaPath]struct{}, len(target.UsedLinks)+len(target.LinksToHere))
 	for _, l := range target.UsedLinks {
 		neighbors[l] = struct{}{}
 	}
@@ -1102,13 +1096,13 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 		neighbors[l] = struct{}{}
 	}
 	if len(neighbors) == 0 {
-		return []string{}
+		return []pathutils.MetaPath{}
 	}
 
-	scores := make(map[string]int)
+	scores := make(map[pathutils.MetaPath]int)
 	if cache != nil {
 		for path, other := range cache {
-			if path == target.Path.String() {
+			if path == target.Path {
 				continue
 			}
 			score := 0
@@ -1129,7 +1123,7 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 	} else {
 		allFiles, err := GetAllPhysicalFiles()
 		if err != nil {
-			return []string{}
+			return []pathutils.MetaPath{}
 		}
 		for _, f := range allFiles {
 			if f.Path == target.Path {
@@ -1151,13 +1145,13 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 				}
 			}
 			if score > 0 {
-				scores[f.Path.String()] = score
+				scores[f.Path] = score
 			}
 		}
 	}
 
 	type scored struct {
-		path  string
+		path  pathutils.MetaPath
 		score int
 	}
 	ranked := make([]scored, 0, len(scores))
@@ -1166,7 +1160,7 @@ func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []s
 	}
 	slices.SortFunc(ranked, func(a, b scored) int { return b.score - a.score })
 
-	result := make([]string, 0, limit)
+	result := make([]pathutils.MetaPath, 0, limit)
 	for i, r := range ranked {
 		if i >= limit {
 			break
@@ -1197,7 +1191,7 @@ func StopMetaGetCounter() {
 // UsedLinks for the old media path — a safe reverse lookup.
 // Must be called BEFORE MoveMediaMetadata.
 func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath pathutils.MetaPath) error {
-	normalizedOld := pathutils.ToWithPrefix(oldMediaPath.String())
+	normalizedOld := oldMediaPath
 
 	allFiles, err := GetAllFiles()
 	if err != nil {
@@ -1285,8 +1279,9 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 				broken = append(broken, BrokenLink{SourceFile: metadata.Path.String(), Target: target, Suggested: target, AboveRoot: true})
 			}
 		}
-		for _, target := range metadata.UsedLinks {
-			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
+		for _, link := range metadata.UsedLinks {
+			target := link.String()
+			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(link.FullPath())) {
 				continue
 			}
 			bl := BrokenLink{SourceFile: metadata.Path.String(), Target: target}

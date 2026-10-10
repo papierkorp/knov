@@ -309,11 +309,11 @@ func dashboardMove(t *testing.T, loc string) string {
 // kanbanAncestorSelect offers the file at loc as ancestor in the select and filters the cards with
 // the picked option value as "child-of" - a card whose parent is loc has to match.
 func kanbanAncestorSelect(t *testing.T, loc string) string {
-	opts := render.RenderAncestorOptions([]string{loc})
+	opts := render.RenderAncestorOptions([]pathutils.MetaPath{meta(t, loc)})
 	_, rest, _ := strings.Cut(opts, `value="`)
 	value, _, _ := strings.Cut(rest, `"`)
 	value = html.UnescapeString(value) // the browser sends the unescaped attribute
-	card := files.File{Path: "docs/card.md", Metadata: &files.Metadata{Parents: []string{loc}}}
+	card := files.File{Path: "docs/card.md", Metadata: &files.Metadata{Parents: []pathutils.MetaPath{meta(t, loc)}}}
 	got := filter.FilterFileList([]files.File{card}, []filter.Criteria{{Metadata: "child-of", Operator: "equals", Value: value}}, "and")
 	if len(got) == 1 {
 		return loc

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/contentStorage"
@@ -152,7 +153,7 @@ func createAutoMetadata() error {
 			}
 		}
 
-		var parents []string
+		var parents []pathutils.MetaPath
 		if i > 0 {
 			parentCount := i % 3
 			if parentCount > 2 {
@@ -162,8 +163,8 @@ func createAutoMetadata() error {
 				parentIdx := i - 1 - (j * 2)
 				if parentIdx >= 0 && parentIdx < i {
 					parentAbs := filepath.Join(contentStorage.GetDocsPath(), autoTestFiles[parentIdx])
-					parentPath := pathutils.ToWithPrefix(pathutils.ToRelative(parentAbs))
-					if parentPath != metadataPath && !contains(parents, parentPath) {
+					parentPath := pathutils.FromFullPath(parentAbs)
+					if parentPath.String() != metadataPath && !slices.Contains(parents, parentPath) {
 						parents = append(parents, parentPath)
 					}
 				}
@@ -183,15 +184,6 @@ func createAutoMetadata() error {
 	}
 
 	return nil
-}
-
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
 
 func extractFilenameTags(filename string) []string {
