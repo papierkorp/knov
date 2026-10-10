@@ -196,12 +196,6 @@ func retokenize(tokenizer string) func(*sql.Tx) error {
 	}
 }
 
-// indexKey normalizes the git path of a deleted file to the key of the deleted-files table - the
-// live index is keyed by the docs-relative path itself (IndexFile).
-func indexKey(path string) string {
-	return pathutils.FromFullPath(path).Rel()
-}
-
 // IndexFile indexes a file's content for search
 func (ss *sqliteStorage) IndexFile(rel pathutils.DocsRel, content []byte) error {
 	ss.mutex.Lock()
@@ -439,11 +433,11 @@ func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult,
 // IndexDeletedFile indexes a deleted file's pre-deletion content in the
 // separate deleted-files FTS table, so content search over deleted files
 // doesn't need to walk the commit log.
-func (ss *sqliteStorage) IndexDeletedFile(path string, content []byte) error {
+func (ss *sqliteStorage) IndexDeletedFile(meta pathutils.MetaPath, content []byte) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
-	path = indexKey(path)
+	path := meta.String()
 	now := time.Now().UTC()
 
 	tx, err := ss.db.Begin()

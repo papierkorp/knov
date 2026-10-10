@@ -18,7 +18,7 @@ type SearchStorage interface {
 	DeleteIndexedContent(path pathutils.DocsRel) error
 	ListAllIndexedFiles() ([]string, error)
 	SearchContent(query string, limit int) ([]SearchResult, error)
-	IndexDeletedFile(path string, content []byte) error
+	IndexDeletedFile(path pathutils.MetaPath, content []byte) error
 	SearchDeletedContent(query string, limit int) ([]SearchResult, error)
 	GetBackendType() string
 	Backup(destDir string) error
@@ -96,8 +96,8 @@ func SearchContent(query string, limit int) ([]SearchResult, error) {
 	return storage.SearchContent(query, limit)
 }
 
-// IndexDeletedFile indexes a deleted file's pre-deletion content
-func IndexDeletedFile(path string, content []byte) error {
+// IndexDeletedFile indexes a deleted file's pre-deletion content, keyed by its metadata path
+func IndexDeletedFile(path pathutils.MetaPath, content []byte) error {
 	return storage.IndexDeletedFile(path, content)
 }
 

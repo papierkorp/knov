@@ -2300,7 +2300,7 @@ func IndexDeletedFiles(lastCommit string, deletedPaths []string) {
 		if lastTree != nil {
 			if f, ferr := lastTree.File(path); ferr == nil {
 				if content, cerr := f.Contents(); cerr == nil {
-					if ierr := searchStorage.IndexDeletedFile(relPath, []byte(content)); ierr != nil {
+					if ierr := searchStorage.IndexDeletedFile(pathutils.FromFullPath(relPath), []byte(content)); ierr != nil {
 						logging.LogWarning(logging.KeyFileSync, "git: failed to index deleted file content for %s: %v", relPath, ierr)
 					}
 				}
@@ -2458,16 +2458,16 @@ func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile
 	if err != nil {
 		return nil, err
 	}
-	// searchStorage keys the deleted FTS index on the clean relative path, while
-	// the persisted index keeps the docs/ prefix - normalize both sides to join.
-	byPath := make(map[string]GitHistoryFile, len(entries))
+	// both sides joined by the metadata path - a row indexed before the deleted FTS index was keyed
+	// by it holds the docs-relative path, which reads as the same docs file
+	byPath := make(map[pathutils.MetaPath]GitHistoryFile, len(entries))
 	for _, e := range entries {
-		byPath[pathutils.FromFullPath(e.Path).Rel()] = e
+		byPath[pathutils.FromFullPath(e.Path)] = e
 	}
 
 	results := make([]GitHistoryFile, 0, len(ftsResults))
 	for _, r := range ftsResults {
-		if meta, ok := byPath[pathutils.FromFullPath(r.Path).Rel()]; ok {
+		if meta, ok := byPath[pathutils.FromFullPath(r.Path)]; ok {
 			results = append(results, meta)
 		} else {
 			results = append(results, GitHistoryFile{Name: filepath.Base(r.Path), Path: r.Path})
