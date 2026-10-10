@@ -18,11 +18,11 @@ import (
 // RenderFilterEditor renders a filter editor with form and result display.
 // filePath is the physical file path (e.g. "my/filter.index"); the filterID
 // is derived by stripping the extension.
-func RenderFilterEditor(filePath string) (string, error) {
+func RenderFilterEditor(filePath pathutils.MetaPath) (string, error) {
 	var html strings.Builder
 
 	// derive filterID from filePath by stripping the extension
-	relPath := pathutils.ToRelative(filePath)
+	relPath := filePath.Rel()
 	filterID := strings.TrimSuffix(relPath, path.Ext(relPath))
 
 	config, _ := filter.GetFilterConfig(filterID)

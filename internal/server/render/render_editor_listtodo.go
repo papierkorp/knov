@@ -19,13 +19,12 @@ import (
 // an "add title" button for section headers. todoMode picks the initial default for
 // new items and whether state badges start visible; the user can flip it live via the
 // settings menu without losing any per-item state already on the page.
-func RenderListEditor(filepath string, todoMode bool) string {
+func RenderListEditor(filepath pathutils.MetaPath, todoMode bool) string {
 	content := ""
 	isEdit := filepath != ""
 
 	if isEdit {
-		fullPath := pathutils.ToDocsPath(filepath)
-		rawContent, err := contentStorage.ReadFile(fullPath)
+		rawContent, err := contentStorage.ReadFile(filepath.FullPath())
 		if err == nil {
 			content = string(rawContent)
 		}
@@ -35,7 +34,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filepath))
+		cancelURL = pathutils.ToFileURL(filepath)
 	}
 
 	lang := configmanager.GetLanguage()
@@ -66,7 +65,7 @@ func RenderListEditor(filepath string, todoMode bool) string {
 
 	var filepathInputHTML string
 	if isEdit {
-		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, pathutils.ToRelative(filepath))
+		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filepath.Rel())
 	} else {
 		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "",
 			translation.SprintfForRequest(lang, placeholderExt), "/api/files/folder-suggestions", true)
@@ -406,5 +405,5 @@ func RenderListEditor(filepath string, todoMode bool) string {
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(pathutils.ToRelative(filepath)))
+		jsEscapeString(filepath.Rel()))
 }

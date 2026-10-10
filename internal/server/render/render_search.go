@@ -30,7 +30,7 @@ func RenderSearchDropdown(results []files.File, query string) string {
 		if i >= displayCount {
 			break
 		}
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`
 		<li><a href="%s">%s</a></li>`, file.ViewURL(), displayText))
 	}
@@ -77,8 +77,8 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 	html.WriteString(`<div id="search-results-cards">`)
 
 	for _, file := range files {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
-		context := extractSearchContext(file.Path.String(), query, file.FuzzyMatch)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
+		context := extractSearchContext(file.Path, query, file.FuzzyMatch)
 
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
@@ -134,12 +134,12 @@ func extractSnippet(originalContent, contentLower string, hitPos, matchLen int) 
 	return b.String()
 }
 
-func extractSearchContext(filePath, query string, fuzzy bool) string {
+func extractSearchContext(filePath pathutils.MetaPath, query string, fuzzy bool) string {
 	if query == "" {
 		return ""
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := filePath.FullPath()
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
@@ -188,7 +188,7 @@ func RenderSearchHistoryResults(results []git.GitHistoryFile, query string) stri
 	b.WriteString(`<ul class="search-history-list">`)
 	for _, f := range results {
 		fmt.Fprintf(&b, `<li class="search-history-item"><a class="search-history-name" href="%s?commit=%s">%s</a><span class="search-history-meta">%s &mdash; %s</span></li>`,
-			pathutils.ToFileHistoryURL(pathutils.GuessMeta(f.Path)),
+			pathutils.ToFileHistoryURL(pathutils.FromFullPath(f.Path)),
 			html.EscapeString(f.Commit),
 			html.EscapeString(f.Name),
 			html.EscapeString(configmanager.FormatDateTime(f.Date)),

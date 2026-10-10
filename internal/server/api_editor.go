@@ -48,7 +48,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// unless an explicit non-codemirror editor was requested (e.g. "open file with"),
 	// which should override the section view
 	if sectionID != "" && fp != "" && (editorParam == "" || editorParam == string(files.EditorTypeCodeMirror)) {
-		html = render.RenderCodeMirrorSectionEditorForm(fp.String(), sectionID)
+		html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
 		writeResponse(w, r, map[string]string{"filepath": fp.String(), "section": sectionID}, html)
 		return
 	}
@@ -68,41 +68,41 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// render the appropriate editor
 	switch et {
 	case files.EditorTypeList:
-		html = render.RenderListEditor(fp.String(), false)
+		html = render.RenderListEditor(fp, false)
 	case files.EditorTypeTodo:
-		html = render.RenderListEditor(fp.String(), true)
+		html = render.RenderListEditor(fp, true)
 	case files.EditorTypeFilter:
 		var renderErr error
-		html, renderErr = render.RenderFilterEditor(fp.String())
+		html, renderErr = render.RenderFilterEditor(fp)
 		if renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render filter editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	case files.EditorTypeTracker:
 		if !configmanager.GetTrackerEnabled() {
-			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 			break
 		}
 		var renderErr error
-		if html, renderErr = render.RenderTrackerEditor(fp.String()); renderErr != nil {
+		if html, renderErr = render.RenderTrackerEditor(fp); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render tracker editor: %v", renderErr)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load tracker"))
 			return
 		}
 	case files.EditorTypeIndex:
 		var renderErr error
-		if html, renderErr = render.RenderIndexEditor(fp.String()); renderErr != nil {
+		if html, renderErr = render.RenderIndexEditor(fp); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	case files.EditorTypeBook:
 		var renderErr error
-		if html, renderErr = render.RenderBookEditor(fp.String()); renderErr != nil {
+		if html, renderErr = render.RenderBookEditor(fp); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render book editor: %v", renderErr)
-			html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	default:
-		html = render.RenderCodeMirrorEditorForm(fp.String(), prefillPath, editorParam)
+		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	}
 
 	writeResponse(w, r, map[string]string{"filepath": fp.String(), "editor": editorParam}, html)
@@ -532,7 +532,7 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	html := render.RenderTableEditorForm(filePath.String(), tableIndex)
+	html := render.RenderTableEditorForm(filePath, tableIndex)
 
 	writeResponse(w, r, map[string]any{"filepath": filePath, "tableIndex": tableIndex}, html)
 }

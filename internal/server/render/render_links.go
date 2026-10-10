@@ -20,13 +20,13 @@ import (
 // iterating a []files.File whose .Metadata is already populated (as returned by
 // GetAllFiles/GetAllFilesCached), call GetLinkDisplayTextWithMetadata instead to
 // avoid a redundant metadata store lookup per file.
-func GetLinkDisplayText(filePath string) string {
+func GetLinkDisplayText(filePath pathutils.MetaPath) string {
 	// these modes never need the title, so skip the metadata lookup entirely
 	if mode := linkDisplayMode(); mode == "filename" || mode == "filepath" {
-		return renderLinkDisplayText(filePath, mode, nil)
+		return renderLinkDisplayText(filePath.String(), mode, nil)
 	}
 
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath))
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil {
 		metadata = nil
 	}
@@ -36,8 +36,8 @@ func GetLinkDisplayText(filePath string) string {
 // GetLinkDisplayTextWithMetadata is identical to GetLinkDisplayText but takes
 // already-loaded metadata instead of fetching it, avoiding a metadata store
 // lookup per file when rendering a tree/list/search result that already has it.
-func GetLinkDisplayTextWithMetadata(filePath string, metadata *files.Metadata) string {
-	return renderLinkDisplayText(filePath, linkDisplayMode(), metadata)
+func GetLinkDisplayTextWithMetadata(filePath pathutils.MetaPath, metadata *files.Metadata) string {
+	return renderLinkDisplayText(filePath.String(), linkDisplayMode(), metadata)
 }
 
 // linkDisplayMode reads the current theme's configured link display mode.
@@ -122,7 +122,7 @@ func RenderNoLinksMessage(message string) string {
 func RenderAncestorOptions(ancestors []pathutils.MetaPath) string {
 	var out strings.Builder
 	for _, a := range ancestors {
-		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(a.String()), GetLinkDisplayText(a.String()))
+		fmt.Fprintf(&out, `<option value="%s">%s</option>`, html.EscapeString(a.String()), GetLinkDisplayText(a))
 	}
 	return out.String()
 }
@@ -140,7 +140,7 @@ func RenderLinksList(links []pathutils.MetaPath, _ bool) string {
 			continue
 		}
 		url := pathutils.ToFileURL(link)
-		displayText := GetLinkDisplayText(link.String())
+		displayText := GetLinkDisplayText(link)
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
 	}
 	return html.String()

@@ -19,13 +19,13 @@ import (
 
 // RenderTrackerEditor renders the tracker edit form. filePath is the paired file
 // path (empty for a new tracker); the tracker id is derived from it.
-func RenderTrackerEditor(filePath string) (string, error) {
+func RenderTrackerEditor(filePath pathutils.MetaPath) (string, error) {
 	lang := configmanager.GetLanguage()
 	t := func(k string, a ...any) string { return translation.SprintfForRequest(lang, k, a...) }
 
 	id := ""
 	if filePath != "" {
-		id = tracker.IDFromPath(pathutils.ToRelative(filePath))
+		id = tracker.IDFromPath(filePath.Rel())
 	}
 	var config *tracker.Config
 	if id != "" {
@@ -64,13 +64,13 @@ func RenderTrackerEditor(filePath string) (string, error) {
 
 	cancelURL := "/"
 	if filePath != "" {
-		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filePath))
+		cancelURL = pathutils.ToFileURL(filePath)
 	}
 	h.WriteString(`<div class="form-actions">`)
 	fmt.Fprintf(&h, `<button type="submit" class="btn-primary">%s</button>`, t("save tracker"))
 	fmt.Fprintf(&h, `<button type="button" hx-post="/api/trackers/add-counter" hx-target="#tracker-counters" hx-swap="beforeend" class="btn-secondary">%s</button>`, t("add counter"))
 	if filePath != "" {
-		fmt.Fprintf(&h, `<a href="%s" target="_blank" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(pathutils.ToFileURL(pathutils.GuessMeta(filePath))), t("view file"))
+		fmt.Fprintf(&h, `<a href="%s" target="_blank" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(pathutils.ToFileURL(filePath)), t("view file"))
 	}
 	fmt.Fprintf(&h, `<a href="%s" role="button" class="btn-secondary">%s</a>`, htmlpkg.EscapeString(cancelURL), t("cancel"))
 	h.WriteString(`</div>`)

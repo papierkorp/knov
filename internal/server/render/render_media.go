@@ -371,7 +371,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 		html.WriteString(`<ul class="media-used-list">`)
 		for _, link := range metadata.LinksToHere {
 			linkPath, _ := link.DocsRel()
-			displayText := GetLinkDisplayText(link.String())
+			displayText := GetLinkDisplayText(link)
 			fmt.Fprintf(&html, `<li><a href="%s" title="%s">%s</a></li>`, pathutils.ToFileURL(link), linkPath, displayText)
 		}
 		html.WriteString(`</ul>`)

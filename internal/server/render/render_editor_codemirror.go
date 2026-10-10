@@ -301,7 +301,7 @@ func codeMirrorFileInputHTML() string {
 // autocomplete/toolbar/upload, and defines reinitCodeMirror — used by the settings
 // menu (jsCodeMirrorSettingsMenu) to apply toggled options to the live editor by
 // rebuilding the view in place, without losing unsaved content or reloading the page.
-func codeMirrorInitScript(content, filePath string) string {
+func codeMirrorInitScript(content string, filePath pathutils.MetaPath) string {
 	jsBool := func(b bool) string {
 		if b {
 			return "true"
@@ -354,7 +354,7 @@ func codeMirrorInitScript(content, filePath string) string {
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
 		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(pathutils.ToRelative(filePath)),
+		jsEscapeString(filePath.Rel()),
 		jsEscapeString(content),
 		jsBool(configmanager.SpellCheck.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
@@ -367,19 +367,19 @@ func codeMirrorInitScript(content, filePath string) string {
 }
 
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.
-func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
+func RenderCodeMirrorSectionEditorForm(filePath pathutils.MetaPath, sectionID string) string {
 	content := ""
 
 	if filePath != "" && sectionID != "" {
 		handler := contentHandler.GetHandler("markdown")
 		includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
-		sectionContent, err := handler.ExtractSection(filePath, sectionID, includeSubheaders)
+		sectionContent, err := handler.ExtractSection(filePath.String(), sectionID, includeSubheaders)
 		if err == nil {
 			content = sectionContent
 		}
 	}
 
-	cancelURL := pathutils.ToFileURL(pathutils.GuessMeta(filePath)) + "#" + sectionID
+	cancelURL := pathutils.ToFileURL(filePath) + "#" + sectionID
 
 	script := fmt.Sprintf(`<script>
 (function() {
@@ -422,7 +422,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		sectionID,
 		codeMirrorToolbarHTML(configmanager.GetLanguage()),
 		codeMirrorFileInputHTML(),
-		pathutils.ToRelative(filePath),
+		filePath.Rel(),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
@@ -430,13 +430,12 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 }
 
 // RenderCodeMirrorEditorForm renders a CodeMirror editor for file creation/editing.
-func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...string) string {
+func RenderCodeMirrorEditorForm(filePath pathutils.MetaPath, prefillPath string, editorParam ...string) string {
 	content := ""
 	isEdit := filePath != ""
 
 	if isEdit {
-		fullPath := pathutils.ToDocsPath(filePath)
-		if rawContent, err := contentStorage.ReadFile(fullPath); err == nil {
+		if rawContent, err := contentStorage.ReadFile(filePath.FullPath()); err == nil {
 			content = string(rawContent)
 		}
 	}
@@ -444,7 +443,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	action := "/api/files/save"
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filePath))
+		cancelURL = pathutils.ToFileURL(filePath)
 	}
 
 	var currentEditor string
@@ -468,7 +467,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 			filepathInput += fmt.Sprintf(`<input type="hidden" name="editor" value="%s" />`, currentEditor)
 		}
 	} else {
-		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, pathutils.ToRelative(filePath))
+		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath.Rel())
 	}
 
 	script := fmt.Sprintf(`<script>

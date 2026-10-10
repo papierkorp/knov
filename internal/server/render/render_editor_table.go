@@ -182,7 +182,8 @@ function deleteRows(row) {
 }
 
 // RenderTableEditorForm renders the complete table editor form
-func RenderTableEditorForm(filePath string, tableIndex int) string {
+func RenderTableEditorForm(fileMeta pathutils.MetaPath, tableIndex int) string {
+	filePath := fileMeta.String()
 	// extract table from markdown using contenthandler
 	handler := contentHandler.GetHandler("markdown")
 	headers, rows, aligns, err := handler.ExtractTable(filePath, tableIndex)
@@ -207,7 +208,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	}
 
 	// build return URL including the header anchor so cancel/save land in the right spot
-	returnURL := pathutils.ToFileURL(pathutils.GuessMeta(filePath))
+	returnURL := pathutils.ToFileURL(fileMeta)
 	if anchor := contentHandler.FindMarkdownTableAnchor(filePath, tableIndex); anchor != "" {
 		returnURL += "#" + anchor
 	}
@@ -640,7 +641,7 @@ function downloadTable() {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "download csv"),
 		settingsMenu,
 		string(tableJSON),
-		jsEscapeString(pathutils.ToRelative(filePath)),
+		jsEscapeString(fileMeta.Rel()),
 		jsEscapeString(returnURL),
 		jsEscapeString(downloadName),
 		headerContextMenuScript(configmanager.GetLanguage()),

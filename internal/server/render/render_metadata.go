@@ -27,13 +27,14 @@ func RenderBulkUpdateResult(paths []string, count int, preview bool) string {
 }
 
 // RenderMetadataForm renders the complete metadata form for a file
-func RenderMetadataForm(filePath string, defaultFiletype string) (string, error) {
+func RenderMetadataForm(fileMeta pathutils.MetaPath, defaultFiletype string) (string, error) {
+	filePath := fileMeta.String()
 	var html strings.Builder
 	var metadata *files.Metadata
 	var err error
 
 	if filePath != "" {
-		metadata, err = files.MetaDataGet(pathutils.GuessMeta(filePath))
+		metadata, err = files.MetaDataGet(fileMeta)
 		if err != nil {
 			return "", err
 		}

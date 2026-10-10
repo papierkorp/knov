@@ -50,7 +50,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 			writeResponse(w, r, []string{}, html)
 			return
 		}
-		html := render.RenderFileVersionsList(versions, filePath, output, showCompareForm)
+		html := render.RenderFileVersionsList(versions, fileMeta, output, showCompareForm)
 		writeResponse(w, r, versions, html)
 		return
 	}

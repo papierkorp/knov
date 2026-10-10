@@ -107,6 +107,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		item := render.FolderEntry{
 			Name:  entry.Name(),
 			Path:  entryPath,
+			Meta:  pathutils.FromFullPath(filepath.Join(fullPath, entry.Name())),
 			IsDir: entry.IsDir(),
 		}
 
@@ -116,9 +117,8 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 			}
 			folders = append(folders, item)
 		} else {
-			metaPath := pathutils.FromFullPath(filepath.Join(fullPath, entry.Name()))
-			metadata, _ := files.MetaDataGet(metaPath)
-			if files.IsHidden(files.File{Path: metaPath, Metadata: metadata}, hide) {
+			metadata, _ := files.MetaDataGet(item.Meta)
+			if files.IsHidden(files.File{Path: item.Meta, Metadata: metadata}, hide) {
 				continue
 			}
 			filesInDir = append(filesInDir, item)
@@ -176,7 +176,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 		"link":     pathutils.ToFileURL(filepath),
 	}
 
-	html := render.RenderFileHeader(filepath.String())
+	html := render.RenderFileHeader(filepath)
 	writeResponse(w, r, data, html)
 }
 
@@ -679,7 +679,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html, err := render.RenderMetadataForm(filePath.String(), "")
+	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))
@@ -716,7 +716,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	}
 	defaultFiletype := r.URL.Query().Get("editor")
 
-	html, err := render.RenderMetadataForm(filePath.String(), defaultFiletype)
+	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"))

@@ -17,6 +17,7 @@ import (
 	"github.com/chromedp/chromedp"
 
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/server"
 	"knov/internal/server/render"
 	"knov/internal/test"
@@ -47,7 +48,7 @@ func caseTablePasteUndoRedo() test.CaseResult {
 	assets := httptest.NewServer(server.NewRouter())
 	defer assets.Close()
 
-	fragment := render.RenderTableEditorForm(relPath, 0)
+	fragment := render.RenderTableEditorForm(pathutils.DocsPath(relPath), 0)
 	page := fmt.Sprintf(`<!DOCTYPE html><html><head>
 <link rel="stylesheet" href="%[1]s/static/tabulator-6.5.0.min.css">
 <script src="%[1]s/static/tabulator-6.5.0.min.js"></script>
@@ -122,7 +123,7 @@ func caseCodeMirrorToolbarBold() test.CaseResult {
 	assets := httptest.NewServer(server.NewRouter())
 	defer assets.Close()
 
-	fragment := render.RenderCodeMirrorEditorForm(relPath, "")
+	fragment := render.RenderCodeMirrorEditorForm(pathutils.DocsPath(relPath), "")
 	page := fmt.Sprintf(`<!DOCTYPE html><html><head>
 <script src="%[1]s/static/codemirror6-bundle.min.js"></script>
 <script src="%[1]s/static/wiki-autocomplete.js"></script>
@@ -190,7 +191,7 @@ func caseCodeMirrorLiveToc() test.CaseResult {
 <script src="/static/codemirror6-bundle.min.js"></script>
 <script src="/static/wiki-autocomplete.js"></script>
 <script>document.addEventListener('knov:editor-toc', function(e) { window.__toc = e.detail.items; e.preventDefault(); });</script>
-</head><body>%s</body></html>`, render.RenderCodeMirrorEditorForm(relPath, ""))
+</head><body>%s</body></html>`, render.RenderCodeMirrorEditorForm(pathutils.DocsPath(relPath), ""))
 	harness := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			app.ServeHTTP(w, r)

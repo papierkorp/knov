@@ -23,7 +23,7 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, fr
 	var b strings.Builder
 	b.WriteString("<ul>")
 	for _, file := range files {
-		linkPath := pathutils.GuessMeta(file.Path)
+		linkPath := pathutils.FromFullPath(file.Path)
 		fmt.Fprintf(&b, `<li>%s - <a href="%s"><strong>%s</strong></a> (%s)</li>`,
 			configmanager.FormatDateTime(file.Date),
 			pathutils.ToFileURL(linkPath),
@@ -56,7 +56,7 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, fr
 // applies to "full" - it renders the from/to compare picker inline instead
 // of a plain link to the full history page, which is too bulky for the
 // narrow file info rail.
-func RenderFileVersionsList(versions []git.FileVersion, filePath string, output string, showCompareForm bool) string {
+func RenderFileVersionsList(versions []git.FileVersion, filePath pathutils.MetaPath, output string, showCompareForm bool) string {
 	if len(versions) == 0 {
 		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
 	}
@@ -88,7 +88,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 					</a>
 				</li>`,
 				cssClass,
-				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
+				pathutils.ToFileHistoryURL(filePath),
 				version.Commit,
 				configmanager.FormatDateTime(version.Date),
 				version.Message,
@@ -102,7 +102,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				<a href="%s" class="view-all-versions">
 					%s
 				</a>`,
-				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
+				pathutils.ToFileHistoryURL(filePath),
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
 			))
 		}
@@ -140,7 +140,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				html.WriteString(renderVersionCompareForm(versions, filePath))
 			} else {
 				fmt.Fprintf(&html, `<a href="%s" class="action-link">%s</a>`,
-					pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
+					pathutils.ToFileHistoryURL(filePath),
 					translation.SprintfForRequest(configmanager.GetLanguage(), "compare versions"))
 			}
 		}
@@ -169,7 +169,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				version.Message,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
 				version.Author,
-				pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)),
+				pathutils.ToFileHistoryURL(filePath),
 				version.Commit,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
 			))
@@ -187,10 +187,10 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 // current. Submits as a plain navigation to the full history page (like the
 // per-version "view" links), since the full diff view doesn't fit well in
 // the narrow file info sidebar this also renders inside.
-func renderVersionCompareForm(versions []git.FileVersion, filePath string) string {
+func renderVersionCompareForm(versions []git.FileVersion, filePath pathutils.MetaPath) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `<form id="component-version-compare" method="get" action="%s">`,
-		pathutils.ToFileHistoryURL(pathutils.GuessMeta(filePath)))
+		pathutils.ToFileHistoryURL(filePath))
 	b.WriteString(renderVersionCompareSelect("from", versions, 1))
 	b.WriteString(`<span class="version-compare-arrow">&rarr;</span>`)
 	b.WriteString(renderVersionCompareSelect("to", versions, 0))

@@ -30,14 +30,14 @@ var entryRowCounter atomic.Uint64
 // the entry model, row markup and move/remove script are shared.
 
 // RenderIndexEditor renders the `.index`/`.moc` entry editor as an htmx form.
-func RenderIndexEditor(filePath string) (string, error) { return renderEntryEditor(filePath, false) }
+func RenderIndexEditor(filePath pathutils.MetaPath) (string, error) { return renderEntryEditor(filePath, false) }
 
 // RenderBookEditor renders the `.book` entry editor: renderEntryEditor in bookMode.
-func RenderBookEditor(filePath string) (string, error) { return renderEntryEditor(filePath, true) }
+func RenderBookEditor(filePath pathutils.MetaPath) (string, error) { return renderEntryEditor(filePath, true) }
 
 // renderEntryEditor is the shared index/book entry editor; bookMode picks the save route,
 // the "include subheaders" toggle and the labels.
-func renderEntryEditor(filePath string, bookMode bool) (string, error) {
+func renderEntryEditor(filePath pathutils.MetaPath, bookMode bool) (string, error) {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
 		return translation.SprintfForRequest(lang, key, args...)
@@ -55,7 +55,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	// load existing entries if editing
 	var entries []book.Entry
 	if filePath != "" {
-		if content, err := contentStorage.ReadFile(pathutils.ToDocsPath(filePath)); err == nil && len(content) > 0 {
+		if content, err := contentStorage.ReadFile(filePath.FullPath()); err == nil && len(content) > 0 {
 			entries = book.Parse(string(content))
 		}
 	}
@@ -74,7 +74,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 	isEdit := filePath != ""
 	cancelURL := "/"
 	if isEdit {
-		cancelURL = pathutils.ToFileURL(pathutils.GuessMeta(filePath))
+		cancelURL = pathutils.ToFileURL(filePath)
 	}
 
 	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#entry-editor-status" hx-swap="innerHTML" id="entry-form">`, action)
@@ -85,7 +85,7 @@ func renderEntryEditor(filePath string, bookMode bool) (string, error) {
 		html.WriteString(GenerateDatalistInput("filepath-input", "filepath", "", t("path/to/file"), "/api/files/folder-suggestions", true))
 		html.WriteString(`</div>`)
 	} else {
-		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, htmlpkg.EscapeString(pathutils.ToRelative(filePath)))
+		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, htmlpkg.EscapeString(filePath.Rel()))
 	}
 
 	// entries container
@@ -237,7 +237,7 @@ func renderEntryRow(index int, entry book.Entry, bookMode bool) string {
 		// flag an entry whose target file no longer exists so a stale reference is
 		// obvious in the editor, not only as a "could not include" marker in the view
 		if p := parser.LinkTarget(filePath, parser.ParseLink(entry.Value, parser.LinkWiki)); p != "" {
-			if ok, _ := contentStorage.FileExists(pathutils.ToFullPath(p.String())); !ok {
+			if ok, _ := contentStorage.FileExists(p.FullPath()); !ok {
 				fmt.Fprintf(&html, `<span class="entry-file-missing" title="%s">%s</span>`, htmlpkg.EscapeString(p.String()), t("file not found"))
 			}
 		}

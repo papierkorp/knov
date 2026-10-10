@@ -81,7 +81,7 @@ func RenderFileCards(files []files.File) string {
 	html.WriteString(`<div class="search-results-cards">`)
 
 	for _, file := range files {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
 			<h4><a href="%s">%s</a></h4>
@@ -99,7 +99,7 @@ func RenderFileList(files []files.File) string {
 	html.WriteString(`<ul class="search-results-simple-list">`)
 
 	for _, file := range files {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`
 			<li><a href="%s">%s</a></li>`,
 			file.ViewURL(), displayText))
@@ -125,7 +125,7 @@ func RenderFileDropdown(files []files.File, limit int) string {
 		if i >= displayLimit {
 			break
 		}
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		fmt.Fprintf(&html, `<option value="%s">%s</option>`, file.ViewURL(), displayText)
 	}
 
@@ -157,7 +157,7 @@ func RenderFileDatalist(files []files.File, limit int) string {
 		if i >= displayLimit {
 			break
 		}
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`<option value="%s" data-url="%s"></option>`,
 			htmlpkg.EscapeString(displayText), htmlpkg.EscapeString(file.ViewURL())))
 	}
@@ -174,7 +174,7 @@ func RenderFileContent(filez []files.File) string {
 	html.WriteString(`<div id="filter-results" class="filter-content-results">`)
 
 	for _, file := range filez {
-		displayText := GetLinkDisplayTextWithMetadata(file.Path.String(), file.Metadata)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`<div class="filter-content-item">
 		  <h4><a href="%s">%s</a></h4>`, file.ViewURL(), displayText))
 
