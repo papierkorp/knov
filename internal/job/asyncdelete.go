@@ -37,7 +37,11 @@ var resumers = map[string]func(args string) (Job, *sync.Mutex, error){
 		if err := json.Unmarshal([]byte(args), &a); err != nil {
 			return nil, nil, fmt.Errorf("invalid delete-folder args: %w", err)
 		}
-		j := &deleteFolderJob{folderPath: a.FolderPath, fullPath: pathutils.ToDocsPath(a.FolderPath), fullPaths: a.FullPaths}
+		folder, ok := pathutils.ParseMeta(a.FolderPath)
+		if !ok {
+			return nil, nil, fmt.Errorf("invalid delete-folder args: %q is no metadata path", a.FolderPath)
+		}
+		j := &deleteFolderJob{folderPath: a.FolderPath, fullPath: folder.FullPath(), fullPaths: a.FullPaths}
 		return j, &deleteFolderMu, nil
 	},
 	JobTypeBulkDeleteFiles: func(args string) (Job, *sync.Mutex, error) {
@@ -96,8 +100,9 @@ type bulkDeleteArgs struct {
 // StartDeleteFolder resolves folderPath's files once (a stable snapshot, so a crash mid-run
 // and later resume can't pick up files added afterwards) and starts the delete in the
 // background. Returns the job id to poll for completion.
-func StartDeleteFolder(folderPath string) (string, error) {
-	fullPath := pathutils.ToDocsPath(folderPath)
+func StartDeleteFolder(folder pathutils.MetaPath) (string, error) {
+	folderPath := folder.String()
+	fullPath := folder.FullPath()
 	fullPaths, err := files.ListFilesInFolder(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to list folder contents: %w", err)

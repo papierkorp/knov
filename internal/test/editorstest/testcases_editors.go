@@ -465,7 +465,7 @@ func caseBookPathContainment() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	composed, err := book.Compose(bookPath)
+	composed, err := book.Compose(pathutils.DocsPath(bookPath))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -534,7 +534,7 @@ func caseBookFilterEntry() test.CaseResult {
 		}
 	}
 
-	composed, err := book.Compose(bookPath)
+	composed, err := book.Compose(pathutils.DocsPath(bookPath))
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -576,7 +576,7 @@ func caseTableCreateEditSave() test.CaseResult {
 	}
 
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveTable(relPath, 0, []string{"A", "B"}, [][]string{{"3", "4"}, {"5", "6"}}, nil); err != nil {
+	if err := handler.SaveTable(pathutils.DocsPath(relPath), 0, []string{"A", "B"}, [][]string{{"3", "4"}, {"5", "6"}}, nil); err != nil {
 		return errCase(name, err)
 	}
 	if err := files.UpdateLinksForSingleFile(pathutils.GuessMeta(relPath)); err != nil {
@@ -618,7 +618,7 @@ func caseTableAlignRoundTrip() test.CaseResult {
 	}
 
 	handler := contentHandler.GetHandler("markdown")
-	_, _, aligns, err := handler.ExtractTable(relPath, 0)
+	_, _, aligns, err := handler.ExtractTable(pathutils.DocsPath(relPath), 0)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -628,11 +628,11 @@ func caseTableAlignRoundTrip() test.CaseResult {
 	}
 
 	newAligns := []string{"right", "left", "center"}
-	if err := handler.SaveTable(relPath, 0, []string{"A", "B", "C"}, [][]string{{"1", "2", "3"}}, newAligns); err != nil {
+	if err := handler.SaveTable(pathutils.DocsPath(relPath), 0, []string{"A", "B", "C"}, [][]string{{"1", "2", "3"}}, newAligns); err != nil {
 		return errCase(name, err)
 	}
 
-	_, _, gotAligns, err := handler.ExtractTable(relPath, 0)
+	_, _, gotAligns, err := handler.ExtractTable(pathutils.DocsPath(relPath), 0)
 	if err != nil {
 		return errCase(name, err)
 	}

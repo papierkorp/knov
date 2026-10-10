@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
@@ -231,14 +230,18 @@ func doMediaCleanup(paths []string) (MediaCleanupResult, error) {
 		if !selected[mediaPath] {
 			continue
 		}
+		mediaMeta, ok := pathutils.ParseMeta(mediaPath)
+		if !ok || !mediaMeta.IsMedia() {
+			continue
+		}
 		// double-check the file is still orphaned (cache may be stale)
-		meta, err := files.MetaDataGet(pathutils.GuessMeta(mediaPath))
+		meta, err := files.MetaDataGet(mediaMeta)
 		if err == nil && meta != nil && len(meta.LinksToHere) > 0 {
 			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: skipping %s: no longer orphaned", mediaPath)
 			continue
 		}
 
-		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(mediaPath, "media/"))
+		fullPath := mediaMeta.FullPath()
 		if info, err := contentStorage.GetFileInfo(fullPath); err == nil && info != nil {
 			result.Size += info.Size()
 		}
@@ -250,7 +253,7 @@ func doMediaCleanup(paths []string) (MediaCleanupResult, error) {
 		}
 		// no-refresh: avoid a full background cache rebuild per deleted file
 		// when cleaning up dozens of orphaned media at once; refreshed once below.
-		if err := files.MetaDataDeleteNoRefresh(logging.KeyMediaCleanup, pathutils.GuessMeta(mediaPath)); err != nil {
+		if err := files.MetaDataDeleteNoRefresh(logging.KeyMediaCleanup, mediaMeta); err != nil {
 			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
 		}
 		result.Deleted++
@@ -464,7 +467,7 @@ func deleteResolvedFiles(ctx context.Context, logPrefix string, fullPaths []stri
 	deleted := files.BulkDeleteFiles(ctx, logging.KeyApp, fullPaths, report)
 
 	for _, fullPath := range deleted {
-		if err := git.InvalidateFileHistoryCache(pathutils.ToWithPrefix(fullPath)); err != nil {
+		if err := git.InvalidateFileHistoryCache(pathutils.FromFullPath(fullPath).String()); err != nil {
 			logging.LogWarning(logging.KeyApp, "%s: failed to invalidate file history cache for %s: %v", logPrefix, fullPath, err)
 		}
 	}
@@ -566,14 +569,14 @@ func (j *deleteFolderJob) Message() string {
 // moveFolderJob moves a folder to a new parent and updates the links of every file inside it.
 // The actual work lives in files.MoveFolder - this is just the history-tracking wrapper.
 type moveFolderJob struct {
-	currentPath, newPath string
+	currentPath, newPath pathutils.MetaPath
 	result               BulkUpdateResult
 }
 
 func (j *moveFolderJob) Name() string { return "move-folder" }
 
 func (j *moveFolderJob) Run(_ context.Context) error {
-	updated, failed, err := files.MoveFolder(logging.KeyApp, pathutils.ToDocsPath(j.currentPath), pathutils.ToDocsPath(j.newPath))
+	updated, failed, err := files.MoveFolder(logging.KeyApp, j.currentPath.FullPath(), j.newPath.FullPath())
 	if err != nil {
 		return err
 	}

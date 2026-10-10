@@ -589,7 +589,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	var markdown string
 	if files.IsBook(filePath) {
 		// a book exports as its composed document, not its raw entry list
-		composed, err := book.Compose(filePath.String())
+		composed, err := book.Compose(filePath)
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to compose book %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"))
@@ -603,7 +603,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 			return
 		}
-		markdown = dokuwikiconverter.NewWithFilePath(filePath.String()).ConvertToMarkdown(string(content))
+		markdown = dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 	}
 
 	// prepare download
@@ -855,7 +855,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := job.RunMoveFolder(currentPath, newPath)
+	result, err := job.RunMoveFolder(pathutils.DocsPath(currentRel), pathutils.DocsPath(newRel))
 	if writeNewPathError(w, r, err) {
 		return
 	}
@@ -971,9 +971,9 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
-	fullPath := pathutils.DocsPath(folderPath).FullPath()
-	folderPath = pathutils.DocsPath(folderPath).String()
-
+	folderMeta := pathutils.DocsPath(folderPath)
+	folderPath = folderMeta.String()
+	fullPath := folderMeta.FullPath()
 	info, err := os.Stat(fullPath)
 	if os.IsNotExist(err) || !info.IsDir() {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
@@ -982,7 +982,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "deleting folder: %s", folderPath)
 
-	id, err := job.StartDeleteFolder(folderPath)
+	id, err := job.StartDeleteFolder(folderMeta)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to start folder delete %s: %v", folderPath, err)
 		status := http.StatusInternalServerError

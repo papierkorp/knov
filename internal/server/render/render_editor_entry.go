@@ -30,10 +30,14 @@ var entryRowCounter atomic.Uint64
 // the entry model, row markup and move/remove script are shared.
 
 // RenderIndexEditor renders the `.index`/`.moc` entry editor as an htmx form.
-func RenderIndexEditor(filePath pathutils.MetaPath) (string, error) { return renderEntryEditor(filePath, false) }
+func RenderIndexEditor(filePath pathutils.MetaPath) (string, error) {
+	return renderEntryEditor(filePath, false)
+}
 
 // RenderBookEditor renders the `.book` entry editor: renderEntryEditor in bookMode.
-func RenderBookEditor(filePath pathutils.MetaPath) (string, error) { return renderEntryEditor(filePath, true) }
+func RenderBookEditor(filePath pathutils.MetaPath) (string, error) {
+	return renderEntryEditor(filePath, true)
+}
 
 // renderEntryEditor is the shared index/book entry editor; bookMode picks the save route,
 // the "include subheaders" toggle and the labels.

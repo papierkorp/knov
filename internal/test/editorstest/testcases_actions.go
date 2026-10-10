@@ -38,7 +38,7 @@ func caseSectionSave() test.CaseResult {
 
 	sectionID := utils.GenerateID("First Section", map[string]int{})
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveSection(relPath, sectionID, "updated content"); err != nil {
+	if err := handler.SaveSection(pathutils.DocsPath(relPath), sectionID, "updated content"); err != nil {
 		return errCase(name, err)
 	}
 
@@ -159,7 +159,7 @@ func caseConvertToMarkdown() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	markdown := dokuwikiconverter.NewWithFilePath(relPath).ConvertToMarkdown(dokuwikiContent)
+	markdown := dokuwikiconverter.NewWithFilePath(pathutils.DocsPath(relPath)).ConvertToMarkdown(dokuwikiContent)
 	mdPath := strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
 	if err := writeFile(mdPath, markdown); err != nil {
 		return errCase(name, err)

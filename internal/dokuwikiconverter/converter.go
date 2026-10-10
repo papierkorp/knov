@@ -30,7 +30,7 @@ func ConvertExportEntry(relPath string, r io.Reader) (string, io.Reader, error) 
 	if err != nil {
 		return "", nil, err
 	}
-	markdown := NewWithFilePath(relPath).ConvertToMarkdown(string(content))
+	markdown := NewWithFilePath(pathutils.FromFullPath(relPath)).ConvertToMarkdown(string(content))
 	newPath := strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
 	logging.LogDebug(logging.KeyExport, "dokuwiki export: converted: %s -> %s", relPath, newPath)
 	return newPath, bytes.NewReader([]byte(markdown)), nil
@@ -42,9 +42,8 @@ func New() *Converter {
 
 // NewWithFilePath creates a Converter that knows the source file's directory so
 // bare filenames in media links are resolved relative to it.
-func NewWithFilePath(filePath string) *Converter {
-	// use pathutils to get a clean relative path, then extract the directory
-	rel := pathutils.ToRelative(filePath)
+func NewWithFilePath(filePath pathutils.MetaPath) *Converter {
+	rel := filePath.Rel()
 	dir := ""
 	if i := strings.LastIndex(rel, "/"); i >= 0 {
 		dir = rel[:i]

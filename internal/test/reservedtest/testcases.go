@@ -448,7 +448,7 @@ func caseBook() test.CaseResult {
 	if err := write(fullPath("docs/"+bookRel), strings.Join(entries, "\n")+"\n"); err != nil {
 		return errCase("reserved-book", err)
 	}
-	composed, err := book.Compose("docs/" + bookRel)
+	composed, err := book.Compose(pathutils.DocsPath(bookRel))
 	if err != nil {
 		return errCase("reserved-book", err)
 	}

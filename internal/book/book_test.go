@@ -73,14 +73,14 @@ func TestExpandFilters(t *testing.T) {
 		}
 	}
 
-	FilterResolver = func(id string) ([]string, error) {
+	FilterResolver = func(id string) ([]pathutils.MetaPath, error) {
 		if id == "empty" {
-			return []string{"img.png"}, nil // only a skipped binary: nothing to inline
+			return []pathutils.MetaPath{"docs/img.png"}, nil // only a skipped binary: nothing to inline
 		}
 		if id != "tasks" {
 			return nil, errors.New("filter not found")
 		}
-		return []string{"a.md", "C#.md", "img.png", "b.txt"}, nil
+		return []pathutils.MetaPath{"docs/a.md", "docs/C#.md", "docs/img.png", "docs/b.txt"}, nil
 	}
 
 	got := expandFilters("my.book", []Entry{

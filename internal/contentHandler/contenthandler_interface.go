@@ -1,22 +1,24 @@
 package contentHandler
 
+import "knov/internal/pathutils"
+
 // ContentHandler provides advanced content manipulation capabilities for different file types
 type ContentHandler interface {
 	// ExtractSection extracts content of a specific section by ID
-	ExtractSection(filePath, sectionID string, includeSubheaders bool) (string, error)
+	ExtractSection(filePath pathutils.MetaPath, sectionID string, includeSubheaders bool) (string, error)
 
 	// ExtractSectionFromString is ExtractSection for content already in memory (no re-read),
 	// for callers composing many sections from one file.
 	ExtractSectionFromString(content, sectionID string, includeSubheaders bool) (string, error)
 
 	// SaveSection saves content to a specific section by ID
-	SaveSection(filePath, sectionID, content string) error
+	SaveSection(filePath pathutils.MetaPath, sectionID, content string) error
 
 	// ExtractTable extracts table data at specific index, returns headers, rows and per-column alignment
-	ExtractTable(filePath string, tableIndex int) (headers []string, rows [][]string, aligns []string, err error)
+	ExtractTable(filePath pathutils.MetaPath, tableIndex int) (headers []string, rows [][]string, aligns []string, err error)
 
 	// SaveTable saves table data and per-column alignment at specific index
-	SaveTable(filePath string, tableIndex int, headers []string, rows [][]string, aligns []string) error
+	SaveTable(filePath pathutils.MetaPath, tableIndex int, headers []string, rows [][]string, aligns []string) error
 
 	// SupportsSection returns true if the handler supports section operations
 	SupportsSection() bool

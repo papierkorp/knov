@@ -52,8 +52,8 @@ func (h *MarkdownContentHandler) SupportsTable() bool {
 }
 
 // ExtractSection extracts content of a specific section by ID
-func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string, includeSubheaders bool) (string, error) {
-	fullPath := pathutils.ToDocsPath(filePath)
+func (h *MarkdownContentHandler) ExtractSection(filePath pathutils.MetaPath, sectionID string, includeSubheaders bool) (string, error) {
+	fullPath := filePath.FullPath()
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read file: %w", err)
@@ -68,8 +68,8 @@ func (h *MarkdownContentHandler) ExtractSectionFromString(content, sectionID str
 }
 
 // SaveSection saves content to a specific section by ID
-func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent string) error {
-	fullPath := pathutils.ToDocsPath(filePath)
+func (h *MarkdownContentHandler) SaveSection(filePath pathutils.MetaPath, sectionID, sectionContent string) error {
+	fullPath := filePath.FullPath()
 	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -90,8 +90,8 @@ func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent
 }
 
 // ExtractTable extracts table data at specific index, returns headers, rows and per-column alignment
-func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) ([]string, [][]string, []string, error) {
-	fullPath := pathutils.ToDocsPath(filePath)
+func (h *MarkdownContentHandler) ExtractTable(filePath pathutils.MetaPath, tableIndex int) ([]string, [][]string, []string, error) {
+	fullPath := filePath.FullPath()
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to read file: %w", err)
@@ -106,8 +106,8 @@ func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) (
 }
 
 // SaveTable saves table data and per-column alignment at specific index
-func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, headers []string, rows [][]string, aligns []string) error {
-	fullPath := pathutils.ToDocsPath(filePath)
+func (h *MarkdownContentHandler) SaveTable(filePath pathutils.MetaPath, tableIndex int, headers []string, rows [][]string, aligns []string) error {
+	fullPath := filePath.FullPath()
 	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -523,8 +523,8 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 // FindMarkdownTableAnchor returns the id of the header that precedes the Nth
 // table (0-based) in the markdown file - the same id the renderer assigns, so a
 // wiki link can jump straight to it. Returns "" if none is found.
-func FindMarkdownTableAnchor(filePath string, tableIndex int) string {
-	fullPath := pathutils.ToDocsPath(filePath)
+func FindMarkdownTableAnchor(filePath pathutils.MetaPath, tableIndex int) string {
+	fullPath := filePath.FullPath()
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogDebug(logging.KeyApp, "findMarkdownTableAnchor: could not read %s: %v", filePath, err)

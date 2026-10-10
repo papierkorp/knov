@@ -318,8 +318,7 @@ func NewFileViewTemplateData(title, filePath string, fileContent *files.FileCont
 
 	// detect file type using parser registry
 	if filePath != "" {
-		fullPath := pathutils.ToDocsPath(filePath)
-		handler := parser.GetParserRegistry().GetHandler(fullPath)
+		handler := parser.GetParserRegistry().GetHandler(filePath)
 		if handler != nil {
 			data.FileType = handler.Name()
 		}

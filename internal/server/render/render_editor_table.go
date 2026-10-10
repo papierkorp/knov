@@ -186,7 +186,7 @@ func RenderTableEditorForm(fileMeta pathutils.MetaPath, tableIndex int) string {
 	filePath := fileMeta.String()
 	// extract table from markdown using contenthandler
 	handler := contentHandler.GetHandler("markdown")
-	headers, rows, aligns, err := handler.ExtractTable(filePath, tableIndex)
+	headers, rows, aligns, err := handler.ExtractTable(fileMeta, tableIndex)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to extract table from file %s: %v", filePath, err)
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
@@ -209,7 +209,7 @@ func RenderTableEditorForm(fileMeta pathutils.MetaPath, tableIndex int) string {
 
 	// build return URL including the header anchor so cancel/save land in the right spot
 	returnURL := pathutils.ToFileURL(fileMeta)
-	if anchor := contentHandler.FindMarkdownTableAnchor(filePath, tableIndex); anchor != "" {
+	if anchor := contentHandler.FindMarkdownTableAnchor(fileMeta, tableIndex); anchor != "" {
 		returnURL += "#" + anchor
 	}
 

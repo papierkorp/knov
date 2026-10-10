@@ -6,6 +6,7 @@ import (
 
 	"knov/internal/book"
 	"knov/internal/configmanager"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -13,13 +14,13 @@ import (
 // notice when it has no entries, otherwise the markdown/pdf export toolbar. Re-reads the
 // `.book` for the empty check (small file, book view only); an unreadable one just falls
 // through to the toolbar since the caller already rendered the composed body.
-func RenderBookViewPrefix(bookPath string) string {
+func RenderBookViewPrefix(bookPath pathutils.MetaPath) string {
 	if entries, err := book.Read(bookPath); err == nil && len(entries) == 0 {
 		// a freshly created `.book` composes to nothing - avoid a blank-looking page
 		return RenderStatusMessage(StatusInfo, translation.SprintfForRequest(configmanager.GetLanguage(),
 			"this book has no entries yet - add a file reference in the editor to compose and export it."))
 	}
-	return bookExportToolbar(bookPath)
+	return bookExportToolbar(bookPath.String())
 }
 
 // bookExportToolbar renders the markdown/pdf export links. Both hit the generic file

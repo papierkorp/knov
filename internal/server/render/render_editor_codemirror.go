@@ -373,7 +373,7 @@ func RenderCodeMirrorSectionEditorForm(filePath pathutils.MetaPath, sectionID st
 	if filePath != "" && sectionID != "" {
 		handler := contentHandler.GetHandler("markdown")
 		includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
-		sectionContent, err := handler.ExtractSection(filePath.String(), sectionID, includeSubheaders)
+		sectionContent, err := handler.ExtractSection(filePath, sectionID, includeSubheaders)
 		if err == nil {
 			content = sectionContent
 		}

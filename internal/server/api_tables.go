@@ -89,7 +89,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler := contentHandler.GetHandler("markdown")
-	headers, rows, aligns, err := handler.ExtractTable(filepath.String(), tableIndex)
+	headers, rows, aligns, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to extract table from %s: %v", filepath, err)
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
@@ -116,7 +116,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	paginatedData := parser.PaginateTable(tableData, page, size)
 
-	html := render.RenderTableComponent(paginatedData, fullTableData, filepath.String(), tableIndex, page, size, sortCol, sortOrder, searchQuery, activeFilters)
+	html := render.RenderTableComponent(paginatedData, fullTableData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery, activeFilters)
 
 	writeResponse(w, r, nil, html)
 }

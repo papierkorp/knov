@@ -48,7 +48,7 @@ func ScanIssues() ([]Issue, error) {
 	issues := []Issue{} // an empty scan is [], not null
 	for _, f := range allFiles {
 		if f.Metadata != nil {
-			issues = append(issues, fileIssues(pathutils.ToRelative(f.Path.String()), strings.Join(f.Metadata.Folders, "/"), f.Metadata.Tags)...)
+			issues = append(issues, fileIssues(f.Path.Rel(), strings.Join(f.Metadata.Folders, "/"), f.Metadata.Tags)...)
 		}
 	}
 	return issues, nil

@@ -130,7 +130,7 @@ func GetFileContent(metaPath pathutils.MetaPath) (*FileContent, error) {
 	var content []byte
 	renderPath := metaPath
 	if editor == EditorTypeBook {
-		composed, err := book.Compose(metaPath.String())
+		composed, err := book.Compose(metaPath)
 		if err != nil {
 			return nil, err
 		}

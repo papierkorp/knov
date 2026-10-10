@@ -479,7 +479,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 
 	// save table using contenthandler
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveTable(filePath, tableIndex, headers, rows, aligns); err != nil {
+	if err := handler.SaveTable(fileMeta, tableIndex, headers, rows, aligns); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save table in file %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
@@ -570,7 +570,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 
 	// save section content using contenthandler
 	handler := contentHandler.GetHandler("markdown")
-	if err := handler.SaveSection(filePath, sectionID, content); err != nil {
+	if err := handler.SaveSection(fileMeta, sectionID, content); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save section %s in file %s: %v", sectionID, filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
@@ -637,7 +637,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiconverter.NewWithFilePath(filePath.String()).ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 
 	// determine new filename
 	markdownMeta, _ := pathutils.ParseMeta(strings.TrimSuffix(filePath.String(), filepath.Ext(filePath.String())) + ".md")

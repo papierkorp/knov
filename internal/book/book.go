@@ -35,9 +35,9 @@ const (
 	EntryFilter = "filter"
 )
 
-// FilterResolver returns the docs-relative paths matching a saved filter id. Set by the
+// FilterResolver returns the paths of the files matching a saved filter id. Set by the
 // filter package; book can't import it (filter -> files -> book).
-var FilterResolver func(filterID string) ([]string, error)
+var FilterResolver func(filterID string) ([]pathutils.MetaPath, error)
 
 // Entry is one line of a `.book`/`.index` file, in composition order: a file/section
 // reference (EntryFile, Value the [[...]] body "path" or "path#anchor", see DecodeFileRef), a "# text" heading (EntryTitle,
@@ -218,9 +218,9 @@ func titleHashes(level int) string {
 	return strings.Repeat("#", ClampLevel(level))
 }
 
-// Read loads and parses the `.book` file at bookPath (a docs-relative path).
-func Read(bookPath string) ([]Entry, error) {
-	raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(bookPath))
+// Read loads and parses the `.book` file at bookPath.
+func Read(bookPath pathutils.MetaPath) ([]Entry, error) {
+	raw, err := contentStorage.ReadFile(bookPath.FullPath())
 	if err != nil {
 		return nil, err
 	}
@@ -230,12 +230,12 @@ func Read(bookPath string) ([]Entry, error) {
 // Compose reads the `.book` at bookPath and composes it (see ComposeEntries). Only a
 // `.book` that can't be read at all returns an error. The export endpoints use this; the
 // file view parses once and calls ComposeEntries directly.
-func Compose(bookPath string) (string, error) {
+func Compose(bookPath pathutils.MetaPath) (string, error) {
 	entries, err := Read(bookPath)
 	if err != nil {
 		return "", err
 	}
-	return ComposeEntries(bookPath, entries), nil
+	return ComposeEntries(bookPath.String(), entries), nil
 }
 
 // ComposeEntries concatenates entries in order into one markdown document: title -> "# "
@@ -249,11 +249,11 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 	handler := contentHandler.GetHandler("markdown")
 	// no read cache: many sections from one file re-read it per entry. books are small
 	// and this path is cold; revisit if that changes.
-	readFile := func(p string) ([]byte, error) {
-		if strings.HasPrefix(p, "media/") {
+	readFile := func(p pathutils.MetaPath) ([]byte, error) {
+		if p.IsMedia() {
 			return nil, fmt.Errorf("a media file, not a doc")
 		}
-		return contentStorage.ReadFile(pathutils.ToDocsPath(p))
+		return contentStorage.ReadFile(p.FullPath())
 	}
 
 	var parts []string
@@ -289,14 +289,14 @@ func ComposeEntries(bookPath string, entries []Entry) string {
 		switch {
 		case section != "":
 			var raw []byte
-			if raw, entryErr = readFile(path.String()); entryErr == nil {
+			if raw, entryErr = readFile(path); entryErr == nil {
 				content, entryErr = handler.ExtractSectionFromString(string(raw), section, e.IncludeSubheaders)
 			}
 		case !isInlineableWholeFile(path.String()):
 			entryErr = fmt.Errorf("not a text file, refusing to inline whole")
 		default:
 			var raw []byte
-			raw, entryErr = readFile(path.String())
+			raw, entryErr = readFile(path)
 			content = string(raw)
 		}
 
@@ -327,7 +327,7 @@ func expandFilters(bookPath string, entries []Entry) []Entry {
 			out = append(out, e)
 			continue
 		}
-		var paths []string
+		var paths []pathutils.MetaPath
 		err := fmt.Errorf("no filter resolver registered")
 		if FilterResolver != nil {
 			paths, err = FilterResolver(e.Value)
@@ -339,16 +339,16 @@ func expandFilters(bookPath string, entries []Entry) []Entry {
 		}
 		before := len(out)
 		for _, p := range paths {
-			if !isInlineableWholeFile(p) {
+			if !isInlineableWholeFile(p.String()) {
 				continue
 			}
-			raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(p))
+			raw, err := contentStorage.ReadFile(p.FullPath())
 			if err != nil {
 				logging.LogWarning(logging.KeyApp, "book: skipping filter match %q in %s: %v", p, bookPath, err)
-				out = append(out, Entry{Type: EntryUnknown, Value: "> ⚠️ could not include `" + strings.ReplaceAll(p, "`", "'") + "`"})
+				out = append(out, Entry{Type: EntryUnknown, Value: "> ⚠️ could not include `" + strings.ReplaceAll(p.String(), "`", "'") + "`"})
 				continue
 			}
-			out = append(out, Entry{Type: EntryUnknown, Value: strings.TrimSpace(resolveRelativeLinks(p, string(raw)))})
+			out = append(out, Entry{Type: EntryUnknown, Value: strings.TrimSpace(resolveRelativeLinks(p.String(), string(raw)))})
 		}
 		if len(out) == before {
 			out = append(out, Entry{Type: EntryUnknown, Value: "> no files match filter `" + strings.ReplaceAll(e.Value, "`", "'") + "`"})

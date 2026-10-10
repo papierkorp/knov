@@ -43,7 +43,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s section %s", filePath, sectionID)
 
 		handler := contentHandler.GetHandler("markdown")
-		sectionContent, err := handler.ExtractSection(filePath.String(), sectionID, configmanager.GetSectionEditIncludeSubheaders())
+		sectionContent, err := handler.ExtractSection(filePath, sectionID, configmanager.GetSectionEditIncludeSubheaders())
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to extract section %s in file %s: %v", sectionID, filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))

@@ -85,8 +85,8 @@ func (j *fileJob) Run(_ context.Context) error {
 			} else if len(movedFiles) > 0 {
 				logging.LogInfo(logging.KeyFileSync, "detected %d file moves since last commit", len(movedFiles))
 				for _, move := range movedFiles {
-					oldNormalized := pathutils.GuessMeta(move.OldPath)
-					newNormalized := pathutils.GuessMeta(move.NewPath)
+					oldNormalized := pathutils.FromFullPath(move.OldPath)
+					newNormalized := pathutils.FromFullPath(move.NewPath)
 					logging.LogInfo(logging.KeyFileSync, "processing file move: %s -> %s", oldNormalized, newNormalized)
 					// no-refresh: this whole run ends with one RebuildAllCaches() below
 					if err := files.UpdateLinksForMovedFileNoRefresh(logging.KeyFileSync, oldNormalized, newNormalized); err != nil {
@@ -135,7 +135,7 @@ func (j *fileJob) Run(_ context.Context) error {
 	if len(filesToDelete) > 0 {
 		logging.LogInfo(logging.KeyFileSync, "deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
-			normalizedPath := pathutils.GuessMeta(filePath)
+			normalizedPath := pathutils.FromFullPath(filePath)
 			if err := files.MetaDataDeleteNoRefresh(logging.KeyFileSync, normalizedPath); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
@@ -166,7 +166,7 @@ func (j *fileJob) Run(_ context.Context) error {
 			}
 		}
 		for _, filePath := range filesToProcess {
-			normalizedPath := pathutils.GuessMeta(filePath)
+			normalizedPath := pathutils.FromFullPath(filePath)
 			// Sync only fills the default editor when the field is empty - unlike the old
 			// blind save, it can't clobber a user-picked editor on a file edited externally
 			if err := files.MetaDataSyncNoRefresh(normalizedPath); err != nil {

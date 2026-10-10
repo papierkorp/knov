@@ -14,6 +14,7 @@ import (
 	"knov/internal/jobStorage"
 	"knov/internal/kanban"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // gitRepackInterval is fixed rather than config-driven - RunGitRepack is a cheap no-op below
@@ -430,7 +431,7 @@ func RunGitRepack() error {
 }
 
 // RunMoveFolder moves a folder to a new parent and updates its files' links with dedup protection.
-func RunMoveFolder(currentPath, newPath string) (BulkUpdateResult, error) {
+func RunMoveFolder(currentPath, newPath pathutils.MetaPath) (BulkUpdateResult, error) {
 	j := &moveFolderJob{currentPath: currentPath, newPath: newPath}
 	if err := execute(&moveFolderMu, j); err != nil {
 		return BulkUpdateResult{}, err

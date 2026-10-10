@@ -214,7 +214,7 @@ func parseDate(s string) int64 {
 // plain goldmark.New() with no html.WithUnsafe(), so raw HTML in table
 // content is escaped to text there. If that assumption ever changes, revisit
 // whether this output needs to go through sanitizeHTML too.
-func RenderTableHTML(data, fullData *types.TableData, filepath string, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string, activeFilters map[int]string) string {
+func RenderTableHTML(data, fullData *types.TableData, filepath pathutils.MetaPath, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string, activeFilters map[int]string) string {
 	var html string
 
 	totalPages := (data.Total + size - 1) / size
@@ -360,7 +360,7 @@ func RenderTableHTML(data, fullData *types.TableData, filepath string, tableInde
 	html += `<div class="table-footer">`
 
 	html += fmt.Sprintf(`<a href="%s?tableindex=%d" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a>`,
-		pathutils.ToFileEditTableURL(pathutils.GuessMeta(filepath)), tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
+		pathutils.ToFileEditTableURL(filepath), tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
 
 	html += `<div class="table-footer-right">`
 

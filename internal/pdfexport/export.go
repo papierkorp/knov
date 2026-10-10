@@ -24,7 +24,7 @@ import (
 // document, otherwise the file's raw content.
 func LoadSource(meta pathutils.MetaPath) ([]byte, error) {
 	if files.IsBook(meta) {
-		composed, err := book.Compose(meta.String())
+		composed, err := book.Compose(meta)
 		return []byte(composed), err
 	}
 	return os.ReadFile(meta.FullPath())

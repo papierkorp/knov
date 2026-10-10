@@ -355,9 +355,9 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 	// build markdown link list
 	var sb strings.Builder
 	for _, file := range result.Files {
-		rel := pathutils.ToRelative(file.Path.String())
+		rel := file.Path.Rel()
 		linkPath := parser.FilesLinkPath(file.Path.String()) // a docs file in a folder called docs, media or files too
-		if pathutils.IsMedia(file.Path.String()) {
+		if file.Path.IsMedia() {
 			linkPath = "/" + file.Path.String()
 		}
 		fmt.Fprintf(&sb, "- %s\n", parser.Link{Kind: parser.LinkMarkdown, Text: rel, Path: linkPath})
@@ -452,9 +452,9 @@ func init() {
 	book.FilterResolver = SavedFilterPaths
 }
 
-// SavedFilterPaths runs a saved filter and returns the wikilink paths (docs-relative, see parser.DocsWikiPath) of its matches.
+// SavedFilterPaths runs a saved filter and returns the paths of its matches.
 // books are left out: a book inlined into another book would show its raw entry list.
-func SavedFilterPaths(filterID string) ([]string, error) {
+func SavedFilterPaths(filterID string) ([]pathutils.MetaPath, error) {
 	config, err := GetFilterConfig(filterID)
 	if err != nil {
 		return nil, err
@@ -466,10 +466,10 @@ func SavedFilterPaths(filterID string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var paths []string
+	var paths []pathutils.MetaPath
 	for _, file := range result.Files {
 		if !files.IsBook(file.Path) {
-			paths = append(paths, parser.DocsWikiPath(pathutils.ToRelative(file.Path.String())))
+			paths = append(paths, file.Path)
 		}
 	}
 	return paths, nil
