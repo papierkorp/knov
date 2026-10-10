@@ -54,7 +54,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s", filePath)
 
-		source, err := pdfexport.LoadSource(filePath.String())
+		source, err := pdfexport.LoadSource(filePath)
 		if err != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: failed to load file %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
@@ -63,7 +63,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		content = source
 	}
 
-	pdf, err := pdfexport.RenderFile(filePath.String(), content)
+	pdf, err := pdfexport.RenderFile(filePath, content)
 	if err != nil {
 		logging.LogError(logging.KeyPdfExport, "pdf export: failed to convert file to pdf %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"))

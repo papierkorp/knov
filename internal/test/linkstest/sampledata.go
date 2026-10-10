@@ -131,7 +131,7 @@ func metadataGaps(src string, want []string) []string {
 
 // renderGaps checks that the rendered src links to every wanted target, see renderedTargets.
 func renderGaps(src string, want []string) []string {
-	fc, err := files.GetFileContent(pathutils.ToDocsPath(src))
+	fc, err := files.GetFileContent(pathutils.GuessMeta(src))
 	if err != nil {
 		return []string{fmt.Sprintf("%s: render failed (%v)", src, err)}
 	}

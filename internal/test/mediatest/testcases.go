@@ -56,7 +56,7 @@ func caseUpload() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	result, err := files.UploadMedia(file, header, withPrefix(contextFile))
+	result, err := files.UploadMedia(file, header, pathutils.GuessMeta(withPrefix(contextFile)))
 	if err != nil {
 		return errCase(name, err)
 	}

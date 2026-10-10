@@ -53,20 +53,19 @@ func RelocateMisplacedMedia(key logging.Key, selected []string) (MediaRelocateRe
 		return MediaRelocateResult{}, err
 	}
 
-	// paths are docs-relative, so they get an explicit docs/ or media/ prefix before going
-	// through pathutils - otherwise a docs folder named "media", "docs" or "files" is stripped
+	// paths are docs-relative, DocsPath / MediaPath take them literally
 	var result MediaRelocateResult
 	moved := make(map[string]string, len(items))
 	for _, item := range items {
 		if item.Target == "" || !slices.Contains(selected, item.Path) {
 			continue
 		}
-		if err := moveDocsToMedia(pathutils.ToDocsPath("docs/"+item.Path), pathutils.ToMediaPath("media/"+item.Target)); err != nil {
+		if err := moveDocsToMedia(pathutils.DocsPath(item.Path).FullPath(), pathutils.MediaPath(item.Target).FullPath()); err != nil {
 			logging.LogError(key, "failed to move %s -> media/%s: %v", item.Path, item.Target, err)
 			result.Failed++
 			continue
 		}
-		if err := moveFileMetadata(key, "docs/"+item.Path, "media/"+item.Target); err != nil {
+		if err := moveFileMetadata(key, pathutils.DocsPath(item.Path), pathutils.MediaPath(item.Target)); err != nil {
 			logging.LogWarning(key, "failed to move metadata for %s: %v", item.Path, err)
 		}
 		logging.LogInfo(key, "moved %s -> media/%s", item.Path, item.Target)
@@ -106,7 +105,7 @@ func listMisplacedMedia() (items []MisplacedMedia, paths []string, err error) {
 		// is sniffed like on upload, so binaries with unknown extensions are caught too. svg sniffs
 		// as text but is still an image
 		ext := strings.ToLower(filepath.Ext(rel))
-		mimeType := sniffMimeType(pathutils.ToDocsPath("docs/" + rel))
+		mimeType := sniffMimeType(pathutils.DocsPath(rel).FullPath())
 		item := MisplacedMedia{Path: rel, DetectedAs: mimeType, DetectedBy: "content"}
 		if extMime := types.MimeTypeByExtension(ext); strings.HasPrefix(extMime, "image/") {
 			mimeType = extMime
@@ -121,7 +120,7 @@ func listMisplacedMedia() (items []MisplacedMedia, paths []string, err error) {
 		if configmanager.IsAllowedMediaType(rel, mimeType) {
 			ext := path.Ext(rel)
 			item.Target = rel
-			for i := 1; planned[item.Target] || fileExists(pathutils.ToMediaPath("media/"+item.Target)); i++ {
+			for i := 1; planned[item.Target] || fileExists(pathutils.MediaPath(item.Target).FullPath()); i++ {
 				item.Target = fmt.Sprintf("%s-%d%s", strings.TrimSuffix(rel, ext), i, ext)
 			}
 			planned[item.Target] = true
@@ -162,7 +161,7 @@ func relinkDocs(key logging.Key, paths []string, moved map[string]string) (updat
 		if !parser.IsMarkdownExtension(doc) {
 			continue
 		}
-		fullPath := pathutils.ToDocsPath("docs/" + doc)
+		fullPath := pathutils.DocsPath(doc).FullPath()
 		data, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogWarning(key, "failed to read %s: %v", doc, err)
@@ -229,7 +228,7 @@ func (idx *relocateIndex) resolve(doc string, l parser.Link) string {
 		return ""
 	}
 	if strings.HasPrefix(l.Path, "/media/") {
-		if _, err := os.Stat(pathutils.ToMediaPath(l.Path)); err == nil {
+		if _, err := os.Stat(pathutils.MediaPath(strings.TrimPrefix(l.Path, "/media/")).FullPath()); err == nil {
 			return ""
 		}
 	}

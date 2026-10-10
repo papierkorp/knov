@@ -140,10 +140,9 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to get file content"
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
-	filePath := pathutils.DocsPath(strings.TrimPrefix(r.URL.Path, "/api/files/content/")).String()
-	fullPath := pathutils.ToDocsPath(filePath)
+	filePath := pathutils.DocsPath(strings.TrimPrefix(r.URL.Path, "/api/files/content/"))
 
-	content, err := files.GetFileContent(fullPath)
+	content, err := files.GetFileContent(filePath)
 	if errors.Is(err, os.ErrNotExist) {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file not found"))
 		return
@@ -398,7 +397,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 		// apply auto-create tags if configured
 		if autoTags := configmanager.GetAutoCreateTags(); len(autoTags) > 0 {
-			dir := files.FolderFromPath(filePath)
+			dir := files.FolderFromPath(normalizedPath)
 			var tagsToApply []string
 			for _, at := range autoTags {
 				if at.FolderPath == "" || pathutils.FolderContains(dir, at.FolderPath) {
@@ -782,7 +781,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed")
-	if files.FolderFromPath(currentPath.String()) != files.FolderFromPath(newPath.String()) {
+	if files.FolderFromPath(currentPath) != files.FolderFromPath(newPath) {
 		message = translation.SprintfForRequest(configmanager.GetLanguage(), "file moved")
 	}
 	// only navigate away when the current page shows the moved file, otherwise toast in place

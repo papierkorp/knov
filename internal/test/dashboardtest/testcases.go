@@ -276,7 +276,7 @@ func caseWidgetFilterData() test.CaseResult {
 func caseWidgetFileContentData() test.CaseResult {
 	name := "widget-file-content-data"
 
-	content, err := files.GetFileContent(pathutils.ToDocsPath(testPath(sampleFile)))
+	content, err := files.GetFileContent(pathutils.DocsPath(testPath(sampleFile)))
 	if err != nil {
 		return errCase(name, err)
 	}

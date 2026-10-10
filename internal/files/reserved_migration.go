@@ -20,14 +20,14 @@ var reservedDocsFolders = []string{"docs", "media", "files"}
 // again. Returns the number of moved records.
 func MigrateReservedFolderMetadata() int {
 	moved := 0
-	walkReservedFolders(func(oldKey, newKey string) {
-		if fileExists(pathutils.ToFullPath(oldKey)) {
+	walkReservedFolders(func(oldKey, newKey pathutils.MetaPath) {
+		if fileExists(oldKey.FullPath()) {
 			return
 		}
-		if old, _ := MetaDataGet(pathutils.GuessMeta(oldKey)); old == nil {
+		if old, _ := MetaDataGet(oldKey); old == nil {
 			return
 		}
-		if existing, _ := MetaDataGet(pathutils.GuessMeta(newKey)); existing != nil {
+		if existing, _ := MetaDataGet(newKey); existing != nil {
 			return
 		}
 		if err := moveFileMetadata(logging.KeyApp, oldKey, newKey); err != nil {
@@ -45,19 +45,20 @@ func MigrateReservedFolderMetadata() int {
 
 // walkReservedFolders calls fn with the legacy key (the path without the docs/ prefix) and the own
 // docs/ key of every docs file in docs/docs/, docs/media/ and docs/files/.
-func walkReservedFolders(fn func(oldKey, newKey string)) {
+func walkReservedFolders(fn func(oldKey, newKey pathutils.MetaPath)) {
 	for _, top := range reservedDocsFolders {
 		_ = filepath.Walk(filepath.Join(pathutils.DocsRoot(), top), func(p string, info os.FileInfo, err error) error {
 			if err != nil || info.IsDir() {
 				return nil
 			}
-			newKey := pathutils.GuessMeta(p)
+			newKey := pathutils.FromFullPath(p)
 			rel, err := filepath.Rel(pathutils.DocsRoot(), p)
 			if err != nil {
 				return nil
 			}
+			// the legacy key read the docs-relative path as a metadata path - the one guess here
 			if oldKey := pathutils.GuessMeta(pathutils.ToSlash(rel)); oldKey != newKey {
-				fn(oldKey.String(), newKey.String())
+				fn(oldKey, newKey)
 			}
 			return nil
 		})

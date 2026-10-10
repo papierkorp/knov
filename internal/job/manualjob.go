@@ -313,7 +313,15 @@ func (j *repairBrokenLinksJob) Run(_ context.Context) error {
 			continue
 		}
 		sourceFile, target, suggested := parts[0], parts[1], parts[2]
-		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
+		sourceMeta, okSource := pathutils.ParseMeta(sourceFile)
+		targetMeta, okTarget := pathutils.ParseMeta(target)
+		suggestedMeta, okSuggested := pathutils.ParseMeta(suggested)
+		if !okSource || !okTarget || !okSuggested {
+			logging.LogWarning(logging.KeyRepairLinks, "skipped malformed repair entry: %s", entry)
+			result.Skipped++
+			continue
+		}
+		ok, err := files.RepairBrokenLink(sourceMeta, targetMeta, suggestedMeta)
 		if err != nil {
 			logging.LogError(logging.KeyRepairLinks, "skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
 			result.Skipped++
@@ -325,7 +333,7 @@ func (j *repairBrokenLinksJob) Run(_ context.Context) error {
 			continue
 		}
 		logging.LogInfo(logging.KeyRepairLinks, "repaired: %s: %s -> %s", sourceFile, target, suggested)
-		go git.CommitFile(pathutils.ToFullPath(sourceFile))
+		go git.CommitFile(sourceMeta.FullPath())
 		result.Repaired++
 	}
 
@@ -357,14 +365,18 @@ func (j *migrateRelativeLinksJob) Name() string { return "migrate-relative-links
 func (j *migrateRelativeLinksJob) Run(_ context.Context) error {
 	var result MigrateRelativeLinksResult
 	for _, c := range j.changes {
-		ok, err := files.MigrateRelativeLinks(c.SourceFile, c.OldTarget)
+		sourceMeta, valid := pathutils.ParseMeta(c.SourceFile)
+		ok, err := false, error(nil)
+		if valid {
+			ok, err = files.MigrateRelativeLinks(sourceMeta, c.OldTarget)
+		}
 		if err != nil || !ok {
 			logging.LogWarning(logging.KeyRepairLinks, "skipped relative links migration: %s: %s (found: %v, error: %v)", c.SourceFile, c.OldTarget, ok, err)
 			result.Skipped++
 			continue
 		}
 		logging.LogInfo(logging.KeyRepairLinks, "migrated relative links: %s: %s", c.SourceFile, c.OldTarget)
-		go git.CommitFile(pathutils.ToFullPath(c.SourceFile))
+		go git.CommitFile(sourceMeta.FullPath())
 		result.Migrated++
 	}
 

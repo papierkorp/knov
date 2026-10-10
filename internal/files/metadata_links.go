@@ -365,7 +365,7 @@ func updateUsedLinks(metadata *Metadata) []func() {
 		return nil
 	}
 
-	fullPath := pathutils.ToFullPath(metadata.Path.String())
+	fullPath := metadata.Path.FullPath()
 
 	logging.LogInfo(logging.KeyApp, "processing file for links: %s", fullPath)
 
@@ -530,7 +530,7 @@ func updateLinksForMovedFile(key logging.Key, normalizedOldPath, normalizedNewPa
 		return err
 	}
 
-	if err := moveFileMetadata(key, oldPath, newPath); err != nil {
+	if err := moveFileMetadata(key, normalizedOldPath, normalizedNewPath); err != nil {
 		logging.LogError(key, "failed to move metadata for %s: %v", oldPath, err)
 		return err
 	}
@@ -539,7 +539,7 @@ func updateLinksForMovedFile(key logging.Key, normalizedOldPath, normalizedNewPa
 		logging.LogWarning(key, "failed to move chat messages for %s -> %s: %v", normalizedOldPath, normalizedNewPath, err)
 	}
 
-	relinkMovedDoc(key, oldPath, newPath)
+	relinkMovedDoc(key, normalizedOldPath, normalizedNewPath)
 
 	// step 1: rebuild outbound links for the moved file
 	var movedMetadata *Metadata
@@ -570,7 +570,7 @@ func updateLinksForMovedFile(key logging.Key, normalizedOldPath, normalizedNewPa
 			if along {
 				linkingFilePath = moved
 			}
-			ok, err := updateLinksInFile(key, linkingFilePath.String(), oldPath, newPath)
+			ok, err := updateLinksInFile(key, linkingFilePath, normalizedOldPath, normalizedNewPath)
 			if err != nil {
 				logging.LogError(key, "failed to update links in file %s: %v", linkingFilePath, err)
 				continue
@@ -676,8 +676,9 @@ func relativeDocLink(docPath, target string) string {
 // on disk there) to a new relative path, so they keep pointing at their target - only those valid
 // at the old location and reading as another file from the new one, so a target moved along
 // (folder move) or an already missing one stays as written.
-func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
-	fullPath := pathutils.ToFullPath(newPath)
+func relinkMovedDoc(key logging.Key, oldMeta, newMeta pathutils.MetaPath) {
+	oldPath, newPath := oldMeta.String(), newMeta.String()
+	fullPath := newMeta.FullPath()
 	if !parser.IsMarkdownExtension(fullPath) {
 		return
 	}
@@ -688,7 +689,7 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 	}
 	content, changed := parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
 		target := parser.LinkTarget(oldPath, l)
-		if !pathutils.IsRelativeLink(l.Path) && !parser.IsBareLink(l) || parser.LinkTarget(newPath, l) == target || !fileExists(pathutils.ToFullPath(target.String())) {
+		if !pathutils.IsRelativeLink(l.Path) && !parser.IsBareLink(l) || parser.LinkTarget(newPath, l) == target || !fileExists(target.FullPath()) {
 			return "", false
 		}
 		// a "./" or "../" link gets a new relative path (its docs-root path has no media/ prefix, a
@@ -696,7 +697,7 @@ func relinkMovedDoc(key logging.Key, oldPath, newPath string) {
 		if pathutils.IsRelativeLink(l.Path) && l.Kind != parser.LinkHTML {
 			target := parser.LinkTarget(oldPath, l)
 			if !strings.HasSuffix(l.Path, ".md") {
-				target = pathutils.GuessMeta(strings.TrimSuffix(target.String(), ".md")) // keep an extensionless link extensionless
+				target, _ = pathutils.ParseMeta(strings.TrimSuffix(target.String(), ".md")) // keep an extensionless link extensionless
 			}
 			return relativeDocLink(newPath, target.String()), true
 		}
@@ -744,10 +745,9 @@ func renameLinkFunc(filePath, oldPath, newPath string) func(l parser.Link) (stri
 
 // updateLinksInFile updates links within a single file from oldPath to newPath.
 // The returned bool reports whether a matching link was actually found and rewritten.
-func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool, error) {
-	// the callers hand over metadata paths or docs-relative ones: the one place that guesses, renameLinkFunc and rebuildLinkTarget take them literally
-	oldPath, newPath = pathutils.GuessMeta(oldPath).String(), pathutils.ToWithPrefix(newPath)
-	fullPath := pathutils.ToFullPath(filePath)
+func updateLinksInFile(key logging.Key, fileMeta, oldMeta, newMeta pathutils.MetaPath) (bool, error) {
+	filePath, oldPath, newPath := fileMeta.String(), oldMeta.String(), newMeta.String()
+	fullPath := fileMeta.FullPath()
 
 	contentData, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -769,7 +769,7 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 
 		logging.LogInfo(key, "updated links in file %s: %s -> %s", filePath, oldPath, newPath)
 
-		if err := UpdateLinksForSingleFile(pathutils.GuessMeta(filePath)); err != nil {
+		if err := UpdateLinksForSingleFile(fileMeta); err != nil {
 			logging.LogWarning(key, "failed to rebuild links for modified file %s: %v", filePath, err)
 		}
 	}
@@ -790,9 +790,7 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 // between this read and MetaDataDelete(oldPath) below, has its update silently dropped instead
 // of carried over to newPath. Given how infrequently a file move races a metadata edit on the
 // very same file, this is left as a known limitation rather than restructured.
-func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
-	normalizedOldPath := pathutils.GuessMeta(oldPath)
-	normalizedNewPath := newPath
+func moveFileMetadata(key logging.Key, normalizedOldPath, normalizedNewPath pathutils.MetaPath) error {
 
 	oldMetadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
@@ -800,7 +798,7 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 	}
 
 	if oldMetadata != nil {
-		if err := MetaDataMutate(pathutils.GuessMeta(normalizedNewPath), func(m *Metadata, existed bool) (bool, error) {
+		if err := MetaDataMutate(normalizedNewPath, func(m *Metadata, existed bool) (bool, error) {
 			m.Tags = oldMetadata.Tags
 			m.Parents = oldMetadata.Parents
 			m.Editor = oldMetadata.Editor
@@ -814,7 +812,7 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 		}
 	}
 
-	if err := MetaDataSyncNoRefresh(pathutils.GuessMeta(normalizedNewPath)); err != nil {
+	if err := MetaDataSyncNoRefresh(normalizedNewPath); err != nil {
 		return fmt.Errorf("failed to sync metadata for new path %s: %w", normalizedNewPath, err)
 	}
 
@@ -832,7 +830,7 @@ func updateTitle(metadata *Metadata) {
 		return
 	}
 
-	fullPath := pathutils.ToFullPath(metadata.Path.String())
+	fullPath := metadata.Path.FullPath()
 
 	logging.LogDebug(logging.KeyApp, "extracting title for %s", metadata.Path)
 
@@ -1207,7 +1205,7 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath pathutils.MetaPath) err
 		if !slices.Contains(metadata.UsedLinks, normalizedOld) {
 			continue
 		}
-		ok, err := updateLinksInFile(logging.KeyApp, file.Path.String(), oldMediaPath.String(), newMediaPath.String())
+		ok, err := updateLinksInFile(logging.KeyApp, file.Path, oldMediaPath, newMediaPath)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to update media links in %s: %v", file.Path, err)
 		} else if ok {
@@ -1222,7 +1220,7 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath pathutils.MetaPath) err
 
 // MoveMediaMetadata moves metadata from old media path to new media path.
 func MoveMediaMetadata(oldPath, newPath pathutils.MetaPath) error {
-	return moveFileMetadata(logging.KeyApp, oldPath.String(), newPath.String())
+	return moveFileMetadata(logging.KeyApp, oldPath, newPath)
 }
 
 // BrokenLink is an outbound link whose target no longer exists.
@@ -1259,7 +1257,6 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 		// links may be written either relative ("note.md") or with the docs/
 		// prefix ("docs/note.md", as produced by the app's own file-view URLs)
 		validPaths[f.Path.String()] = true
-		validPaths[pathutils.ToWithPrefix(f.Path.String())] = true
 		byBasename[filepath.Base(f.Path.String())] = append(byBasename[filepath.Base(f.Path.String())], f.Path.String())
 	}
 	for _, f := range mediaFiles {
@@ -1274,8 +1271,8 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 		if err != nil || metadata == nil {
 			continue
 		}
-		for _, target := range aboveRootTargets(metadata.Path.String()) {
-			if validPaths[target] || (strings.HasSuffix(target, "/") && isDir(pathutils.ToFullPath(target))) {
+		for _, t := range aboveRootTargets(metadata.Path) {
+			if target := t.String(); validPaths[target] || (strings.HasSuffix(target, "/") && isDir(t.FullPath())) {
 				broken = append(broken, BrokenLink{SourceFile: metadata.Path.String(), Target: target, Suggested: target, AboveRoot: true})
 			}
 		}
@@ -1299,22 +1296,23 @@ func FindBrokenLinks() ([]BrokenLink, error) {
 
 // aboveRootTargets returns the target of every link in the doc docPath that climbs above the docs
 // root (pathutils.LinkClimbsAboveRoot), once each.
-func aboveRootTargets(docPath string) []string {
+func aboveRootTargets(docMeta pathutils.MetaPath) []pathutils.MetaPath {
+	docPath := docMeta.String()
 	if !parser.IsMarkdownExtension(docPath) {
 		return nil
 	}
-	data, err := os.ReadFile(pathutils.ToFullPath(docPath))
+	data, err := os.ReadFile(docMeta.FullPath())
 	if err != nil {
 		return nil
 	}
-	var targets []string
+	var targets []pathutils.MetaPath
 	parser.RewriteLinks(string(data), func(l parser.Link) (string, bool) {
 		p := l.Path
 		if parser.IsBareLink(l) {
 			p = "./" + p
 		}
-		if target := parser.LinkTarget(docPath, l); pathutils.LinkClimbsAboveRoot(docPath, p) && target != "" && !slices.Contains(targets, target.String()) {
-			targets = append(targets, target.String())
+		if target := parser.LinkTarget(docPath, l); pathutils.LinkClimbsAboveRoot(docPath, p) && target != "" && !slices.Contains(targets, target) {
+			targets = append(targets, target)
 		}
 		return "", false
 	})
@@ -1331,6 +1329,6 @@ func isDir(fullPath string) bool {
 // from oldTarget to newTarget and resyncs link metadata for that file.
 // Returns false (with no error) if no matching link occurrence was found,
 // e.g. because the link was written in a form updateLinksInFile doesn't match.
-func RepairBrokenLink(sourceFile, oldTarget, newTarget string) (bool, error) {
+func RepairBrokenLink(sourceFile, oldTarget, newTarget pathutils.MetaPath) (bool, error) {
 	return updateLinksInFile(logging.KeyRepairLinks, sourceFile, oldTarget, newTarget)
 }

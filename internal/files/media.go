@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"path"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -28,9 +29,9 @@ type MediaUploadResult struct {
 	Link        string `json:"link"` // ready-to-insert markdown link (image link for images)
 }
 
-// UploadMedia handles the core media upload logic - contextPath is the docs-relative path of the
-// doc the file is uploaded from, the media path mirrors its folder
-func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath string) (*MediaUploadResult, error) {
+// UploadMedia handles the core media upload logic - contextPath is the doc the file is uploaded
+// from, the media path mirrors its folder
+func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath pathutils.MetaPath) (*MediaUploadResult, error) {
 	// get max upload size from settings
 	maxUploadSize := configmanager.GetMaxUploadSize()
 
@@ -59,34 +60,17 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 		return nil, fmt.Errorf("unsupported file type")
 	}
 
-	// extract directory from context path
-	contextDir := filepath.Dir(contextPath)
-	if contextDir == "." {
-		contextDir = ""
-	}
-
-	// strip docs/ prefix from context dir to avoid media/docs/... paths
-	// media should mirror docs structure without the docs/ prefix
-	if contextDir == "docs" {
-		contextDir = ""
-	} else {
-		contextDir = pathutils.ToRelative(contextDir)
-	}
-
-	// create media path mirroring docs structure
-	var mediaPath string
-	if contextDir != "" {
-		mediaPath = pathutils.ToSlash(filepath.Join(contextDir, sanitizedName))
-	} else {
-		mediaPath = sanitizedName
+	// the media path mirrors the folder of the doc the file is uploaded from
+	mediaPath := sanitizedName
+	if dir := path.Dir(contextPath.Rel()); dir != "." {
+		mediaPath = dir + "/" + sanitizedName
 	}
 
 	// resolve filename conflicts
-	// "media/" + the media-relative path, so a first folder called media (a doc in docs/media/) is kept
-	finalMediaPath := pathutils.ToSlash(utils.ResolveFilenameConflicts(pathutils.ToMediaPath("media/"+mediaPath), mediaPath))
+	finalMediaPath := pathutils.ToSlash(utils.ResolveFilenameConflicts(pathutils.MediaPath(mediaPath).FullPath(), mediaPath))
 
 	// get full file system path using contentStorage
-	fullMediaPath := pathutils.ToMediaPath("media/" + finalMediaPath)
+	fullMediaPath := pathutils.MediaPath(finalMediaPath).FullPath()
 
 	// write file to disk using contentStorage
 	if err := contentStorage.WriteFile(fullMediaPath, fileBytes, 0644); err != nil {
@@ -256,7 +240,7 @@ func GetMediaStorageStats() (*MediaStorageStats, error) {
 	for _, file := range mediaFiles {
 		// size stays 0 if the file info can't be read
 		var fileSize int64
-		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path.String(), "media/"))
+		fullPath := file.Path.FullPath()
 		if fileInfo, err := contentStorage.GetFileInfo(fullPath); err == nil && fileInfo != nil {
 			fileSize = fileInfo.Size()
 		}

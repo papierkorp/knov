@@ -9,7 +9,6 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
-	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -179,8 +178,7 @@ func RenderFileContent(filez []files.File) string {
 		html.WriteString(fmt.Sprintf(`<div class="filter-content-item">
 		  <h4><a href="%s">%s</a></h4>`, file.ViewURL(), displayText))
 
-		fullPath := pathutils.ToDocsPath(file.Path.String())
-		content, err := files.GetFileContent(fullPath)
+		content, err := files.GetFileContent(file.Path)
 		if err != nil {
 			html.WriteString(`<p class="filter-content-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "error loading content: %s", err.Error()) + `</p>`)
 		} else {

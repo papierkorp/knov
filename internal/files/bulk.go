@@ -24,7 +24,7 @@ func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string, r
 		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
 		} else {
-			if err := MetaDataDeleteNoRefresh(key, pathutils.GuessMeta(fullPath)); err != nil {
+			if err := MetaDataDeleteNoRefresh(key, pathutils.FromFullPath(fullPath)); err != nil {
 				logging.LogWarning(key, "bulk-delete-files: failed to delete metadata for %s: %v", fullPath, err)
 			}
 			deleted = append(deleted, fullPath)

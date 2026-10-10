@@ -46,7 +46,7 @@ func caseUpload() test.CaseResult {
 		if err != nil {
 			return errCase("links-upload", err)
 		}
-		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc))).String())
+		res, err := files.UploadMedia(file, header, pathutils.FileFromURL(pathutils.ToFileEditURL(pathutils.DocsPath(doc))))
 		if err != nil {
 			gaps = append(gaps, fmt.Sprintf("upload into %q: %v", folder, err))
 			continue
@@ -122,7 +122,7 @@ func caseRepairOldUpload() test.CaseResult {
 			gaps = append(gaps, fmt.Sprintf("%q: suggested %q for %q", want, bl.Suggested, bl.Target))
 			continue
 		}
-		if ok, err := files.RepairBrokenLink(bl.SourceFile, bl.Target, bl.Suggested); err != nil || !ok {
+		if ok, err := files.RepairBrokenLink(pathutils.GuessMeta(bl.SourceFile), pathutils.GuessMeta(bl.Target), pathutils.GuessMeta(bl.Suggested)); err != nil || !ok {
 			gaps = append(gaps, fmt.Sprintf("%q: repair failed (%v)", want, err))
 			continue
 		}
@@ -252,7 +252,7 @@ func caseRelative() test.CaseResult {
 	want := files.BrokenLink{SourceFile: pathutils.ToWithPrefix(up), Target: "docs/", Suggested: "docs/", AboveRoot: true}
 	if !slices.Contains(broken, want) {
 		gaps = append(gaps, fmt.Sprintf("%s: %+v not listed as broken", up, want))
-	} else if ok, err := files.RepairBrokenLink(want.SourceFile, want.Target, want.Suggested); !ok || err != nil {
+	} else if ok, err := files.RepairBrokenLink(pathutils.GuessMeta(want.SourceFile), pathutils.GuessMeta(want.Target), pathutils.GuessMeta(want.Suggested)); !ok || err != nil {
 		gaps = append(gaps, fmt.Sprintf("%s: repair %v, %v", up, ok, err))
 	}
 	if raw, err := contentStorage.ReadFile(pathutils.ToDocsPath(up)); err != nil || strings.TrimSpace(string(raw)) != "[x](../../../)" {
@@ -304,7 +304,7 @@ func caseBare() test.CaseResult {
 			gaps = append(gaps, fmt.Sprintf("scan route: status %d, %s not pre-selected", resp.StatusCode, a))
 		}
 	}
-	if ok, err := files.MigrateRelativeLinks(pathutils.ToWithPrefix(n), pathutils.ToWithPrefix(a)); !ok || err != nil {
+	if ok, err := files.MigrateRelativeLinks(pathutils.GuessMeta(n), pathutils.ToWithPrefix(a)); !ok || err != nil {
 		gaps = append(gaps, fmt.Sprintf("migrate: %v, %v", ok, err))
 	}
 	gaps = append(gaps, metadataGaps(n, []string{pathutils.ToWithPrefix(b), pathutils.ToWithPrefix(a)})...)
@@ -416,7 +416,7 @@ func caseBookEditor() test.CaseResult {
 		want[n] = pathutils.ToWithPrefix(target(i))
 	}
 	gaps := metadataGaps(book, want)
-	fc, err := files.GetFileContent(pathutils.ToDocsPath(book))
+	fc, err := files.GetFileContent(pathutils.GuessMeta(book))
 	if err != nil {
 		return errCase("links-book-editor", err)
 	}

@@ -209,14 +209,8 @@ func applyKanbanTimestamps(m *Metadata, oldStatus string) {
 // ConflictFile, kanban timestamps) are left untouched. The caller must invoke the returned
 // closures only after releasing metadata.Path's own write lock - see updateUsedLinks.
 func recomputeDerivedFields(metadata *Metadata) []func() {
-	isMediaFile := pathutils.IsMedia(metadata.Path.String())
-
-	var fullPath string
-	if isMediaFile {
-		fullPath = pathutils.ToMediaPath(metadata.Path.String())
-	} else {
-		fullPath = pathutils.ToDocsPath(metadata.Path.String())
-	}
+	isMediaFile := metadata.Path.IsMedia()
+	fullPath := metadata.Path.FullPath()
 
 	if fileInfo, err := os.Stat(fullPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to get file size for %s: %v", fullPath, err)
@@ -226,13 +220,13 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 
 	metadata.LastEdited = time.Now()
 
-	folderPath := FolderFromPath(metadata.Path.String())
+	folderPath := FolderFromPath(metadata.Path)
 	if folderPath != "" {
 		metadata.Folders = strings.Split(folderPath, "/")
 	} else {
 		metadata.Folders = []string{}
 	}
-	metadata.Collection = CollectionFromPath(metadata.Path.String())
+	metadata.Collection = CollectionFromPath(metadata.Path)
 
 	// only infer editor type for docs files — media files are identified
 	// by path prefix + mime type in filtering, not by editor type

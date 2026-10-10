@@ -292,7 +292,7 @@ func caseBookCreateEditSave() test.CaseResult {
 	}
 
 	// the real file-view path: compose + render via files.GetFileContent
-	content, err := files.GetFileContent(pathutils.ToDocsPath(relPath))
+	content, err := files.GetFileContent(pathutils.GuessMeta(relPath))
 	if err != nil {
 		return errCase(name, err)
 	}

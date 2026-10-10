@@ -154,6 +154,9 @@ func (m MetaPath) MediaRel() (string, bool) {
 	return strings.CutPrefix(string(m), "media/")
 }
 
+// Rel is m relative to its root folder, docs or media ("docs/a/b.md" -> "a/b.md").
+func (m MetaPath) Rel() string { return metaRel(string(m)) }
+
 func (r DocsRel) String() string { return string(r) }
 
 // MetaPath is the docs file r.

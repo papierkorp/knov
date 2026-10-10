@@ -65,7 +65,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// use the files package to handle the upload
-	result, err := files.UploadMedia(file, header, contextPath.String())
+	result, err := files.UploadMedia(file, header, contextPath)
 	if err != nil {
 		var statusCode int
 		switch err.Error() {

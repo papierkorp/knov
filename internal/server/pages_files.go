@@ -30,7 +30,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileContent, err := files.GetFileContent(fullPath)
+	fileContent, err := files.GetFileContent(filePath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
 		return

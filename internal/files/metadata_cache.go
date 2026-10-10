@@ -352,17 +352,18 @@ func NewMetadataCollector() *MetadataCollector {
 }
 
 // CollectFromMetadata adds metadata to the collector
-func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Metadata) {
+func (mc *MetadataCollector) CollectFromMetadata(metaPath pathutils.MetaPath, metadata *Metadata) {
+	filePath := metaPath.String()
 	// collect file path
 	mc.FilePaths = append(mc.FilePaths, filePath)
 
 	// collect folder paths from file path
-	for _, path := range ancestorFolderPaths(filePath) {
+	for _, path := range ancestorFolderPaths(metaPath) {
 		mc.FolderPaths[path] = true
 	}
 
 	// collect orphaned media
-	if strings.HasPrefix(filePath, "media/") && len(metadata.LinksToHere) == 0 {
+	if metaPath.IsMedia() && len(metadata.LinksToHere) == 0 {
 		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
 	}
 
@@ -421,7 +422,7 @@ func RebuildAllCaches() error {
 		if file.Metadata == nil {
 			continue
 		}
-		collector.CollectFromMetadata(file.Path.String(), file.Metadata)
+		collector.CollectFromMetadata(file.Path, file.Metadata)
 	}
 
 	// persist the full file list too, so tree/list requests can reuse this same
@@ -442,7 +443,7 @@ func RebuildAllCaches() error {
 				collector.OrphanedMedia = append(collector.OrphanedMedia, normalizedPath.String())
 				continue
 			}
-			collector.CollectFromMetadata(normalizedPath.String(), file.Metadata)
+			collector.CollectFromMetadata(normalizedPath, file.Metadata)
 		}
 	}
 
@@ -462,8 +463,8 @@ func GetAllFolderPathsFromCache() ([]string, error) {
 // ancestorFolderPaths returns every ancestor folder of the docs file filePath (docs-relative, as
 // the user picks them), each with a trailing slash.
 // For xxx/yyy/zzz.md it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
-func ancestorFolderPaths(filePath string) []string {
-	dir := pathutils.ToSlash(filepath.Dir(pathutils.ToRelative(filePath)))
+func ancestorFolderPaths(filePath pathutils.MetaPath) []string {
+	dir := pathutils.ToSlash(filepath.Dir(filePath.Rel()))
 	if dir == "." || dir == "" {
 		return nil
 	}
@@ -487,7 +488,7 @@ func GetAllFolderPaths() ([]string, error) {
 	folderPaths := make(map[string]bool)
 
 	for _, file := range allFiles {
-		for _, path := range ancestorFolderPaths(file.Path.String()) {
+		for _, path := range ancestorFolderPaths(file.Path) {
 			folderPaths[path] = true
 		}
 	}

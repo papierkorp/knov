@@ -24,7 +24,7 @@ func MetaDataPurgeStale() (int, error) {
 
 	valid := make(map[string]struct{}, len(physical))
 	for _, f := range physical {
-		valid[pathutils.ToWithPrefix(f.Path.String())] = struct{}{}
+		valid[f.Path.String()] = struct{}{}
 	}
 
 	// media files have metadata too — don't treat them as stale
@@ -33,12 +33,12 @@ func MetaDataPurgeStale() (int, error) {
 		logging.LogWarning(logging.KeyApp, "failed to get media files for stale purge, skipping media: %v", err)
 	} else {
 		for _, f := range mediaFiles {
-			valid[pathutils.ToWithPrefix(f.Path.String())] = struct{}{}
+			valid[f.Path.String()] = struct{}{}
 		}
 	}
 
 	// the manual reserved folders migration still moves these legacy keys
-	walkReservedFolders(func(oldKey, _ string) { valid[oldKey] = struct{}{} })
+	walkReservedFolders(func(oldKey, _ pathutils.MetaPath) { valid[oldKey.String()] = struct{}{} })
 
 	var purged int
 	for key := range all {
@@ -68,7 +68,7 @@ func MetaDataPurgeDuplicates() (int, error) {
 	var duplicates []string
 
 	for key := range all {
-		norm := pathutils.ToWithPrefix(key)
+		norm := pathutils.GuessMeta(key).String() // a stored key may be a legacy form
 		if existing, ok := canonical[norm]; ok {
 			if key == norm {
 				duplicates = append(duplicates, existing)

@@ -113,10 +113,10 @@ func MoveMediaFileNoRefresh(oldRelPath, newRelPath string) error {
 	oldMediaPath := pathutils.MediaPath(oldRelPath)
 	newMediaPath := pathutils.MediaPath(newRelPath)
 
-	if err := pathutils.CheckTarget(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath)); err != nil {
+	if err := pathutils.CheckTarget(oldMediaPath.FullPath(), newMediaPath.FullPath()); err != nil {
 		return err
 	}
-	if err := movePhysical(pathutils.ToMediaPath(oldRelPath), pathutils.ToMediaPath(newRelPath), true); err != nil {
+	if err := movePhysical(oldMediaPath.FullPath(), newMediaPath.FullPath(), true); err != nil {
 		return err
 	}
 
@@ -201,7 +201,7 @@ const emptyFolderGracePeriod = 10 * time.Minute
 func RemoveEmptyFolders() error {
 	var keep []string
 	for _, b := range configmanager.GetKanbanBoards() {
-		keep = append(keep, pathutils.ToDocsPath(b.FolderPath))
+		keep = append(keep, pathutils.DocsPath(b.FolderPath).FullPath())
 	}
 	_, err := removeEmptySubdirs(pathutils.DocsRoot(), time.Now().Add(-emptyFolderGracePeriod), keep)
 	return err

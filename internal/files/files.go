@@ -23,9 +23,8 @@ const DefaultCollection = "default"
 // CollectionFromPath derives the collection name from a file path —
 // the first path segment of the relative path, matching recomputeDerivedFields logic.
 // Returns DefaultCollection for root-level files.
-func CollectionFromPath(path string) string {
-	relPath := pathutils.ToRelative(path)
-	folderPath := pathutils.ToSlash(filepath.Dir(relPath))
+func CollectionFromPath(path pathutils.MetaPath) string {
+	folderPath := pathutils.ToSlash(filepath.Dir(path.Rel()))
 	if folderPath == "." || folderPath == "" {
 		return DefaultCollection
 	}
@@ -34,9 +33,8 @@ func CollectionFromPath(path string) string {
 
 // FolderFromPath derives a file's containing folder path (all segments joined with "/"),
 // matching the Folders metadata field computed by metaDataUpdate. Returns "" for root-level files.
-func FolderFromPath(path string) string {
-	relPath := pathutils.ToRelative(path)
-	folderPath := pathutils.ToSlash(filepath.Dir(relPath))
+func FolderFromPath(path pathutils.MetaPath) string {
+	folderPath := pathutils.ToSlash(filepath.Dir(path.Rel()))
 	if folderPath == "." || folderPath == "" {
 		return ""
 	}
@@ -65,14 +63,17 @@ func pathsToFiles(paths []string, prefix string) []File {
 	for _, path := range paths {
 		fileName := filepath.Base(path)
 
-		fullPath := pathutils.ToSlash(filepath.Join(prefix, path))
+		metaPath := pathutils.DocsPath(pathutils.ToSlash(path))
+		if prefix == "media" {
+			metaPath = pathutils.MediaPath(pathutils.ToSlash(path))
+		}
 
 		// get metadata if it exists
-		metadata, _ := MetaDataGet(pathutils.GuessMeta(fullPath))
+		metadata, _ := MetaDataGet(metaPath)
 
 		file := File{
 			Name:     fileName,
-			Path:     pathutils.GuessMeta(fullPath),
+			Path:     metaPath,
 			Metadata: metadata,
 		}
 		files = append(files, file)
@@ -114,13 +115,13 @@ func GetAllMediaFiles() ([]File, error) {
 }
 
 // GetFileContent converts file content to html based on detected type
-func GetFileContent(filePath string) (*FileContent, error) {
+func GetFileContent(metaPath pathutils.MetaPath) (*FileContent, error) {
+	filePath := metaPath.FullPath()
 	handler := parser.GetParserRegistry().GetHandler(filePath)
 	if handler == nil {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	metaPath := pathutils.GuessMeta(filePath)
 	editor := ResolveEditor(metaPath)
 
 	// a book is shown as its composed document (referenced bodies inlined), not its raw
@@ -219,8 +220,7 @@ func isHiddenByType(file File) bool {
 // isInHiddenFolder returns true if the file's containing folder path matches a configured
 // hide-path pattern.
 func isInHiddenFolder(file File, hide *configmanager.HideMatcher) bool {
-	rel := pathutils.ToRelative(file.Path.String())
-	parts := strings.Split(rel, "/")
+	parts := strings.Split(file.Path.Rel(), "/")
 	if len(parts) < 2 {
 		return false
 	}
@@ -240,8 +240,7 @@ type TreeNode struct {
 func BuildFileTree(allFiles []File) *TreeNode {
 	root := &TreeNode{IsDir: true}
 	for _, file := range allFiles {
-		rel := pathutils.ToRelative(file.Path.String())
-		parts := strings.Split(rel, "/")
+		parts := strings.Split(file.Path.Rel(), "/")
 		insertTreeNode(root, parts, file.Path.String(), file.Metadata)
 	}
 	sortTreeNode(root)

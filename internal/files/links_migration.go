@@ -50,7 +50,7 @@ func ScanRelativeLinks() ([]RelativeLinkChange, error) {
 			old, cur := parser.DocsRootLinkTarget(src, l), parser.LinkTarget(src, l)
 			if old != cur && !seen[old.String()] {
 				seen[old.String()] = true
-				changes = append(changes, RelativeLinkChange{SourceFile: src, Link: l.Path, OldTarget: old.String(), NewTarget: cur.String(), OldTargetExists: fileExists(pathutils.ToFullPath(old.String()))})
+				changes = append(changes, RelativeLinkChange{SourceFile: src, Link: l.Path, OldTarget: old.String(), NewTarget: cur.String(), OldTargetExists: fileExists(old.FullPath())})
 			}
 			return "", false
 		})
@@ -62,8 +62,9 @@ func ScanRelativeLinks() ([]RelativeLinkChange, error) {
 // links were read from the docs root to their docs-root form ("/a.md", "/media/x.png", a /files/
 // or /media/ url in html), so they keep pointing at it, and resyncs its link metadata. Returns
 // false (with no error) if no such link was found.
-func MigrateRelativeLinks(sourceFile, oldTarget string) (bool, error) {
-	fullPath := pathutils.ToFullPath(sourceFile)
+func MigrateRelativeLinks(sourceMeta pathutils.MetaPath, oldTarget string) (bool, error) {
+	sourceFile := sourceMeta.String()
+	fullPath := sourceMeta.FullPath()
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
 		return false, fmt.Errorf("failed to read file %s: %w", sourceFile, err)
@@ -82,7 +83,7 @@ func MigrateRelativeLinks(sourceFile, oldTarget string) (bool, error) {
 	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 		return false, fmt.Errorf("failed to write %s: %w", sourceFile, err)
 	}
-	if err := UpdateLinksForSingleFile(pathutils.GuessMeta(sourceFile)); err != nil {
+	if err := UpdateLinksForSingleFile(sourceMeta); err != nil {
 		logging.LogWarning(logging.KeyRepairLinks, "failed to rebuild links for %s: %v", sourceFile, err)
 	}
 	return true, nil

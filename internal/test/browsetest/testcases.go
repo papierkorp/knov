@@ -241,7 +241,7 @@ func caseFolderSuggestions() test.CaseResult {
 func caseHeadersTOC() test.CaseResult {
 	name := "headers-toc"
 
-	content, err := files.GetFileContent(pathutils.ToDocsPath(testPath(tocFile)))
+	content, err := files.GetFileContent(pathutils.GuessMeta(testPath(tocFile)))
 	if err != nil {
 		return errCase(name, err)
 	}

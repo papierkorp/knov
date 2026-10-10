@@ -22,10 +22,9 @@ import (
 
 // LoadSource returns the markdown to export for filePath - a book's composed
 // document, otherwise the file's raw content.
-func LoadSource(filePath string) ([]byte, error) {
-	meta := pathutils.GuessMeta(filePath)
+func LoadSource(meta pathutils.MetaPath) ([]byte, error) {
 	if files.IsBook(meta) {
-		composed, err := book.Compose(filePath)
+		composed, err := book.Compose(meta.String())
 		return []byte(composed), err
 	}
 	return os.ReadFile(meta.FullPath())
@@ -50,14 +49,14 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 		}
 		report(i, len(allFiles))
 
-		content, err := LoadSource(f.Path.String())
+		content, err := LoadSource(f.Path)
 		if err != nil {
 			logging.LogWarning(logging.KeyExport, "pdf export all: skip %s (load failed): %v", f.Path, err)
 			skipped++
 			continue
 		}
 
-		pdf, err := render(opts, f.Path.String(), content)
+		pdf, err := render(opts, f.Path, content)
 		if err != nil {
 			logging.LogWarning(logging.KeyExport, "pdf export all: skip %s (convert failed): %v", f.Path, err)
 			skipped++
@@ -65,11 +64,11 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 		}
 
 		var modified time.Time
-		if info, err := os.Stat(pathutils.ToDocsPath(f.Path.String())); err == nil {
+		if info, err := os.Stat(f.Path.FullPath()); err == nil {
 			modified = info.ModTime()
 		}
 		// keep the source extension so e.g. a.md and a.todo don't collide
-		if err := add(pathutils.ToSlash(pathutils.ToRelative(f.Path.String()))+".pdf", modified, bytes.NewReader(pdf)); err != nil {
+		if err := add(f.Path.Rel()+".pdf", modified, bytes.NewReader(pdf)); err != nil {
 			return skipped, err
 		}
 	}
@@ -81,13 +80,13 @@ func ExportAll(ctx context.Context, add func(name string, modified time.Time, r 
 // resolving the header/footer tokens. Any panic is turned into an error so it
 // lands in the app log instead of only the recoverer's stderr output, which is
 // easy to miss when the binary runs as a background service.
-func RenderFile(filePath string, content []byte) ([]byte, error) {
+func RenderFile(filePath pathutils.MetaPath, content []byte) ([]byte, error) {
 	return render(settingsOptions(), filePath, content)
 }
 
 // render renders content with opts (from settingsOptions), resolving the header/footer tokens
 // for filePath - see RenderFile.
-func render(opts Options, filePath string, content []byte) (pdf []byte, err error) {
+func render(opts Options, filePath pathutils.MetaPath, content []byte) (pdf []byte, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			logging.LogError(logging.KeyPdfExport, "pdf export: panic during conversion: %v", r)
@@ -100,7 +99,7 @@ func render(opts Options, filePath string, content []byte) (pdf []byte, err erro
 	if opts.HeaderLeft != "" || opts.HeaderCenter != "" || opts.HeaderRight != "" {
 		opts.HeaderTokens = zoneTokens(filePath)
 	}
-	return MarkdownToPDF(content, filePath, opts)
+	return MarkdownToPDF(content, filePath.String(), opts)
 }
 
 // settingsOptions builds the pdf options from the pdf settings, without the per-file tokens.
@@ -147,15 +146,15 @@ func zoneStyle(font, hexColor string, size int, bold, italic bool) ZoneStyle {
 }
 
 // zoneTokens resolves the values available for pdf header/footer templates.
-func zoneTokens(filePath string) map[string]string {
-	relPath := pathutils.ToRelative(filePath)
+func zoneTokens(filePath pathutils.MetaPath) map[string]string {
+	relPath := filePath.Rel()
 	tokens := map[string]string{
 		"date":     configmanager.FormatDate(time.Now()),
 		"filename": filepath.Base(relPath),
 		"filepath": relPath,
 		"folder":   files.FolderFromPath(filePath),
 	}
-	if metadata, err := files.MetaDataGet(pathutils.GuessMeta(filePath)); err == nil && metadata != nil {
+	if metadata, err := files.MetaDataGet(filePath); err == nil && metadata != nil {
 		tokens["created"] = configmanager.FormatDateTime(metadata.CreatedAt)
 		tokens["edited"] = configmanager.FormatDateTime(metadata.LastEdited)
 		tokens["tags"] = strings.Join(metadata.Tags, ", ")
