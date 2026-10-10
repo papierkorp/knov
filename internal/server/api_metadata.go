@@ -197,6 +197,17 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "path is required"))
 		return
 	}
+	// json decodes straight into the typed paths, so they are checked like metaPathParam does
+	if _, ok := pathutils.ParseMeta(metadata.Path.String()); !ok {
+		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "path"))
+		return
+	}
+	for _, parent := range metadata.Parents {
+		if _, ok := pathutils.ParseMeta(parent.String()); !ok {
+			writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "parents"))
+			return
+		}
+	}
 
 	// SetMetadataNoRefresh applies every provided field plus the derived-field resync under a
 	// single lock acquisition for path, so the request is atomic against other writers again.
