@@ -218,16 +218,14 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// add media prefix if not present
-	fullMediaPath := mediaPath
-	if !strings.HasPrefix(mediaPath, "media/") {
-		fullMediaPath = "media/" + mediaPath
-	}
+	// the media-relative path, a "media/" prefix is accepted too
+	mediaMeta := pathutils.MediaPath(strings.TrimPrefix(mediaPath, "media/"))
+	fullMediaPath := mediaMeta.String()
 
 	logging.LogInfo(logging.KeyApp, "deleting media file: %s", fullMediaPath)
 
 	// check if file exists
-	fullPath := pathutils.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
+	fullPath := mediaMeta.FullPath()
 	exists, err := contentStorage.FileExists(fullPath)
 	if err != nil || !exists {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"))
@@ -235,7 +233,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if file is still referenced
-	metadata, err := files.MetaDataGet(pathutils.GuessMeta(fullMediaPath))
+	metadata, err := files.MetaDataGet(mediaMeta)
 	if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
 		logging.LogWarning(logging.KeyApp, "cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
 
@@ -259,7 +257,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete metadata
-	if err := files.MetaDataDelete(pathutils.GuessMeta(fullMediaPath)); err != nil {
+	if err := files.MetaDataDelete(mediaMeta); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for media file %s: %v", fullMediaPath, err)
 		// don't fail the whole operation, just log warning
 	}

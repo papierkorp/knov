@@ -178,7 +178,6 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target is required"))
 		return
 	}
-	target = pathutils.DocsPath(target).String()
 
 	msg, err := chat.GetByID(id)
 	if err != nil || msg == nil {
@@ -194,7 +193,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(target, ".") {
 			target = target + ".md"
 		}
-		fullPath = pathutils.ToDocsPath(target)
+		fullPath = pathutils.DocsPath(target).FullPath()
 		existing, _ := contentStorage.ReadFile(fullPath)
 		if len(existing) > 0 {
 			newContent = append(existing, []byte("\n\n"+msg.Content)...)
@@ -204,10 +203,10 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	} else {
 		editor := files.EditorType(r.FormValue("editor"))
 		target, newContent, resolvedEditor = formatForEditor(target, msg.Content, editor)
-		fullPath = pathutils.ToDocsPath(target)
+		fullPath = pathutils.DocsPath(target).FullPath()
 	}
 
-	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(pathutils.DocsPath(target))) {
 		return
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
@@ -216,7 +215,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalizedTarget := pathutils.GuessMeta(target)
+	normalizedTarget := pathutils.DocsPath(target)
 	if mode == "append" {
 		// initialize metadata if file is new
 		if existingMeta, _ := files.MetaDataGet(normalizedTarget); existingMeta == nil {
@@ -239,7 +238,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo(logging.KeyApp, "moved chat message %s to %s (mode: %s)", id, target, mode)
-	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
+	writeResponse(w, r, map[string]string{"target": pathutils.DocsPath(target).String()}, render.RenderChatMoveSuccess(pathutils.DocsPath(target)))
 }
 
 // @Summary Get bulk move form HTML
@@ -277,7 +276,6 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"))
 		return
 	}
-	target = pathutils.DocsPath(target).String()
 
 	ids := strings.Split(rawIDs, ",")
 
@@ -311,7 +309,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(target, ".") {
 			target = target + ".md"
 		}
-		fullPath = pathutils.ToDocsPath(target)
+		fullPath = pathutils.DocsPath(target).FullPath()
 		existing, _ := contentStorage.ReadFile(fullPath)
 		if len(existing) > 0 {
 			newContent = append(existing, []byte("\n\n"+combined)...)
@@ -320,10 +318,10 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		target, newContent, resolvedEditor = formatForEditor(target, combined, editor)
-		fullPath = pathutils.ToDocsPath(target)
+		fullPath = pathutils.DocsPath(target).FullPath()
 	}
 
-	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(target)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(pathutils.DocsPath(target))) {
 		return
 	}
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
@@ -333,7 +331,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if mode != "append" {
-		normalizedTarget := pathutils.GuessMeta(target)
+		normalizedTarget := pathutils.DocsPath(target)
 		if err := files.MetaDataSync(normalizedTarget); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to save metadata for bulk chat move: %v", err)
 		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
@@ -353,7 +351,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo(logging.KeyApp, "bulk moved %d messages to %s (mode: %s)", len(parts), target, mode)
-	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
+	writeResponse(w, r, map[string]string{"target": pathutils.DocsPath(target).String()}, render.RenderChatMoveSuccess(pathutils.DocsPath(target)))
 }
 
 // @Summary Bulk delete chat messages

@@ -242,12 +242,12 @@ func TestPathContains(t *testing.T) {
 func TestCheckNewDocsPath(t *testing.T) {
 	dataName := filepath.Base(configmanager.GetAppConfig().DataPath)
 	for _, rel := range []string{"x.md", "a/files/x.md", "mediafiles/x.md", "docs/x.md", "media/x.md", "files/a/x.md", "media", dataName + "/x.md"} {
-		p := DocsPath(rel).String()
+		p := DocsPath(rel)
 		if err := CheckNewDocsPath(p); err != nil {
 			t.Errorf("%s should be allowed: %v", p, err)
 		}
-		if got, want := ToDocsPath(p), filepath.Join(getDocsPath(), filepath.FromSlash(rel)); got != want {
-			t.Errorf("ToDocsPath(%q) = %q, want %q", p, got, want)
+		if got, want := p.FullPath(), filepath.Join(getDocsPath(), filepath.FromSlash(rel)); got != want {
+			t.Errorf("%q.FullPath() = %q, want %q", p, got, want)
 		}
 	}
 }
@@ -265,7 +265,7 @@ func TestCheckNewDocsPathNames(t *testing.T) {
 		if runtime.GOOS == "windows" && strings.Contains(p, "\\") {
 			want = nil
 		}
-		if err := CheckNewDocsPath(p); err != want {
+		if err := CheckNewDocsPath(DocsPath(p)); err != want {
 			t.Errorf("%q: want %v, got %v", p, want, err)
 		}
 	}

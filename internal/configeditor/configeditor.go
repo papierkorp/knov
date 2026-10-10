@@ -134,7 +134,7 @@ func (k Kind) Set(id string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id)).String()); err != nil {
+	if err := pathutils.CheckNewDocsPath(pathutils.DocsPath(k.PairedPath(id))); err != nil {
 		return err
 	}
 	return configStorage.Set(k.prefix+id, data)

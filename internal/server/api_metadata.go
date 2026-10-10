@@ -249,9 +249,10 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
-	if err := files.MetaDataLinksRebuildForFile(pathutils.GuessMeta(filePath)); err != nil {
+	if err := files.MetaDataLinksRebuildForFile(fileMeta); err != nil {
 		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"))
 		return
@@ -646,12 +647,12 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newpath = pathutils.GuessMeta(path.Clean(newpath.String()))
-	newMeta, ok := pathutils.ParseMeta(newpath.String())
+	newMeta, ok := pathutils.ParseMeta(path.Clean(newpath.String()))
 	if !ok {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "%s must start with docs/ or media/", "newpath"))
 		return
 	}
+	newpath = newMeta
 	if strings.HasPrefix(filePath.String(), "media/") != strings.HasPrefix(newpath.String(), "media/") {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "newpath must stay in %s", strings.SplitN(filePath.String(), "/", 2)[0]+"/"))
 		return
@@ -669,10 +670,11 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	var err error
 	if isMedia {
 		context = "move media via metadata"
-		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath.String()), pathutils.ToRelative(newpath.String()))
+		oldRel, _ := filePath.MediaRel()
+		newRel, _ := newpath.MediaRel()
+		err = files.MoveMediaFileNoRefresh(oldRel, newRel)
 	} else {
-		oldMeta, _ := pathutils.ParseMeta(filePath.String()) // checked by metaPathParam
-		err = files.MoveFileNoRefresh(logging.KeyApp, oldMeta, newMeta)
+		err = files.MoveFileNoRefresh(logging.KeyApp, filePath, newMeta)
 	}
 	msgs := moveErrorMessages{
 		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"),
@@ -690,7 +692,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
 	redirect := pathutils.ToFileURL(newpath)
 	if isMedia {
-		redirect = pathutils.ToMediaURL(pathutils.ToRelative(newpath.String()))
+		redirect = pathutils.ToMediaURL(newpath.Rel())
 	}
 	w.Header().Set("HX-Redirect", redirect)
 	w.WriteHeader(http.StatusOK)

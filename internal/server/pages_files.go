@@ -169,7 +169,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 
 		filePath := pathutils.DocsPath(rel).String()
-		fullPath := pathutils.ToFullPath(filePath)
+		fullPath := pathutils.DocsPath(rel).FullPath()
 		selectedCommit := r.URL.Query().Get("commit")
 
 		versions, err := git.GetFileHistory(fullPath)
@@ -202,7 +202,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		data := thememanager.NewHistoryTemplateData(rel, currentCommit, selectedCommit, versions, false)
 		data.Data.CompareFrom = r.URL.Query().Get("from")
 		data.Data.CompareTo = r.URL.Query().Get("to")
-		_, statErr := os.Stat(pathutils.ToFullPath(filePath))
+		_, statErr := os.Stat(fullPath)
 		data.Data.FileDeleted = os.IsNotExist(statErr)
 
 		err = tm.Render(w, "history", data)

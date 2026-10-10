@@ -31,9 +31,10 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
-	fullPath := pathutils.ToFullPath(filePath)
+	fullPath := fileMeta.FullPath()
 	commit := r.URL.Query().Get("commit")
 	output := r.URL.Query().Get("output")
 	if output == "" {
@@ -114,7 +115,8 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
 	fromCommit := r.URL.Query().Get("from")
 	toCommit := r.URL.Query().Get("to")
@@ -124,7 +126,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToFullPath(filePath)
+	fullPath := fileMeta.FullPath()
 
 	if fromCommit == "current" {
 		currentCommit, err := git.GetCurrentCommit()
@@ -227,7 +229,8 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
 	commit := r.FormValue("commit")
 	if commit == "" {
@@ -235,7 +238,7 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToFullPath(filePath)
+	fullPath := fileMeta.FullPath()
 
 	if err := git.RestoreFileToCommit(fullPath, commit); err != nil {
 		logging.LogError(logging.KeyApp, "failed to restore file %s to commit %s: %v", filePath, commit, err)

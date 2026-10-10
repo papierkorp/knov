@@ -144,7 +144,7 @@ func caseRename() test.CaseResult {
 		dir := fmt.Sprintf("%s/rename/c%02d", testDir, i)
 		old, renamed, back := dir+"/old.md", dir+"/"+n, dir+"/back.md"
 		moves := [][2]string{{old, renamed}, {renamed, back}}
-		if errors.Is(pathutils.CheckNewDocsPath(renamed), pathutils.ErrInvalidName) {
+		if errors.Is(pathutils.CheckNewDocsPath(pathutils.DocsPath(renamed)), pathutils.ErrInvalidName) {
 			old, moves = renamed, moves[1:]
 		}
 		if err := saveDoc(old, "# old\n"); err != nil {

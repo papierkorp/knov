@@ -116,8 +116,9 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 			}
 			folders = append(folders, item)
 		} else {
-			metadata, _ := files.MetaDataGet(pathutils.GuessMeta(entryPath))
-			if files.IsHidden(files.File{Path: pathutils.GuessMeta(pathutils.ToSlash(entryPath)), Metadata: metadata}, hide) {
+			metaPath := pathutils.FromFullPath(filepath.Join(fullPath, entry.Name()))
+			metadata, _ := files.MetaDataGet(metaPath)
+			if files.IsHidden(files.File{Path: metaPath, Metadata: metadata}, hide) {
 				continue
 			}
 			filesInDir = append(filesInDir, item)
@@ -197,7 +198,8 @@ func handleAPIGetFileViews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	links := render.FileViewLinks(pathutils.ToRelative(fp.String()), r.URL.Query().Get("view"))
+	rel, _ := fp.DocsRel()
+	links := render.FileViewLinks(rel.String(), r.URL.Query().Get("view"))
 	writeResponse(w, r, links, render.RenderFileViewLinks(links))
 }
 
@@ -321,7 +323,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filepath.String())
+	fullPath := filepath.FullPath()
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get raw content: %v", err)
@@ -354,17 +356,17 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
-
 	// new files need a markdown extension, a dot in the name (e.g. "v1.2 notes") is not one
-	if _, err := os.Stat(pathutils.ToDocsPath(filePath)); os.IsNotExist(err) && !parser.IsMarkdownExtension(filePath) {
-		filePath = filePath + configmanager.ExtensionForEditor(formEditor)
+	if _, err := os.Stat(pathutils.DocsPath(filePath).FullPath()); os.IsNotExist(err) && !parser.IsMarkdownExtension(filePath) {
+		filePath += configmanager.ExtensionForEditor(formEditor)
 	}
+	normalizedPath := pathutils.DocsPath(filePath)
+	filePath = normalizedPath.String()
 
-	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(normalizedPath)) {
 		return
 	}
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := normalizedPath.FullPath()
 
 	// check if file exists (to determine if this is creation or update)
 	_, statErr := os.Stat(fullPath)
@@ -386,7 +388,6 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 			editor = files.EditorType(configmanager.DefaultMarkdownEditor.Get())
 		}
 
-		normalizedPath := pathutils.GuessMeta(filePath)
 		if err := files.MetaDataSync(normalizedPath); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
 		} else if err := files.SetEditor(normalizedPath, editor); err != nil {
@@ -414,7 +415,6 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// update links for existing files
-		normalizedPath := pathutils.GuessMeta(filePath)
 		if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		}
@@ -427,7 +427,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// if this was a new file creation, redirect to the file view
 	if isNewFile {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.GuessMeta(filePath)))
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(normalizedPath))
 		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file created"))
 		writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 		return
@@ -437,7 +437,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
 	writeResponse(w, r, map[string]string{"filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"),
-		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
+		pathutils.ToFileURL(normalizedPath),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -476,7 +476,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath.String())
+	fullPath := filePath.FullPath()
 
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
@@ -541,7 +541,7 @@ func handleAPIClearTodoDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath.String())
+	fullPath := filePath.FullPath()
 
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
@@ -597,7 +597,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		}
 		markdown = composed
 	} else {
-		content, err := os.ReadFile(pathutils.ToDocsPath(filePath.String()))
+		content, err := os.ReadFile(filePath.FullPath())
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to read file %s: %v", filePath, err)
 			writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
@@ -843,13 +843,13 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentFullPath := pathutils.ToDocsPath(currentPath)
+	currentFullPath := pathutils.DocsPath(currentRel).FullPath()
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
 		return
 	}
 
-	newFullPath := pathutils.ToDocsPath(newPath)
+	newFullPath := pathutils.DocsPath(newRel).FullPath()
 	if _, err := os.Stat(newFullPath); err == nil {
 		writeAPIError(w, r, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
 		return
@@ -873,7 +873,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	message := translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved")
 	// follow a file of the moved folder that the current page shows, otherwise toast in place
 	if rel, ok := strings.CutPrefix(viewedFile(r), currentPath+"/"); ok {
-		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.GuessMeta(newPath+"/"+rel)))
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(pathutils.DocsPath(newRel+"/"+rel)))
 		notify.SetFlash(notify.LevelSuccess, message)
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, message)
@@ -888,8 +888,8 @@ func removeFileAndMetadata(fullPath string) error {
 	if err := files.DeleteFileNoRefresh(fullPath); err != nil {
 		return err
 	}
-	relPath := pathutils.ToRelative(fullPath)
-	metaPath := pathutils.GuessMeta(fullPath)
+	metaPath := pathutils.FromFullPath(fullPath)
+	relPath := metaPath.Rel()
 	// a filter index file carries a paired config in configStorage - drop it too, or
 	// RegenerateAllIndexes recreates the file on the next metadata change
 	if filter.GetFilterConfigForFile(relPath) != nil {
@@ -924,12 +924,12 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
+	fullPath := pathutils.DocsPath(filePath).FullPath()
 	filePath = pathutils.DocsPath(filePath).String()
 
 	logging.LogInfo(logging.KeyApp, "deleting file: %s", filePath)
 
 	// check if file exists
-	fullPath := pathutils.ToDocsPath(filePath)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		return
@@ -971,9 +971,9 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
+	fullPath := pathutils.DocsPath(folderPath).FullPath()
 	folderPath = pathutils.DocsPath(folderPath).String()
 
-	fullPath := pathutils.ToDocsPath(folderPath)
 	info, err := os.Stat(fullPath)
 	if os.IsNotExist(err) || !info.IsDir() {
 		writeAPIError(w, r, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
@@ -1059,7 +1059,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		toDelete = append(toDelete, pathutils.ToDocsPath(file.Path.String()))
+		toDelete = append(toDelete, file.Path.FullPath())
 	}
 
 	id, err := job.StartBulkDeleteFiles(toDelete, groupType, value)
@@ -1101,7 +1101,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(filePath).String())
+	fullPath := pathutils.DocsPath(filePath).FullPath()
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		writeAPIError(w, r, http.StatusNotFound, err.Error())
@@ -1173,7 +1173,7 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 
 	paths := make([]string, len(allFiles))
 	for i, f := range allFiles {
-		paths[i] = pathutils.ToRelative(f.Path.String())
+		paths[i] = f.Path.Rel()
 	}
 
 	matches := files.RankAutocompleteMatches(paths, q, 20)

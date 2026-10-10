@@ -353,8 +353,8 @@ func handleAPIGetConflictDiff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalFull := pathutils.ToFullPath(filePath.String())
-	conflictFull := pathutils.ToFullPath(conflictPath.String())
+	originalFull := filePath.FullPath()
+	conflictFull := conflictPath.FullPath()
 
 	html := render.RenderConflictDiff(originalFull, conflictFull)
 	writeResponse(w, r, nil, html)

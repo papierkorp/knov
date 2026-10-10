@@ -199,8 +199,6 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(lang, "missing filepath"))
 		return
 	}
-	filezpath = pathutils.DocsPath(filezpath).String()
-
 	kind := entryEditorKindFor(bookMode, lang)
 
 	// ensure a markdown-recognized extension, else the file falls through to the plaintext
@@ -208,10 +206,12 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	if !parser.IsMarkdownExtension(filezpath) {
 		filezpath = filezpath + configmanager.ExtensionForEditor(kind.extKey)
 	}
-	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filezpath)) {
+	fileMeta := pathutils.DocsPath(filezpath)
+	filezpath = fileMeta.String()
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(fileMeta)) {
 		return
 	}
-	fullPath := pathutils.ToDocsPath(filezpath)
+	fullPath := fileMeta.FullPath()
 
 	// parse entries[i][type] / [value] / [section] / [subheaders]
 	var entries []book.Entry
@@ -244,7 +244,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	}
 	go git.CommitFile(fullPath)
 
-	normalizedPath := pathutils.GuessMeta(filezpath)
+	normalizedPath := fileMeta
 	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for %s file %s: %v", kind.extKey, filezpath, err)
 	} else if err := files.SetEditor(normalizedPath, kind.editor); err != nil {
@@ -263,7 +263,7 @@ func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) 
 	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessageWithLink(render.StatusOK,
-		kind.savedMsg, pathutils.ToFileURL(pathutils.GuessMeta(filezpath)), translation.SprintfForRequest(lang, "view file")))
+		kind.savedMsg, pathutils.ToFileURL(fileMeta), translation.SprintfForRequest(lang, "view file")))
 }
 
 // @Summary Add index/book entry
@@ -324,8 +324,6 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
-
 	content := r.FormValue("content")
 	todoMode := r.FormValue("mode") == "todo"
 	editorType := files.EditorTypeList
@@ -339,7 +337,9 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	if !parser.IsMarkdownExtension(filePath) {
 		filePath = filePath + configmanager.ExtensionForEditor(extensionKey)
 	}
-	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(filePath)) {
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
+	if writeNewPathError(w, r, pathutils.CheckNewDocsPath(fileMeta)) {
 		return
 	}
 
@@ -355,7 +355,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	markdown := render.ConvertListItemsToMarkdown(listItems, 0)
 
 	// convert to full path
-	fullPath := pathutils.ToDocsPath(filePath)
+	fullPath := fileMeta.FullPath()
 
 	// save content as markdown
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
@@ -365,7 +365,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	normalizedPath := pathutils.GuessMeta(filePath)
+	normalizedPath := fileMeta
 	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for list file %s: %v", filePath, err)
 	} else if err := files.SetEditor(normalizedPath, editorType); err != nil {
@@ -387,7 +387,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
-		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
+		pathutils.ToFileURL(fileMeta),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file")))
 }
 
@@ -420,7 +420,8 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
 	headersJSON := r.FormValue("headers")
 	rowsJSON := r.FormValue("rows")
@@ -483,12 +484,12 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
-	go git.CommitFile(pathutils.ToFullPath(filePath))
+	go git.CommitFile(fileMeta.FullPath())
 
 	logging.LogInfo(logging.KeyApp, "saved table in file: %s", filePath)
 
 	// update links for this file
-	normalizedPath := pathutils.GuessMeta(filePath)
+	normalizedPath := fileMeta
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
@@ -502,7 +503,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
-		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
+		pathutils.ToFileURL(fileMeta),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
@@ -559,7 +560,8 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
-	filePath = pathutils.DocsPath(filePath).String()
+	fileMeta := pathutils.DocsPath(filePath)
+	filePath = fileMeta.String()
 
 	if sectionID == "" {
 		writeAPIError(w, r, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"))
@@ -573,12 +575,12 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
-	go git.CommitFile(pathutils.ToFullPath(filePath))
+	go git.CommitFile(fileMeta.FullPath())
 
 	logging.LogInfo(logging.KeyApp, "saved section %s in file: %s", sectionID, filePath)
 
 	// update links for this file
-	normalizedPath := pathutils.GuessMeta(filePath)
+	normalizedPath := fileMeta
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
@@ -592,7 +594,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
-		pathutils.ToFileURL(pathutils.GuessMeta(filePath)),
+		pathutils.ToFileURL(fileMeta),
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 
@@ -624,7 +626,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath.String())
+	fullPath := filePath.FullPath()
 
 	// read file content
 	content, err := os.ReadFile(fullPath)
@@ -638,8 +640,9 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	markdown := dokuwikiconverter.NewWithFilePath(filePath.String()).ConvertToMarkdown(string(content))
 
 	// determine new filename
-	markdownFileName := strings.TrimSuffix(filePath.String(), filepath.Ext(filePath.String())) + ".md"
-	markdownFullPath := pathutils.ToDocsPath(markdownFileName)
+	markdownMeta, _ := pathutils.ParseMeta(strings.TrimSuffix(filePath.String(), filepath.Ext(filePath.String())) + ".md")
+	markdownFileName := markdownMeta.String()
+	markdownFullPath := markdownMeta.FullPath()
 
 	// save markdown file
 	if err := contentStorage.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
@@ -653,7 +656,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderStatusMessageWithLink(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
-		pathutils.ToFileURL(pathutils.GuessMeta(markdownFileName)), markdownFileName)
+		pathutils.ToFileURL(markdownMeta), markdownFileName)
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": markdownFileName}, html)
 }
 

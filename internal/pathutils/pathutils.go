@@ -419,8 +419,8 @@ func CheckTarget(oldFull, newFull string) error {
 	}
 }
 
-// CheckNewDocsPath is CheckTarget for creating the docs path p ("docs/a/b.md").
-func CheckNewDocsPath(p string) error { return CheckTarget("", ToDocsPath(p)) }
+// CheckNewDocsPath is CheckTarget for creating the docs file p.
+func CheckNewDocsPath(p MetaPath) error { return CheckTarget("", p.FullPath()) }
 
 // CleanName replaces the chars of name that break the filename policy (see CheckTarget) with "_"
 // and trims its spaces ("a#b" -> "a_b").
