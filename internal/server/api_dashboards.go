@@ -13,6 +13,7 @@ import (
 	"knov/internal/dashboard"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -83,7 +84,7 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 		case dashboard.WidgetTypeFileContent:
 			filePath := r.FormValue(fmt.Sprintf("widgets[%d][config][filePath]", i))
 			config.FileContent = &dashboard.FileContentConfig{
-				FilePath: filePath,
+				FilePath: pathutils.NewDocsRel(filePath),
 			}
 		case dashboard.WidgetTypeStatic:
 			format := r.FormValue(fmt.Sprintf("widgets[%d][config][format]", i))

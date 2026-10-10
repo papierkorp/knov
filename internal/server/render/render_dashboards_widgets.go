@@ -12,7 +12,6 @@ import (
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/mapping"
-	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -54,7 +53,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
 	}
 
-	fullPath := pathutils.ToDocsPath(pathutils.DocsPath(config.FilePath).String())
+	fullPath := config.FilePath.MetaPath().FullPath()
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get file content: %v", err)

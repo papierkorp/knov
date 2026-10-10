@@ -190,7 +190,7 @@ func PatchFilePathForMove(oldPath, newPath pathutils.DocsRel) {
 
 	referencesOld := func(w Widget) bool {
 		return w.Type == WidgetTypeFileContent && w.Config.FileContent != nil &&
-			w.Config.FileContent.FilePath == oldPath.String()
+			w.Config.FileContent.FilePath == oldPath
 	}
 
 	for _, d := range dashboards {
@@ -201,7 +201,7 @@ func PatchFilePathForMove(oldPath, newPath pathutils.DocsRel) {
 		_, err := Mutate(d.ID, func(dash *Dashboard) error {
 			for i := range dash.Widgets {
 				if w := &dash.Widgets[i]; referencesOld(*w) {
-					w.Config.FileContent.FilePath = newPath.String()
+					w.Config.FileContent.FilePath = newPath
 				}
 			}
 			return nil

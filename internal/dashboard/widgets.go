@@ -3,6 +3,7 @@ package dashboard
 
 import (
 	"knov/internal/filter"
+	"knov/internal/pathutils"
 )
 
 // WidgetPosition represents widget position on dashboard
@@ -49,7 +50,7 @@ type StaticConfig struct {
 
 // FileContentConfig represents file content configuration
 type FileContentConfig struct {
-	FilePath string `json:"filePath"`
+	FilePath pathutils.DocsRel `json:"filePath"`
 }
 
 // WidgetConfig represents widget-specific configuration

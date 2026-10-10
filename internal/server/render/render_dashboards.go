@@ -286,7 +286,7 @@ func RenderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path")))
 		filePathValue := ""
 		if config != nil && config.FileContent != nil {
-			filePathValue = config.FileContent.FilePath
+			filePathValue = config.FileContent.FilePath.String()
 		}
 		selectID := fmt.Sprintf("file-selector-%d", index)
 		html.WriteString(fmt.Sprintf(
