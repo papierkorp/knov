@@ -62,7 +62,7 @@ the docs-relative path, the metadata path (`docs/...` / `media/...`) and the ful
   - `filter.GenerateFilterIndex` writes `/docs/x.md` for `docs/docs/x.md`, which reads as `docs/x.md`: write `/files/` + the path without `docs/` for every docs file (media files keep `/media/`)
   - kanban ancestor select: `handleAPIGetAncestorsInFolder` uses `ToRelative(a)` as option value and `filter.go` compares `ToWithPrefix(value)`, so an epic in `docs/media/` or `docs/docs/` never matches: use the metadata path as value, compare exactly
 - [x] make `parsePath` private and remove `ToRelative` / `ToWithPrefix` / `ToDocsPath` / `ToFullPath` on arbitrary strings. until then add them to `parser_guard_test.go` (also `ToWithPrefix(ToRelative(`) with an allow-list that only shrinks - done: removed together with `ToMediaPath` / `IsMedia` / `IsDocs`, `parsePath` is only reached through `GuessMeta` and `FromFullPath`; the guard counts the 4 `GuessMeta` calls left (user-entered parents, legacy metadata keys)
-- [ ] rule in `CLAUDE.md`: a variable carries its kind in the name (`metaPath`, `docsRel`), no function takes a bare "path" for docs files
+- [x] rule in `CLAUDE.md`: a variable carries its kind in the name (`metaPath`, `docsRel`), no function takes a bare "path" for docs files
 
 # every other time
 
