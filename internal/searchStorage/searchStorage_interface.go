@@ -7,14 +7,15 @@ import (
 
 	"knov/internal/backup"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // SearchStorage interface defines methods for search storage with FTS capabilities
 type SearchStorage interface {
-	IndexFile(path string, content []byte) error
-	GetIndexedContent(path string) ([]byte, error)
-	GetIndexedAt(path string) (time.Time, error)
-	DeleteIndexedContent(path string) error
+	IndexFile(path pathutils.DocsRel, content []byte) error
+	GetIndexedContent(path pathutils.DocsRel) ([]byte, error)
+	GetIndexedAt(path pathutils.DocsRel) (time.Time, error)
+	DeleteIndexedContent(path pathutils.DocsRel) error
 	ListAllIndexedFiles() ([]string, error)
 	SearchContent(query string, limit int) ([]SearchResult, error)
 	IndexDeletedFile(path string, content []byte) error
@@ -65,23 +66,23 @@ func Init(provider, storagePath string) error {
 	return nil
 }
 
-// IndexFile indexes a file's content for search
-func IndexFile(path string, content []byte) error {
+// IndexFile indexes a file's content for search, keyed by its docs-relative path
+func IndexFile(path pathutils.DocsRel, content []byte) error {
 	return storage.IndexFile(path, content)
 }
 
 // GetIndexedContent retrieves indexed content for a file
-func GetIndexedContent(path string) ([]byte, error) {
+func GetIndexedContent(path pathutils.DocsRel) ([]byte, error) {
 	return storage.GetIndexedContent(path)
 }
 
 // GetIndexedAt returns the time a file was last indexed.
-func GetIndexedAt(path string) (time.Time, error) {
+func GetIndexedAt(path pathutils.DocsRel) (time.Time, error) {
 	return storage.GetIndexedAt(path)
 }
 
 // DeleteIndexedContent removes indexed content for a file
-func DeleteIndexedContent(path string) error {
+func DeleteIndexedContent(path pathutils.DocsRel) error {
 	return storage.DeleteIndexedContent(path)
 }
 

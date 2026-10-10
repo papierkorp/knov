@@ -196,19 +196,18 @@ func retokenize(tokenizer string) func(*sql.Tx) error {
 	}
 }
 
-// indexKey normalizes any path form (relative, prefixed or absolute; linux or
-// windows separators) to the one clean key every search table is keyed on, so
-// on-save indexing, the periodic reindex and delete all address the same row.
+// indexKey normalizes the git path of a deleted file to the key of the deleted-files table - the
+// live index is keyed by the docs-relative path itself (IndexFile).
 func indexKey(path string) string {
 	return pathutils.ToRelative(path)
 }
 
 // IndexFile indexes a file's content for search
-func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
+func (ss *sqliteStorage) IndexFile(rel pathutils.DocsRel, content []byte) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
-	path = indexKey(path)
+	path := rel.String()
 	now := time.Now().UTC()
 
 	// one transaction: a failed FTS insert must not leave a fresh indexed_at
@@ -245,11 +244,11 @@ func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
 }
 
 // GetIndexedAt returns the time a file was last indexed, or zero time if not indexed.
-func (ss *sqliteStorage) GetIndexedAt(path string) (time.Time, error) {
+func (ss *sqliteStorage) GetIndexedAt(rel pathutils.DocsRel) (time.Time, error) {
 	ss.mutex.RLock()
 	defer ss.mutex.RUnlock()
 
-	path = indexKey(path)
+	path := rel.String()
 	var t time.Time
 	err := ss.db.QueryRow("SELECT indexed_at FROM search_content WHERE path = ?", path).Scan(&t)
 	if err == sql.ErrNoRows {
@@ -259,11 +258,11 @@ func (ss *sqliteStorage) GetIndexedAt(path string) (time.Time, error) {
 }
 
 // GetIndexedContent retrieves indexed content for a file
-func (ss *sqliteStorage) GetIndexedContent(path string) ([]byte, error) {
+func (ss *sqliteStorage) GetIndexedContent(rel pathutils.DocsRel) ([]byte, error) {
 	ss.mutex.RLock()
 	defer ss.mutex.RUnlock()
 
-	path = indexKey(path)
+	path := rel.String()
 	var content []byte
 	err := ss.db.QueryRow("SELECT content FROM search_content WHERE path = ?", path).Scan(&content)
 	if err == sql.ErrNoRows {
@@ -277,11 +276,11 @@ func (ss *sqliteStorage) GetIndexedContent(path string) ([]byte, error) {
 }
 
 // DeleteIndexedContent removes indexed content for a file
-func (ss *sqliteStorage) DeleteIndexedContent(path string) error {
+func (ss *sqliteStorage) DeleteIndexedContent(rel pathutils.DocsRel) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
-	path = indexKey(path)
+	path := rel.String()
 	// remove from FTS index
 	_, err := ss.db.Exec("DELETE FROM search_index WHERE path = ?", path)
 	if err != nil {

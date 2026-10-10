@@ -34,7 +34,8 @@ func IndexAllFiles() error {
 	newTrigram := newTrigramIndex()
 	indexed, skipped := 0, 0
 	for _, file := range allFiles {
-		fullPath := pathutils.ToDocsPath(file.Path.String())
+		fullPath := file.Path.FullPath()
+		key, _ := file.Path.DocsRel() // the file list holds docs files only
 
 		info, err := os.Stat(fullPath)
 		if err != nil {
@@ -44,8 +45,8 @@ func IndexAllFiles() error {
 
 		// skip the FTS reindex if already indexed and unchanged, but still need
 		// its content to rebuild the trigram index below
-		if indexedAt, err := searchStorage.GetIndexedAt(file.Path.String()); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
-			content, err := searchStorage.GetIndexedContent(file.Path.String())
+		if indexedAt, err := searchStorage.GetIndexedAt(key); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
+			content, err := searchStorage.GetIndexedContent(key)
 			if err != nil {
 				logging.LogWarning(logging.KeySearchReindex, "failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
 				continue
@@ -61,7 +62,7 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		if err := searchStorage.IndexFile(file.Path.String(), content); err != nil {
+		if err := searchStorage.IndexFile(key, content); err != nil {
 			logging.LogWarning(logging.KeySearchReindex, "failed to index file %s: %v", file.Path, err)
 			continue
 		}
@@ -172,18 +173,21 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 		return searchFilesRepositoryFallback(query, limit, allFiles)
 	}
 
-	// the search index is keyed by the docs-relative path (searchStorage.indexKey)
-	fileMap := make(map[string]files.File, len(allFiles))
+	// the search index is keyed by the docs-relative path (searchStorage.IndexFile)
+	fileMap := make(map[pathutils.DocsRel]files.File, len(allFiles))
 	for _, f := range allFiles {
-		fileMap[pathutils.ToRelative(f.Path.String())] = f
+		if rel, ok := f.Path.DocsRel(); ok {
+			fileMap[rel] = f
+		}
 	}
 
 	var results []files.File
-	seenPaths := make(map[string]bool)
+	seenPaths := make(map[pathutils.DocsRel]bool)
 	for _, sr := range searchResults {
-		if f, ok := fileMap[sr.Path]; ok && !seenPaths[sr.Path] {
+		rel := pathutils.NewDocsRel(sr.Path)
+		if f, ok := fileMap[rel]; ok && !seenPaths[rel] {
 			results = append(results, f)
-			seenPaths[sr.Path] = true
+			seenPaths[rel] = true
 			if limit > 0 && len(results) >= limit {
 				break
 			}
@@ -211,15 +215,13 @@ func searchFilesRepositoryFallback(query string, limit int, allFiles []files.Fil
 			break
 		}
 
-		contentData, err := searchStorage.GetIndexedContent(file.Path.String())
+		var contentData []byte
+		var err error
+		if rel, ok := file.Path.DocsRel(); ok {
+			contentData, err = searchStorage.GetIndexedContent(rel)
+		}
 		if err != nil || contentData == nil {
-			var fullPath string
-			if pathutils.IsMedia(file.Path.String()) {
-				fullPath = pathutils.ToMediaPath(file.Path.String())
-			} else {
-				fullPath = pathutils.ToDocsPath(file.Path.String())
-			}
-			contentData, err = os.ReadFile(fullPath)
+			contentData, err = os.ReadFile(file.Path.FullPath())
 			if err != nil {
 				continue
 			}
@@ -244,14 +246,7 @@ func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.Fi
 			break
 		}
 
-		var fullPath string
-		if pathutils.IsMedia(file.Path.String()) {
-			fullPath = pathutils.ToMediaPath(file.Path.String())
-		} else {
-			fullPath = pathutils.ToDocsPath(file.Path.String())
-		}
-
-		content, err := os.ReadFile(fullPath)
+		content, err := os.ReadFile(file.Path.FullPath())
 		if err != nil {
 			continue
 		}

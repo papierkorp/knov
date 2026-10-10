@@ -87,7 +87,6 @@ var guardRules = []guardRule{
 			"internal/parser/parser_markdown.go":                 5,
 			"internal/parser/table.go":                           1,
 			"internal/pdfexport/export.go":                       5,
-			"internal/search/search.go":                          4,
 			"internal/searchStorage/searchStorage_sqlite.go":     1,
 			"internal/server/api_chat.go":                        6,
 			"internal/server/api_editor.go":                      15,

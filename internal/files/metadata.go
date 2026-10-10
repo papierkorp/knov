@@ -648,13 +648,15 @@ func MetaDataDeleteNoRefresh(key logging.Key, path pathutils.MetaPath) error {
 	// remove from the live full-text search index too - otherwise a deleted
 	// file's content stays searchable forever, since IndexAllFiles only ever
 	// adds/updates entries for files that still exist, never prunes ones that
-	// don't. searchStorage normalizes the key, so the prefixed path addresses
-	// the row IndexFile wrote for file.Path from GetAllPhysicalFiles. The trigram fallback
+	// don't. The index is keyed by the docs-relative path (search.IndexAllFiles), a media
+	// file is never in it. The trigram fallback
 	// index is handled separately - it's fully rebuilt on each periodic
 	// reindex (see search.IndexAllFiles), so deleted files drop out of it
 	// within one reindex cycle without needing per-delete wiring here.
-	if err := searchStorage.DeleteIndexedContent(normalized); err != nil {
-		logging.LogWarning(key, "failed to remove %s from search index: %v", normalized, err)
+	if rel, ok := path.DocsRel(); ok {
+		if err := searchStorage.DeleteIndexedContent(rel); err != nil {
+			logging.LogWarning(key, "failed to remove %s from search index: %v", normalized, err)
+		}
 	}
 	return metadataStorage.Delete(normalized)
 }
