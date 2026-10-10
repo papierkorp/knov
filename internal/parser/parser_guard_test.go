@@ -63,12 +63,9 @@ var guardRules = []guardRule{
 		allowed: map[string]int{
 			// the guesses that are left: each one is a place a typed path is not threaded through yet, the
 			// list only shrinks
-			"internal/files/metadata_links.go":               2,
-			"internal/files/metadata_purge.go":               1,
-			"internal/files/reserved_migration.go":           1,
-			"internal/git/git.go":                            12,
-			"internal/parser/parser_markdown.go":             5,
-			"internal/searchStorage/searchStorage_sqlite.go": 1,
+			"internal/files/metadata_links.go":     2,
+			"internal/files/metadata_purge.go":     1,
+			"internal/files/reserved_migration.go": 1,
 		},
 	},
 	{

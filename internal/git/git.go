@@ -712,7 +712,7 @@ type fileHistoryCacheEntry struct {
 
 // fileHistoryCacheKey builds the cacheStorage key for a file's history entry.
 func fileHistoryCacheKey(relPath string) string {
-	return "git_file_history_" + pathutils.ToWithPrefix(relPath)
+	return "git_file_history_" + pathutils.FromFullPath(relPath).String()
 }
 
 // InvalidateFileHistoryCache removes the cached history entry for a file.
@@ -729,10 +729,10 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 		return nil, err
 	}
 
-	// pathutils.ToWithPrefix, not filepath.Rel - go-git's tree/log/diff APIs compare
+	// pathutils.FromFullPath, not filepath.Rel - go-git's tree/log/diff APIs compare
 	// paths as plain forward-slash strings with no normalization, so a Windows
 	// backslash path here silently never matches.
-	relPath := pathutils.ToWithPrefix(filePath)
+	relPath := pathutils.FromFullPath(filePath).String()
 
 	ref, err := repo.Head()
 	if err != nil {
@@ -1074,7 +1074,7 @@ func RestoreFileToCommit(filePath, commit string) error {
 		return err
 	}
 
-	relPath := pathutils.ToWithPrefix(filePath)
+	relPath := pathutils.FromFullPath(filePath).String()
 
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
@@ -1254,7 +1254,7 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 		return "", err
 	}
 
-	relPath := pathutils.ToWithPrefix(filePath)
+	relPath := pathutils.FromFullPath(filePath).String()
 
 	// Expand short commit hash to full hash
 	commitHash, err := expandCommitHash(repo, commit)
@@ -1311,7 +1311,7 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (diff, oldCommit, newCom
 		return "", "", "", err
 	}
 
-	relPath := pathutils.ToWithPrefix(filePath)
+	relPath := pathutils.FromFullPath(filePath).String()
 
 	// Handle "previous" parameter
 	if toCommit == "previous" {
@@ -1860,7 +1860,7 @@ func saveConflictCopy(filePath string) (string, error) {
 func HandleConflict(localFilePaths []string) {
 	for _, path := range localFilePaths {
 		// remove previous conflict file if one exists
-		origMeta := pathutils.GuessMeta(path)
+		origMeta := pathutils.FromFullPath(path)
 		if existingMeta, err := files.MetaDataGet(origMeta); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
 			existingConflictFull := existingMeta.ConflictFile.FullPath()
 			os.Remove(existingConflictFull)
@@ -1874,7 +1874,7 @@ func HandleConflict(localFilePaths []string) {
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(path), filepath.Base(conflictPath)),
 			true)
-		conflictMeta := pathutils.GuessMeta(conflictPath)
+		conflictMeta := pathutils.FromFullPath(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
 			logging.LogWarning(logging.KeyApp, "git conflict: failed to update conflict metadata for %s: %v", origMeta, err)
 		}
@@ -1950,7 +1950,7 @@ func SyncBeforeCommit(localFiles []string) {
 		ext := filepath.Ext(snap.fullPath)
 		base := snap.fullPath[:len(snap.fullPath)-len(ext)]
 		// remove previous conflict file if one exists
-		if existingMeta, err := files.MetaDataGet(pathutils.GuessMeta(snap.fullPath)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
+		if existingMeta, err := files.MetaDataGet(pathutils.FromFullPath(snap.fullPath)); err == nil && existingMeta != nil && existingMeta.ConflictFile != "" {
 			existingConflictFull := existingMeta.ConflictFile.FullPath()
 			os.Remove(existingConflictFull)
 		}
@@ -1964,8 +1964,8 @@ func SyncBeforeCommit(localFiles []string) {
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(snap.fullPath), filepath.Base(conflictPath)),
 			true)
-		origMeta := pathutils.GuessMeta(snap.fullPath)
-		conflictMeta := pathutils.GuessMeta(conflictPath)
+		origMeta := pathutils.FromFullPath(snap.fullPath)
+		conflictMeta := pathutils.FromFullPath(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
 			logging.LogWarning(logging.KeyApp, "git: failed to update conflict metadata for %s: %v", origMeta, err)
 		}
@@ -2462,12 +2462,12 @@ func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile
 	// the persisted index keeps the docs/ prefix - normalize both sides to join.
 	byPath := make(map[string]GitHistoryFile, len(entries))
 	for _, e := range entries {
-		byPath[pathutils.ToRelative(e.Path)] = e
+		byPath[pathutils.FromFullPath(e.Path).Rel()] = e
 	}
 
 	results := make([]GitHistoryFile, 0, len(ftsResults))
 	for _, r := range ftsResults {
-		if meta, ok := byPath[pathutils.ToRelative(r.Path)]; ok {
+		if meta, ok := byPath[pathutils.FromFullPath(r.Path).Rel()]; ok {
 			results = append(results, meta)
 		} else {
 			results = append(results, GitHistoryFile{Name: filepath.Base(r.Path), Path: r.Path})

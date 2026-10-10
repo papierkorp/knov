@@ -149,7 +149,7 @@ func TestWrapHeaderSectionsMatchesHeadingIDs(t *testing.T) {
 	src := "# Intro\ntext\n## Notes\nmore\n## Notes\neven more\n"
 	want := "intro,notes,notes-1"
 
-	rendered, err := NewMarkdownHandler().Render([]byte(src), "note.md", true)
+	rendered, err := NewMarkdownHandler().Render([]byte(src), "docs/note.md", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +173,7 @@ func TestWrapHeaderSectionsMatchesHeadingIDs(t *testing.T) {
 func TestEditableSectionsFalseSuppressesEditButtons(t *testing.T) {
 	src := "# Intro\ntext\n## Notes\nmore\n"
 
-	rendered, err := NewMarkdownHandler().Render([]byte(src), "note.md", false)
+	rendered, err := NewMarkdownHandler().Render([]byte(src), "docs/note.md", false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +188,7 @@ func TestEditableSectionsFalseSuppressesEditButtons(t *testing.T) {
 // rest of the document, so a heading right after it still renders.
 func TestRenderLongerRunFenceDoesNotSwallow(t *testing.T) {
 	in := "```\ncode\n````\n\n# Real Heading After\n"
-	out, err := NewMarkdownHandler().Render([]byte(in), "note.md", true)
+	out, err := NewMarkdownHandler().Render([]byte(in), "docs/note.md", true)
 	if err != nil {
 		t.Fatal(err)
 	}

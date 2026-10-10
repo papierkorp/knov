@@ -257,7 +257,7 @@ func RenderHeadingInline(s string) string {
 
 type knovNodeRenderer struct {
 	filePath         string
-	relPath          string // pathutils.ToRelative(filePath); PathlessRender when there is no source file
+	relPath          string // docRel(filePath); PathlessRender when there is no source file
 	blocks           []codeBlock
 	tableIdx         int
 	headings         []Heading      // ids already assigned by the pre-render Headings scan (see RenderWithUsedIDs), matched to AST headings by line number
@@ -271,7 +271,7 @@ type knovNodeRenderer struct {
 func newKnovNodeRenderer(filePath string, blocks []codeBlock, editableSections bool, headings []Heading, usedIDs map[string]int) renderer.NodeRenderer {
 	return &knovNodeRenderer{
 		filePath:         filePath,
-		relPath:          pathutils.ToRelative(filePath),
+		relPath:          docRel(filePath),
 		blocks:           blocks,
 		headings:         headings,
 		usedIDs:          usedIDs,
@@ -428,7 +428,7 @@ func (r *knovNodeRenderer) renderTable(w util.BufWriter, source []byte, node ast
 	if !entering {
 		return ast.WalkSkipChildren, nil
 	}
-	relPath := pathutils.ToRelative(r.filePath)
+	relPath := r.relPath
 	fmt.Fprintf(w,
 		`<div id="table-component-%d" hx-get="/api/components/table?filepath=%s&tableindex=%d" hx-trigger="load" hx-swap="outerHTML"></div>`,
 		r.tableIdx, url.QueryEscape(pathutils.DocsPath(relPath).String()), r.tableIdx,
@@ -698,8 +698,8 @@ func resolveMediaPath(dest string) string {
 	if rel, ok := strings.CutPrefix(dest, "/media/"); ok {
 		return rel // written by imageDest
 	}
-	if pathutils.IsMedia(dest) {
-		return pathutils.ToRelative(dest)
+	if rel, ok := strings.CutPrefix(dest, "media/"); ok {
+		return rel
 	}
 	if configmanager.IsImageExtension(strings.ToLower(filepath.Ext(dest))) {
 		return dest
@@ -756,7 +756,14 @@ type sectionWriter struct {
 }
 
 func newSectionWriter(filePath string, editableSections bool) *sectionWriter {
-	return &sectionWriter{relPath: pathutils.ToRelative(filePath), editableSections: editableSections}
+	return &sectionWriter{relPath: docRel(filePath), editableSections: editableSections}
+}
+
+// docRel is the doc filePath (a metadata path, PathlessRender for none) without its docs/ or
+// media/ prefix.
+func docRel(filePath string) string {
+	m, _ := pathutils.ParseMeta(filePath)
+	return m.Rel()
 }
 
 func (s *sectionWriter) dst() *bytes.Buffer {

@@ -199,7 +199,7 @@ func retokenize(tokenizer string) func(*sql.Tx) error {
 // indexKey normalizes the git path of a deleted file to the key of the deleted-files table - the
 // live index is keyed by the docs-relative path itself (IndexFile).
 func indexKey(path string) string {
-	return pathutils.ToRelative(path)
+	return pathutils.FromFullPath(path).Rel()
 }
 
 // IndexFile indexes a file's content for search
